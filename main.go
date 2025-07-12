@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/canpok1/ai-feed/cmd"
+)
 
 func main() {
-	fmt.Println("Hello World!")
+	if err := cmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
