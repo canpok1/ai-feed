@@ -13,8 +13,16 @@ var previewCmd = &cobra.Command{
 from specific URLs or a list of URLs in a file. It's perfect for
 checking out content without subscribing to a feed or saving
 anything to your local cache.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("preview called")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		urls, err := cmd.Flags().GetStringSlice("url")
+		if err != nil {
+			return err
+		}
+
+		for _, url := range urls {
+			fmt.Println(url)
+		}
+		return nil
 	},
 }
 
