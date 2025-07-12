@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/canpok1/ai-feed/cmd"
 
 func main() {
-	fmt.Println("Hello World!")
+	cmd.Execute()
 }
