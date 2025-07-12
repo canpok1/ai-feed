@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/spf13/cobra"
@@ -19,12 +20,21 @@ anything to your local cache.`,
 		if err != nil {
 			return err
 		}
-
+		loc, err := time.LoadLocation("Asia/Tokyo")
+		if err != nil {
+			return err
+		}
 		for _, url := range urls {
-			if err := internal.FetchFeed(url); err != nil {
+			articles, err := internal.FetchFeed(url)
+			if err != nil {
 				return err
-			} else {
-				fmt.Println(url)
+			}
+			for _, article := range articles {
+				fmt.Printf("Title: %s\n", article.Title)
+				fmt.Printf("Link: %s\n", article.Link)
+				fmt.Printf("Published: %s\n", article.Published.In(loc).Format("2006-01-02 15:04:05 JST"))
+                fmt.Printf("Content: %s\n", article.Content)
+                fmt.Println("---")
 			}
 		}
 		return nil
@@ -33,5 +43,5 @@ anything to your local cache.`,
 
 func init() {
 	rootCmd.AddCommand(previewCmd)
-	previewCmd.Flags().StringSlice("url", []string{}, "URL of the feed to preview")
+	previewCmd.Flags().StringSliceP("url", "u", []string{}, "URL of the feed to preview")
 }
