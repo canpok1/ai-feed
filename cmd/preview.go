@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/canpok1/ai-feed/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,11 @@ anything to your local cache.`,
 		}
 
 		for _, url := range urls {
-			fmt.Println(url)
+			if err := internal.FetchFeed(url); err != nil {
+				return err
+			} else {
+				fmt.Println(url)
+			}
 		}
 		return nil
 	},
