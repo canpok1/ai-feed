@@ -3,7 +3,6 @@ package internal
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -13,7 +12,7 @@ import (
 
 // CreateTempFile creates a temporary file with the given content.
 func CreateTempFile(content string) (string, error) {
-	file, err := ioutil.TempFile(os.TempDir(), "test_*.txt")
+	file, err := os.CreateTemp(os.TempDir(), "test_*.txt")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %w", err)
 	}
