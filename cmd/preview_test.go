@@ -119,21 +119,24 @@ func TestReadURLsFromFile(t *testing.T) {
 
 // TestPreviewCommandSourceAndURLConflict は --source と --url オプションの同時使用をテストします。
 func TestPreviewCommandSourceAndURLConflict(t *testing.T) {
+	// Use the actual previewCmd, which has its flags defined in its init() function.
+	cmd := previewCmd
 	b := bytes.NewBufferString("")
-	cmd := &cobra.Command{}
 	cmd.SetOut(b)
 	cmd.SetErr(b)
 
-	// フラグを定義
-	cmd.Flags().StringSliceP("url", "u", []string{}, "URL of the feed to preview")
-	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs to preview")
-	cmd.Flags().IntP("limit", "l", 0, "Maximum number of articles to display")
+	// Reset flags to avoid state leakage from other tests.
+	cmd.Flags().Set("url", "")
+	cmd.Flags().Set("source", "")
 
-	// フラグをセット
-	cmd.Flags().Set("url", "http://example.com")
-	cmd.Flags().Set("source", "list.txt")
+	// Simulate user providing flags via arguments.
+	args := []string{"--url", "http://example.com", "--source", "list.txt"}
+	// Manually parse flags to correctly set the "Changed" status.
+	if err := cmd.ParseFlags(args); err != nil {
+		t.Fatalf("failed to parse flags: %v", err)
+	}
 
-	err := previewCmd.RunE(cmd, []string{})
+	err := cmd.RunE(cmd, args)
 	if err == nil {
 		t.Fatal("Expected an error when --source and --url are used together, but got none.")
 	}
