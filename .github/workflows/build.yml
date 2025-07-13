@@ -22,6 +22,11 @@ jobs:
       with:
         go-version-file: 'go.mod'
 
+    - name: Verify Go Formatting
+      run: |
+        make fmt
+        git diff --exit-code
+
     - name: Lint
       run: make lint
 
