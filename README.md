@@ -28,8 +28,8 @@ make clean
 # test
 make test
 
-# vet (静的解析)
-make vet
+# lint (静的解析)
+make lint
 
 # fmt (コードフォーマット)
 make fmt
