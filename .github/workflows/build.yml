@@ -22,9 +22,8 @@ jobs:
       with:
         go-version-file: 'go.mod'
 
-    # TODO テスト実装後にコメント解除
-    # - name: Test
-    #   run: make test
+    - name: Test
+      run: make test
 
     - name: Build
       run: make build
