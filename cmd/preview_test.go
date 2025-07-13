@@ -26,41 +26,41 @@ func createTempFile(t *testing.T, content string) string {
 
 func TestReadURLsFromFile(t *testing.T) {
 	tests := []struct {
-		name           string
-		content        string
-		expectedURLs   []string
-		expectError    bool
-		expectWarning  bool
-		fileName       string // 存在しないファイルテスト用
+		name          string
+		content       string
+		expectedURLs  []string
+		expectError   bool
+		expectWarning bool
+		fileName      string // 存在しないファイルテスト用
 	}{
 		{
-			name:         "有効なURLリスト",
-			content:      "http://example.com/1\nhttps://example.org/2\n",
-			expectedURLs: []string{"http://example.com/1", "https://example.org/2"},
-			expectError:  false,
+			name:          "有効なURLリスト",
+			content:       "http://example.com/1\nhttps://example.org/2\n",
+			expectedURLs:  []string{"http://example.com/1", "https://example.org/2"},
+			expectError:   false,
 			expectWarning: false,
 		},
 		{
-			name:         "空行を含むURLリスト",
-			content:      "http://example.com/1\n\nhttps://example.org/2\n\n",
-			expectedURLs: []string{"http://example.com/1", "https://example.org/2"},
-			expectError:  false,
+			name:          "空行を含むURLリスト",
+			content:       "http://example.com/1\n\nhttps://example.org/2\n\n",
+			expectedURLs:  []string{"http://example.com/1", "https://example.org/2"},
+			expectError:   false,
 			expectWarning: false,
 		},
 		{
-			name:         "不正なURLを含むURLリスト",
-			content:      "http://example.com/1\nnot-a-url\nhttps://example.org/2\n",
-			expectedURLs: []string{"http://example.com/1", "https://example.org/2"},
-			expectError:  false,
+			name:          "不正なURLを含むURLリスト",
+			content:       "http://example.com/1\nnot-a-url\nhttps://example.org/2\n",
+			expectedURLs:  []string{"http://example.com/1", "https://example.org/2"},
+			expectError:   false,
 			expectWarning: true,
 		},
 		{
-			name:         "存在しないファイル",
-			content:      "",
-			expectedURLs: nil,
-			expectError:  true,
+			name:          "存在しないファイル",
+			content:       "",
+			expectedURLs:  nil,
+			expectError:   true,
 			expectWarning: false,
-			fileName:     "non_existent_file.txt",
+			fileName:      "non_existent_file.txt",
 		},
 	}
 
@@ -148,28 +148,28 @@ func TestPreviewCommandSourceAndURLConflict(t *testing.T) {
 // TestPreviewCommandDuplicateURLs はURLの重複排除をテストします。
 func TestPreviewCommandDuplicateURLs(t *testing.T) {
 	tests := []struct {
-		name     string
-		inputURLs []string
+		name         string
+		inputURLs    []string
 		expectedURLs []string
 	}{
 		{
-			name:     "重複なし",
-			inputURLs: []string{"http://example.com/1", "http://example.com/2"},
+			name:         "重複なし",
+			inputURLs:    []string{"http://example.com/1", "http://example.com/2"},
 			expectedURLs: []string{"http://example.com/1", "http://example.com/2"},
 		},
 		{
-			name:     "重複あり",
-			inputURLs: []string{"http://example.com/1", "http://example.com/2", "http://example.com/1"},
+			name:         "重複あり",
+			inputURLs:    []string{"http://example.com/1", "http://example.com/2", "http://example.com/1"},
 			expectedURLs: []string{"http://example.com/1", "http://example.com/2"},
 		},
 		{
-			name:     "空のリスト",
-			inputURLs: nil,
+			name:         "空のリスト",
+			inputURLs:    nil,
 			expectedURLs: nil,
 		},
 		{
-			name:     "すべて重複",
-			inputURLs: []string{"http://example.com/1", "http://example.com/1", "http://example.com/1"},
+			name:         "すべて重複",
+			inputURLs:    []string{"http://example.com/1", "http://example.com/1", "http://example.com/1"},
 			expectedURLs: []string{"http://example.com/1"},
 		},
 	}

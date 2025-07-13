@@ -16,3 +16,9 @@ clean:
 
 test:
 	go test -v ./...
+
+lint:
+	go vet ./...
+
+fmt:
+	go fmt ./...

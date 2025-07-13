@@ -33,12 +33,12 @@ func TestInstantRecommendCommand(t *testing.T) {
 	}{
 		{
 			name: "Successful recommendation",
-            url:  "http://example.com/feed.xml",
-            mockArticles: []internal.Article{
-                {Title: "Article 1", Link: "http://example.com/article1"},
-                {Title: "Article 2", Link: "http://example.com/com/article2"},
-            },
-            expectedOutput:      []string{"Title: Article 1\nLink: http://example.com/article1\n", "Title: Article 2\nLink: http://example.com/com/article2\n"},
+			url:  "http://example.com/feed.xml",
+			mockArticles: []internal.Article{
+				{Title: "Article 1", Link: "http://example.com/article1"},
+				{Title: "Article 2", Link: "http://example.com/com/article2"},
+			},
+			expectedOutput:      []string{"Title: Article 1\nLink: http://example.com/article1\n", "Title: Article 2\nLink: http://example.com/com/article2\n"},
 			expectedErrorOutput: "",
 			expectError:         false,
 		},
@@ -57,7 +57,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 			expectedOutput:      []string{""},
 			expectedErrorOutput: "Error: failed to fetch feed: mock fetch error\n", // Partial match for error message
 
-			expectError:         true,
+			expectError: true,
 		},
 	}
 

@@ -14,8 +14,8 @@ import (
 )
 
 var previewCmd = &cobra.Command{
-	Use:	"preview",
-	Short:	"The preview command temporarily fetches and displays articles from specified URLs or files without subscribing or caching them.",
+	Use:   "preview",
+	Short: "The preview command temporarily fetches and displays articles from specified URLs or files without subscribing or caching them.",
 	Long: `The preview command allows you to quickly view articles
 from specific URLs or a list of URLs in a file. It's perfect for
 checking out content without subscribing to a feed or saving
@@ -146,4 +146,3 @@ func deduplicateURLs(urls []string) []string {
 	}
 	return finalURLs
 }
-
