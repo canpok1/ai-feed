@@ -27,10 +27,13 @@ recommends one random article from the fetched list.`,
 		if err != nil {
 			return fmt.Errorf("failed to get url flag: %w", err)
 		}
-
 		sourcePath, err := cmd.Flags().GetString("source")
 		if err != nil {
 			return fmt.Errorf("failed to get source flag: %w", err)
+		}
+
+		if url != "" && sourcePath != "" {
+			return fmt.Errorf("cannot use --url and --source options together")
 		}
 
 		var urls []string
@@ -42,8 +45,10 @@ recommends one random article from the fetched list.`,
 			if len(urls) == 0 {
 				return fmt.Errorf("source file contains no URLs")
 			}
-		} else {
+		} else if url != "" {
 			urls = []string{url}
+		} else {
+			return fmt.Errorf("either --url or --source must be specified")
 		}
 
 		var allArticles []internal.Article
@@ -74,5 +79,5 @@ func init() {
 
 	instantRecommendCmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
 	instantRecommendCmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
-	instantRecommendCmd.MarkFlagRequired("url")
+	
 }
