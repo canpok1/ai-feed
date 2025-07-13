@@ -24,6 +24,15 @@ make build
 
 # clean
 make clean
+
+# test
+make test
+
+# vet (静的解析)
+make vet
+
+# fmt (コードフォーマット)
+make fmt
 ```
 
 ## コマンド
