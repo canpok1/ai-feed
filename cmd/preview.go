@@ -31,7 +31,7 @@ anything to your local cache.`,
 			return err
 		}
 
-		if sourceFile != "" && cmd.Flags().Changed("source") && cmd.Flags().Changed("url") {
+		if cmd.Flags().Changed("source") && cmd.Flags().Changed("url") {
 			return fmt.Errorf("cannot use --source and --url options together")
 		}
 
