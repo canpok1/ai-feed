@@ -25,22 +25,49 @@ recommends one random article from the fetched list.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		url, err := cmd.Flags().GetString("url")
 		if err != nil {
-			// This should not happen as the flag is required, but it's good practice to handle.
 			return fmt.Errorf("failed to get url flag: %w", err)
 		}
-		articles, err := internal.FetchFeed(url)
+		sourcePath, err := cmd.Flags().GetString("source")
 		if err != nil {
-			return fmt.Errorf("failed to fetch feed: %w", err)
+			return fmt.Errorf("failed to get source flag: %w", err)
 		}
 
-		if len(articles) == 0 {
+		if url != "" && sourcePath != "" {
+			return fmt.Errorf("cannot use --url and --source options together")
+		}
+
+		var urls []string
+		if sourcePath != "" {
+			urls, err = internal.ReadURLsFromFile(sourcePath)
+			if err != nil {
+				return fmt.Errorf("failed to read URLs from file: %w", err)
+			}
+			if len(urls) == 0 {
+				return fmt.Errorf("source file contains no URLs")
+			}
+		} else if url != "" {
+			urls = []string{url}
+		} else {
+			return fmt.Errorf("either --url or --source must be specified")
+		}
+
+		var allArticles []internal.Article
+		for _, u := range urls {
+			articles, err := internal.FetchFeed(u)
+			if err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "Error fetching feed from %s: %v\n", u, err)
+				continue
+			}
+			allArticles = append(allArticles, articles...)
+		}
+
+		if len(allArticles) == 0 {
 			fmt.Fprintln(cmd.OutOrStdout(), "No articles found in the feed.")
 			return nil
 		}
 
-		// Use a new random source to avoid seeding the global one.
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		randomArticle := articles[r.Intn(len(articles))]
+		randomArticle := allArticles[r.Intn(len(allArticles))]
 
 		displayArticle(cmd.OutOrStdout(), randomArticle)
 		return nil
@@ -51,5 +78,6 @@ func init() {
 	rootCmd.AddCommand(instantRecommendCmd)
 
 	instantRecommendCmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
-	instantRecommendCmd.MarkFlagRequired("url")
+	instantRecommendCmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
+
 }
