@@ -51,5 +51,6 @@ func init() {
 	rootCmd.AddCommand(instantRecommendCmd)
 
 	instantRecommendCmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
+	instantRecommendCmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
 	instantRecommendCmd.MarkFlagRequired("url")
 }
