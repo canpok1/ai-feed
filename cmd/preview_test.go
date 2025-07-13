@@ -147,42 +147,45 @@ func TestPreviewCommandSourceAndURLConflict(t *testing.T) {
 
 // TestPreviewCommandDuplicateURLs はURLの重複排除をテストします。
 func TestPreviewCommandDuplicateURLs(t *testing.T) {
-	// テスト用のテンポラリファイルを作成
-	content := "http://example.com/1\nhttp://example.com/2\nhttp://example.com/1\n"
-	filePath := createTempFile(t, content)
-	defer os.Remove(filePath)
-
-	cmd := &cobra.Command{} // モックのcobra.Command
-	cmd.Flags().StringSliceP("url", "u", []string{}, "URL of the feed to preview")
-	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs to preview")
-	cmd.Flags().IntP("limit", "l", 0, "Maximum number of articles to display")
-
-	// フラグをセット
-	cmd.Flags().Set("source", filePath)
-
-	// readURLsFromFile を直接呼び出してURLリストを取得
-	urls, err := readURLsFromFile(filePath, cmd)
-	if err != nil {
-		t.Fatalf("readURLsFromFile returned an error: %v", err)
+	tests := []struct {
+		name     string
+		inputURLs []string
+		expectedURLs []string
+	}{
+		{
+			name:     "重複なし",
+			inputURLs: []string{"http://example.com/1", "http://example.com/2"},
+			expectedURLs: []string{"http://example.com/1", "http://example.com/2"},
+		},
+		{
+			name:     "重複あり",
+			inputURLs: []string{"http://example.com/1", "http://example.com/2", "http://example.com/1"},
+			expectedURLs: []string{"http://example.com/1", "http://example.com/2"},
+		},
+		{
+			name:     "空のリスト",
+			inputURLs: nil,
+			expectedURLs: nil,
+		},
+		{
+			name:     "すべて重複",
+			inputURLs: []string{"http://example.com/1", "http://example.com/1", "http://example.com/1"},
+			expectedURLs: []string{"http://example.com/1"},
+		},
 	}
 
-	// 重複排除ロジックを直接テスト
-	uniqueURLs := make(map[string]bool)
-	var finalURLs []string
-	for _, url := range urls {
-		if _, ok := uniqueURLs[url]; !ok {
-			uniqueURLs[url] = true
-			finalURLs = append(finalURLs, url)
-		}
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actualURLs := deduplicateURLs(tt.inputURLs)
 
-	expected := []string{"http://example.com/1", "http://example.com/2"}
-	if len(finalURLs) != len(expected) {
-		t.Fatalf("Expected %d unique URLs, got %d", len(expected), len(finalURLs))
-	}
-	for i, u := range finalURLs {
-		if u != expected[i] {
-			t.Errorf("Expected unique URL %s, got %s", expected[i], u)
-		}
+			if len(actualURLs) != len(tt.expectedURLs) {
+				t.Fatalf("Expected %d unique URLs, got %d", len(tt.expectedURLs), len(actualURLs))
+			}
+			for i, u := range actualURLs {
+				if u != tt.expectedURLs[i] {
+					t.Errorf("Expected unique URL %s, got %s", tt.expectedURLs[i], u)
+				}
+			}
+		})
 	}
 }

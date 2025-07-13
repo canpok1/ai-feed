@@ -44,16 +44,7 @@ anything to your local cache.`,
 			urls = append(urls, fileURLs...)
 		}
 
-		// Remove duplicate URLs
-		uniqueURLs := make(map[string]bool)
-		var finalURLs []string
-		for _, url := range urls {
-			if _, ok := uniqueURLs[url]; !ok {
-				uniqueURLs[url] = true
-				finalURLs = append(finalURLs, url)
-			}
-		}
-		urls = finalURLs
+		urls = deduplicateURLs(urls)
 
 		limit, err := cmd.Flags().GetInt("limit")
 		if err != nil {
@@ -142,5 +133,17 @@ func readURLsFromFile(filePath string, cmd *cobra.Command) ([]string, error) {
 	}
 
 	return urls, nil
+}
+
+func deduplicateURLs(urls []string) []string {
+	uniqueURLs := make(map[string]bool)
+	var finalURLs []string
+	for _, url := range urls {
+		if _, ok := uniqueURLs[url]; !ok {
+			uniqueURLs[url] = true
+			finalURLs = append(finalURLs, url)
+		}
+	}
+	return finalURLs
 }
 
