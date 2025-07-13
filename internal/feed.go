@@ -1,6 +1,9 @@
 package internal
 
 import (
+	"bufio"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -45,3 +48,27 @@ var defaultFetchFeed FetchFeedFunc = func(url string) ([]Article, error) {
 
 // FetchFeed is the function that should be called to fetch feeds. It can be overridden for testing.
 var FetchFeed = defaultFetchFeed
+
+// ReadURLsFromFile reads URLs from a given file, one URL per line.
+func ReadURLsFromFile(filePath string) ([]string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var urls []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line != "" {
+			urls = append(urls, line)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return urls, nil
+}
