@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal"
+	"log"
 )
 
 func TestInstantRecommendCommand(t *testing.T) {
@@ -14,6 +15,12 @@ func TestInstantRecommendCommand(t *testing.T) {
 	originalFetchFeed := internal.FetchFeed
 	defer func() {
 		internal.FetchFeed = originalFetchFeed
+	}()
+
+	// Save original log output and restore it after test
+	oldLogOutput := log.Writer()
+	defer func() {
+		log.SetOutput(oldLogOutput)
 	}()
 
 	tests := []struct {
@@ -26,12 +33,12 @@ func TestInstantRecommendCommand(t *testing.T) {
 	}{
 		{
 			name: "Successful recommendation",
-			url:  "http://example.com/feed.xml",
-			mockArticles: []internal.Article{
-				{Title: "Article 1", Link: "http://example.com/article1"},
-				{Title: "Article 2", Link: "http://example.com/com/article2"},
-			},
-			expectedOutput:      []string{""},
+            url:  "http://example.com/feed.xml",
+            mockArticles: []internal.Article{
+                {Title: "Article 1", Link: "http://example.com/article1"},
+                {Title: "Article 2", Link: "http://example.com/com/article2"},
+            },
+            expectedOutput:      []string{"Title: Article 1\nLink: http://example.com/article1\n", "Title: Article 2\nLink: http://example.com/com/article2\n"},
 			expectedErrorOutput: "",
 			expectError:         false,
 		},
@@ -48,7 +55,8 @@ func TestInstantRecommendCommand(t *testing.T) {
 			url:                 "http://invalid.com/feed.xml",
 			mockArticles:        nil,
 			expectedOutput:      []string{""},
-			expectedErrorOutput: "", // Partial match for error message
+			expectedErrorOutput: "Error: failed to fetch feed: mock fetch error\n", // Partial match for error message
+
 			expectError:         true,
 		},
 	}
@@ -64,7 +72,10 @@ func TestInstantRecommendCommand(t *testing.T) {
 			instantRecommendCmd.SetErr(stderrBuffer)
 
 			// Reset flags for each test run
-			instantRecommendCmd.Flags().Set("url", tt.url)
+			rootCmd.SetArgs([]string{"instant-recommend", "--url", tt.url})
+			rootCmd.SetOut(stdoutBuffer)
+			rootCmd.SetErr(stderrBuffer)
+			rootCmd.SetArgs([]string{"instant-recommend", "--url", tt.url})
 
 			internal.FetchFeed = func(url string) ([]internal.Article, error) {
 				if tt.name == "Fetch feed error" {
@@ -74,7 +85,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 			}
 
 			// Execute the command
-			err := instantRecommendCmd.RunE(instantRecommendCmd, []string{}) // Use RunE() to test the full command lifecycle
+			_, err := rootCmd.ExecuteC()
 
 			out := stdoutBuffer.String()
 			errOut := stderrBuffer.String()
@@ -93,7 +104,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 				// Check if stdout contains any of the expected outputs
 				matched := false
 				for _, expected := range tt.expectedOutput {
-					if strings.Contains(out, expected) {
+					if out == expected {
 						matched = true
 						break
 					}
