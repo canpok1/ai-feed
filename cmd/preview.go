@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"net/url"
 	"os"
 	"sort"
 	"strings"
@@ -13,8 +14,8 @@ import (
 )
 
 var previewCmd = &cobra.Command{
-	Use:   "preview",
-	Short: "The preview command temporarily fetches and displays articles from specified URLs or files without subscribing or caching them.",
+	Use:	"preview",
+	Short:	"The preview command temporarily fetches and displays articles from specified URLs or files without subscribing or caching them.",
 	Long: `The preview command allows you to quickly view articles
 from specific URLs or a list of URLs in a file. It's perfect for
 checking out content without subscribing to a feed or saving
@@ -36,7 +37,7 @@ anything to your local cache.`,
 
 		if sourceFile != "" {
 			// Read URLs from file
-			fileURLs, err := readURLsFromFile(sourceFile)
+			fileURLs, err := readURLsFromFile(sourceFile, cmd)
 			if err != nil {
 				return fmt.Errorf("failed to read URLs from file %s: %w", sourceFile, err)
 			}
@@ -100,7 +101,7 @@ func init() {
 	previewCmd.Flags().IntP("limit", "l", 0, "Maximum number of articles to display")
 }
 
-func readURLsFromFile(filePath string) ([]string, error) {
+func readURLsFromFile(filePath string, cmd *cobra.Command) ([]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -114,6 +115,14 @@ func readURLsFromFile(filePath string) ([]string, error) {
 		if line == "" {
 			continue
 		}
+
+		// URLバリデーション
+		_, err := url.ParseRequestURI(line)
+		if err != nil {
+			fmt.Fprintf(cmd.ErrOrStderr(), "Warning: Invalid URL in %s: %s (Error: %v)\n", filePath, line, err)
+			continue
+		}
+
 		urls = append(urls, line)
 	}
 
@@ -123,3 +132,4 @@ func readURLsFromFile(filePath string) ([]string, error) {
 
 	return urls, nil
 }
+
