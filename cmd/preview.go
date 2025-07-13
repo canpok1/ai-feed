@@ -44,6 +44,17 @@ anything to your local cache.`,
 			urls = append(urls, fileURLs...)
 		}
 
+		// Remove duplicate URLs
+		uniqueURLs := make(map[string]bool)
+		var finalURLs []string
+		for _, url := range urls {
+			if _, ok := uniqueURLs[url]; !ok {
+				uniqueURLs[url] = true
+				finalURLs = append(finalURLs, url)
+			}
+		}
+		urls = finalURLs
+
 		limit, err := cmd.Flags().GetInt("limit")
 		if err != nil {
 			return err
