@@ -2,12 +2,29 @@ package internal
 
 import (
 	"bufio"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
 )
+
+// CreateTempFile creates a temporary file with the given content.
+func CreateTempFile(content string) (string, error) {
+	file, err := ioutil.TempFile(os.TempDir(), "test_*.txt")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(content)
+	if err != nil {
+		return "", fmt.Errorf("failed to write to temp file: %w", err)
+	}
+	return file.Name(), nil
+}
 
 type Article struct {
 	Title     string
