@@ -31,7 +31,7 @@ anything to your local cache.`,
 			return err
 		}
 
-		var allArticles []*internal.Article
+		var allArticles []internal.Article
 		for _, url := range urls {
 			articles, err := internal.FetchFeed(url)
 			if err != nil {
