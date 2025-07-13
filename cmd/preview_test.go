@@ -24,100 +24,96 @@ func createTempFile(t *testing.T, content string) string {
 	return tmpfile.Name()
 }
 
-// TestReadURLsFromFileValid は有効なURLリストを含むファイルの読み込みをテストします。
-func TestReadURLsFromFileValid(t *testing.T) {
-	content := "http://example.com/1\nhttps://example.org/2\n"
-	filePath := createTempFile(t, content)
-	defer os.Remove(filePath)
-
-	cmd := &cobra.Command{} // モックのcobra.Command
-	urls, err := readURLsFromFile(filePath, cmd)
-	if err != nil {
-		t.Fatalf("readURLsFromFile returned an error: %v", err)
+func TestReadURLsFromFile(t *testing.T) {
+	tests := []struct {
+		name           string
+		content        string
+		expectedURLs   []string
+		expectError    bool
+		expectWarning  bool
+		fileName       string // 存在しないファイルテスト用
+	}{
+		{
+			name:         "有効なURLリスト",
+			content:      "http://example.com/1\nhttps://example.org/2\n",
+			expectedURLs: []string{"http://example.com/1", "https://example.org/2"},
+			expectError:  false,
+			expectWarning: false,
+		},
+		{
+			name:         "空行を含むURLリスト",
+			content:      "http://example.com/1\n\nhttps://example.org/2\n\n",
+			expectedURLs: []string{"http://example.com/1", "https://example.org/2"},
+			expectError:  false,
+			expectWarning: false,
+		},
+		{
+			name:         "不正なURLを含むURLリスト",
+			content:      "http://example.com/1\nnot-a-url\nhttps://example.org/2\n",
+			expectedURLs: []string{"http://example.com/1", "https://example.org/2"},
+			expectError:  false,
+			expectWarning: true,
+		},
+		{
+			name:         "存在しないファイル",
+			content:      "",
+			expectedURLs: nil,
+			expectError:  true,
+			expectWarning: false,
+			fileName:     "non_existent_file.txt",
+		},
 	}
 
-	expected := []string{"http://example.com/1", "https://example.org/2"}
-	if len(urls) != len(expected) {
-		t.Fatalf("Expected %d URLs, got %d", len(expected), len(urls))
-	}
-	for i, u := range urls {
-		if u != expected[i] {
-			t.Errorf("Expected URL %s, got %s", expected[i], u)
-		}
-	}
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var filePath string
+			if tt.fileName != "" {
+				filePath = tt.fileName
+			} else {
+				filePath = createTempFile(t, tt.content)
+				defer os.Remove(filePath)
+			}
 
-// TestReadURLsFromFileEmptyLines は空行を含むファイルの読み込みをテストします。
-func TestReadURLsFromFileEmptyLines(t *testing.T) {
-	content := "http://example.com/1\n\nhttps://example.org/2\n\n"
-	filePath := createTempFile(t, content)
-	defer os.Remove(filePath)
+			// 標準エラー出力をキャプチャ
+			oldStderr := os.Stderr
+			r, w, _ := os.Pipe()
+			os.Stderr = w
 
-	cmd := &cobra.Command{} // モックのcobra.Command
-	urls, err := readURLsFromFile(filePath, cmd)
-	if err != nil {
-		t.Fatalf("readURLsFromFile returned an error: %v", err)
-	}
+			cmd := &cobra.Command{} // モックのcobra.Command
+			urls, err := readURLsFromFile(filePath, cmd)
 
-	expected := []string{"http://example.com/1", "https://example.org/2"}
-	if len(urls) != len(expected) {
-		t.Fatalf("Expected %d URLs, got %d", len(expected), len(urls))
-	}
-	for i, u := range urls {
-		if u != expected[i] {
-			t.Errorf("Expected URL %s, got %s", expected[i], u)
-		}
-	}
-}
+			w.Close()
+			os.Stderr = oldStderr // 標準エラー出力を元に戻す
+			var buf bytes.Buffer
+			buf.ReadFrom(r)
+			stderrOutput := buf.String()
 
-// TestReadURLsFromFileInvalidURLs は不正なURLを含むファイルの読み込みをテストします。
-func TestReadURLsFromFileInvalidURLs(t *testing.T) {
-	content := "http://example.com/1\nnot-a-url\nhttps://example.org/2\n"
-	filePath := createTempFile(t, content)
-	defer os.Remove(filePath)
+			if (err != nil) != tt.expectError {
+				t.Fatalf("readURLsFromFile() error = %v, expectError %v", err, tt.expectError)
+			}
 
-	// 標準エラー出力をキャプチャ
-	oldStderr := os.Stderr
-	r, w, _ := os.Pipe()
-	os.Stderr = w
+			if tt.expectError {
+				if err != nil && !strings.Contains(err.Error(), "no such file or directory") {
+					t.Errorf("Expected 'no such file or directory' error, got: %v", err)
+				}
+				return
+			}
 
-	cmd := &cobra.Command{} // モックのcobra.Command
-	urls, err := readURLsFromFile(filePath, cmd)
+			if len(urls) != len(tt.expectedURLs) {
+				t.Fatalf("Expected %d URLs, got %d", len(tt.expectedURLs), len(urls))
+			}
+			for i, u := range urls {
+				if u != tt.expectedURLs[i] {
+					t.Errorf("Expected URL %s, got %s", tt.expectedURLs[i], u)
+				}
+			}
 
-	w.Close()
-	os.Stderr = oldStderr // 標準エラー出力を元に戻す
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	stderrOutput := buf.String()
-
-	if err != nil {
-		t.Fatalf("readURLsFromFile returned an error: %v", err)
-	}
-
-	expectedURLs := []string{"http://example.com/1", "https://example.org/2"}
-	if len(urls) != len(expectedURLs) {
-		t.Fatalf("Expected %d URLs, got %d", len(expectedURLs), len(urls))
-	}
-	for i, u := range urls {
-		if u != expectedURLs[i] {
-			t.Errorf("Expected URL %s, got %s", expectedURLs[i], u)
-		}
-	}
-
-	if !strings.Contains(stderrOutput, "Warning: Invalid URL in") || !strings.Contains(stderrOutput, "not-a-url") {
-		t.Errorf("Expected warning for invalid URL, got: %s", stderrOutput)
-	}
-}
-
-// TestReadURLsFromFileNonExistent は存在しないファイルの読み込みをテストします。
-func TestReadURLsFromFileNonExistent(t *testing.T) {
-	cmd := &cobra.Command{} // モックのcobra.Command
-	_, err := readURLsFromFile("non_existent_file.txt", cmd)
-	if err == nil {
-		t.Fatal("readURLsFromFile did not return an error for a non-existent file")
-	}
-	if !strings.Contains(err.Error(), "no such file or directory") {
-		t.Errorf("Expected 'no such file or directory' error, got: %v", err)
+			if tt.expectWarning && (!strings.Contains(stderrOutput, "Warning: Invalid URL in") || !strings.Contains(stderrOutput, "not-a-url")) {
+				t.Errorf("Expected warning for invalid URL, got: %s", stderrOutput)
+			} else if !tt.expectWarning && stderrOutput != "" {
+				t.Errorf("Unexpected warning output: %s", stderrOutput)
+			}
+		})
 	}
 }
 
@@ -187,5 +183,3 @@ func TestPreviewCommandDuplicateURLs(t *testing.T) {
 		}
 	}
 }
-
-
