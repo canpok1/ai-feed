@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"time"
+	"sort"
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/spf13/cobra"
@@ -40,6 +41,18 @@ anything to your local cache.`,
 			}
 			allArticles = append(allArticles, articles...)
 		}
+
+		// Sort all articles by published date in descending order
+		sort.Slice(allArticles, func(i, j int) bool {
+			// Treat articles without a published date as the oldest.
+			if allArticles[i].Published == nil {
+				return false
+			}
+			if allArticles[j].Published == nil {
+				return true
+			}
+			return allArticles[i].Published.After(*allArticles[j].Published)
+		})
 
 		// Apply limit
 		if limit > 0 && len(allArticles) > limit {
