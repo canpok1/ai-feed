@@ -1,5 +1,7 @@
 # ai-feed
 
+AI Feedは、指定されたURLから記事をプレビューしたり、RSSフィードを購読したりするためのCLIツールです。
+
 ## 開発環境
 
 ### 必要条件
@@ -23,3 +25,34 @@ make build
 # clean
 make clean
 ```
+
+## コマンド
+
+### `preview` コマンド
+
+`preview` コマンドは、指定されたURLから記事を一時的に取得し、表示します。購読やキャッシュは行いません。
+
+#### `--url` オプション
+
+プレビューするフィードのURLを指定します。複数のURLを指定できます。
+
+例:
+```bash
+make run option="preview --url https://example.com/feed.xml --url https://another.com/rss"
+```
+
+#### `--source` オプション
+
+URLのリストを含むファイルを指定します。ファイルは1行に1つのURLを記述します。空行はスキップされ、不正なURLは警告が表示されてスキップされます。
+
+例:
+```bash
+# urls.txt の内容:
+# https://example.com/feed.xml
+# https://another.com/rss
+# invalid-url
+
+make run option="preview --source urls.txt"
+```
+
+`--source` オプションと `--url` オプションを同時に使用することはできません。
