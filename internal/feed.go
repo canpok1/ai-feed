@@ -13,7 +13,11 @@ type Article struct {
 	Content   string
 }
 
-func FetchFeed(url string) ([]Article, error) {
+// FetchFeedFunc defines the signature for the FetchFeed function.
+type FetchFeedFunc func(url string) ([]Article, error)
+
+// DefaultFetchFeed is the default implementation of FetchFeed.
+var DefaultFetchFeed FetchFeedFunc = func(url string) ([]Article, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	if err != nil {
@@ -38,3 +42,6 @@ func FetchFeed(url string) ([]Article, error) {
 	}
 	return articles, nil
 }
+
+// FetchFeed is the function that should be called to fetch feeds. It can be overridden for testing.
+var FetchFeed = DefaultFetchFeed

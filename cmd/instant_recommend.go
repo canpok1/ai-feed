@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"time"
@@ -10,6 +11,11 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
+func displayArticle(w io.Writer, article internal.Article) {
+    fmt.Fprintf(w, "Title: %s\n", article.Title)
+    fmt.Fprintf(w, "Link: %s\n", article.Link)
+}
 
 // instantRecommendCmd represents the instant-recommend command
 var instantRecommendCmd = &cobra.Command{
@@ -21,20 +27,20 @@ recommends one random article from the fetched list.`,
 		url, _ := cmd.Flags().GetString("url")
 		articles, err := internal.FetchFeed(url)
 		if err != nil {
-			log.Fatalf("Failed to fetch feed: %v", err)
+			log.Printf("Failed to fetch feed: %v", err)
+			return
 		}
 
 		if len(articles) == 0 {
-			fmt.Println("No articles found in the feed.")
+			fmt.Fprintln(cmd.OutOrStdout(), "No articles found in the feed.")
 			return
 		}
 
 		rand.Seed(time.Now().UnixNano())
 		randomArticle := articles[rand.Intn(len(articles))]
 
-		fmt.Printf("Title: %s\n", randomArticle.Title)
-		fmt.Printf("Link: %s\n", randomArticle.Link)
-	},
+		displayArticle(cmd.OutOrStdout(), randomArticle)
+    },
 }
 
 func init() {
@@ -43,4 +49,5 @@ func init() {
 	instantRecommendCmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
 	instantRecommendCmd.MarkFlagRequired("url")
 }
+
 
