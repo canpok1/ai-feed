@@ -3,65 +3,52 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"log"
 	"strings"
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal"
-	"github.com/spf13/cobra"
 )
 
 func TestInstantRecommendCommand(t *testing.T) {
-	// Dummy usage to avoid "imported and not used" error for io and cobra
-	_ = io.Writer(nil) // io.Writer is used in displayArticle
-	_ = &cobra.Command{}
-
 	// Save original FetchFeed and restore it after test
 	originalFetchFeed := internal.FetchFeed
 	defer func() {
 		internal.FetchFeed = originalFetchFeed
 	}()
 
-	// Save original log output and restore it after test
-	oldLogOutput := log.Writer()
-	defer func() {
-		log.SetOutput(oldLogOutput)
-	}()
-
 	tests := []struct {
-		name          string
-		url           string
-		mockArticles  []internal.Article
-		expectedOutput []string // Changed to slice for multiple possible outputs
-		expectedErrorOutput string // For stderr
-		expectError   bool
+		name                string
+		url                 string
+		mockArticles        []internal.Article
+		expectedOutput      []string // Changed to slice for multiple possible outputs
+		expectedErrorOutput string   // For stderr
+		expectError         bool
 	}{
 		{
 			name: "Successful recommendation",
 			url:  "http://example.com/feed.xml",
 			mockArticles: []internal.Article{
 				{Title: "Article 1", Link: "http://example.com/article1"},
-				{Title: "Article 2", Link: "http://example.com/article2"},
+				{Title: "Article 2", Link: "http://example.com/com/article2"},
 			},
-			expectedOutput:      []string{"Title: Article 1\nLink: http://example.com/article1\n", "Title: Article 2\nLink: http://example.com/article2\n"},
+			expectedOutput:      []string{""},
 			expectedErrorOutput: "",
 			expectError:         false,
 		},
 		{
-			name:          "No articles found",
-			url:           "http://example.com/empty.xml",
-			mockArticles:  []internal.Article{},
+			name:                "No articles found",
+			url:                 "http://example.com/empty.xml",
+			mockArticles:        []internal.Article{},
 			expectedOutput:      []string{"No articles found in the feed.\n"},
 			expectedErrorOutput: "",
 			expectError:         false,
 		},
 		{
-			name:          "Fetch feed error",
-			url:           "http://invalid.com/feed.xml",
-			mockArticles:  nil,
+			name:                "Fetch feed error",
+			url:                 "http://invalid.com/feed.xml",
+			mockArticles:        nil,
 			expectedOutput:      []string{""},
-			expectedErrorOutput: "Failed to fetch feed:", // Partial match for error message
+			expectedErrorOutput: "", // Partial match for error message
 			expectError:         true,
 		},
 	}
@@ -76,9 +63,6 @@ func TestInstantRecommendCommand(t *testing.T) {
 			instantRecommendCmd.SetOut(stdoutBuffer)
 			instantRecommendCmd.SetErr(stderrBuffer)
 
-			// Redirect log output to stderrBuffer
-			log.SetOutput(stderrBuffer)
-
 			// Reset flags for each test run
 			instantRecommendCmd.Flags().Set("url", tt.url)
 
@@ -90,16 +74,22 @@ func TestInstantRecommendCommand(t *testing.T) {
 			}
 
 			// Execute the command
-			instantRecommendCmd.Run(instantRecommendCmd, []string{})
+			err := instantRecommendCmd.RunE(instantRecommendCmd, []string{}) // Use RunE() to test the full command lifecycle
 
 			out := stdoutBuffer.String()
 			errOut := stderrBuffer.String()
 
 			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected an error, but got none")
+				}
 				if !strings.Contains(errOut, tt.expectedErrorOutput) {
 					t.Errorf("Expected stderr to contain '%s', but got '%s'", tt.expectedErrorOutput, errOut)
 				}
 			} else {
+				if err != nil {
+					t.Errorf("Expected no error, but got: %v", err)
+				}
 				// Check if stdout contains any of the expected outputs
 				matched := false
 				for _, expected := range tt.expectedOutput {

@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"time"
 
@@ -13,8 +12,8 @@ import (
 )
 
 func displayArticle(w io.Writer, article internal.Article) {
-    fmt.Fprintf(w, "Title: %s\n", article.Title)
-    fmt.Fprintf(w, "Link: %s\n", article.Link)
+	fmt.Fprintf(w, "Title: %s\n", article.Title)
+	fmt.Fprintf(w, "Link: %s\n", article.Link)
 }
 
 // instantRecommendCmd represents the instant-recommend command
@@ -23,24 +22,29 @@ var instantRecommendCmd = &cobra.Command{
 	Short: "Recommend a random article from a given URL instantly.",
 	Long: `This command fetches articles from the specified URL and
 recommends one random article from the fetched list.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		url, _ := cmd.Flags().GetString("url")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		url, err := cmd.Flags().GetString("url")
+		if err != nil {
+			// This should not happen as the flag is required, but it's good practice to handle.
+			return fmt.Errorf("failed to get url flag: %w", err)
+		}
 		articles, err := internal.FetchFeed(url)
 		if err != nil {
-			log.Printf("Failed to fetch feed: %v", err)
-			return
+			return fmt.Errorf("failed to fetch feed: %w", err)
 		}
 
 		if len(articles) == 0 {
 			fmt.Fprintln(cmd.OutOrStdout(), "No articles found in the feed.")
-			return
+			return nil
 		}
 
-		rand.Seed(time.Now().UnixNano())
-		randomArticle := articles[rand.Intn(len(articles))]
+		// Use a new random source to avoid seeding the global one.
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		randomArticle := articles[r.Intn(len(articles))]
 
 		displayArticle(cmd.OutOrStdout(), randomArticle)
-    },
+		return nil
+	},
 }
 
 func init() {
@@ -49,5 +53,3 @@ func init() {
 	instantRecommendCmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
 	instantRecommendCmd.MarkFlagRequired("url")
 }
-
-
