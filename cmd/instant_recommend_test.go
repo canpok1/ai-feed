@@ -80,8 +80,8 @@ func TestInstantRecommendCommand(t *testing.T) {
 			expectError:         false,
 		},
 		{
-			name:              "Source file with no URLs",
-			sourceFileContent: "\n\n",
+			name:                "Source file with no URLs",
+			sourceFileContent:   "\n\n",
 			mockArticles:        map[string][]internal.Article{},
 			expectedOutput:      []string{""},
 			expectedErrorOutput: "Error: source file contains no URLs\n",
@@ -176,4 +176,3 @@ func TestDisplayArticle(t *testing.T) {
 		t.Errorf("Expected %q, got %q", expected, buf.String())
 	}
 }
-
