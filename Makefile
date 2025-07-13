@@ -14,5 +14,11 @@ clean:
 	rm -f ${BINARY_NAME}
 	rm -rf ./dist
 
-test:
+test: vet fmt
 	go test -v ./...
+
+vet:
+	go vet ./...
+
+fmt:
+	go fmt ./...
