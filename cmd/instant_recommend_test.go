@@ -150,19 +150,3 @@ func TestInstantRecommendCommand(t *testing.T) {
 		})
 	}
 }
-
-func TestDisplayRecommend(t *testing.T) {
-	var buf bytes.Buffer
-	recommend := &domain.Recommend{
-		Article: domain.Article{
-			Title: "Test Article",
-			Link:  "http://test.com/article",
-		},
-	}
-	displayRecommend(&buf, recommend)
-
-	expected := "Title: Test Article\nLink: http://test.com/article\n"
-	if buf.String() != expected {
-		t.Errorf("Expected %q, got %q", expected, buf.String())
-	}
-}

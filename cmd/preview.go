@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
@@ -51,11 +50,6 @@ anything to your local cache.`,
 			return err
 		}
 
-		loc, err := time.LoadLocation("Asia/Tokyo")
-		if err != nil {
-			return err
-		}
-
 		fetcher := domain.NewFetcher(
 			infra.NewFetchClient(),
 			func(url string, err error) error {
@@ -64,16 +58,16 @@ anything to your local cache.`,
 			},
 		)
 		allArticles, err := fetcher.Fetch(urls, limit)
-
-		for _, article := range allArticles {
-			fmt.Printf("Title: %s\n", article.Title)
-			fmt.Printf("Link: %s\n", article.Link)
-			if article.Published != nil {
-				fmt.Printf("Published: %s\n", article.Published.In(loc).Format("2006-01-02 15:04:05 JST"))
-			}
-			fmt.Printf("Content: %s\n", article.Content)
-			fmt.Println("---")
+		if err != nil {
+			return fmt.Errorf("failed to fetch articles: %w", err)
 		}
+
+		viewer := domain.NewStdViewer()
+		err = viewer.ViewArticles(cmd.OutOrStdout(), allArticles)
+		if err != nil {
+			return fmt.Errorf("failed to view articles: %w", err)
+		}
+
 		return nil
 	},
 }
