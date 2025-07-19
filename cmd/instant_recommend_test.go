@@ -110,7 +110,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 				mockFetchClient.EXPECT().Fetch(tt.url).Return(nil, fmt.Errorf("mock fetch error")).AnyTimes()
 			}
 
-			cmd := makeInstantRecommendCmd(mockFetchClient)
+			cmd := makeInstantRecommendCmd(mockFetchClient, domain.NewFirstRecommender())
 
 			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)
@@ -151,13 +151,15 @@ func TestInstantRecommendCommand(t *testing.T) {
 	}
 }
 
-func TestDisplayArticle(t *testing.T) {
+func TestDisplayRecommend(t *testing.T) {
 	var buf bytes.Buffer
-	article := domain.Article{
-		Title: "Test Article",
-		Link:  "http://test.com/article",
+	recommend := &domain.Recommend{
+		Article: domain.Article{
+			Title: "Test Article",
+			Link:  "http://test.com/article",
+		},
 	}
-	displayArticle(&buf, article)
+	displayRecommend(&buf, recommend)
 
 	expected := "Title: Test Article\nLink: http://test.com/article\n"
 	if buf.String() != expected {
