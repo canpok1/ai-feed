@@ -9,7 +9,7 @@ import (
 // TestPreviewCommandSourceAndURLConflict は --source と --url オプションの同時使用をテストします。
 func TestPreviewCommandSourceAndURLConflict(t *testing.T) {
 	// Use the actual previewCmd, which has its flags defined in its init() function.
-	cmd := previewCmd
+	cmd := makePreviewCmd()
 	b := bytes.NewBufferString("")
 	cmd.SetOut(b)
 	cmd.SetErr(b)
