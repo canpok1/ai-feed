@@ -11,23 +11,27 @@ type Viewer interface {
 	ViewRecommend(io.Writer, *Recommend) error
 }
 
-type StdViewer struct{}
+type StdViewer struct {
+	loc *time.Location
+}
 
-func NewStdViewer() Viewer {
-	return &StdViewer{}
+func NewStdViewer() (Viewer, error) {
+	loc, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		return nil, err
+	}
+
+	return &StdViewer{
+		loc: loc,
+	}, nil
 }
 
 func (v *StdViewer) ViewArticles(w io.Writer, articles []Article) error {
-	loc, err := time.LoadLocation("Asia/Tokyo")
-	if err != nil {
-		return err
-	}
-
 	for _, article := range articles {
 		fmt.Fprintf(w, "Title: %s\n", article.Title)
 		fmt.Fprintf(w, "Link: %s\n", article.Link)
 		if article.Published != nil {
-			fmt.Fprintf(w, "Published: %s\n", article.Published.In(loc).Format("2006-01-02 15:04:05 JST"))
+			fmt.Fprintf(w, "Published: %s\n", article.Published.In(v.loc).Format("2006-01-02 15:04:05 JST"))
 		}
 		fmt.Fprintf(w, "Content: %s\n", article.Content)
 		fmt.Fprintln(w, "---")

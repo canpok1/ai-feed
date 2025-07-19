@@ -62,7 +62,11 @@ anything to your local cache.`,
 			return fmt.Errorf("failed to fetch articles: %w", err)
 		}
 
-		viewer := domain.NewStdViewer()
+		viewer, err := domain.NewStdViewer()
+		if err != nil {
+			return fmt.Errorf("failed to create viewer: %w", err)
+		}
+
 		err = viewer.ViewArticles(cmd.OutOrStdout(), allArticles)
 		if err != nil {
 			return fmt.Errorf("failed to view articles: %w", err)

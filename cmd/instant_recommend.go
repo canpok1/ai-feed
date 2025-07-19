@@ -67,7 +67,11 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to recommend article: %w", err)
 			}
 
-			viewer := domain.NewStdViewer()
+			viewer, err := domain.NewStdViewer()
+			if err != nil {
+				return fmt.Errorf("failed to create viewer: %w", err)
+			}
+
 			err = viewer.ViewRecommend(cmd.OutOrStdout(), recommend)
 			if err != nil {
 				return fmt.Errorf("failed to view recommend: %w", err)
