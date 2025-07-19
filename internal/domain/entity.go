@@ -9,3 +9,8 @@ type Article struct {
 	Published *time.Time
 	Content   string
 }
+
+type Recommend struct {
+	Article Article
+	Comment *string
+}

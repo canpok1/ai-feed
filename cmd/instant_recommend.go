@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"math/rand"
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -12,12 +11,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func displayArticle(w io.Writer, article domain.Article) {
-	fmt.Fprintf(w, "Title: %s\n", article.Title)
-	fmt.Fprintf(w, "Link: %s\n", article.Link)
+func displayRecommend(w io.Writer, recommend *domain.Recommend) {
+	if recommend == nil {
+		fmt.Fprintln(w, "No articles found in the feed.")
+		return
+	}
+
+	fmt.Fprintf(w, "Title: %s\n", recommend.Article.Title)
+	fmt.Fprintf(w, "Link: %s\n", recommend.Article.Link)
 }
 
-func makeInstantRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
+func makeInstantRecommendCmd(fetchClient domain.FetchClient, recommender domain.Recommender) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "instant-recommend",
 		Short: "Recommend a random article from a given URL instantly.",
@@ -69,9 +73,12 @@ recommends one random article from the fetched list.`,
 				return nil
 			}
 
-			randomArticle := allArticles[rand.Intn(len(allArticles))]
+			recommend, err := recommender.Recommend(allArticles)
+			if err != nil {
+				return fmt.Errorf("failed to recommend article: %w", err)
+			}
 
-			displayArticle(cmd.OutOrStdout(), randomArticle)
+			displayRecommend(cmd.OutOrStdout(), recommend)
 			return nil
 		},
 	}
@@ -83,6 +90,6 @@ recommends one random article from the fetched list.`,
 }
 
 func init() {
-	cmd := makeInstantRecommendCmd(infra.NewFetchClient())
+	cmd := makeInstantRecommendCmd(infra.NewFetchClient(), domain.NewRandomRecommender())
 	rootCmd.AddCommand(cmd)
 }
