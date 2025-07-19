@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -10,16 +9,6 @@ import (
 
 	"github.com/spf13/cobra"
 )
-
-func displayRecommend(w io.Writer, recommend *domain.Recommend) {
-	if recommend == nil {
-		fmt.Fprintln(w, "No articles found in the feed.")
-		return
-	}
-
-	fmt.Fprintf(w, "Title: %s\n", recommend.Article.Title)
-	fmt.Fprintf(w, "Link: %s\n", recommend.Article.Link)
-}
 
 func makeInstantRecommendCmd(fetchClient domain.FetchClient, recommender domain.Recommender) *cobra.Command {
 	cmd := &cobra.Command{
@@ -78,7 +67,16 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to recommend article: %w", err)
 			}
 
-			displayRecommend(cmd.OutOrStdout(), recommend)
+			viewer, err := domain.NewStdViewer()
+			if err != nil {
+				return fmt.Errorf("failed to create viewer: %w", err)
+			}
+
+			err = viewer.ViewRecommend(cmd.OutOrStdout(), recommend)
+			if err != nil {
+				return fmt.Errorf("failed to view recommend: %w", err)
+			}
+
 			return nil
 		},
 	}
