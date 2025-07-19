@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"math/rand"
+	"math/rand/v2"
 )
 
 type Recommender interface {
@@ -19,7 +19,7 @@ func (r *RandomRecommender) Recommend(articles []Article) (*Recommend, error) {
 		return nil, nil
 	}
 
-	article := articles[rand.Intn(len(articles))]
+	article := articles[rand.IntN(len(articles))]
 	return &Recommend{
 		Article: article,
 		Comment: nil,
