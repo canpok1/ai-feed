@@ -34,7 +34,7 @@ anything to your local cache.`,
 			if sourceFile != "" {
 				// Read URLs from file
 				fileURLs, err := domain.ReadURLsFromFile(sourceFile, func(filePath, line string, err error) error {
-					fmt.Fprintf(cmd.ErrOrStderr(), "Error reading URLs from file %s, line:%s, error:%v\n", filePath, line, err)
+					fmt.Fprintf(cmd.ErrOrStderr(), "Warning: Skipping invalid URL in %s on line '%s': %v\n", filePath, line, err)
 					return nil
 				})
 				if err != nil {
