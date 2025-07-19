@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"sort"
 	"strings"
 	"time"
 
-	"github.com/canpok1/ai-feed/internal"
+	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
 )
 
@@ -56,32 +56,14 @@ anything to your local cache.`,
 			return err
 		}
 
-		var allArticles []internal.Article
-		for _, url := range urls {
-			articles, err := internal.FetchFeed(url)
-			if err != nil {
+		fetcher := domain.NewFetcher(
+			infra.NewFetchClient(),
+			func(url string, err error) error {
 				fmt.Fprintf(cmd.ErrOrStderr(), "Error fetching feed from %s: %v\n", url, err)
-				continue
-			}
-			allArticles = append(allArticles, articles...)
-		}
-
-		// Sort all articles by published date in descending order
-		sort.Slice(allArticles, func(i, j int) bool {
-			// Treat articles without a published date as the oldest.
-			if allArticles[i].Published == nil {
-				return false
-			}
-			if allArticles[j].Published == nil {
-				return true
-			}
-			return allArticles[i].Published.After(*allArticles[j].Published)
-		})
-
-		// Apply limit
-		if limit > 0 && len(allArticles) > limit {
-			allArticles = allArticles[:limit]
-		}
+				return nil
+			},
+		)
+		allArticles, err := fetcher.Fetch(urls, limit)
 
 		for _, article := range allArticles {
 			fmt.Printf("Title: %s\n", article.Title)
