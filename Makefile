@@ -1,5 +1,8 @@
 BINARY_NAME=ai-feed
 
+setup:
+	go install go.uber.org/mock/mockgen@latest
+
 run:
 	@go run main.go ${option}
 
@@ -22,3 +25,6 @@ lint:
 
 fmt:
 	go fmt ./...
+
+generate:
+	go generate ./...
