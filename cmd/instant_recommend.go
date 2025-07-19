@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
-	"time"
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -70,8 +69,7 @@ recommends one random article from the fetched list.`,
 				return nil
 			}
 
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
-			randomArticle := allArticles[r.Intn(len(allArticles))]
+			randomArticle := allArticles[rand.Intn(len(allArticles))]
 
 			displayArticle(cmd.OutOrStdout(), randomArticle)
 			return nil
