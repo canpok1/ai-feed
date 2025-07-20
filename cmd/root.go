@@ -23,7 +23,7 @@ func Execute() error {
 	previewCmd := makePreviewCmd()
 	rootCmd.AddCommand(previewCmd)
 
-	instantRecommendCmd := makeInstantRecommendCmd(infra.NewFetchClient(), domain.NewRandomRecommender(nil))
+	instantRecommendCmd := makeInstantRecommendCmd(infra.NewFetchClient(), domain.NewRandomRecommender(infra.NewCommentGeneratorFactory()))
 	rootCmd.AddCommand(instantRecommendCmd)
 
 	configCmd := makeConfigCmd()
