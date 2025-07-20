@@ -54,7 +54,7 @@ func (r *YamlConfigRepository) Load() (*entity.Config, error) {
 
 	var config entity.Config
 
-	err = viper.Unmarshal(&config)
+	err = v.Unmarshal(&config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
