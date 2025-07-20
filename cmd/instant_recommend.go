@@ -7,6 +7,7 @@ import (
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/canpok1/ai-feed/internal/infra"
 
 	"github.com/spf13/cobra"
 )
@@ -72,8 +73,11 @@ func newInstantRecommendParams(cmd *cobra.Command) (*instantRecommendParams, err
 		return nil, fmt.Errorf("either --url or --source must be specified")
 	}
 
-	// TODO 設定ファイル読み込み
-	config := entity.MakeDefaultConfig()
+	configRepo := infra.NewYamlConfigRepository("./config.yml")
+	config, err := configRepo.Load()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
 
 	return &instantRecommendParams{
 		urls:   urls,
@@ -110,11 +114,11 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams) error {
 	model, err := p.config.GetDefaultAIModel()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get default AI model: %w", err)
 	}
 	prompt, err := p.config.GetDefaultPrompt()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get default prompt: %w", err)
 	}
 
 	allArticles, err := r.fetcher.Fetch(p.urls, 0)
