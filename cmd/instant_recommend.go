@@ -88,6 +88,6 @@ recommends one random article from the fetched list.`,
 }
 
 func init() {
-	cmd := makeInstantRecommendCmd(infra.NewFetchClient(), domain.NewRandomRecommender())
+	cmd := makeInstantRecommendCmd(infra.NewFetchClient(), domain.NewRandomRecommender(nil))
 	rootCmd.AddCommand(cmd)
 }

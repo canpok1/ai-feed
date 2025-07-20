@@ -111,7 +111,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 				mockFetchClient.EXPECT().Fetch(tt.url).Return(nil, fmt.Errorf("mock fetch error")).AnyTimes()
 			}
 
-			cmd := makeInstantRecommendCmd(mockFetchClient, domain.NewFirstRecommender())
+			cmd := makeInstantRecommendCmd(mockFetchClient, domain.NewFirstRecommender(nil))
 
 			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)

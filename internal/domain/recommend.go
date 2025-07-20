@@ -10,10 +10,18 @@ type Recommender interface {
 	Recommend(articles []entity.Article) (*entity.Recommend, error)
 }
 
-type RandomRecommender struct{}
+type CommentGenerator interface {
+	Generate(article entity.Article) (string, error)
+}
 
-func NewRandomRecommender() Recommender {
-	return &RandomRecommender{}
+type RandomRecommender struct {
+	commentGenerator CommentGenerator
+}
+
+func NewRandomRecommender(g CommentGenerator) Recommender {
+	return &RandomRecommender{
+		commentGenerator: g,
+	}
 }
 
 func (r *RandomRecommender) Recommend(articles []entity.Article) (*entity.Recommend, error) {
@@ -22,16 +30,29 @@ func (r *RandomRecommender) Recommend(articles []entity.Article) (*entity.Recomm
 	}
 
 	article := articles[rand.IntN(len(articles))]
+	var comment *string
+	if r.commentGenerator != nil {
+		if c, err := r.commentGenerator.Generate(article); err != nil {
+			return nil, err
+		} else {
+			comment = &c
+		}
+	}
+
 	return &entity.Recommend{
 		Article: article,
-		Comment: nil,
+		Comment: comment,
 	}, nil
 }
 
-type FirstRecommender struct{}
+type FirstRecommender struct {
+	commentGenerator CommentGenerator
+}
 
-func NewFirstRecommender() Recommender {
-	return &FirstRecommender{}
+func NewFirstRecommender(g CommentGenerator) Recommender {
+	return &FirstRecommender{
+		commentGenerator: g,
+	}
 }
 
 func (r *FirstRecommender) Recommend(articles []entity.Article) (*entity.Recommend, error) {
@@ -40,8 +61,16 @@ func (r *FirstRecommender) Recommend(articles []entity.Article) (*entity.Recomme
 	}
 
 	article := articles[0]
+	var comment *string
+	if r.commentGenerator != nil {
+		if c, err := r.commentGenerator.Generate(article); err != nil {
+			return nil, err
+		} else {
+			comment = &c
+		}
+	}
 	return &entity.Recommend{
 		Article: article,
-		Comment: nil,
+		Comment: comment,
 	}, nil
 }
