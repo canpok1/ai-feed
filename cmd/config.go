@@ -33,10 +33,10 @@ func makeConfigInitCmd() *cobra.Command {
 
 			config := entity.MakeDefaultConfig()
 			if err := configRepo.Save(config); err != nil {
-				fmt.Println(err)
-			} else {
-				fmt.Printf("%s generated\n", filePath)
+				return err
 			}
+			fmt.Printf("%s generated\n", filePath)
+			return nil
 		},
 	}
 	return cmd
