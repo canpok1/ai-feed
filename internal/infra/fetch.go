@@ -2,6 +2,7 @@ package infra
 
 import (
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -11,14 +12,14 @@ func NewFetchClient() domain.FetchClient {
 	return &FetchClient{}
 }
 
-func (f *FetchClient) Fetch(url string) ([]domain.Article, error) {
+func (f *FetchClient) Fetch(url string) ([]entity.Article, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	if err != nil {
 		return nil, err
 	}
 
-	var articles []domain.Article
+	var articles []entity.Article
 	for _, item := range feed.Items {
 		content := ""
 		if item.Content != "" {
@@ -27,7 +28,7 @@ func (f *FetchClient) Fetch(url string) ([]domain.Article, error) {
 			content = item.Description
 		}
 
-		articles = append(articles, domain.Article{
+		articles = append(articles, entity.Article{
 			Title:     item.Title,
 			Link:      item.Link,
 			Published: item.PublishedParsed,

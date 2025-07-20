@@ -12,7 +12,7 @@ package mock_domain
 import (
 	reflect "reflect"
 
-	domain "github.com/canpok1/ai-feed/internal/domain"
+	entity "github.com/canpok1/ai-feed/internal/domain/entity"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,10 +41,10 @@ func (m *MockFetchClient) EXPECT() *MockFetchClientMockRecorder {
 }
 
 // Fetch mocks base method.
-func (m *MockFetchClient) Fetch(url string) ([]domain.Article, error) {
+func (m *MockFetchClient) Fetch(url string) ([]entity.Article, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Fetch", url)
-	ret0, _ := ret[0].([]domain.Article)
+	ret0, _ := ret[0].([]entity.Article)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

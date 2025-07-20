@@ -2,10 +2,12 @@ package domain
 
 import (
 	"math/rand/v2"
+
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
 type Recommender interface {
-	Recommend(articles []Article) (*Recommend, error)
+	Recommend(articles []entity.Article) (*entity.Recommend, error)
 }
 
 type RandomRecommender struct{}
@@ -14,13 +16,13 @@ func NewRandomRecommender() Recommender {
 	return &RandomRecommender{}
 }
 
-func (r *RandomRecommender) Recommend(articles []Article) (*Recommend, error) {
+func (r *RandomRecommender) Recommend(articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
 	}
 
 	article := articles[rand.IntN(len(articles))]
-	return &Recommend{
+	return &entity.Recommend{
 		Article: article,
 		Comment: nil,
 	}, nil
@@ -32,13 +34,13 @@ func NewFirstRecommender() Recommender {
 	return &FirstRecommender{}
 }
 
-func (r *FirstRecommender) Recommend(articles []Article) (*Recommend, error) {
+func (r *FirstRecommender) Recommend(articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
 	}
 
 	article := articles[0]
-	return &Recommend{
+	return &entity.Recommend{
 		Article: article,
 		Comment: nil,
 	}, nil

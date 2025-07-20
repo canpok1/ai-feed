@@ -1,9 +1,13 @@
 package domain
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/canpok1/ai-feed/internal/domain/entity"
+)
 
 type FetchClient interface {
-	Fetch(url string) ([]Article, error)
+	Fetch(url string) ([]entity.Article, error)
 }
 
 type Fetcher struct {
@@ -20,8 +24,8 @@ func NewFetcher(client FetchClient, errorCallback ErrorCallback) *Fetcher {
 	}
 }
 
-func (f *Fetcher) Fetch(urls []string, limit int) ([]Article, error) {
-	var allArticles []Article
+func (f *Fetcher) Fetch(urls []string, limit int) ([]entity.Article, error) {
+	var allArticles []entity.Article
 	for _, url := range urls {
 		articles, err := f.client.Fetch(url)
 		if err != nil {

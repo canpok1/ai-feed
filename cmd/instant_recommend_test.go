@@ -10,6 +10,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -26,7 +27,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 		name                string
 		url                 string
 		sourceFileContent   string
-		mockArticles        map[string][]domain.Article // Map URL to articles
+		mockArticles        map[string][]entity.Article // Map URL to articles
 		expectedOutput      string
 		expectedErrorOutput string
 		expectError         bool
@@ -34,7 +35,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 		{
 			name: "Successful recommendation with URL flag",
 			url:  "http://example.com/feed.xml",
-			mockArticles: map[string][]domain.Article{
+			mockArticles: map[string][]entity.Article{
 				"http://example.com/feed.xml": {
 					{Title: "Article 1", Link: "http://example.com/article1"},
 				},
@@ -50,7 +51,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 		{
 			name:                "No articles found with URL flag",
 			url:                 "http://example.com/empty.xml",
-			mockArticles:        map[string][]domain.Article{"http://example.com/empty.xml": {}},
+			mockArticles:        map[string][]entity.Article{"http://example.com/empty.xml": {}},
 			expectedOutput:      "No articles found in the feed.\n",
 			expectedErrorOutput: "",
 			expectError:         false,
@@ -66,7 +67,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 		{
 			name:              "Successful recommendation with source file",
 			sourceFileContent: "http://example.com/feed1.xml",
-			mockArticles: map[string][]domain.Article{
+			mockArticles: map[string][]entity.Article{
 				"http://example.com/feed1.xml": {
 					{Title: "Article A", Link: "http://example.com/articleA"},
 				},
@@ -82,7 +83,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 		{
 			name:                "Source file with no URLs",
 			sourceFileContent:   " ",
-			mockArticles:        map[string][]domain.Article{},
+			mockArticles:        map[string][]entity.Article{},
 			expectedErrorOutput: "Error: source file contains no URLs",
 			expectError:         true,
 		},
@@ -90,7 +91,7 @@ func TestInstantRecommendCommand(t *testing.T) {
 			name:                "Non-existent source file",
 			url:                 "", // Not used, but to satisfy struct
 			sourceFileContent:   "", // Will be replaced by a non-existent path
-			mockArticles:        map[string][]domain.Article{},
+			mockArticles:        map[string][]entity.Article{},
 			expectedErrorOutput: "Error: failed to read URLs from file: open", // Partial match
 			expectError:         true,
 		},

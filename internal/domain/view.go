@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
 type Viewer interface {
-	ViewArticles([]Article) error
-	ViewRecommend(*Recommend) error
+	ViewArticles([]entity.Article) error
+	ViewRecommend(*entity.Recommend) error
 }
 
 type StdViewer struct {
@@ -32,7 +34,7 @@ func NewStdViewer(writer io.Writer) (Viewer, error) {
 	}, nil
 }
 
-func (v *StdViewer) ViewArticles(articles []Article) error {
+func (v *StdViewer) ViewArticles(articles []entity.Article) error {
 	for _, article := range articles {
 		fmt.Fprintf(v.writer, "Title: %s\n", article.Title)
 		fmt.Fprintf(v.writer, "Link: %s\n", article.Link)
@@ -45,7 +47,7 @@ func (v *StdViewer) ViewArticles(articles []Article) error {
 	return nil
 }
 
-func (v *StdViewer) ViewRecommend(recommend *Recommend) error {
+func (v *StdViewer) ViewRecommend(recommend *entity.Recommend) error {
 	if recommend == nil {
 		fmt.Fprintln(v.writer, "No articles found in the feed.")
 		return nil
