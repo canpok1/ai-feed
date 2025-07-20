@@ -17,6 +17,10 @@ type StdViewer struct {
 }
 
 func NewStdViewer(writer io.Writer) (Viewer, error) {
+	if writer == nil {
+		return nil, fmt.Errorf("writer cannot be nil")
+	}
+
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		return nil, err
