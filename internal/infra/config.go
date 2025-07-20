@@ -42,9 +42,10 @@ func (r *YamlConfigRepository) Save(config *entity.Config) error {
 }
 
 func (r *YamlConfigRepository) Load() (*entity.Config, error) {
-	viper.SetConfigFile(r.filePath)
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
+	v := viper.New()
+	v.SetConfigFile(r.filePath)
+	v.AutomaticEnv()
+	err := v.ReadInConfig()
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return nil, fmt.Errorf("failed to read config file: %s, %w", r.filePath, err)
