@@ -7,13 +7,23 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
-var factoryMap = map[string]func(entity.AIModelConfig, entity.PromptConfig) domain.CommentGenerator{
-	"gemini-2.5-flash": newGeminiCommentGenerator,
-	"gemini-2.5-pro":   newGeminiCommentGenerator,
+type factoryFunc func(entity.AIModelConfig, entity.PromptConfig) domain.CommentGenerator
+
+type CommentGeneratorFactory struct {
+	factoryFuncMap map[string]factoryFunc
 }
 
-func MakeCommentGenerator(model entity.AIModelConfig, prompt entity.PromptConfig) (domain.CommentGenerator, error) {
-	if f, ok := factoryMap[model.Type]; ok {
+func NewCommentGeneratorFactory() domain.CommentGeneratorFactory {
+	return &CommentGeneratorFactory{
+		factoryFuncMap: map[string]factoryFunc{
+			"gemini-2.5-flash": newGeminiCommentGenerator,
+			"gemini-2.5-pro":   newGeminiCommentGenerator,
+		},
+	}
+}
+
+func (f *CommentGeneratorFactory) MakeCommentGenerator(model entity.AIModelConfig, prompt entity.PromptConfig) (domain.CommentGenerator, error) {
+	if f, ok := f.factoryFuncMap[model.Type]; ok {
 		return f(model, prompt), nil
 	}
 	return nil, fmt.Errorf("unsupported model type: %s", model.Type)

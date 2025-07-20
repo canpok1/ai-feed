@@ -1,5 +1,7 @@
 package entity
 
+import "fmt"
+
 // Config is the root of the configuration structure.
 type Config struct {
 	General           GeneralConfig               `yaml:"general"`
@@ -8,6 +10,34 @@ type Config struct {
 	Prompts           map[string]PromptConfig     `yaml:"prompts"`
 	Outputs           map[string]OutputConfig     `yaml:"outputs"`
 	ExecutionProfiles map[string]ExecutionProfile `yaml:"execution_profiles"`
+}
+
+func (c *Config) GetDefaultAIModel() (*AIModelConfig, error) {
+	prpfile, ok := c.ExecutionProfiles[c.General.DefaultExecutionProfile]
+	if !ok {
+		return nil, fmt.Errorf("default execution profile not found: %s", c.General.DefaultExecutionProfile)
+	}
+
+	model, ok := c.AIModels[prpfile.AIModel]
+	if !ok {
+		return nil, fmt.Errorf("AI model not found: %s", prpfile.AIModel)
+	}
+
+	return &model, nil
+}
+
+func (c *Config) GetDefaultPrompt() (*PromptConfig, error) {
+	prpfile, ok := c.ExecutionProfiles[c.General.DefaultExecutionProfile]
+	if !ok {
+		return nil, fmt.Errorf("default execution profile not found: %s", c.General.DefaultExecutionProfile)
+	}
+
+	prompt, ok := c.Prompts[prpfile.Prompt]
+	if !ok {
+		return nil, fmt.Errorf("prompt not found: %s", prpfile.Prompt)
+	}
+
+	return &prompt, nil
 }
 
 // GeneralConfig holds general application settings.
@@ -54,7 +84,7 @@ type ExecutionProfile struct {
 func MakeDefaultConfig() *Config {
 	return &Config{
 		General: GeneralConfig{
-			DefaultExecutionProfile: "プロファイル名",
+			DefaultExecutionProfile: "任意のプロファイル名",
 		},
 		Cache: CacheConfig{
 			RetentionDays: 7,
@@ -93,9 +123,9 @@ func MakeDefaultConfig() *Config {
 		},
 		ExecutionProfiles: map[string]ExecutionProfile{
 			"任意のプロファイル名": {
-				AIModel: "AIモデル名",
-				Prompt:  "プロンプト名",
-				Output:  "出力名",
+				AIModel: "任意のAIモデル名",
+				Prompt:  "任意のプロンプト名",
+				Output:  "任意の出力名",
 			},
 		},
 	}

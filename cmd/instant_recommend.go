@@ -5,7 +5,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 
 	"github.com/spf13/cobra"
 )
@@ -45,6 +45,17 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("either --url or --source must be specified")
 			}
 
+			// TODO 設定ファイル読み込み
+			config := entity.MakeDefaultConfig()
+			model, err := config.GetDefaultAIModel()
+			if err != nil {
+				return err
+			}
+			prompt, err := config.GetDefaultPrompt()
+			if err != nil {
+				return err
+			}
+
 			fetcher := domain.NewFetcher(
 				fetchClient,
 				func(url string, err error) error {
@@ -62,7 +73,10 @@ recommends one random article from the fetched list.`,
 				return nil
 			}
 
-			recommend, err := recommender.Recommend(allArticles)
+			recommend, err := recommender.Recommend(
+				*model,
+				*prompt,
+				allArticles)
 			if err != nil {
 				return fmt.Errorf("failed to recommend article: %w", err)
 			}
@@ -85,9 +99,4 @@ recommends one random article from the fetched list.`,
 	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
 
 	return cmd
-}
-
-func init() {
-	cmd := makeInstantRecommendCmd(infra.NewFetchClient(), domain.NewRandomRecommender(nil))
-	rootCmd.AddCommand(cmd)
 }

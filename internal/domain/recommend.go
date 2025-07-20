@@ -7,32 +7,48 @@ import (
 )
 
 type Recommender interface {
-	Recommend(articles []entity.Article) (*entity.Recommend, error)
+	Recommend(entity.AIModelConfig, entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
 }
 
 type CommentGenerator interface {
-	Generate(article entity.Article) (string, error)
+	Generate(entity.Article) (string, error)
+}
+
+type CommentGeneratorFactory interface {
+	MakeCommentGenerator(entity.AIModelConfig, entity.PromptConfig) (CommentGenerator, error)
 }
 
 type RandomRecommender struct {
-	commentGenerator CommentGenerator
+	factory CommentGeneratorFactory
 }
 
-func NewRandomRecommender(g CommentGenerator) Recommender {
+func NewRandomRecommender(f CommentGeneratorFactory) Recommender {
 	return &RandomRecommender{
-		commentGenerator: g,
+		factory: f,
 	}
 }
 
-func (r *RandomRecommender) Recommend(articles []entity.Article) (*entity.Recommend, error) {
+func (r *RandomRecommender) Recommend(
+	model entity.AIModelConfig,
+	prompt entity.PromptConfig,
+	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
 	}
 
+	var commentGenerator CommentGenerator
+	if r.factory != nil {
+		g, err := r.factory.MakeCommentGenerator(model, prompt)
+		if err != nil {
+			return nil, err
+		}
+		commentGenerator = g
+	}
+
 	article := articles[rand.IntN(len(articles))]
 	var comment *string
-	if r.commentGenerator != nil {
-		if c, err := r.commentGenerator.Generate(article); err != nil {
+	if commentGenerator != nil {
+		if c, err := commentGenerator.Generate(article); err != nil {
 			return nil, err
 		} else {
 			comment = &c
@@ -46,24 +62,36 @@ func (r *RandomRecommender) Recommend(articles []entity.Article) (*entity.Recomm
 }
 
 type FirstRecommender struct {
-	commentGenerator CommentGenerator
+	factory CommentGeneratorFactory
 }
 
-func NewFirstRecommender(g CommentGenerator) Recommender {
+func NewFirstRecommender(f CommentGeneratorFactory) Recommender {
 	return &FirstRecommender{
-		commentGenerator: g,
+		factory: f,
 	}
 }
 
-func (r *FirstRecommender) Recommend(articles []entity.Article) (*entity.Recommend, error) {
+func (r *FirstRecommender) Recommend(
+	model entity.AIModelConfig,
+	prompt entity.PromptConfig,
+	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
 	}
 
+	var commentGenerator CommentGenerator
+	if r.factory != nil {
+		g, err := r.factory.MakeCommentGenerator(model, prompt)
+		if err != nil {
+			return nil, err
+		}
+		commentGenerator = g
+	}
+
 	article := articles[0]
 	var comment *string
-	if r.commentGenerator != nil {
-		if c, err := r.commentGenerator.Generate(article); err != nil {
+	if commentGenerator != nil {
+		if c, err := commentGenerator.Generate(article); err != nil {
 			return nil, err
 		} else {
 			comment = &c

@@ -55,5 +55,8 @@ func (v *StdViewer) ViewRecommend(recommend *entity.Recommend) error {
 
 	fmt.Fprintf(v.writer, "Title: %s\n", recommend.Article.Title)
 	fmt.Fprintf(v.writer, "Link: %s\n", recommend.Article.Link)
+	if recommend.Comment != nil {
+		fmt.Fprintf(v.writer, "Comment: %s\n", *recommend.Comment)
+	}
 	return nil
 }

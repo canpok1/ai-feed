@@ -94,8 +94,3 @@ func deduplicateURLs(urls []string) []string {
 	}
 	return finalURLs
 }
-
-func init() {
-	cmd := makePreviewCmd()
-	rootCmd.AddCommand(cmd)
-}
