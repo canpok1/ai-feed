@@ -13,23 +13,20 @@ type YamlConfigRepository struct {
 	filePath string
 }
 
-const DefaultConfigFilePath = "./config.yml"
-
-func NewYamlConfigRepository(filePath *string) domain.ConfigRepository {
-	p := DefaultConfigFilePath
-	if filePath != nil {
-		p = *filePath
-	}
-
+func NewYamlConfigRepository(filePath string) domain.ConfigRepository {
 	return &YamlConfigRepository{
-		filePath: p,
+		filePath: filePath,
 	}
 }
 
 func (r *YamlConfigRepository) Save(config *domain.Config) error {
-	file, err := os.Create(DefaultConfigFilePath)
+	if _, err := os.Stat(r.filePath); err == nil {
+		return fmt.Errorf("config file already exists: %s", r.filePath)
+	}
+
+	file, err := os.Create(r.filePath)
 	if err != nil {
-		return fmt.Errorf("failed to create config file: %w", err)
+		return fmt.Errorf("failed to create config file: %s, %w", r.filePath, err)
 	}
 	defer file.Close()
 
@@ -49,7 +46,7 @@ func (r *YamlConfigRepository) Load() (*domain.Config, error) {
 	err := viper.ReadInConfig()
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, fmt.Errorf("failed to read config file: %w", err)
+			return nil, fmt.Errorf("failed to read config file: %s, %w", r.filePath, err)
 		}
 	}
 

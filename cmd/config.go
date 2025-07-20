@@ -20,19 +20,22 @@ func makeConfigCmd() *cobra.Command {
 	return cmd
 }
 
+const DefaultConfigFilePath = "./config.yml"
+
 func makeConfigInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Generates a boilerplate config.yml file, prompting for overwrite if it exists.",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("config init called")
+			filePath := DefaultConfigFilePath
+
+			configRepo := infra.NewYamlConfigRepository(filePath)
 
 			config := domain.MakeDefaultConfig()
-			configRepo := infra.NewYamlConfigRepository(&cfgFile)
 			if err := configRepo.Save(config); err != nil {
 				fmt.Println(err)
 			} else {
-				fmt.Println("config.yml generated")
+				fmt.Printf("%s generated\n", filePath)
 			}
 		},
 	}
