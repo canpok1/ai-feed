@@ -31,8 +31,9 @@ go.work.sum
 # .idea/
 # .vscode/
 
-# binary
+# generated file
 ai-feed
+config.yml
 
 # Added by goreleaser init:
 dist/
