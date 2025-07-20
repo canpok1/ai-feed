@@ -26,7 +26,7 @@ func makeConfigInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Generates a boilerplate config.yml file. It will not overwrite an existing file.",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := DefaultConfigFilePath
 
 			configRepo := infra.NewYamlConfigRepository(filePath)
