@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
@@ -19,7 +20,7 @@ func NewYamlConfigRepository(filePath string) domain.ConfigRepository {
 	}
 }
 
-func (r *YamlConfigRepository) Save(config *domain.Config) error {
+func (r *YamlConfigRepository) Save(config *entity.Config) error {
 	if _, err := os.Stat(r.filePath); err == nil {
 		return fmt.Errorf("config file already exists: %s", r.filePath)
 	}
@@ -40,7 +41,7 @@ func (r *YamlConfigRepository) Save(config *domain.Config) error {
 	return nil
 }
 
-func (r *YamlConfigRepository) Load() (*domain.Config, error) {
+func (r *YamlConfigRepository) Load() (*entity.Config, error) {
 	viper.SetConfigFile(r.filePath)
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
@@ -50,7 +51,7 @@ func (r *YamlConfigRepository) Load() (*domain.Config, error) {
 		}
 	}
 
-	var config domain.Config
+	var config entity.Config
 
 	err = viper.Unmarshal(&config)
 	if err != nil {

@@ -14,10 +14,3 @@ type Recommend struct {
 	Article Article
 	Comment *string
 }
-
-type Config struct {
-}
-
-func MakeDefaultConfig() *Config {
-	return &Config{}
-}

@@ -1,6 +1,8 @@
 package domain
 
+import "github.com/canpok1/ai-feed/internal/domain/entity"
+
 type ConfigRepository interface {
-	Save(config *Config) error
-	Load() (*Config, error)
+	Save(config *entity.Config) error
+	Load() (*entity.Config, error)
 }
