@@ -53,9 +53,50 @@ type ExecutionProfile struct {
 
 func MakeDefaultConfig() *Config {
 	return &Config{
-		AIModels:          make(map[string]AIModelConfig),
-		Prompts:           make(map[string]PromptConfig),
-		Outputs:           make(map[string]OutputConfig),
-		ExecutionProfiles: make(map[string]ExecutionProfile),
+		General: GeneralConfig{
+			DefaultExecutionProfile: "プロファイル名",
+		},
+		Cache: CacheConfig{
+			RetentionDays: 7,
+		},
+		AIModels: map[string]AIModelConfig{
+			"任意のAIモデル名": {
+				Type:   "gemini-2.5-flash または gemini-2.5-pro",
+				APIKey: "xxxxxx",
+			},
+		},
+		Prompts: map[string]PromptConfig{
+			"任意のプロンプト名": {
+				SystemMessage: "あなたはXXXXなAIアシスタントです。",
+				CommentPromptTemplate: `以下の記事の紹介文を100字以内で作成してください。
+---
+記事タイトル: {{title}}
+記事URL: {{url}}
+記事内容:
+{{content}}`,
+			},
+		},
+		Outputs: map[string]OutputConfig{
+			"任意の出力名(Slack)": {
+				Type:       "slack",
+				WebhookURL: "https://hooks.slack.com/services/TXXXXX/BXXXXX/YYYYYYYYYYYYYYYYYYYYYYYY",
+				Channel:    "#general",
+				Username:   "ai-feed-bot",
+				IconEmoji:  ":robot_face:",
+			},
+			"任意の出力名(Misskey)": {
+				Type:       "misskey",
+				APIURL:     "https://misskey.social/api",
+				APIToken:   "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
+				Visibility: "public",
+			},
+		},
+		ExecutionProfiles: map[string]ExecutionProfile{
+			"任意のプロファイル名": {
+				AIModel: "AIモデル名",
+				Prompt:  "プロンプト名",
+				Output:  "出力名",
+			},
+		},
 	}
 }
