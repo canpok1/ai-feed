@@ -25,7 +25,7 @@ const DefaultConfigFilePath = "./config.yml"
 func makeConfigInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "Generates a boilerplate config.yml file, prompting for overwrite if it exists.",
+		Short: "Generates a boilerplate config.yml file. It will not overwrite an existing file.",
 		Run: func(cmd *cobra.Command, args []string) {
 			filePath := DefaultConfigFilePath
 
