@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -47,51 +48,17 @@ recommends one random article from the fetched list.`,
 
 			// TODO 設定ファイル読み込み
 			config := entity.MakeDefaultConfig()
-			model, err := config.GetDefaultAIModel()
+
+			runner, err := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr())
 			if err != nil {
-				return err
-			}
-			prompt, err := config.GetDefaultPrompt()
-			if err != nil {
-				return err
+				return fmt.Errorf("failed to create runner: %w", err)
 			}
 
-			fetcher := domain.NewFetcher(
-				fetchClient,
-				func(url string, err error) error {
-					fmt.Fprintf(cmd.ErrOrStderr(), "Error fetching feed from %s: %v\n", url, err)
-					return nil
-				},
-			)
-			allArticles, err := fetcher.Fetch(urls, 0)
-			if err != nil {
-				return fmt.Errorf("failed to fetch articles: %w", err)
-			}
-
-			if len(allArticles) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "No articles found in the feed.")
-				return nil
-			}
-
-			recommend, err := recommender.Recommend(
-				*model,
-				*prompt,
-				allArticles)
-			if err != nil {
-				return fmt.Errorf("failed to recommend article: %w", err)
-			}
-
-			viewer, err := domain.NewStdViewer(cmd.OutOrStdout())
-			if err != nil {
-				return fmt.Errorf("failed to create viewer: %w", err)
-			}
-
-			err = viewer.ViewRecommend(recommend)
-			if err != nil {
-				return fmt.Errorf("failed to view recommend: %w", err)
-			}
-
-			return nil
+			return runner.Run(cmd, &instantRecommendParams{
+				urls:       urls,
+				sourcePath: sourcePath,
+				config:     config,
+			})
 		},
 	}
 
@@ -99,4 +66,74 @@ recommends one random article from the fetched list.`,
 	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
 
 	return cmd
+}
+
+type instantRecommendRunner struct {
+	fetchClient domain.FetchClient
+	recommender domain.Recommender
+	fetcher     *domain.Fetcher
+	viewer      domain.Viewer
+}
+
+func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer) (*instantRecommendRunner, error) {
+	fetcher := domain.NewFetcher(
+		fetchClient,
+		func(url string, err error) error {
+			fmt.Fprintf(stderr, "Error fetching feed from %s: %v\n", url, err)
+			return nil
+		},
+	)
+	viewer, err := domain.NewStdViewer(stdout)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create viewer: %w", err)
+	}
+
+	return &instantRecommendRunner{
+		fetchClient: fetchClient,
+		recommender: recommender,
+		fetcher:     fetcher,
+		viewer:      viewer,
+	}, nil
+}
+
+type instantRecommendParams struct {
+	urls       []string
+	sourcePath string
+	config     *entity.Config
+}
+
+func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams) error {
+	model, err := p.config.GetDefaultAIModel()
+	if err != nil {
+		return err
+	}
+	prompt, err := p.config.GetDefaultPrompt()
+	if err != nil {
+		return err
+	}
+
+	allArticles, err := r.fetcher.Fetch(p.urls, 0)
+	if err != nil {
+		return fmt.Errorf("failed to fetch articles: %w", err)
+	}
+
+	if len(allArticles) == 0 {
+		fmt.Fprintln(cmd.OutOrStdout(), "No articles found in the feed.")
+		return nil
+	}
+
+	recommend, err := r.recommender.Recommend(
+		*model,
+		*prompt,
+		allArticles)
+	if err != nil {
+		return fmt.Errorf("failed to recommend article: %w", err)
+	}
+
+	err = r.viewer.ViewRecommend(recommend)
+	if err != nil {
+		return fmt.Errorf("failed to view recommend: %w", err)
+	}
+
+	return nil
 }
