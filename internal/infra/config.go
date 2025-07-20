@@ -21,12 +21,12 @@ func NewYamlConfigRepository(filePath string) domain.ConfigRepository {
 }
 
 func (r *YamlConfigRepository) Save(config *entity.Config) error {
-	if _, err := os.Stat(r.filePath); err == nil {
-		return fmt.Errorf("config file already exists: %s", r.filePath)
-	}
-
-	file, err := os.Create(r.filePath)
+	// Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
+	file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
+		if os.IsExist(err) {
+			return fmt.Errorf("config file already exists: %s", r.filePath)
+		}
 		return fmt.Errorf("failed to create config file: %s, %w", r.filePath, err)
 	}
 	defer file.Close()
