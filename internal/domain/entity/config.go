@@ -15,29 +15,37 @@ type Config struct {
 	ExecutionProfiles map[string]ExecutionProfile `mapstructure:"execution_profiles"`
 }
 
-func (c *Config) GetDefaultAIModel() (*AIModelConfig, error) {
-	prpfile, ok := c.ExecutionProfiles[c.General.DefaultExecutionProfile]
+func (c *Config) getDefaultExecutionProfile() (*ExecutionProfile, error) {
+	profile, ok := c.ExecutionProfiles[c.General.DefaultExecutionProfile]
 	if !ok {
 		return nil, fmt.Errorf("default execution profile not found: %s", c.General.DefaultExecutionProfile)
 	}
+	return &profile, nil
+}
 
-	model, ok := c.AIModels[prpfile.AIModel]
+func (c *Config) GetDefaultAIModel() (*AIModelConfig, error) {
+	profile, err := c.getDefaultExecutionProfile()
+	if err != nil {
+		return nil, err
+	}
+
+	model, ok := c.AIModels[profile.AIModel]
 	if !ok {
-		return nil, fmt.Errorf("AI model not found: %s", prpfile.AIModel)
+		return nil, fmt.Errorf("AI model not found: %s", profile.AIModel)
 	}
 
 	return &model, nil
 }
 
 func (c *Config) GetDefaultPrompt() (*PromptConfig, error) {
-	prpfile, ok := c.ExecutionProfiles[c.General.DefaultExecutionProfile]
-	if !ok {
-		return nil, fmt.Errorf("default execution profile not found: %s", c.General.DefaultExecutionProfile)
+	profile, err := c.getDefaultExecutionProfile()
+	if err != nil {
+		return nil, err
 	}
 
-	prompt, ok := c.Prompts[prpfile.Prompt]
+	prompt, ok := c.Prompts[profile.Prompt]
 	if !ok {
-		return nil, fmt.Errorf("prompt not found: %s", prpfile.Prompt)
+		return nil, fmt.Errorf("prompt not found: %s", profile.Prompt)
 	}
 
 	return &prompt, nil
