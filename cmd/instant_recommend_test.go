@@ -203,6 +203,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 		expectedURLs   []string
 		expectedConfig *entity.Config
 		expectedErr    string
+		expectConfigLoad bool
 	}{
 		{
 			name:           "URL flag only",
@@ -213,6 +214,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 			expectedURLs:   []string{"http://example.com/feed.xml"},
 			expectedConfig: createMockConfig("test-model", "test-prompt"),
 			expectedErr:    "",
+			expectConfigLoad: true,
 		},
 		{
 			name:           "Source flag only with valid file",
@@ -223,6 +225,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 			expectedURLs:   []string{"http://example.com/from_file.xml", "http://another.com/from_file.xml"},
 			expectedConfig: createMockConfig("test-model", "test-prompt"),
 			expectedErr:    "",
+			expectConfigLoad: true,
 		},
 		{
 			name:           "Both URL and source flags",
@@ -233,6 +236,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 			expectedURLs:   nil,
 			expectedConfig: nil,
 			expectedErr:    "cannot use --url and --source options together",
+			expectConfigLoad: false,
 		},
 		{
 			name:           "Neither URL nor source flags",
@@ -243,6 +247,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 			expectedURLs:   nil,
 			expectedConfig: nil,
 			expectedErr:    "either --url or --source must be specified",
+			expectConfigLoad: false,
 		},
 		{
 			name:           "Source file not found",
@@ -253,6 +258,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 			expectedURLs:   nil,
 			expectedConfig: nil,
 			expectedErr:    "failed to read URLs from file: open non_existent_file.txt: no such file or directory",
+			expectConfigLoad: false,
 		},
 		{
 			name:           "Empty source file",
@@ -263,6 +269,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 			expectedURLs:   nil,
 			expectedConfig: nil,
 			expectedErr:    "source file contains no URLs",
+			expectConfigLoad: false,
 		},
 		{
 			name:           "Config load error",
@@ -273,6 +280,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 			expectedURLs:   nil,
 			expectedConfig: nil,
 			expectedErr:    "failed to load config: mock config load error",
+			expectConfigLoad: true,
 		},
 	}
 
@@ -283,13 +291,8 @@ func TestNewInstantRecommendParams(t *testing.T) {
 
 			// Create a mock ConfigRepository
 			mockConfigRepo := mock_domain.NewMockConfigRepository(ctrl)
-			// Determine if configRepo.Load() should be called
-			shouldCallLoad := true
-			if (tt.urlFlag != "" && tt.sourceFlag != "") || (tt.urlFlag == "" && tt.sourceFlag == "") || (tt.sourceFlag != "" && strings.Contains(tt.expectedErr, "failed to read URLs from file")) || (tt.sourceFlag != "" && strings.Contains(tt.expectedErr, "source file contains no URLs")) {
-				shouldCallLoad = false
-			}
 
-			if shouldCallLoad {
+			if tt.expectConfigLoad {
 				if tt.configLoadErr != nil {
 					mockConfigRepo.EXPECT().Load().Return(nil, tt.configLoadErr).Times(1)
 				} else {
@@ -337,3 +340,4 @@ func TestNewInstantRecommendParams(t *testing.T) {
 		})
 	}
 }
+
