@@ -19,7 +19,8 @@ func makeInstantRecommendCmd(fetchClient domain.FetchClient, recommender domain.
 		Long: `This command fetches articles from the specified URL and
 recommends one random article from the fetched list.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			params, err := newInstantRecommendParams(cmd)
+			configRepo := infra.NewYamlConfigRepository("./config.yml")
+			params, err := newInstantRecommendParams(cmd, configRepo)
 			if err != nil {
 				return fmt.Errorf("failed to create params: %w", err)
 			}
@@ -44,7 +45,7 @@ type instantRecommendParams struct {
 	config *entity.Config
 }
 
-func newInstantRecommendParams(cmd *cobra.Command) (*instantRecommendParams, error) {
+func newInstantRecommendParams(cmd *cobra.Command, configRepo domain.ConfigRepository) (*instantRecommendParams, error) {
 	url, err := cmd.Flags().GetString("url")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get url flag: %w", err)
@@ -73,7 +74,6 @@ func newInstantRecommendParams(cmd *cobra.Command) (*instantRecommendParams, err
 		return nil, fmt.Errorf("either --url or --source must be specified")
 	}
 
-	configRepo := infra.NewYamlConfigRepository("./config.yml")
 	config, err := configRepo.Load()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
