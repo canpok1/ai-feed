@@ -132,8 +132,8 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 	}
 
 	recommend, err := r.recommender.Recommend(
-		*model,
-		*prompt,
+		model,
+		prompt,
 		allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)

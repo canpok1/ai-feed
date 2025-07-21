@@ -1,6 +1,9 @@
 package entity
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Config is the root of the configuration structure.
 type Config struct {
@@ -60,6 +63,14 @@ type AIModelConfig struct {
 type PromptConfig struct {
 	SystemMessage         string `mapstructure:"system_message"`
 	CommentPromptTemplate string `mapstructure:"comment_prompt_template"`
+}
+
+func (c *PromptConfig) MakeCommentPromptTemplate(article *Article) string {
+	prompt := c.CommentPromptTemplate
+	prompt = strings.ReplaceAll(prompt, "{{title}}", article.Title)
+	prompt = strings.ReplaceAll(prompt, "{{url}}", article.Link)
+	prompt = strings.ReplaceAll(prompt, "{{content}}", article.Content)
+	return prompt
 }
 
 // OutputConfig holds configuration for a specific output destination.

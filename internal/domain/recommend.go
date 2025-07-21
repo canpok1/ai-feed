@@ -7,15 +7,15 @@ import (
 )
 
 type Recommender interface {
-	Recommend(entity.AIModelConfig, entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
+	Recommend(*entity.AIModelConfig, *entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
 }
 
 type CommentGenerator interface {
-	Generate(entity.Article) (string, error)
+	Generate(*entity.Article) (string, error)
 }
 
 type CommentGeneratorFactory interface {
-	MakeCommentGenerator(entity.AIModelConfig, entity.PromptConfig) (CommentGenerator, error)
+	MakeCommentGenerator(*entity.AIModelConfig, *entity.PromptConfig) (CommentGenerator, error)
 }
 
 type RandomRecommender struct {
@@ -29,8 +29,8 @@ func NewRandomRecommender(f CommentGeneratorFactory) Recommender {
 }
 
 func (r *RandomRecommender) Recommend(
-	model entity.AIModelConfig,
-	prompt entity.PromptConfig,
+	model *entity.AIModelConfig,
+	prompt *entity.PromptConfig,
 	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
@@ -48,7 +48,7 @@ func (r *RandomRecommender) Recommend(
 	article := articles[rand.IntN(len(articles))]
 	var comment *string
 	if commentGenerator != nil {
-		if c, err := commentGenerator.Generate(article); err != nil {
+		if c, err := commentGenerator.Generate(&article); err != nil {
 			return nil, err
 		} else {
 			comment = &c
@@ -72,8 +72,8 @@ func NewFirstRecommender(f CommentGeneratorFactory) Recommender {
 }
 
 func (r *FirstRecommender) Recommend(
-	model entity.AIModelConfig,
-	prompt entity.PromptConfig,
+	model *entity.AIModelConfig,
+	prompt *entity.PromptConfig,
 	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
@@ -91,7 +91,7 @@ func (r *FirstRecommender) Recommend(
 	article := articles[0]
 	var comment *string
 	if commentGenerator != nil {
-		if c, err := commentGenerator.Generate(article); err != nil {
+		if c, err := commentGenerator.Generate(&article); err != nil {
 			return nil, err
 		} else {
 			comment = &c
