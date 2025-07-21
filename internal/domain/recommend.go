@@ -86,7 +86,7 @@ func generateComment(
 	prompt *entity.PromptConfig,
 	ctx context.Context,
 	article *entity.Article) (*string, error) {
-	if factory == nil {
+	if factory == nil || model == nil || prompt == nil {
 		return nil, nil
 	}
 

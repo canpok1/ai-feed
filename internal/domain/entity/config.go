@@ -28,6 +28,9 @@ func (c *Config) GetDefaultAIModel() (*AIModelConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+	if profile.AIModel == "" {
+		return nil, nil
+	}
 
 	model, ok := c.AIModels[profile.AIModel]
 	if !ok {
@@ -41,6 +44,9 @@ func (c *Config) GetDefaultPrompt() (*PromptConfig, error) {
 	profile, err := c.getDefaultExecutionProfile()
 	if err != nil {
 		return nil, err
+	}
+	if profile.Prompt == "" {
+		return nil, nil
 	}
 
 	prompt, ok := c.Prompts[profile.Prompt]

@@ -25,6 +25,13 @@ func NewCommentGeneratorFactory() domain.CommentGeneratorFactory {
 }
 
 func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIModelConfig, prompt *entity.PromptConfig) (domain.CommentGenerator, error) {
+	if model == nil {
+		return nil, fmt.Errorf("model is nil")
+	}
+	if prompt == nil {
+		return nil, fmt.Errorf("prompt is nil")
+	}
+
 	if f, ok := f.factoryFuncMap[model.Type]; ok {
 		return f(model, prompt)
 	}
