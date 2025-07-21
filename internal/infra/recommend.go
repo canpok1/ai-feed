@@ -9,7 +9,7 @@ import (
 	"google.golang.org/genai"
 )
 
-type factoryFunc func(*entity.AIModelConfig, *entity.PromptConfig) domain.CommentGenerator
+type factoryFunc func(*entity.AIModelConfig, *entity.PromptConfig) (domain.CommentGenerator, error)
 
 type CommentGeneratorFactory struct {
 	factoryFuncMap map[string]factoryFunc
@@ -26,7 +26,7 @@ func NewCommentGeneratorFactory() domain.CommentGeneratorFactory {
 
 func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIModelConfig, prompt *entity.PromptConfig) (domain.CommentGenerator, error) {
 	if f, ok := f.factoryFuncMap[model.Type]; ok {
-		return f(model, prompt), nil
+		return f(model, prompt)
 	}
 	return nil, fmt.Errorf("unsupported model type: %s", model.Type)
 }
@@ -34,26 +34,29 @@ func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIModelConf
 type geminiCommentGenerator struct {
 	model  *entity.AIModelConfig
 	prompt *entity.PromptConfig
+	client *genai.Client
 }
 
-func newGeminiCommentGenerator(model *entity.AIModelConfig, prompt *entity.PromptConfig) domain.CommentGenerator {
-	return &geminiCommentGenerator{
-		model:  model,
-		prompt: prompt,
-	}
-}
-
-func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.Article) (string, error) {
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{
-		APIKey:  g.model.APIKey,
+func newGeminiCommentGenerator(model *entity.AIModelConfig, prompt *entity.PromptConfig) (domain.CommentGenerator, error) {
+	// クライアントの初期化はここで行い、構造体に保持する
+	client, err := genai.NewClient(context.Background(), &genai.ClientConfig{
+		APIKey:  model.APIKey,
 		Backend: genai.BackendGeminiAPI,
 	})
 	if err != nil {
-		return "", fmt.Errorf("failed to create gemini client: %w", err)
+		return nil, fmt.Errorf("failed to create gemini client: %w", err)
 	}
 
+	return &geminiCommentGenerator{
+		model:  model,
+		prompt: prompt,
+		client: client,
+	}, nil
+}
+
+func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.Article) (string, error) {
 	prompt := genai.Text(g.prompt.MakeCommentPromptTemplate(article))
-	resp, err := client.Models.GenerateContent(ctx, g.model.Type, prompt, nil)
+	resp, err := g.client.Models.GenerateContent(ctx, g.model.Type, prompt, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate content: %w", err)
 	}
