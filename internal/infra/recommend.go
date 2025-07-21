@@ -55,8 +55,13 @@ func newGeminiCommentGenerator(model *entity.AIModelConfig, prompt *entity.Promp
 }
 
 func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.Article) (string, error) {
-	prompt := genai.Text(g.prompt.MakeCommentPromptTemplate(article))
-	resp, err := g.client.Models.GenerateContent(ctx, g.model.Type, prompt, nil)
+	contents := genai.Text(g.prompt.MakeCommentPromptTemplate(article))
+	config := genai.GenerateContentConfig{}
+	if g.prompt.SystemPrompt != "" {
+		config.SystemInstruction = genai.NewContentFromText(g.prompt.SystemPrompt, "")
+	}
+
+	resp, err := g.client.Models.GenerateContent(ctx, g.model.Type, contents, &config)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate content: %w", err)
 	}

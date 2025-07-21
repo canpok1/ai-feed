@@ -69,7 +69,7 @@ type AIModelConfig struct {
 
 // PromptConfig holds configuration for a specific prompt.
 type PromptConfig struct {
-	SystemMessage         string `mapstructure:"system_message"`
+	SystemPrompt          string `mapstructure:"system_prompt"`
 	CommentPromptTemplate string `mapstructure:"comment_prompt_template"`
 }
 
@@ -116,7 +116,7 @@ func MakeDefaultConfig() *Config {
 		},
 		Prompts: map[string]PromptConfig{
 			"任意のプロンプト名": {
-				SystemMessage: "あなたはXXXXなAIアシスタントです。",
+				SystemPrompt: "あなたはXXXXなAIアシスタントです。",
 				CommentPromptTemplate: `以下の記事の紹介文を100字以内で作成してください。
 ---
 記事タイトル: {{title}}

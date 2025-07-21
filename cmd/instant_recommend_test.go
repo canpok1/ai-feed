@@ -26,7 +26,7 @@ func createMockConfig(modelName, promptName string) *entity.Config {
 			modelName: {Type: "test-type", APIKey: "test-key"},
 		},
 		Prompts: map[string]entity.PromptConfig{
-			promptName: {SystemMessage: "test-system-message", CommentPromptTemplate: "test-prompt-template"},
+			promptName: {SystemPrompt: "test-system-message", CommentPromptTemplate: "test-prompt-template"},
 		},
 		ExecutionProfiles: map[string]entity.ExecutionProfile{
 			"default": {AIModel: modelName, Prompt: promptName},
