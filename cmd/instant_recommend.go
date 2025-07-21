@@ -136,6 +136,7 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 	}
 
 	recommend, err := r.recommender.Recommend(
+		cmd.Context(),
 		model,
 		prompt,
 		allArticles)

@@ -56,7 +56,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any()).Return(&entity.Recommend{
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&entity.Recommend{
 					Article: entity.Article{Title: "Recommended Article", Link: "http://example.com/recommended"},
 				}, nil).Times(1)
 			},
@@ -79,7 +79,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
 				// Should not be called if no articles are found
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &instantRecommendParams{
 				urls:   []string{"http://example.com/empty.xml"},
@@ -95,7 +95,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Fetch(gomock.Any()).Return(nil, fmt.Errorf("mock fetch error")).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &instantRecommendParams{
 				urls:   []string{"http://invalid.com/feed.xml"},
@@ -113,7 +113,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
 			},
 			params: &instantRecommendParams{
 				urls:   []string{"http://example.com/feed.xml"},

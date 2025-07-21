@@ -44,8 +44,7 @@ func newGeminiCommentGenerator(model *entity.AIModelConfig, prompt *entity.Promp
 	}
 }
 
-func (g *geminiCommentGenerator) Generate(article *entity.Article) (string, error) {
-	ctx := context.Background()
+func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.Article) (string, error) {
 	client, err := genai.NewClient(ctx, option.WithAPIKey(g.model.APIKey))
 	if err != nil {
 		return "", fmt.Errorf("failed to create gemini client: %w", err)

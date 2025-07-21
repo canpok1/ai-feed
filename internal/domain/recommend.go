@@ -1,17 +1,18 @@
 package domain
 
 import (
+	"context"
 	"math/rand/v2"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
 type Recommender interface {
-	Recommend(*entity.AIModelConfig, *entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
+	Recommend(context.Context, *entity.AIModelConfig, *entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
 }
 
 type CommentGenerator interface {
-	Generate(*entity.Article) (string, error)
+	Generate(context.Context, *entity.Article) (string, error)
 }
 
 type CommentGeneratorFactory interface {
@@ -29,6 +30,7 @@ func NewRandomRecommender(f CommentGeneratorFactory) Recommender {
 }
 
 func (r *RandomRecommender) Recommend(
+	ctx context.Context,
 	model *entity.AIModelConfig,
 	prompt *entity.PromptConfig,
 	articles []entity.Article) (*entity.Recommend, error) {
@@ -48,7 +50,7 @@ func (r *RandomRecommender) Recommend(
 	article := articles[rand.IntN(len(articles))]
 	var comment *string
 	if commentGenerator != nil {
-		if c, err := commentGenerator.Generate(&article); err != nil {
+		if c, err := commentGenerator.Generate(ctx, &article); err != nil {
 			return nil, err
 		} else {
 			comment = &c
@@ -72,6 +74,7 @@ func NewFirstRecommender(f CommentGeneratorFactory) Recommender {
 }
 
 func (r *FirstRecommender) Recommend(
+	ctx context.Context,
 	model *entity.AIModelConfig,
 	prompt *entity.PromptConfig,
 	articles []entity.Article) (*entity.Recommend, error) {
@@ -91,7 +94,7 @@ func (r *FirstRecommender) Recommend(
 	article := articles[0]
 	var comment *string
 	if commentGenerator != nil {
-		if c, err := commentGenerator.Generate(&article); err != nil {
+		if c, err := commentGenerator.Generate(ctx, &article); err != nil {
 			return nil, err
 		} else {
 			comment = &c
