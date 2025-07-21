@@ -1,24 +1,35 @@
 package cmd
 
 import (
+	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
 )
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "ai-feed",
-	Short: "An AI-powered CLI RSS reader that summarizes articles and posts comments to various platforms.",
-	Run:   func(cmd *cobra.Command, args []string) {},
+func makeRootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "ai-feed",
+		Short: "An AI-powered CLI RSS reader that summarizes articles and posts comments to various platforms.",
+	}
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yml)")
+	return cmd
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() error {
-	return rootCmd.Execute()
-}
+	rootCmd := makeRootCmd()
 
-func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yml)")
+	previewCmd := makePreviewCmd()
+	rootCmd.AddCommand(previewCmd)
+
+	instantRecommendCmd := makeInstantRecommendCmd(infra.NewFetchClient(), domain.NewRandomRecommender(infra.NewCommentGeneratorFactory()))
+	rootCmd.AddCommand(instantRecommendCmd)
+
+	configCmd := makeConfigCmd()
+	configInitCmd := makeConfigInitCmd()
+	configCmd.AddCommand(configInitCmd)
+	rootCmd.AddCommand(configCmd)
+
+	return rootCmd.Execute()
 }

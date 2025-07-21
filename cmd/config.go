@@ -14,7 +14,7 @@ func makeConfigCmd() *cobra.Command {
 		Short: "The config command manages config.yml: generates boilerplate or validates settings.",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("config called")
-			fmt.Printf("config:%s", cfgFile)
+			fmt.Printf("config:%s\n", cfgFile)
 		},
 	}
 	return cmd
@@ -40,12 +40,4 @@ func makeConfigInitCmd() *cobra.Command {
 		},
 	}
 	return cmd
-}
-
-var configCmd = makeConfigCmd()
-var configInitCmd = makeConfigInitCmd()
-
-func init() {
-	rootCmd.AddCommand(configCmd)
-	configCmd.AddCommand(configInitCmd)
 }

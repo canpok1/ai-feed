@@ -12,7 +12,7 @@ package mock_domain
 import (
 	reflect "reflect"
 
-	domain "github.com/canpok1/ai-feed/internal/domain"
+	entity "github.com/canpok1/ai-feed/internal/domain/entity"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,7 +41,7 @@ func (m *MockViewer) EXPECT() *MockViewerMockRecorder {
 }
 
 // ViewArticles mocks base method.
-func (m *MockViewer) ViewArticles(arg0 []domain.Article) error {
+func (m *MockViewer) ViewArticles(arg0 []entity.Article) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ViewArticles", arg0)
 	ret0, _ := ret[0].(error)
@@ -55,7 +55,7 @@ func (mr *MockViewerMockRecorder) ViewArticles(arg0 any) *gomock.Call {
 }
 
 // ViewRecommend mocks base method.
-func (m *MockViewer) ViewRecommend(arg0 *domain.Recommend) error {
+func (m *MockViewer) ViewRecommend(arg0 *entity.Recommend) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ViewRecommend", arg0)
 	ret0, _ := ret[0].(error)

@@ -1,60 +1,109 @@
 package entity
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Config is the root of the configuration structure.
 type Config struct {
-	General           GeneralConfig               `yaml:"general"`
-	Cache             CacheConfig                 `yaml:"cache"`
-	AIModels          map[string]AIModelConfig    `yaml:"ai_models"`
-	Prompts           map[string]PromptConfig     `yaml:"prompts"`
-	Outputs           map[string]OutputConfig     `yaml:"outputs"`
-	ExecutionProfiles map[string]ExecutionProfile `yaml:"execution_profiles"`
+	General           GeneralConfig               `mapstructure:"general"`
+	Cache             CacheConfig                 `mapstructure:"cache"`
+	AIModels          map[string]AIModelConfig    `mapstructure:"ai_models"`
+	Prompts           map[string]PromptConfig     `mapstructure:"prompts"`
+	Outputs           map[string]OutputConfig     `mapstructure:"outputs"`
+	ExecutionProfiles map[string]ExecutionProfile `mapstructure:"execution_profiles"`
+}
+
+func (c *Config) getDefaultExecutionProfile() (*ExecutionProfile, error) {
+	profile, ok := c.ExecutionProfiles[c.General.DefaultExecutionProfile]
+	if !ok {
+		return nil, fmt.Errorf("default execution profile not found: %s", c.General.DefaultExecutionProfile)
+	}
+	return &profile, nil
+}
+
+func (c *Config) GetDefaultAIModel() (*AIModelConfig, error) {
+	profile, err := c.getDefaultExecutionProfile()
+	if err != nil {
+		return nil, err
+	}
+
+	model, ok := c.AIModels[profile.AIModel]
+	if !ok {
+		return nil, fmt.Errorf("AI model not found: %s", profile.AIModel)
+	}
+
+	return &model, nil
+}
+
+func (c *Config) GetDefaultPrompt() (*PromptConfig, error) {
+	profile, err := c.getDefaultExecutionProfile()
+	if err != nil {
+		return nil, err
+	}
+
+	prompt, ok := c.Prompts[profile.Prompt]
+	if !ok {
+		return nil, fmt.Errorf("prompt not found: %s", profile.Prompt)
+	}
+
+	return &prompt, nil
 }
 
 // GeneralConfig holds general application settings.
 type GeneralConfig struct {
-	DefaultExecutionProfile string `yaml:"default_execution_profile"`
+	DefaultExecutionProfile string `mapstructure:"default_execution_profile"`
 }
 
 // CacheConfig holds cache settings.
 type CacheConfig struct {
-	RetentionDays int `yaml:"retention_days"`
+	RetentionDays int `mapstructure:"retention_days"`
 }
 
 // AIModelConfig holds configuration for a specific AI model.
 type AIModelConfig struct {
-	Type   string `yaml:"type"`
-	APIKey string `yaml:"api_key"`
+	Type   string `mapstructure:"type"`
+	APIKey string `mapstructure:"api_key"`
 }
 
 // PromptConfig holds configuration for a specific prompt.
 type PromptConfig struct {
-	SystemMessage         string `yaml:"system_message"`
-	CommentPromptTemplate string `yaml:"comment_prompt_template"`
+	SystemMessage         string `mapstructure:"system_message"`
+	CommentPromptTemplate string `mapstructure:"comment_prompt_template"`
+}
+
+func (c *PromptConfig) MakeCommentPromptTemplate(article *Article) string {
+	prompt := c.CommentPromptTemplate
+	prompt = strings.ReplaceAll(prompt, "{{title}}", article.Title)
+	prompt = strings.ReplaceAll(prompt, "{{url}}", article.Link)
+	prompt = strings.ReplaceAll(prompt, "{{content}}", article.Content)
+	return prompt
 }
 
 // OutputConfig holds configuration for a specific output destination.
 type OutputConfig struct {
-	Type       string `yaml:"type"`
-	WebhookURL string `yaml:"webhook_url,omitempty"`
-	Channel    string `yaml:"channel,omitempty"`
-	Username   string `yaml:"username,omitempty"`
-	IconEmoji  string `yaml:"icon_emoji,omitempty"`
-	APIURL     string `yaml:"api_url,omitempty"`
-	APIToken   string `yaml:"api_token,omitempty"`
-	Visibility string `yaml:"visibility,omitempty"`
+	Type       string `mapstructure:"type"`
+	WebhookURL string `mapstructure:"webhook_url,omitempty"`
+	Channel    string `mapstructure:"channel,omitempty"`
+	Username   string `mapstructure:"username,omitempty"`
+	IconEmoji  string `mapstructure:"icon_emoji,omitempty"`
+	APIURL     string `mapstructure:"api_url,omitempty"`
+	APIToken   string `mapstructure:"api_token,omitempty"`
+	Visibility string `mapstructure:"visibility,omitempty"`
 }
 
 // ExecutionProfile defines a combination of AI model, prompt, and output.
 type ExecutionProfile struct {
-	AIModel string `yaml:"ai_model,omitempty"`
-	Prompt  string `yaml:"prompt,omitempty"`
-	Output  string `yaml:"output"`
+	AIModel string `mapstructure:"ai_model,omitempty"`
+	Prompt  string `mapstructure:"prompt,omitempty"`
+	Output  string `mapstructure:"output"`
 }
 
 func MakeDefaultConfig() *Config {
 	return &Config{
 		General: GeneralConfig{
-			DefaultExecutionProfile: "プロファイル名",
+			DefaultExecutionProfile: "任意のプロファイル名",
 		},
 		Cache: CacheConfig{
 			RetentionDays: 7,
@@ -93,9 +142,9 @@ func MakeDefaultConfig() *Config {
 		},
 		ExecutionProfiles: map[string]ExecutionProfile{
 			"任意のプロファイル名": {
-				AIModel: "AIモデル名",
-				Prompt:  "プロンプト名",
-				Output:  "出力名",
+				AIModel: "任意のAIモデル名",
+				Prompt:  "任意のプロンプト名",
+				Output:  "任意の出力名",
 			},
 		},
 	}
