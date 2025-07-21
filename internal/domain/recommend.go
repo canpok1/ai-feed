@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"fmt"
 	"math/rand/v2"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -35,19 +36,23 @@ func (r *RandomRecommender) Recommend(
 	prompt *entity.PromptConfig,
 	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
-		return nil, nil
+		return nil, fmt.Errorf("no articles found")
 	}
 
 	article := articles[rand.IntN(len(articles))]
-	comment, err := generateComment(r.factory, model, prompt, ctx, &article)
-	if err != nil {
-		return nil, err
+	recommend := entity.Recommend{
+		Article: article,
 	}
 
-	return &entity.Recommend{
-		Article: article,
-		Comment: comment,
-	}, nil
+	if (r.factory != nil) && (model != nil) && (prompt != nil) {
+		comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+		if err != nil {
+			return nil, err
+		}
+		recommend.Comment = comment
+	}
+
+	return &recommend, nil
 }
 
 type FirstRecommender struct {
@@ -86,8 +91,8 @@ func generateComment(
 	prompt *entity.PromptConfig,
 	ctx context.Context,
 	article *entity.Article) (*string, error) {
-	if factory == nil {
-		return nil, nil
+	if factory == nil || model == nil || prompt == nil {
+		return nil, fmt.Errorf("factory, model, or prompt is nil")
 	}
 
 	commentGenerator, err := factory.MakeCommentGenerator(model, prompt)
@@ -96,7 +101,7 @@ func generateComment(
 	}
 
 	if commentGenerator == nil {
-		return nil, nil
+		return nil, fmt.Errorf("comment generator is nil")
 	}
 
 	c, err := commentGenerator.Generate(ctx, article)
