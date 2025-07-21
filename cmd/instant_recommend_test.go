@@ -163,8 +163,8 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				},
 			},
 			expectedStdout:       "No articles found in the feed.\n",
-				expectedStderr:       "",
-				expectedErrorMessage: nil,
+			expectedStderr:       "",
+			expectedErrorMessage: nil,
 		},
 	}
 
