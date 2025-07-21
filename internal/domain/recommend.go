@@ -38,23 +38,10 @@ func (r *RandomRecommender) Recommend(
 		return nil, nil
 	}
 
-	var commentGenerator CommentGenerator
-	if r.factory != nil {
-		g, err := r.factory.MakeCommentGenerator(model, prompt)
-		if err != nil {
-			return nil, err
-		}
-		commentGenerator = g
-	}
-
 	article := articles[rand.IntN(len(articles))]
-	var comment *string
-	if commentGenerator != nil {
-		if c, err := commentGenerator.Generate(ctx, &article); err != nil {
-			return nil, err
-		} else {
-			comment = &c
-		}
+	comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.Recommend{
@@ -82,26 +69,39 @@ func (r *FirstRecommender) Recommend(
 		return nil, nil
 	}
 
-	var commentGenerator CommentGenerator
-	if r.factory != nil {
-		g, err := r.factory.MakeCommentGenerator(model, prompt)
-		if err != nil {
-			return nil, err
-		}
-		commentGenerator = g
-	}
-
 	article := articles[0]
-	var comment *string
-	if commentGenerator != nil {
-		if c, err := commentGenerator.Generate(ctx, &article); err != nil {
-			return nil, err
-		} else {
-			comment = &c
-		}
+	comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+	if err != nil {
+		return nil, err
 	}
 	return &entity.Recommend{
 		Article: article,
 		Comment: comment,
 	}, nil
+}
+
+func generateComment(
+	factory CommentGeneratorFactory,
+	model *entity.AIModelConfig,
+	prompt *entity.PromptConfig,
+	ctx context.Context,
+	article *entity.Article) (*string, error) {
+	if factory == nil {
+		return nil, nil
+	}
+
+	commentGenerator, err := factory.MakeCommentGenerator(model, prompt)
+	if err != nil {
+		return nil, err
+	}
+
+	if commentGenerator == nil {
+		return nil, nil
+	}
+
+	c, err := commentGenerator.Generate(ctx, article)
+	if err != nil {
+		return nil, err
+	}
+	return &c, nil
 }
