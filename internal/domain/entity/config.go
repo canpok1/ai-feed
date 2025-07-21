@@ -10,6 +10,7 @@ type Config struct {
 	General           GeneralConfig               `mapstructure:"general"`
 	Cache             CacheConfig                 `mapstructure:"cache"`
 	AIModels          map[string]AIModelConfig    `mapstructure:"ai_models"`
+	SystemPrompts     map[string]string           `mapstructure:"system_prompts"`
 	Prompts           map[string]PromptConfig     `mapstructure:"prompts"`
 	Outputs           map[string]OutputConfig     `mapstructure:"outputs"`
 	ExecutionProfiles map[string]ExecutionProfile `mapstructure:"execution_profiles"`
@@ -57,6 +58,23 @@ func (c *Config) GetDefaultPrompt() (*PromptConfig, error) {
 	return &prompt, nil
 }
 
+func (c *Config) GetDefaultSystemPrompt() (string, error) {
+	profile, err := c.getDefaultExecutionProfile()
+	if err != nil {
+		return "", err
+	}
+	if profile.SystemPrompt == "" {
+		return "", nil
+	}
+
+	systemPrompt, ok := c.SystemPrompts[profile.SystemPrompt]
+	if !ok {
+		return "", fmt.Errorf("system prompt not found: %s", profile.SystemPrompt)
+	}
+
+	return systemPrompt, nil
+}
+
 // GeneralConfig holds general application settings.
 type GeneralConfig struct {
 	DefaultExecutionProfile string `mapstructure:"default_execution_profile"`
@@ -75,7 +93,6 @@ type AIModelConfig struct {
 
 // PromptConfig holds configuration for a specific prompt.
 type PromptConfig struct {
-	SystemPrompt          string `mapstructure:"system_prompt"`
 	CommentPromptTemplate string `mapstructure:"comment_prompt_template"`
 }
 
@@ -101,9 +118,10 @@ type OutputConfig struct {
 
 // ExecutionProfile defines a combination of AI model, prompt, and output.
 type ExecutionProfile struct {
-	AIModel string `mapstructure:"ai_model,omitempty"`
-	Prompt  string `mapstructure:"prompt,omitempty"`
-	Output  string `mapstructure:"output"`
+	AIModel      string `mapstructure:"ai_model,omitempty"`
+	SystemPrompt string `mapstructure:"system_prompt,omitempty"`
+	Prompt       string `mapstructure:"prompt,omitempty"`
+	Output       string `mapstructure:"output"`
 }
 
 func MakeDefaultConfig() *Config {
@@ -120,9 +138,11 @@ func MakeDefaultConfig() *Config {
 				APIKey: "xxxxxx",
 			},
 		},
+		SystemPrompts: map[string]string{
+			"任意のシステムプロンプト名": "あなたはXXXXなAIアシスタントです。",
+		},
 		Prompts: map[string]PromptConfig{
 			"任意のプロンプト名": {
-				SystemPrompt: "あなたはXXXXなAIアシスタントです。",
 				CommentPromptTemplate: `以下の記事の紹介文を100字以内で作成してください。
 ---
 記事タイトル: {{title}}
@@ -148,9 +168,10 @@ func MakeDefaultConfig() *Config {
 		},
 		ExecutionProfiles: map[string]ExecutionProfile{
 			"任意のプロファイル名": {
-				AIModel: "任意のAIモデル名",
-				Prompt:  "任意のプロンプト名",
-				Output:  "任意の出力名",
+				AIModel:      "任意のAIモデル名",
+				SystemPrompt: "任意のシステムプロンプト名",
+				Prompt:       "任意のプロンプト名",
+				Output:       "任意の出力名",
 			},
 		},
 	}
