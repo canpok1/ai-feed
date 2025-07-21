@@ -124,6 +124,10 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 	if err != nil {
 		return fmt.Errorf("failed to get default prompt: %w", err)
 	}
+	systemPrompt, err := p.config.GetDefaultSystemPrompt()
+	if err != nil {
+		return fmt.Errorf("failed to get default system prompt: %w", err)
+	}
 
 	allArticles, err := r.fetcher.Fetch(p.urls, 0)
 	if err != nil {
@@ -139,6 +143,7 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 		cmd.Context(),
 		model,
 		prompt,
+		systemPrompt,
 		allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)

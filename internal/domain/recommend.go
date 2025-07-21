@@ -9,7 +9,7 @@ import (
 )
 
 type Recommender interface {
-	Recommend(context.Context, *entity.AIModelConfig, *entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
+	Recommend(context.Context, *entity.AIModelConfig, *entity.PromptConfig, string, []entity.Article) (*entity.Recommend, error)
 }
 
 type CommentGenerator interface {
@@ -17,7 +17,7 @@ type CommentGenerator interface {
 }
 
 type CommentGeneratorFactory interface {
-	MakeCommentGenerator(*entity.AIModelConfig, *entity.PromptConfig) (CommentGenerator, error)
+	MakeCommentGenerator(*entity.AIModelConfig, *entity.PromptConfig, string) (CommentGenerator, error)
 }
 
 type RandomRecommender struct {
@@ -34,6 +34,7 @@ func (r *RandomRecommender) Recommend(
 	ctx context.Context,
 	model *entity.AIModelConfig,
 	prompt *entity.PromptConfig,
+	systemPrompt string,
 	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, fmt.Errorf("no articles found")
@@ -45,7 +46,7 @@ func (r *RandomRecommender) Recommend(
 	}
 
 	if (r.factory != nil) && (model != nil) && (prompt != nil) {
-		comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+		comment, err := generateComment(r.factory, model, prompt, systemPrompt, ctx, &article)
 		if err != nil {
 			return nil, err
 		}
@@ -69,13 +70,14 @@ func (r *FirstRecommender) Recommend(
 	ctx context.Context,
 	model *entity.AIModelConfig,
 	prompt *entity.PromptConfig,
+	systemPrompt string,
 	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
 	}
 
 	article := articles[0]
-	comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+	comment, err := generateComment(r.factory, model, prompt, systemPrompt, ctx, &article)
 	if err != nil {
 		return nil, err
 	}
@@ -89,13 +91,14 @@ func generateComment(
 	factory CommentGeneratorFactory,
 	model *entity.AIModelConfig,
 	prompt *entity.PromptConfig,
+	systemPrompt string,
 	ctx context.Context,
 	article *entity.Article) (*string, error) {
 	if factory == nil || model == nil || prompt == nil {
 		return nil, fmt.Errorf("factory, model, or prompt is nil")
 	}
 
-	commentGenerator, err := factory.MakeCommentGenerator(model, prompt)
+	commentGenerator, err := factory.MakeCommentGenerator(model, prompt, systemPrompt)
 	if err != nil {
 		return nil, err
 	}

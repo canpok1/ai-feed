@@ -26,10 +26,13 @@ func createMockConfig(modelName, promptName string) *entity.Config {
 			modelName: {Type: "test-type", APIKey: "test-key"},
 		},
 		Prompts: map[string]entity.PromptConfig{
-			promptName: {SystemPrompt: "test-system-message", CommentPromptTemplate: "test-prompt-template"},
+			promptName: {CommentPromptTemplate: "test-prompt-template"},
+		},
+		SystemPrompts: map[string]string{
+			promptName: "test-system-message",
 		},
 		ExecutionProfiles: map[string]entity.ExecutionProfile{
-			"default": {AIModel: modelName, Prompt: promptName},
+			"default": {AIModel: modelName, Prompt: promptName, SystemPrompt: promptName},
 		},
 	}
 }
@@ -56,7 +59,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&entity.Recommend{
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&entity.Recommend{
 					Article: entity.Article{Title: "Recommended Article", Link: "http://example.com/recommended"},
 				}, nil).Times(1)
 			},
@@ -79,7 +82,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
 				// Should not be called if no articles are found
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &instantRecommendParams{
 				urls:   []string{"http://example.com/empty.xml"},
@@ -95,7 +98,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Fetch(gomock.Any()).Return(nil, fmt.Errorf("mock fetch error")).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &instantRecommendParams{
 				urls:   []string{"http://invalid.com/feed.xml"},
@@ -113,7 +116,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
 			},
 			params: &instantRecommendParams{
 				urls:   []string{"http://example.com/feed.xml"},
@@ -131,7 +134,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			params: &instantRecommendParams{
 				urls:   []string{"http://example.com/feed.xml"},
@@ -148,7 +151,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			params: &instantRecommendParams{
 				urls: []string{"http://example.com/feed.xml"},
@@ -195,7 +198,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			expectedHasError := tt.expectedErrorMessage != nil
 
 			assert.Equal(t, expectedHasError, hasError, "Expected error state mismatch")
-			if hasError {
+			if expectedHasError {
 				assert.Contains(t, err.Error(), *tt.expectedErrorMessage, "Error message mismatch")
 			}
 
