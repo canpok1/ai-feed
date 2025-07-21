@@ -32,7 +32,7 @@ func createMockConfig(modelName, promptName string) *entity.Config {
 			promptName: "test-system-message",
 		},
 		ExecutionProfiles: map[string]entity.ExecutionProfile{
-			"default": {AIModel: modelName, Prompt: promptName},
+			"default": {AIModel: modelName, Prompt: promptName, SystemPrompt: promptName},
 		},
 	}
 }
