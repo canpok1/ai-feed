@@ -6,8 +6,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
-	"github.com/google/generative-ai-go/genai"
-	"google.golang.org/api/option"
+	"google.golang.org/genai"
 )
 
 type factoryFunc func(*entity.AIModelConfig, *entity.PromptConfig) domain.CommentGenerator
@@ -45,16 +44,16 @@ func newGeminiCommentGenerator(model *entity.AIModelConfig, prompt *entity.Promp
 }
 
 func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.Article) (string, error) {
-	client, err := genai.NewClient(ctx, option.WithAPIKey(g.model.APIKey))
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey:  g.model.APIKey,
+		Backend: genai.BackendGeminiAPI,
+	})
 	if err != nil {
 		return "", fmt.Errorf("failed to create gemini client: %w", err)
 	}
-	defer client.Close()
-
-	model := client.GenerativeModel(g.model.Type)
 
 	prompt := genai.Text(g.prompt.MakeCommentPromptTemplate(article))
-	resp, err := model.GenerateContent(ctx, prompt)
+	resp, err := client.Models.GenerateContent(ctx, g.model.Type, prompt, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate content: %w", err)
 	}
@@ -63,10 +62,5 @@ func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.A
 		return "", fmt.Errorf("no content generated")
 	}
 
-	comment, ok := resp.Candidates[0].Content.Parts[0].(genai.Text)
-	if !ok {
-		return "", fmt.Errorf("generated content is not text")
-	}
-
-	return string(comment), nil
+	return resp.Text(), nil
 }
