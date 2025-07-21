@@ -195,91 +195,91 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 
 func TestNewInstantRecommendParams(t *testing.T) {
 	tests := []struct {
-		name           string
-		urlFlag        string
-		sourceFlag     string
-		mockConfig     *entity.Config
-		configLoadErr  error
-		expectedURLs   []string
-		expectedConfig *entity.Config
-		expectedErr    string
+		name             string
+		urlFlag          string
+		sourceFlag       string
+		mockConfig       *entity.Config
+		configLoadErr    error
+		expectedURLs     []string
+		expectedConfig   *entity.Config
+		expectedErr      string
 		expectConfigLoad bool
 	}{
 		{
-			name:           "URL flag only",
-			urlFlag:        "http://example.com/feed.xml",
-			sourceFlag:     "",
-			mockConfig:     createMockConfig("test-model", "test-prompt"),
-			configLoadErr:  nil,
-			expectedURLs:   []string{"http://example.com/feed.xml"},
-			expectedConfig: createMockConfig("test-model", "test-prompt"),
-			expectedErr:    "",
+			name:             "URL flag only",
+			urlFlag:          "http://example.com/feed.xml",
+			sourceFlag:       "",
+			mockConfig:       createMockConfig("test-model", "test-prompt"),
+			configLoadErr:    nil,
+			expectedURLs:     []string{"http://example.com/feed.xml"},
+			expectedConfig:   createMockConfig("test-model", "test-prompt"),
+			expectedErr:      "",
 			expectConfigLoad: true,
 		},
 		{
-			name:           "Source flag only with valid file",
-			urlFlag:        "",
-			sourceFlag:     "tmp_source.txt",
-			mockConfig:     createMockConfig("test-model", "test-prompt"),
-			configLoadErr:  nil,
-			expectedURLs:   []string{"http://example.com/from_file.xml", "http://another.com/from_file.xml"},
-			expectedConfig: createMockConfig("test-model", "test-prompt"),
-			expectedErr:    "",
+			name:             "Source flag only with valid file",
+			urlFlag:          "",
+			sourceFlag:       "tmp_source.txt",
+			mockConfig:       createMockConfig("test-model", "test-prompt"),
+			configLoadErr:    nil,
+			expectedURLs:     []string{"http://example.com/from_file.xml", "http://another.com/from_file.xml"},
+			expectedConfig:   createMockConfig("test-model", "test-prompt"),
+			expectedErr:      "",
 			expectConfigLoad: true,
 		},
 		{
-			name:           "Both URL and source flags",
-			urlFlag:        "http://example.com/feed.xml",
-			sourceFlag:     "tmp_source.txt",
-			mockConfig:     createMockConfig("test-model", "test-prompt"),
-			configLoadErr:  nil,
-			expectedURLs:   nil,
-			expectedConfig: nil,
-			expectedErr:    "cannot use --url and --source options together",
+			name:             "Both URL and source flags",
+			urlFlag:          "http://example.com/feed.xml",
+			sourceFlag:       "tmp_source.txt",
+			mockConfig:       createMockConfig("test-model", "test-prompt"),
+			configLoadErr:    nil,
+			expectedURLs:     nil,
+			expectedConfig:   nil,
+			expectedErr:      "cannot use --url and --source options together",
 			expectConfigLoad: false,
 		},
 		{
-			name:           "Neither URL nor source flags",
-			urlFlag:        "",
-			sourceFlag:     "",
-			mockConfig:     createMockConfig("test-model", "test-prompt"),
-			configLoadErr:  nil,
-			expectedURLs:   nil,
-			expectedConfig: nil,
-			expectedErr:    "either --url or --source must be specified",
+			name:             "Neither URL nor source flags",
+			urlFlag:          "",
+			sourceFlag:       "",
+			mockConfig:       createMockConfig("test-model", "test-prompt"),
+			configLoadErr:    nil,
+			expectedURLs:     nil,
+			expectedConfig:   nil,
+			expectedErr:      "either --url or --source must be specified",
 			expectConfigLoad: false,
 		},
 		{
-			name:           "Source file not found",
-			urlFlag:        "",
-			sourceFlag:     "non_existent_file.txt",
-			mockConfig:     createMockConfig("test-model", "test-prompt"),
-			configLoadErr:  nil,
-			expectedURLs:   nil,
-			expectedConfig: nil,
-			expectedErr:    "failed to read URLs from file: open non_existent_file.txt: no such file or directory",
+			name:             "Source file not found",
+			urlFlag:          "",
+			sourceFlag:       "non_existent_file.txt",
+			mockConfig:       createMockConfig("test-model", "test-prompt"),
+			configLoadErr:    nil,
+			expectedURLs:     nil,
+			expectedConfig:   nil,
+			expectedErr:      "failed to read URLs from file: open non_existent_file.txt: no such file or directory",
 			expectConfigLoad: false,
 		},
 		{
-			name:           "Empty source file",
-			urlFlag:        "",
-			sourceFlag:     "empty_source.txt",
-			mockConfig:     createMockConfig("test-model", "test-prompt"),
-			configLoadErr:  nil,
-			expectedURLs:   nil,
-			expectedConfig: nil,
-			expectedErr:    "source file contains no URLs",
+			name:             "Empty source file",
+			urlFlag:          "",
+			sourceFlag:       "empty_source.txt",
+			mockConfig:       createMockConfig("test-model", "test-prompt"),
+			configLoadErr:    nil,
+			expectedURLs:     nil,
+			expectedConfig:   nil,
+			expectedErr:      "source file contains no URLs",
 			expectConfigLoad: false,
 		},
 		{
-			name:           "Config load error",
-			urlFlag:        "http://example.com/feed.xml",
-			sourceFlag:     "",
-			mockConfig:     nil,
-			configLoadErr:  fmt.Errorf("mock config load error"),
-			expectedURLs:   nil,
-			expectedConfig: nil,
-			expectedErr:    "failed to load config: mock config load error",
+			name:             "Config load error",
+			urlFlag:          "http://example.com/feed.xml",
+			sourceFlag:       "",
+			mockConfig:       nil,
+			configLoadErr:    fmt.Errorf("mock config load error"),
+			expectedURLs:     nil,
+			expectedConfig:   nil,
+			expectedErr:      "failed to load config: mock config load error",
 			expectConfigLoad: true,
 		},
 	}
@@ -340,4 +340,3 @@ func TestNewInstantRecommendParams(t *testing.T) {
 		})
 	}
 }
-
