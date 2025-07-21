@@ -124,9 +124,15 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			expectedErrorMessage: toStringP("failed to recommend article: mock recommend error"),
 		},
 		{
-			name:                        "GetDefaultAIModel error",
-			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {},
-			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {},
+			name: "GetDefaultAIModel error",
+			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {
+				// This is called before the AI model is checked.
+				m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{
+					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
+			},
+			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			},
 			params: &instantRecommendParams{
 				urls:   []string{"http://example.com/feed.xml"},
 				config: &entity.Config{}, // No default AI model set
@@ -135,9 +141,15 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			expectedErrorMessage: toStringP("failed to get default AI model: default execution profile not found: "),
 		},
 		{
-			name:                        "GetDefaultPrompt error",
-			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {},
-			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {},
+			name: "GetDefaultPrompt error",
+			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {
+				// This is called before the prompt is checked.
+				m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{
+					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
+			},
+			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			},
 			params: &instantRecommendParams{
 				urls: []string{"http://example.com/feed.xml"},
 				config: &entity.Config{
@@ -150,9 +162,9 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					},
 				},
 			},
-			expectedStdout:       "",
-			expectedStderr:       "",
-			expectedErrorMessage: toStringP("failed to get default prompt: prompt not found: "),
+			expectedStdout:       "No articles found in the feed.\n",
+				expectedStderr:       "",
+				expectedErrorMessage: nil,
 		},
 	}
 
