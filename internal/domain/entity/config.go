@@ -75,6 +75,24 @@ func (c *Config) GetDefaultSystemPrompt() (string, error) {
 	return systemPrompt, nil
 }
 
+func (c *Config) GetDefaultOutputs() ([]OutputConfig, error) {
+	profile, err := c.getDefaultExecutionProfile()
+	if err != nil {
+		return nil, err
+	}
+
+	var outputs []OutputConfig
+	for _, outputName := range profile.Outputs {
+		output, ok := c.Outputs[outputName]
+		if !ok {
+			return nil, fmt.Errorf("output not found: %s", outputName)
+		}
+		outputs = append(outputs, output)
+	}
+
+	return outputs, nil
+}
+
 // GeneralConfig holds general application settings.
 type GeneralConfig struct {
 	DefaultExecutionProfile string `yaml:"default_execution_profile"`
@@ -118,10 +136,10 @@ type OutputConfig struct {
 
 // ExecutionProfile defines a combination of AI model, prompt, and output.
 type ExecutionProfile struct {
-	AIModel      string `yaml:"ai_model,omitempty"`
-	SystemPrompt string `yaml:"system_prompt,omitempty"`
-	Prompt       string `yaml:"prompt,omitempty"`
-	Output       string `yaml:"output"`
+	AIModel      string   `yaml:"ai_model,omitempty"`
+	SystemPrompt string   `yaml:"system_prompt,omitempty"`
+	Prompt       string   `yaml:"prompt,omitempty"`
+	Outputs      []string `yaml:"outputs"`
 }
 
 func MakeDefaultConfig() *Config {
@@ -171,7 +189,7 @@ func MakeDefaultConfig() *Config {
 				AIModel:      "任意のAIモデル名",
 				SystemPrompt: "任意のシステムプロンプト名",
 				Prompt:       "任意のプロンプト名",
-				Output:       "任意の出力名",
+				Outputs:      []string{"任意の出力名(Slack)", "任意の出力名(Misskey)"},
 			},
 		},
 	}
