@@ -83,8 +83,8 @@ func (c *Config) GetDefaultOutputs() ([]OutputConfig, error) {
 
 	outputs := make([]OutputConfig, 0, len(profile.Outputs))
 	for _, outputName := range profile.Outputs {
-		output, ok := c.Outputs[outputName]
-		if !ok {
+		output, outputFound := c.Outputs[outputName]
+		if !outputFound {
 			return nil, fmt.Errorf("output not found: %s", outputName)
 		}
 		outputs = append(outputs, output)
