@@ -151,6 +151,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
+				// Recommend is called even if prompt is nil, so we expect it to be called.
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			params: &instantRecommendParams{
@@ -185,7 +186,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)
 
-			runner, err := newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer)
+			runner, err := newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, []entity.OutputConfig{})
 			assert.NoError(t, err, "newInstantRecommendRunner should not return an error")
 
 			// Create a dummy cobra.Command for the Run method, as it's required but not directly used in runner.Run logic
@@ -200,6 +201,8 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			assert.Equal(t, expectedHasError, hasError, "Expected error state mismatch")
 			if expectedHasError {
 				assert.Contains(t, err.Error(), *tt.expectedErrorMessage, "Error message mismatch")
+			} else {
+				assert.NoError(t, err)
 			}
 
 			assert.Equal(t, tt.expectedStdout, stdoutBuffer.String(), "Stdout mismatch")

@@ -8,27 +8,26 @@ import (
 
 // TestPreviewCommandSourceAndURLConflict は --source と --url オプションの同時使用をテストします。
 func TestPreviewCommandSourceAndURLConflict(t *testing.T) {
-	// Use the actual previewCmd, which has its flags defined in its init() function.
 	cmd := makePreviewCmd()
-	b := bytes.NewBufferString("")
-	cmd.SetOut(b)
-	cmd.SetErr(b)
 
-	// Reset flags to avoid state leakage from other tests.
-	cmd.Flags().Set("url", "")
-	cmd.Flags().Set("source", "")
+	// 標準出力と標準エラーをキャプチャするためのバッファ
+	stdout := bytes.NewBufferString("")
+	stderr := bytes.NewBufferString("")
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
 
-	// Simulate user providing flags via arguments.
-	args := []string{"--url", "http://example.com", "--source", "list.txt"}
-	// Manually parse flags to correctly set the "Changed" status.
-	if err := cmd.ParseFlags(args); err != nil {
-		t.Fatalf("failed to parse flags: %v", err)
-	}
+	// コマンドライン引数を設定
+	cmd.SetArgs([]string{"--url", "http://example.com", "--source", "list.txt"})
 
-	err := cmd.RunE(cmd, args)
+	// コマンドを実行
+	_, err := cmd.ExecuteC()
+
+	// エラーが返されることを確認
 	if err == nil {
 		t.Fatal("Expected an error when --source and --url are used together, but got none.")
 	}
+
+	// エラーメッセージが期待通りであることを確認
 	if !strings.Contains(err.Error(), "cannot use --source and --url options together") {
 		t.Errorf("Expected conflict error, got: %v", err)
 	}

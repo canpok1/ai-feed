@@ -124,14 +124,10 @@ func (c *PromptConfig) MakeCommentPromptTemplate(article *Article) string {
 
 // OutputConfig holds configuration for a specific output destination.
 type OutputConfig struct {
-	Type       string `yaml:"type"`
-	WebhookURL string `yaml:"webhook_url,omitempty"`
-	Channel    string `yaml:"channel,omitempty"`
-	Username   string `yaml:"username,omitempty"`
-	IconEmoji  string `yaml:"icon_emoji,omitempty"`
-	APIURL     string `yaml:"api_url,omitempty"`
-	APIToken   string `yaml:"api_token,omitempty"`
-	Visibility string `yaml:"visibility,omitempty"`
+	Type     string `yaml:"type"`
+	APIToken string `yaml:"api_token,omitempty"`
+	Channel  string `yaml:"channel,omitempty"`
+	APIURL   string `yaml:"api_url,omitempty"`
 }
 
 // ExecutionProfile defines a combination of AI model, prompt, and output.
@@ -171,17 +167,14 @@ func MakeDefaultConfig() *Config {
 		},
 		Outputs: map[string]OutputConfig{
 			"任意の出力名(Slack)": {
-				Type:       "slack",
-				WebhookURL: "https://hooks.slack.com/services/TXXXXX/BXXXXX/YYYYYYYYYYYYYYYYYYYYYYYY",
-				Channel:    "#general",
-				Username:   "ai-feed-bot",
-				IconEmoji:  ":robot_face:",
+				Type:     "slack-api",
+				APIToken: "xoxb-xxxxxx",
+				Channel:  "#general",
 			},
 			"任意の出力名(Misskey)": {
-				Type:       "misskey",
-				APIURL:     "https://misskey.social/api",
-				APIToken:   "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
-				Visibility: "public",
+				Type:     "misskey",
+				APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
+				APIURL:   "https://misskey.social/api",
 			},
 		},
 		ExecutionProfiles: map[string]ExecutionProfile{
