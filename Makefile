@@ -2,6 +2,7 @@ BINARY_NAME=ai-feed
 
 setup:
 	go install go.uber.org/mock/mockgen@latest
+	go install golang.org/x/tools/cmd/goimports@latest
 
 run:
 	@go run main.go ${option}
@@ -25,6 +26,7 @@ lint:
 
 fmt:
 	go fmt ./...
+	go list -f '{{.Dir}}' ./... | xargs goimports -w
 
 generate:
 	go generate ./...
