@@ -115,7 +115,7 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	viewers := []domain.Viewer{viewer}
 
 	for _, c := range outputConfigs {
-		if c.Type == "slack" {
+		if c.Type == "slack-api" {
 			slackViewer := infra.NewSlackViewer(c.APIToken, c.Channel)
 			viewers = append(viewers, slackViewer)
 		} else {
