@@ -81,7 +81,7 @@ func (c *Config) GetDefaultOutputs() ([]OutputConfig, error) {
 		return nil, err
 	}
 
-	var outputs []OutputConfig
+	outputs := make([]OutputConfig, 0, len(profile.Outputs))
 	for _, outputName := range profile.Outputs {
 		output, ok := c.Outputs[outputName]
 		if !ok {
