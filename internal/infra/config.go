@@ -6,6 +6,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
@@ -54,7 +55,9 @@ func (r *YamlConfigRepository) Load() (*entity.Config, error) {
 
 	var config entity.Config
 
-	err = v.Unmarshal(&config)
+	err = v.Unmarshal(&config, viper.DecoderConfigOption(func(decoderConfig *mapstructure.DecoderConfig) {
+		decoderConfig.TagName = "yaml"
+	}))
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
