@@ -29,7 +29,12 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to create params: %w", err)
 			}
 
-			runner, err := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr())
+			outputConfigs := []entity.OutputConfig{}
+			for _, outputConfig := range params.config.Outputs {
+				outputConfigs = append(outputConfigs, outputConfig)
+			}
+
+			runner, err := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), outputConfigs)
 			if err != nil {
 				return fmt.Errorf("failed to create runner: %w", err)
 			}
@@ -92,10 +97,10 @@ func newInstantRecommendParams(cmd *cobra.Command, configRepo domain.ConfigRepos
 type instantRecommendRunner struct {
 	fetcher     *domain.Fetcher
 	recommender domain.Recommender
-	viewer      domain.Viewer
+	viewers     []domain.Viewer
 }
 
-func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer) (*instantRecommendRunner, error) {
+func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfigs []entity.OutputConfig) (*instantRecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -107,11 +112,21 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	if err != nil {
 		return nil, fmt.Errorf("failed to create viewer: %w", err)
 	}
+	viewers := []domain.Viewer{viewer}
+
+	for _, c := range outputConfigs {
+		if c.Type == "slack" {
+			slackViewer := infra.NewSlackViewer(c.APIToken, c.Channel)
+			viewers = append(viewers, slackViewer)
+		} else {
+			return nil, fmt.Errorf("unsupported output type: %s", c.Type)
+		}
+	}
 
 	return &instantRecommendRunner{
 		fetcher:     fetcher,
 		recommender: recommender,
-		viewer:      viewer,
+		viewers:     viewers,
 	}, nil
 }
 
@@ -149,9 +164,11 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
 
-	err = r.viewer.ViewRecommend(recommend)
-	if err != nil {
-		return fmt.Errorf("failed to view recommend: %w", err)
+	for _, viewer := range r.viewers {
+		err = viewer.ViewRecommend(recommend)
+		if err != nil {
+			return fmt.Errorf("failed to view recommend: %w", err)
+		}
 	}
 
 	return nil
