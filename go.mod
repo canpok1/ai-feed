@@ -13,7 +13,7 @@ require (
 
 require (
 	github.com/go-viper/mapstructure/v2 v2.4.0
-	google.golang.org/genai v1.16.0
+	google.golang.org/genai v1.17.0
 )
 
 require (
