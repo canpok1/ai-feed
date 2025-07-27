@@ -168,12 +168,8 @@ func (o OutputConfig) MarshalYAML() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		var temp map[string]interface{}
-		if err := yaml.Unmarshal(out, &temp); err != nil {
+		if err := yaml.Unmarshal(out, &m); err != nil {
 			return nil, err
-		}
-		for k, v := range temp {
-			m[k] = v
 		}
 	}
 
