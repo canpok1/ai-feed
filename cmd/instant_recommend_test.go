@@ -146,9 +146,9 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			params: &instantRecommendParams{
-				urls:   []string{"http://example.com/feed.xml"},
+				urls: []string{"http://example.com/feed.xml"},
 				config: &entity.Config{
-					General: entity.GeneralConfig{DefaultExecutionProfile: "default"},
+					General:  entity.GeneralConfig{DefaultExecutionProfile: "default"},
 					AIModels: map[string]entity.AIModelConfig{}, // Empty AIModels
 					ExecutionProfiles: map[string]entity.ExecutionProfile{
 						"default": {AIModel: "non-existent-model"}, // Point to a non-existent model

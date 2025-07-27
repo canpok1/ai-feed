@@ -23,7 +23,8 @@ func (c *Config) getDefaultExecutionProfile() (*ExecutionProfile, error) {
 	if !ok {
 		return nil, fmt.Errorf("default execution profile not found: %s", c.General.DefaultExecutionProfile)
 	}
-	return &profile, nil
+	return &profile,
+		nil
 }
 
 func (c *Config) GetDefaultAIModel() (*AIModelConfig, error) {
@@ -134,47 +135,6 @@ type OutputConfig struct {
 	SlackAPIConfig *SlackAPIConfig
 }
 
-// MarshalYAML implements the yaml.Marshaler interface.
-func (o OutputConfig) MarshalYAML() (interface{}, error) {
-	// Create a map to hold the marshaled data
-	m := make(map[string]interface{})
-	m["type"] = o.Type
-
-	switch o.Type {
-	case "misskey":
-		if o.MisskeyConfig != nil {
-			// Marshal MisskeyConfig into the map
-			misskeyMap, err := yaml.Marshal(o.MisskeyConfig)
-			if err != nil {
-				return nil, err
-			}
-			var temp map[string]interface{}
-			if err := yaml.Unmarshal(misskeyMap, &temp); err != nil {
-				return nil, err
-			}
-			for k, v := range temp {
-				m[k] = v
-			}
-		}
-	case "slack-api":
-		if o.SlackAPIConfig != nil {
-			// Marshal SlackAPIConfig into the map
-			slackAPIMap, err := yaml.Marshal(o.SlackAPIConfig)
-			if err != nil {
-				return nil, err
-			}
-			var temp map[string]interface{}
-			if err := yaml.Unmarshal(slackAPIMap, &temp); err != nil {
-				return nil, err
-			}
-			for k, v := range temp {
-				m[k] = v
-			}
-		}
-	}
-	return m, nil
-}
-
 // MisskeyConfig holds configuration for Misskey output.
 type MisskeyConfig struct {
 	APIToken string `yaml:"api_token"`
@@ -187,34 +147,77 @@ type SlackAPIConfig struct {
 	Channel  string `yaml:"channel"`
 }
 
-// UnmarshalYAML implements the yaml.Unmarshaler interface.
-func (o *OutputConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	// First, unmarshal into a temporary struct to get the 'type' field.
-	var raw struct {
-		Type string `yaml:"type"`
-	}
-	if err := unmarshal(&raw); err != nil {
-		return err
-	}
-	o.Type = raw.Type
+// MarshalYAML implements the yaml.Marshaler interface.
+func (o OutputConfig) MarshalYAML() (interface{}, error) {
+	m := make(map[string]interface{})
+	m["type"] = o.Type
 
-	// Then, unmarshal into the specific config type based on 'type' field.
+	var configData interface{}
 	switch o.Type {
 	case "misskey":
-		var misskey MisskeyConfig
-		if err := unmarshal(&misskey); err != nil {
-			return err
-		}
-		o.MisskeyConfig = &misskey
+		configData = o.MisskeyConfig
 	case "slack-api":
-		var slackAPI SlackAPIConfig
-		if err := unmarshal(&slackAPI); err != nil {
-			return err
+		configData = o.SlackAPIConfig
+	default:
+		return nil, fmt.Errorf("unsupported output type: %s", o.Type)
+	}
+
+	if configData != nil {
+		out, err := yaml.Marshal(configData)
+		if err != nil {
+			return nil, err
 		}
-		o.SlackAPIConfig = &slackAPI
+		var temp map[string]interface{}
+		if err := yaml.Unmarshal(out, &temp); err != nil {
+			return nil, err
+		}
+		for k, v := range temp {
+			m[k] = v
+		}
+	}
+
+	return m, nil
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (o *OutputConfig) UnmarshalYAML(value *yaml.Node) error {
+	var raw map[string]interface{}
+	if err := value.Decode(&raw); err != nil {
+		return err
+	}
+
+	typeVal, ok := raw["type"]
+	if !ok {
+		return fmt.Errorf("type field not found in OutputConfig")
+	}
+	o.Type, ok = typeVal.(string)
+	if !ok {
+		return fmt.Errorf("type field is not a string")
+	}
+
+	switch o.Type {
+	case "misskey":
+		misskeyConfig := &MisskeyConfig{}
+		if apiToken, ok := raw["api_token"].(string); ok {
+			misskeyConfig.APIToken = apiToken
+		}
+		if apiURL, ok := raw["api_url"].(string); ok {
+			misskeyConfig.APIURL = apiURL
+		}
+		o.MisskeyConfig = misskeyConfig
+	case "slack-api":
+		slackAPIConfig := &SlackAPIConfig{}
+		if apiToken, ok := raw["api_token"].(string); ok {
+			slackAPIConfig.APIToken = apiToken
+		}
+		if channel, ok := raw["channel"].(string); ok {
+			slackAPIConfig.Channel = channel
+		}
+		o.SlackAPIConfig = slackAPIConfig
 	default:
 		return fmt.Errorf("unsupported output type: %s", o.Type)
 	}
+
 	return nil
 }
 
@@ -245,12 +248,7 @@ func MakeDefaultConfig() *Config {
 		},
 		Prompts: map[string]PromptConfig{
 			"任意のプロンプト名": {
-				CommentPromptTemplate: `以下の記事の紹介文を100字以内で作成してください。
----
-記事タイトル: {{title}}
-記事URL: {{url}}
-記事内容:
-{{content}}`,
+				CommentPromptTemplate: "以下の記事の紹介文を100字以内で作成してください。\n---\n記事タイトル: {{title}}\n記事URL: {{url}}\n記事内容:\n{{content}}",
 			},
 		},
 		Outputs: map[string]OutputConfig{
