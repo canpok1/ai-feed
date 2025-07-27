@@ -23,28 +23,29 @@ recommends one random article from the fetched list.`,
 			if configPath == "" {
 				configPath = "./config.yml"
 			}
-			configRepo := infra.NewYamlConfigRepository(configPath)
-			config, err := configRepo.Load()
-			if err != nil {
-				return fmt.Errorf("failed to load config: %w", err)
+			var config infra.ConfigRepository
+			loadedConfig, loadErr := infra.NewYamlConfigRepository(configPath).Load()
+			if loadErr != nil {
+				return fmt.Errorf("failed to load config: %w", loadErr)
+			}
+			config = loadedConfig
+			
+
+			outputConfigs, outputErr := config.GetDefaultOutputs()
+			if outputErr != nil {
+				return fmt.Errorf("failed to get default outputs: %w", outputErr)
 			}
 
-			params, err := newInstantRecommendParams(cmd)
-			if err != nil {
-				return fmt.Errorf("failed to create params: %w", err)
+			runner, runnerErr := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), outputConfigs)
+			if runnerErr != nil {
+				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
 
-			outputConfigs, err := config.GetDefaultOutputs()
-			if err != nil {
-				return fmt.Errorf("failed to get default outputs: %w", err)
+			params, paramsErr := newInstantRecommendParams(cmd)
+			if paramsErr != nil {
+				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-
-			runner, err := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), outputConfigs)
-			if err != nil {
-				return fmt.Errorf("failed to create runner: %w", err)
-			}
-
-			return runner.Run(cmd, params, config)
+			return runner.Run(cmd, params, config.(infra.ConfigRepository))
 		},
 	}
 
@@ -103,9 +104,9 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 		fetchClient,
 		func(url string, err error) error {
 			fmt.Fprintf(stderr, "Error fetching feed from %s: %v\n", url, err)
-			return nil
-		},
-	)
+            return err
+        },
+    )
 	viewer, err := domain.NewStdViewer(stdout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create viewer: %w", err)
@@ -142,7 +143,7 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	}, nil
 }
 
-func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams, config *infra.Config) error {
+func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams, config infra.ConfigRepository) error {
 	model, err := config.GetDefaultAIModel()
 	if err != nil {
 		return fmt.Errorf("failed to get default AI model: %w", err)

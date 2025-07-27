@@ -1,5 +1,7 @@
 package infra
 
+//go:generate mockgen -source=config.go -destination=mock_infra/mock_config.go -package=mock_infra ConfigRepository
+
 import (
 	"fmt"
 	"os"
@@ -7,6 +9,14 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
 )
+
+// ConfigRepository defines the interface for configuration operations.
+type ConfigRepository interface {
+	GetDefaultAIModel() (*entity.AIModelConfig, error)
+	GetDefaultPrompt() (*entity.PromptConfig, error)
+	GetDefaultSystemPrompt() (string, error)
+	GetDefaultOutputs() ([]*entity.OutputConfig, error)
+}
 
 // Config is the root of the configuration structure.
 type Config struct {
