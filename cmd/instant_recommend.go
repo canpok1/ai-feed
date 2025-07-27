@@ -165,11 +165,16 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
 
+	var errs []error
 	for _, viewer := range r.viewers {
 		err = viewer.ViewRecommend(recommend)
 		if err != nil {
-			return fmt.Errorf("failed to view recommend: %w", err)
+			errs = append(errs, fmt.Errorf("failed to view recommend: %w", err))
 		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to view all recommends: %v", errs)
 	}
 
 	return nil
