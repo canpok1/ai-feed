@@ -13,10 +13,10 @@ type SlackViewer struct {
 	channelID string
 }
 
-func NewSlackViewer(token string, channelID string) domain.Viewer {
+func NewSlackViewer(config *entity.SlackAPIConfig) domain.Viewer {
 	return &SlackViewer{
-		client:    slack.New(token),
-		channelID: channelID,
+		client:    slack.New(config.APIToken),
+		channelID: config.Channel,
 	}
 }
 

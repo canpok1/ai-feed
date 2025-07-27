@@ -17,7 +17,15 @@ import (
 )
 
 // createMockConfig creates a mock entity.Config for testing purposes.
-func createMockConfig(modelName, promptName string) *entity.Config {
+func createMockConfig(modelName, promptName string, outputConfigs ...entity.OutputConfig) *entity.Config {
+	outputsMap := make(map[string]entity.OutputConfig)
+	outputNames := make([]string, 0, len(outputConfigs))
+	for i, oc := range outputConfigs {
+		name := fmt.Sprintf("output-%d", i)
+		outputsMap[name] = oc
+		outputNames = append(outputNames, name)
+	}
+
 	return &entity.Config{
 		General: entity.GeneralConfig{
 			DefaultExecutionProfile: "default",
@@ -31,8 +39,9 @@ func createMockConfig(modelName, promptName string) *entity.Config {
 		SystemPrompts: map[string]string{
 			promptName: "test-system-message",
 		},
+		Outputs: outputsMap,
 		ExecutionProfiles: map[string]entity.ExecutionProfile{
-			"default": {AIModel: modelName, Prompt: promptName, SystemPrompt: promptName},
+			"default": {AIModel: modelName, Prompt: promptName, SystemPrompt: promptName, Outputs: outputNames},
 		},
 	}
 }
@@ -137,11 +146,17 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 			},
 			params: &instantRecommendParams{
-				urls:   []string{"http://example.com/feed.xml"},
-				config: &entity.Config{}, // No default AI model set
+				urls: []string{"http://example.com/feed.xml"},
+				config: &entity.Config{
+					General:  entity.GeneralConfig{DefaultExecutionProfile: "default"},
+					AIModels: map[string]entity.AIModelConfig{}, // Empty AIModels
+					ExecutionProfiles: map[string]entity.ExecutionProfile{
+						"default": {AIModel: "non-existent-model"}, // Point to a non-existent model
+					},
+				},
 			},
 			expectedStdout:       "",
-			expectedErrorMessage: toStringP("failed to get default AI model: default execution profile not found: "),
+			expectedErrorMessage: toStringP("failed to get default AI model: AI model not found: non-existent-model"),
 		},
 		{
 			name: "GetDefaultPrompt error",
@@ -186,7 +201,10 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)
 
-			runner, err := newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, []entity.OutputConfig{})
+			outputConfigs, err := tt.params.config.GetDefaultOutputs()
+			assert.NoError(t, err, "GetDefaultOutputs should not return an error")
+
+			runner, err := newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, outputConfigs)
 			assert.NoError(t, err, "newInstantRecommendRunner should not return an error")
 
 			// Create a dummy cobra.Command for the Run method, as it's required but not directly used in runner.Run logic

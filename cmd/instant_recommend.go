@@ -100,7 +100,7 @@ type instantRecommendRunner struct {
 	viewers     []domain.Viewer
 }
 
-func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfigs []entity.OutputConfig) (*instantRecommendRunner, error) {
+func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfigs []*entity.OutputConfig) (*instantRecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -117,8 +117,21 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	for _, c := range outputConfigs {
 		switch c.Type {
 		case "slack-api":
-			slackViewer := infra.NewSlackViewer(c.APIToken, c.Channel)
+			if c.SlackAPIConfig == nil {
+				fmt.Fprintf(stderr, "Warning: slack-api output type found but SlackAPIConfig is nil, skipping\n")
+				continue
+			}
+			slackViewer := infra.NewSlackViewer(c.SlackAPIConfig)
 			viewers = append(viewers, slackViewer)
+		case "misskey":
+			if c.MisskeyConfig == nil {
+				fmt.Fprintf(stderr, "Warning: misskey output type found but MisskeyConfig is nil, skipping\n")
+				continue
+			}
+			// TODO: MisskeyViewer の実装と初期化
+			// misskeyViewer := infra.NewMisskeyViewer(c.MisskeyConfig);
+			// viewers = append(viewers, misskeyViewer);
+			fmt.Fprintf(stderr, "Warning: misskey output type is not yet supported, skipping\n")
 		default:
 			fmt.Fprintf(stderr, "Warning: unsupported output type '%s' found, skipping\n", c.Type)
 		}

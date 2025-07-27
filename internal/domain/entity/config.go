@@ -3,6 +3,8 @@ package entity
 import (
 	"fmt"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Config is the root of the configuration structure.
@@ -21,7 +23,8 @@ func (c *Config) getDefaultExecutionProfile() (*ExecutionProfile, error) {
 	if !ok {
 		return nil, fmt.Errorf("default execution profile not found: %s", c.General.DefaultExecutionProfile)
 	}
-	return &profile, nil
+	return &profile,
+		nil
 }
 
 func (c *Config) GetDefaultAIModel() (*AIModelConfig, error) {
@@ -75,19 +78,20 @@ func (c *Config) GetDefaultSystemPrompt() (string, error) {
 	return systemPrompt, nil
 }
 
-func (c *Config) GetDefaultOutputs() ([]OutputConfig, error) {
+func (c *Config) GetDefaultOutputs() ([]*OutputConfig, error) {
 	profile, err := c.getDefaultExecutionProfile()
 	if err != nil {
 		return nil, err
 	}
 
-	outputs := make([]OutputConfig, 0, len(profile.Outputs))
+	outputs := make([]*OutputConfig, 0, len(profile.Outputs))
 	for _, outputName := range profile.Outputs {
 		output, outputFound := c.Outputs[outputName]
 		if !outputFound {
 			return nil, fmt.Errorf("output not found: %s", outputName)
 		}
-		outputs = append(outputs, output)
+		o := output // Create a new variable to ensure we get a unique pointer for each iteration.
+		outputs = append(outputs, &o)
 	}
 
 	return outputs, nil
@@ -123,11 +127,89 @@ func (c *PromptConfig) MakeCommentPromptTemplate(article *Article) string {
 }
 
 // OutputConfig holds configuration for a specific output destination.
+// This struct is used for initial unmarshaling to determine the type.
 type OutputConfig struct {
-	Type     string `yaml:"type"`
-	APIToken string `yaml:"api_token,omitempty"`
-	Channel  string `yaml:"channel,omitempty"`
-	APIURL   string `yaml:"api_url,omitempty"`
+	Type string `yaml:"type"`
+
+	// Specific configurations, to be populated by UnmarshalYAML
+	MisskeyConfig  *MisskeyConfig
+	SlackAPIConfig *SlackAPIConfig
+}
+
+// MisskeyConfig holds configuration for Misskey output.
+type MisskeyConfig struct {
+	APIToken string `yaml:"api_token"`
+	APIURL   string `yaml:"api_url"`
+}
+
+// SlackAPIConfig holds configuration for Slack API output.
+type SlackAPIConfig struct {
+	APIToken string `yaml:"api_token"`
+	Channel  string `yaml:"channel"`
+}
+
+// MarshalYAML implements the yaml.Marshaler interface.
+func (o OutputConfig) MarshalYAML() (interface{}, error) {
+	m := make(map[string]interface{})
+	m["type"] = o.Type
+
+	var configData interface{}
+	switch o.Type {
+	case "misskey":
+		configData = o.MisskeyConfig
+	case "slack-api":
+		configData = o.SlackAPIConfig
+	default:
+		return nil, fmt.Errorf("unsupported output type: %s", o.Type)
+	}
+
+	if configData != nil {
+		out, err := yaml.Marshal(configData)
+		if err != nil {
+			return nil, err
+		}
+		if err := yaml.Unmarshal(out, &m); err != nil {
+			return nil, err
+		}
+	}
+
+	return m, nil
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (o *OutputConfig) UnmarshalYAML(value *yaml.Node) error {
+	var raw map[string]interface{}
+	if err := value.Decode(&raw); err != nil {
+		return err
+	}
+
+	typeVal, ok := raw["type"]
+	if !ok {
+		return fmt.Errorf("type field not found in OutputConfig")
+	}
+	o.Type, ok = typeVal.(string)
+	if !ok {
+		return fmt.Errorf("type field is not a string")
+	}
+
+	switch o.Type {
+	case "misskey":
+		misskeyConfig := MisskeyConfig{}
+		if err := value.Decode(&misskeyConfig); err != nil {
+			return err
+		}
+		o.MisskeyConfig = &misskeyConfig
+	case "slack-api":
+		slackAPIConfig := SlackAPIConfig{}
+		if err := value.Decode(&slackAPIConfig); err != nil {
+			return err
+		}
+		o.SlackAPIConfig = &slackAPIConfig
+	default:
+		return fmt.Errorf("unsupported output type: %s", o.Type)
+	}
+
+	return nil
 }
 
 // ExecutionProfile defines a combination of AI model, prompt, and output.
@@ -157,24 +239,23 @@ func MakeDefaultConfig() *Config {
 		},
 		Prompts: map[string]PromptConfig{
 			"任意のプロンプト名": {
-				CommentPromptTemplate: `以下の記事の紹介文を100字以内で作成してください。
----
-記事タイトル: {{title}}
-記事URL: {{url}}
-記事内容:
-{{content}}`,
+				CommentPromptTemplate: "以下の記事の紹介文を100字以内で作成してください。\n---\n記事タイトル: {{title}}\n記事URL: {{url}}\n記事内容:\n{{content}}",
 			},
 		},
 		Outputs: map[string]OutputConfig{
 			"任意の出力名(Slack)": {
-				Type:     "slack-api",
-				APIToken: "xoxb-xxxxxx",
-				Channel:  "#general",
+				Type: "slack-api",
+				SlackAPIConfig: &SlackAPIConfig{
+					APIToken: "xoxb-xxxxxx",
+					Channel:  "#general",
+				},
 			},
 			"任意の出力名(Misskey)": {
-				Type:     "misskey",
-				APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
-				APIURL:   "https://misskey.social/api",
+				Type: "misskey",
+				MisskeyConfig: &MisskeyConfig{
+					APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
+					APIURL:   "https://misskey.social/api",
+				},
 			},
 		},
 		ExecutionProfiles: map[string]ExecutionProfile{
