@@ -155,11 +155,16 @@ type OutputConfig struct {
 }
 
 func (c *OutputConfig) ToEntity() *entity.OutputConfig {
-	return &entity.OutputConfig{
-		Type:           c.Type,
-		MisskeyConfig:  c.MisskeyConfig.ToEntity(),
-		SlackAPIConfig: c.SlackAPIConfig.ToEntity(),
+	e := &entity.OutputConfig{
+		Type: c.Type,
 	}
+	if c.MisskeyConfig != nil {
+		e.MisskeyConfig = c.MisskeyConfig.ToEntity()
+	}
+	if c.SlackAPIConfig != nil {
+		e.SlackAPIConfig = c.SlackAPIConfig.ToEntity()
+	}
+	return e
 }
 
 // MisskeyConfig holds configuration for Misskey output.

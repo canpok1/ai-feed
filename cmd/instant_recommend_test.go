@@ -9,6 +9,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
+	"github.com/canpok1/ai-feed/internal/infra" // Add this line
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -17,7 +18,7 @@ import (
 )
 
 // createMockConfig creates a mock entity.Config for testing purposes.
-func createMockConfig(modelName, promptName string, outputConfigs ...entity.OutputConfig) *entity.Config {
+func createMockConfig(modelName, promptName string, outputConfigs ...entity.OutputConfig) *infra.Config {
 	outputsMap := make(map[string]entity.OutputConfig)
 	outputNames := make([]string, 0, len(outputConfigs))
 	for i, oc := range outputConfigs {
@@ -26,7 +27,7 @@ func createMockConfig(modelName, promptName string, outputConfigs ...entity.Outp
 		outputNames = append(outputNames, name)
 	}
 
-	return &entity.Config{
+	return &infra.Config{
 		General: entity.GeneralConfig{
 			DefaultExecutionProfile: "default",
 		},
@@ -147,7 +148,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			},
 			params: &instantRecommendParams{
 				urls: []string{"http://example.com/feed.xml"},
-				config: &entity.Config{
+				config: &infra.Config{
 					General:  entity.GeneralConfig{DefaultExecutionProfile: "default"},
 					AIModels: map[string]entity.AIModelConfig{}, // Empty AIModels
 					ExecutionProfiles: map[string]entity.ExecutionProfile{
@@ -171,7 +172,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			},
 			params: &instantRecommendParams{
 				urls: []string{"http://example.com/feed.xml"},
-				config: &entity.Config{
+				config: &infra.Config{
 					General: entity.GeneralConfig{DefaultExecutionProfile: "default"},
 					AIModels: map[string]entity.AIModelConfig{
 						"test-model": {Type: "test-type"},
@@ -234,10 +235,10 @@ func TestNewInstantRecommendParams(t *testing.T) {
 		name             string
 		urlFlag          string
 		sourceFlag       string
-		mockConfig       *entity.Config
+		mockConfig       *infra.Config
 		configLoadErr    error
 		expectedURLs     []string
-		expectedConfig   *entity.Config
+		expectedConfig   *infra.Config
 		expectedErr      string
 		expectConfigLoad bool
 	}{

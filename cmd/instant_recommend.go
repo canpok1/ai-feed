@@ -24,12 +24,17 @@ recommends one random article from the fetched list.`,
 				configPath = "./config.yml"
 			}
 			configRepo := infra.NewYamlConfigRepository(configPath)
-			params, err := newInstantRecommendParams(cmd, configRepo)
+			config, err := configRepo.Load()
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+
+			params, err := newInstantRecommendParams(cmd)
 			if err != nil {
 				return fmt.Errorf("failed to create params: %w", err)
 			}
 
-			outputConfigs, err := params.config.GetDefaultOutputs()
+			outputConfigs, err := config.GetDefaultOutputs()
 			if err != nil {
 				return fmt.Errorf("failed to get default outputs: %w", err)
 			}
@@ -39,7 +44,7 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to create runner: %w", err)
 			}
 
-			return runner.Run(cmd, params)
+			return runner.Run(cmd, params, config)
 		},
 	}
 
@@ -50,11 +55,10 @@ recommends one random article from the fetched list.`,
 }
 
 type instantRecommendParams struct {
-	urls   []string
-	config *entity.Config
+	urls []string
 }
 
-func newInstantRecommendParams(cmd *cobra.Command, configRepo domain.ConfigRepository) (*instantRecommendParams, error) {
+func newInstantRecommendParams(cmd *cobra.Command) (*instantRecommendParams, error) {
 	url, err := cmd.Flags().GetString("url")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get url flag: %w", err)
@@ -83,14 +87,8 @@ func newInstantRecommendParams(cmd *cobra.Command, configRepo domain.ConfigRepos
 		return nil, fmt.Errorf("either --url or --source must be specified")
 	}
 
-	config, err := configRepo.Load()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-
 	return &instantRecommendParams{
-		urls:   urls,
-		config: config,
+		urls: urls,
 	}, nil
 }
 
@@ -144,16 +142,16 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	}, nil
 }
 
-func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams) error {
-	model, err := p.config.GetDefaultAIModel()
+func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams, config *infra.Config) error {
+	model, err := config.GetDefaultAIModel()
 	if err != nil {
 		return fmt.Errorf("failed to get default AI model: %w", err)
 	}
-	prompt, err := p.config.GetDefaultPrompt()
+	prompt, err := config.GetDefaultPrompt()
 	if err != nil {
 		return fmt.Errorf("failed to get default prompt: %w", err)
 	}
-	systemPrompt, err := p.config.GetDefaultSystemPrompt()
+	systemPrompt, err := config.GetDefaultSystemPrompt()
 	if err != nil {
 		return fmt.Errorf("failed to get default system prompt: %w", err)
 	}
