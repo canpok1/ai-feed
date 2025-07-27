@@ -23,7 +23,7 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 	repo := NewYamlConfigRepository(filePath)
 
 	// Test Save
-	configToSave := &entity.Config{
+	configToSave := &Config{
 		General: entity.GeneralConfig{
 			DefaultExecutionProfile: "test-profile",
 		},
@@ -71,7 +71,7 @@ func TestYamlConfigRepository_Save_InvalidPath(t *testing.T) {
 	invalidPath := "/nonexistent_dir/test_config.yaml" // This path should not exist and cause an error
 	repo := NewYamlConfigRepository(invalidPath)
 
-	configToSave := entity.MakeDefaultConfig()
+	configToSave := MakeDefaultConfig()
 	err := repo.Save(configToSave)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to create config file")
