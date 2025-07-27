@@ -123,11 +123,56 @@ func (c *PromptConfig) MakeCommentPromptTemplate(article *Article) string {
 }
 
 // OutputConfig holds configuration for a specific output destination.
+// This struct is used for initial unmarshaling to determine the type.
 type OutputConfig struct {
-	Type     string `yaml:"type"`
-	APIToken string `yaml:"api_token,omitempty"`
-	Channel  string `yaml:"channel,omitempty"`
-	APIURL   string `yaml:"api_url,omitempty"`
+	Type string `yaml:"type"`
+
+	// Specific configurations, to be populated by UnmarshalYAML
+	MisskeyConfig  *MisskeyConfig
+	SlackAPIConfig *SlackAPIConfig
+}
+
+// MisskeyConfig holds configuration for Misskey output.
+type MisskeyConfig struct {
+	APIToken string `yaml:"api_token"`
+	APIURL   string `yaml:"api_url"`
+}
+
+// SlackAPIConfig holds configuration for Slack API output.
+type SlackAPIConfig struct {
+	APIToken string `yaml:"api_token"`
+	Channel  string `yaml:"channel"`
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (o *OutputConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// First, unmarshal into a temporary struct to get the 'type' field.
+	var raw struct {
+		Type string `yaml:"type"`
+	}
+	if err := unmarshal(&raw); err != nil {
+		return err
+	}
+	o.Type = raw.Type
+
+	// Then, unmarshal into the specific config type based on 'type' field.
+	switch o.Type {
+	case "misskey":
+		var misskey MisskeyConfig
+		if err := unmarshal(&misskey); err != nil {
+			return err
+		}
+		o.MisskeyConfig = &misskey
+	case "slack-api":
+		var slackAPI SlackAPIConfig
+		if err := unmarshal(&slackAPI); err != nil {
+			return err
+		}
+		o.SlackAPIConfig = &slackAPI
+	default:
+		return fmt.Errorf("unsupported output type: %s", o.Type)
+	}
+	return nil
 }
 
 // ExecutionProfile defines a combination of AI model, prompt, and output.
