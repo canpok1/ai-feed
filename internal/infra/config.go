@@ -6,8 +6,6 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
-	"github.com/go-viper/mapstructure/v2"
-	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -43,21 +41,13 @@ func (r *YamlConfigRepository) Save(config *entity.Config) error {
 }
 
 func (r *YamlConfigRepository) Load() (*entity.Config, error) {
-	v := viper.New()
-	v.SetConfigFile(r.filePath)
-	v.AutomaticEnv()
-	err := v.ReadInConfig()
+	data, err := os.ReadFile(r.filePath)
 	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, fmt.Errorf("failed to read config file: %s, %w", r.filePath, err)
-		}
+		return nil, fmt.Errorf("failed to read config file: %s, %w", r.filePath, err)
 	}
 
 	var config entity.Config
-
-	err = v.Unmarshal(&config, viper.DecoderConfigOption(func(decoderConfig *mapstructure.DecoderConfig) {
-		decoderConfig.TagName = "yaml"
-	}))
+	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}

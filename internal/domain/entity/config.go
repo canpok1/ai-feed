@@ -78,19 +78,19 @@ func (c *Config) GetDefaultSystemPrompt() (string, error) {
 	return systemPrompt, nil
 }
 
-func (c *Config) GetDefaultOutputs() ([]OutputConfig, error) {
+func (c *Config) GetDefaultOutputs() ([]*OutputConfig, error) {
 	profile, err := c.getDefaultExecutionProfile()
 	if err != nil {
 		return nil, err
 	}
 
-	outputs := make([]OutputConfig, 0, len(profile.Outputs))
+	outputs := make([]*OutputConfig, 0, len(profile.Outputs))
 	for _, outputName := range profile.Outputs {
 		output, outputFound := c.Outputs[outputName]
 		if !outputFound {
 			return nil, fmt.Errorf("output not found: %s", outputName)
 		}
-		outputs = append(outputs, output)
+		outputs = append(outputs, &output)
 	}
 
 	return outputs, nil
@@ -197,23 +197,17 @@ func (o *OutputConfig) UnmarshalYAML(value *yaml.Node) error {
 
 	switch o.Type {
 	case "misskey":
-		misskeyConfig := &MisskeyConfig{}
-		if apiToken, ok := raw["api_token"].(string); ok {
-			misskeyConfig.APIToken = apiToken
+		misskeyConfig := MisskeyConfig{}
+		if err := value.Decode(&misskeyConfig); err != nil {
+			return err
 		}
-		if apiURL, ok := raw["api_url"].(string); ok {
-			misskeyConfig.APIURL = apiURL
-		}
-		o.MisskeyConfig = misskeyConfig
+		o.MisskeyConfig = &misskeyConfig
 	case "slack-api":
-		slackAPIConfig := &SlackAPIConfig{}
-		if apiToken, ok := raw["api_token"].(string); ok {
-			slackAPIConfig.APIToken = apiToken
+		slackAPIConfig := SlackAPIConfig{}
+		if err := value.Decode(&slackAPIConfig); err != nil {
+			return err
 		}
-		if channel, ok := raw["channel"].(string); ok {
-			slackAPIConfig.Channel = channel
-		}
-		o.SlackAPIConfig = slackAPIConfig
+		o.SlackAPIConfig = &slackAPIConfig
 	default:
 		return fmt.Errorf("unsupported output type: %s", o.Type)
 	}

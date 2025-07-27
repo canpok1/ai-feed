@@ -100,7 +100,7 @@ type instantRecommendRunner struct {
 	viewers     []domain.Viewer
 }
 
-func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfigs []entity.OutputConfig) (*instantRecommendRunner, error) {
+func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfigs []*entity.OutputConfig) (*instantRecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
