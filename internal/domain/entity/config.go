@@ -132,6 +132,47 @@ type OutputConfig struct {
 	SlackAPIConfig *SlackAPIConfig
 }
 
+// MarshalYAML implements the yaml.Marshaler interface.
+func (o OutputConfig) MarshalYAML() (interface{}, error) {
+	// Create a map to hold the marshaled data
+	m := make(map[string]interface{})
+	m["type"] = o.Type
+
+	switch o.Type {
+	case "misskey":
+		if o.MisskeyConfig != nil {
+			// Marshal MisskeyConfig into the map
+			misskeyMap, err := yaml.Marshal(o.MisskeyConfig)
+			if err != nil {
+				return nil, err
+			}
+			var temp map[string]interface{}
+			if err := yaml.Unmarshal(misskeyMap, &temp); err != nil {
+				return nil, err
+			}
+			for k, v := range temp {
+				m[k] = v
+			}
+		}
+	case "slack-api":
+		if o.SlackAPIConfig != nil {
+			// Marshal SlackAPIConfig into the map
+			slackAPIMap, err := yaml.Marshal(o.SlackAPIConfig)
+			if err != nil {
+				return nil, err
+			}
+			var temp map[string]interface{}
+			if err := yaml.Unmarshal(slackAPIMap, &temp); err != nil {
+				return nil, err
+			}
+			for k, v := range temp {
+				m[k] = v
+			}
+		}
+	}
+	return m, nil
+}
+
 // MisskeyConfig holds configuration for Misskey output.
 type MisskeyConfig struct {
 	APIToken string `yaml:"api_token"`
