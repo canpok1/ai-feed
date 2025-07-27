@@ -115,13 +115,14 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	viewers := []domain.Viewer{viewer}
 
 	for _, c := range outputConfigs {
-		if c.Type == "slack-api" {
-			slackViewer := infra.NewSlackViewer(c.APIToken, c.Channel)
-			viewers = append(viewers, slackViewer)
-		} else {
-			return nil, fmt.Errorf("unsupported output type: %s", c.Type)
-		}
-	}
+        switch c.Type {
+        case "slack-api":
+            slackViewer := infra.NewSlackViewer(c.APIToken, c.Channel)
+            viewers = append(viewers, slackViewer)
+        default:
+            fmt.Fprintf(stderr, "Warning: unsupported output type '%s' found, skipping\n", c.Type)
+        }
+    }
 
 	return &instantRecommendRunner{
 		fetcher:     fetcher,
