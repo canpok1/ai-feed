@@ -3,6 +3,8 @@ package entity
 import (
 	"fmt"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Config is the root of the configuration structure.
@@ -253,14 +255,18 @@ func MakeDefaultConfig() *Config {
 		},
 		Outputs: map[string]OutputConfig{
 			"任意の出力名(Slack)": {
-				Type:     "slack-api",
-				APIToken: "xoxb-xxxxxx",
-				Channel:  "#general",
+				Type: "slack-api",
+				SlackAPIConfig: &SlackAPIConfig{
+					APIToken: "xoxb-xxxxxx",
+					Channel:  "#general",
+				},
 			},
 			"任意の出力名(Misskey)": {
-				Type:     "misskey",
-				APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
-				APIURL:   "https://misskey.social/api",
+				Type: "misskey",
+				MisskeyConfig: &MisskeyConfig{
+					APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
+					APIURL:   "https://misskey.social/api",
+				},
 			},
 		},
 		ExecutionProfiles: map[string]ExecutionProfile{
