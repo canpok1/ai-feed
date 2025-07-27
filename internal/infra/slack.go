@@ -26,9 +26,12 @@ func (s *SlackViewer) ViewArticles(articles []entity.Article) error {
 }
 
 func (v *SlackViewer) ViewRecommend(recommend *entity.Recommend) error {
-	messages := []string{}
+	var messages []string
 	if recommend.Comment != nil && *recommend.Comment != "" {
+		messages = make([]string, 0, 3)
 		messages = append(messages, *recommend.Comment)
+	} else {
+		messages = make([]string, 0, 2)
 	}
 	messages = append(messages, recommend.Article.Title)
 	messages = append(messages, recommend.Article.Link)
