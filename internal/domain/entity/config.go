@@ -90,7 +90,8 @@ func (c *Config) GetDefaultOutputs() ([]*OutputConfig, error) {
 		if !outputFound {
 			return nil, fmt.Errorf("output not found: %s", outputName)
 		}
-		outputs = append(outputs, &output)
+		o := output // Create a new variable to ensure we get a unique pointer for each iteration.
+		outputs = append(outputs, &o)
 	}
 
 	return outputs, nil
