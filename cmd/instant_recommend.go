@@ -29,9 +29,9 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to create params: %w", err)
 			}
 
-			outputConfigs := []entity.OutputConfig{}
-			for _, outputConfig := range params.config.Outputs {
-				outputConfigs = append(outputConfigs, outputConfig)
+			outputConfigs, err := params.config.GetDefaultOutputs()
+			if err != nil {
+				return fmt.Errorf("failed to get default outputs: %w", err)
 			}
 
 			runner, err := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), outputConfigs)
