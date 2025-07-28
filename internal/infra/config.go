@@ -119,7 +119,6 @@ func MakeDefaultConfig() *Config {
 type ConfigRepository interface {
 	Save(config *Config) error
 	Load() (*Config, error)
-	GetDefaultAIModel() (*AIConfig, error)
 	GetDefaultPrompt() (*PromptConfig, error)
 	GetDefaultSystemPrompt() (string, error)
 	GetDefaultOutputs() ([]*OutputConfig, error)
@@ -133,18 +132,6 @@ func NewYamlConfigRepository(filePath string) *YamlConfigRepository {
 	return &YamlConfigRepository{
 		filePath: filePath,
 	}
-}
-
-func (r *YamlConfigRepository) GetDefaultAIModel() (*AIConfig, error) {
-	config, err := r.Load()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-	if config.DefaultProfile == nil || config.DefaultProfile.AI == nil || config.DefaultProfile.AI.Gemini == nil {
-		return nil, fmt.Errorf("default AI model not found")
-	}
-	return config.DefaultProfile.AI,
-		nil
 }
 
 func (r *YamlConfigRepository) GetDefaultPrompt() (*PromptConfig, error) {
