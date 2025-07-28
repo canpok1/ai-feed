@@ -33,7 +33,7 @@ anything to your local cache.`,
 
 			if sourceFile != "" {
 				// Read URLs from file
-				fileURLs, err := domain.ReadURLsFromFile(sourceFile, func(filePath, line string, err error) error {
+				fileURLs, err := infra.ReadURLsFromFile(sourceFile, func(filePath, line string, err error) error {
 					fmt.Fprintf(cmd.ErrOrStderr(), "Warning: Skipping invalid URL in %s on line '%s': %v\n", filePath, line, err)
 					return nil
 				})
