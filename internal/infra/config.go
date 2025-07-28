@@ -12,24 +12,24 @@ import (
 
 // ConfigRepository defines the interface for configuration operations.
 type ConfigRepository interface {
-	GetDefaultAIModel() (*entity.AIModelConfig, error)
-	GetDefaultPrompt() (*entity.PromptConfig, error)
+	GetDefaultAIModel() (*AIModelConfig, error)
+	GetDefaultPrompt() (*PromptConfig, error)
 	GetDefaultSystemPrompt() (string, error)
-	GetDefaultOutputs() ([]*entity.OutputConfig, error)
+	GetDefaultOutputs() ([]*OutputConfig, error)
 }
 
 // Config is the root of the configuration structure.
 type Config struct {
-	General           entity.GeneralConfig               `yaml:"general"`
-	Cache             entity.CacheConfig                 `yaml:"cache"`
-	AIModels          map[string]entity.AIModelConfig    `yaml:"ai_models"`
-	SystemPrompts     map[string]string                  `yaml:"system_prompts"`
-	Prompts           map[string]entity.PromptConfig     `yaml:"prompts"`
-	Outputs           map[string]entity.OutputConfig     `yaml:"outputs"`
-	ExecutionProfiles map[string]entity.ExecutionProfile `yaml:"execution_profiles"`
+	General           GeneralConfig               `yaml:"general"`
+	Cache             CacheConfig                 `yaml:"cache"`
+	AIModels          map[string]AIModelConfig    `yaml:"ai_models"`
+	SystemPrompts     map[string]string           `yaml:"system_prompts"`
+	Prompts           map[string]PromptConfig     `yaml:"prompts"`
+	Outputs           map[string]OutputConfig     `yaml:"outputs"`
+	ExecutionProfiles map[string]ExecutionProfile `yaml:"execution_profiles"`
 }
 
-func (c *Config) getDefaultExecutionProfile() (*entity.ExecutionProfile, error) {
+func (c *Config) getDefaultExecutionProfile() (*ExecutionProfile, error) {
 	profile, ok := c.ExecutionProfiles[c.General.DefaultExecutionProfile]
 	if !ok {
 		return nil, fmt.Errorf("default execution profile not found: %s", c.General.DefaultExecutionProfile)
@@ -38,7 +38,7 @@ func (c *Config) getDefaultExecutionProfile() (*entity.ExecutionProfile, error) 
 		nil
 }
 
-func (c *Config) GetDefaultAIModel() (*entity.AIModelConfig, error) {
+func (c *Config) GetDefaultAIModel() (*AIModelConfig, error) {
 	profile, err := c.getDefaultExecutionProfile()
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (c *Config) GetDefaultAIModel() (*entity.AIModelConfig, error) {
 	return &model, nil
 }
 
-func (c *Config) GetDefaultPrompt() (*entity.PromptConfig, error) {
+func (c *Config) GetDefaultPrompt() (*PromptConfig, error) {
 	profile, err := c.getDefaultExecutionProfile()
 	if err != nil {
 		return nil, err
@@ -89,13 +89,13 @@ func (c *Config) GetDefaultSystemPrompt() (string, error) {
 	return systemPrompt, nil
 }
 
-func (c *Config) GetDefaultOutputs() ([]*entity.OutputConfig, error) {
+func (c *Config) GetDefaultOutputs() ([]*OutputConfig, error) {
 	profile, err := c.getDefaultExecutionProfile()
 	if err != nil {
 		return nil, err
 	}
 
-	outputs := make([]*entity.OutputConfig, 0, len(profile.Outputs))
+	outputs := make([]*OutputConfig, 0, len(profile.Outputs))
 	for _, outputName := range profile.Outputs {
 		output, outputFound := c.Outputs[outputName]
 		if !outputFound {
@@ -275,15 +275,24 @@ type ExecutionProfile struct {
 	Outputs      []string `yaml:"outputs"`
 }
 
+func (p *ExecutionProfile) ToEntity() *entity.ExecutionProfile {
+	return &entity.ExecutionProfile{
+		AIModel:      p.AIModel,
+		SystemPrompt: p.SystemPrompt,
+		Prompt:       p.Prompt,
+		Outputs:      p.Outputs,
+	}
+}
+
 func MakeDefaultConfig() *Config {
 	return &Config{
-		General: entity.GeneralConfig{
+		General: GeneralConfig{
 			DefaultExecutionProfile: "任意のプロファイル名",
 		},
-		Cache: entity.CacheConfig{
+		Cache: CacheConfig{
 			RetentionDays: 7,
 		},
-		AIModels: map[string]entity.AIModelConfig{
+		AIModels: map[string]AIModelConfig{
 			"任意のAIモデル名": {
 				Type:   "gemini-2.5-flash または gemini-2.5-pro",
 				APIKey: "xxxxxx",
@@ -292,7 +301,7 @@ func MakeDefaultConfig() *Config {
 		SystemPrompts: map[string]string{
 			"任意のシステムプロンプト名": "あなたはXXXXなAIアシスタントです。",
 		},
-		Prompts: map[string]entity.PromptConfig{
+		Prompts: map[string]PromptConfig{
 			"任意のプロンプト名": {
 				CommentPromptTemplate: `以下の記事の紹介文を100字以内で作成してください。
 ---
@@ -302,23 +311,23 @@ func MakeDefaultConfig() *Config {
 {{content}}`,
 			},
 		},
-		Outputs: map[string]entity.OutputConfig{
+		Outputs: map[string]OutputConfig{
 			"任意の出力名(Slack)": {
 				Type: "slack-api",
-				SlackAPIConfig: &entity.SlackAPIConfig{
+				SlackAPIConfig: &SlackAPIConfig{
 					APIToken: "xoxb-xxxxxx",
 					Channel:  "#general",
 				},
 			},
 			"任意の出力名(Misskey)": {
 				Type: "misskey",
-				MisskeyConfig: &entity.MisskeyConfig{
+				MisskeyConfig: &MisskeyConfig{
 					APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
 					APIURL:   "https://misskey.social/api",
 				},
 			},
 		},
-		ExecutionProfiles: map[string]entity.ExecutionProfile{
+		ExecutionProfiles: map[string]ExecutionProfile{
 			"任意のプロファイル名": {
 				AIModel:      "任意のAIモデル名",
 				SystemPrompt: "任意のシステムプロンプト名",
