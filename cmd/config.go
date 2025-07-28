@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
 )
@@ -31,7 +30,7 @@ func makeConfigInitCmd() *cobra.Command {
 
 			configRepo := infra.NewYamlConfigRepository(filePath)
 
-			config := entity.MakeDefaultConfig()
+			config := infra.MakeDefaultConfig()
 			if err := configRepo.Save(config); err != nil {
 				return err
 			}

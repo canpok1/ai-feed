@@ -9,6 +9,8 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
+	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra/mock_infra"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -17,8 +19,8 @@ import (
 )
 
 // createMockConfig creates a mock entity.Config for testing purposes.
-func createMockConfig(modelName, promptName string, outputConfigs ...entity.OutputConfig) *entity.Config {
-	outputsMap := make(map[string]entity.OutputConfig)
+func createMockConfig(modelName, promptName string, outputConfigs ...infra.OutputConfig) *infra.Config {
+	outputsMap := make(map[string]infra.OutputConfig)
 	outputNames := make([]string, 0, len(outputConfigs))
 	for i, oc := range outputConfigs {
 		name := fmt.Sprintf("output-%d", i)
@@ -26,21 +28,21 @@ func createMockConfig(modelName, promptName string, outputConfigs ...entity.Outp
 		outputNames = append(outputNames, name)
 	}
 
-	return &entity.Config{
-		General: entity.GeneralConfig{
+	return &infra.Config{
+		General: infra.GeneralConfig{
 			DefaultExecutionProfile: "default",
 		},
-		AIModels: map[string]entity.AIModelConfig{
+		AIModels: map[string]infra.AIModelConfig{
 			modelName: {Type: "test-type", APIKey: "test-key"},
 		},
-		Prompts: map[string]entity.PromptConfig{
+		Prompts: map[string]infra.PromptConfig{
 			promptName: {CommentPromptTemplate: "test-prompt-template"},
 		},
 		SystemPrompts: map[string]string{
 			promptName: "test-system-message",
 		},
 		Outputs: outputsMap,
-		ExecutionProfiles: map[string]entity.ExecutionProfile{
+		ExecutionProfiles: map[string]infra.ExecutionProfile{
 			"default": {AIModel: modelName, Prompt: promptName, SystemPrompt: promptName, Outputs: outputNames},
 		},
 	}
@@ -73,8 +75,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			params: &instantRecommendParams{
-				urls:   []string{"http://example.com/feed.xml"},
-				config: createMockConfig("test-model", "test-prompt"),
+				urls: []string{"http://example.com/feed.xml"},
 			},
 			expectedStdout: strings.Join([]string{
 				"Title: Recommended Article",
@@ -94,8 +95,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &instantRecommendParams{
-				urls:   []string{"http://example.com/empty.xml"},
-				config: createMockConfig("test-model", "test-prompt"),
+				urls: []string{"http://example.com/empty.xml"},
 			},
 			expectedStdout:       "No articles found in the feed.\n",
 			expectedStderr:       "",
@@ -110,12 +110,11 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &instantRecommendParams{
-				urls:   []string{"http://invalid.com/feed.xml"},
-				config: createMockConfig("test-model", "test-prompt"),
+				urls: []string{"http://invalid.com/feed.xml"},
 			},
-			expectedStdout:       "No articles found in the feed.\n",
+			expectedStdout:       "", // Changed to empty string
 			expectedStderr:       "Error fetching feed from http://invalid.com/feed.xml: mock fetch error\n",
-			expectedErrorMessage: nil,
+			expectedErrorMessage: toStringP("failed to fetch articles: mock fetch error"),
 		},
 		{
 			name: "Recommend error",
@@ -128,8 +127,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
 			},
 			params: &instantRecommendParams{
-				urls:   []string{"http://example.com/feed.xml"},
-				config: createMockConfig("test-model", "test-prompt"),
+				urls: []string{"http://example.com/feed.xml"},
 			},
 			expectedStdout:       "",
 			expectedStderr:       "",
@@ -143,17 +141,11 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				// Recommend is not called if AI model or prompt is not found.
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &instantRecommendParams{
 				urls: []string{"http://example.com/feed.xml"},
-				config: &entity.Config{
-					General:  entity.GeneralConfig{DefaultExecutionProfile: "default"},
-					AIModels: map[string]entity.AIModelConfig{}, // Empty AIModels
-					ExecutionProfiles: map[string]entity.ExecutionProfile{
-						"default": {AIModel: "non-existent-model"}, // Point to a non-existent model
-					},
-				},
 			},
 			expectedStdout:       "",
 			expectedErrorMessage: toStringP("failed to get default AI model: AI model not found: non-existent-model"),
@@ -166,24 +158,14 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				// Recommend is called even if prompt is nil, so we expect it to be called.
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				// Recommend is not called if AI model or prompt is not found.
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &instantRecommendParams{
 				urls: []string{"http://example.com/feed.xml"},
-				config: &entity.Config{
-					General: entity.GeneralConfig{DefaultExecutionProfile: "default"},
-					AIModels: map[string]entity.AIModelConfig{
-						"test-model": {Type: "test-type"},
-					},
-					ExecutionProfiles: map[string]entity.ExecutionProfile{
-						"default": {AIModel: "test-model", Prompt: ""}, // No prompt set
-					},
-				},
 			},
-			expectedStdout:       "No articles found in the feed.\n",
-			expectedStderr:       "",
-			expectedErrorMessage: nil,
+			expectedStdout:       "",
+			expectedErrorMessage: toStringP("failed to get default prompt: prompt not found: test-prompt"),
 		},
 	}
 
@@ -201,26 +183,58 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)
 
-			outputConfigs, err := tt.params.config.GetDefaultOutputs()
-			assert.NoError(t, err, "GetDefaultOutputs should not return an error")
+			mockConfig := mock_infra.NewMockConfigRepository(ctrl)
 
-			runner, err := newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, outputConfigs)
-			assert.NoError(t, err, "newInstantRecommendRunner should not return an error")
+			// Configure mockConfig expectations based on test case name
+			var outputConfigs []*infra.OutputConfig
+			var runner *instantRecommendRunner
+			var runErr error
+
+			// Always mock GetDefaultOutputs as it's called early in makeInstantRecommendCmd
+			mockConfig.EXPECT().GetDefaultOutputs().Return(outputConfigs, nil).AnyTimes()
+
+			switch tt.name {
+			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
+				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, outputConfigs)
+				if runErr == nil { // Only set expectations if runner creation was successful
+					mockConfig.EXPECT().GetDefaultAIModel().Return(&infra.AIModelConfig{Type: "test-type", APIKey: "test-key"}, nil).Times(1)
+					mockConfig.EXPECT().GetDefaultPrompt().Return(&infra.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, nil).Times(1)
+					mockConfig.EXPECT().GetDefaultSystemPrompt().Return("test-system-message", nil).Times(1)
+				}
+			case "GetDefaultAIModel error":
+				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, nil)
+				if runErr == nil {
+					mockConfig.EXPECT().GetDefaultAIModel().Return(nil, fmt.Errorf("AI model not found: non-existent-model")).Times(1)
+					mockConfig.EXPECT().GetDefaultPrompt().Times(0)
+					mockConfig.EXPECT().GetDefaultSystemPrompt().Times(0)
+				}
+			case "GetDefaultPrompt error":
+				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, nil)
+				if runErr == nil {
+					mockConfig.EXPECT().GetDefaultAIModel().Return(&infra.AIModelConfig{Type: "test-type", APIKey: "test-key"}, nil).Times(1)
+					mockConfig.EXPECT().GetDefaultPrompt().Return(nil, fmt.Errorf("prompt not found: test-prompt")).Times(1)
+					mockConfig.EXPECT().GetDefaultSystemPrompt().Times(0)
+				}
+			}
+			// No need for the if/else block here anymore, as expectations are set within the switch.
 
 			// Create a dummy cobra.Command for the Run method, as it's required but not directly used in runner.Run logic
 			cmd := &cobra.Command{}
 			cmd.SetOut(stdoutBuffer)
 			cmd.SetErr(stderrBuffer)
 
-			err = runner.Run(cmd, tt.params)
-			hasError := err != nil
+			if runErr == nil && runner != nil {
+				runErr = runner.Run(cmd, tt.params, mockConfig)
+			}
+
+			hasError := runErr != nil
 			expectedHasError := tt.expectedErrorMessage != nil
 
 			assert.Equal(t, expectedHasError, hasError, "Expected error state mismatch")
 			if expectedHasError {
-				assert.Contains(t, err.Error(), *tt.expectedErrorMessage, "Error message mismatch")
+				assert.Contains(t, runErr.Error(), *tt.expectedErrorMessage, "Error message mismatch")
 			} else {
-				assert.NoError(t, err)
+				assert.NoError(t, runErr)
 			}
 
 			assert.Equal(t, tt.expectedStdout, stdoutBuffer.String(), "Stdout mismatch")
@@ -231,113 +245,57 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 
 func TestNewInstantRecommendParams(t *testing.T) {
 	tests := []struct {
-		name             string
-		urlFlag          string
-		sourceFlag       string
-		mockConfig       *entity.Config
-		configLoadErr    error
-		expectedURLs     []string
-		expectedConfig   *entity.Config
-		expectedErr      string
-		expectConfigLoad bool
+		name         string
+		urlFlag      string
+		sourceFlag   string
+		expectedURLs []string
+		expectedErr  string
 	}{
 		{
-			name:             "URL flag only",
-			urlFlag:          "http://example.com/feed.xml",
-			sourceFlag:       "",
-			mockConfig:       createMockConfig("test-model", "test-prompt"),
-			configLoadErr:    nil,
-			expectedURLs:     []string{"http://example.com/feed.xml"},
-			expectedConfig:   createMockConfig("test-model", "test-prompt"),
-			expectedErr:      "",
-			expectConfigLoad: true,
+			name:         "URL flag only",
+			urlFlag:      "http://example.com/feed.xml",
+			sourceFlag:   "",
+			expectedURLs: []string{"http://example.com/feed.xml"},
+			expectedErr:  "",
 		},
 		{
-			name:             "Source flag only with valid file",
-			urlFlag:          "",
-			sourceFlag:       "tmp_source.txt",
-			mockConfig:       createMockConfig("test-model", "test-prompt"),
-			configLoadErr:    nil,
-			expectedURLs:     []string{"http://example.com/from_file.xml", "http://another.com/from_file.xml"},
-			expectedConfig:   createMockConfig("test-model", "test-prompt"),
-			expectedErr:      "",
-			expectConfigLoad: true,
+			name:         "Source flag only with valid file",
+			urlFlag:      "",
+			sourceFlag:   "tmp_source.txt",
+			expectedURLs: []string{"http://example.com/from_file.xml", "http://another.com/from_file.xml"},
 		},
 		{
-			name:             "Both URL and source flags",
-			urlFlag:          "http://example.com/feed.xml",
-			sourceFlag:       "tmp_source.txt",
-			mockConfig:       createMockConfig("test-model", "test-prompt"),
-			configLoadErr:    nil,
-			expectedURLs:     nil,
-			expectedConfig:   nil,
-			expectedErr:      "cannot use --url and --source options together",
-			expectConfigLoad: false,
+			name:         "Both URL and source flags",
+			urlFlag:      "http://example.com/feed.xml",
+			sourceFlag:   "tmp_source.txt",
+			expectedURLs: nil,
+			expectedErr:  "cannot use --url and --source options together",
 		},
 		{
-			name:             "Neither URL nor source flags",
-			urlFlag:          "",
-			sourceFlag:       "",
-			mockConfig:       createMockConfig("test-model", "test-prompt"),
-			configLoadErr:    nil,
-			expectedURLs:     nil,
-			expectedConfig:   nil,
-			expectedErr:      "either --url or --source must be specified",
-			expectConfigLoad: false,
+			name:         "Neither URL nor source flags",
+			urlFlag:      "",
+			sourceFlag:   "",
+			expectedURLs: nil,
+			expectedErr:  "either --url or --source must be specified",
 		},
 		{
-			name:             "Source file not found",
-			urlFlag:          "",
-			sourceFlag:       "non_existent_file.txt",
-			mockConfig:       createMockConfig("test-model", "test-prompt"),
-			configLoadErr:    nil,
-			expectedURLs:     nil,
-			expectedConfig:   nil,
-			expectedErr:      "failed to read URLs from file: open non_existent_file.txt: no such file or directory",
-			expectConfigLoad: false,
+			name:         "Source file not found",
+			urlFlag:      "",
+			sourceFlag:   "non_existent_file.txt",
+			expectedURLs: nil,
+			expectedErr:  "failed to read URLs from file: open non_existent_file.txt: no such file or directory",
 		},
 		{
-			name:             "Empty source file",
-			urlFlag:          "",
-			sourceFlag:       "empty_source.txt",
-			mockConfig:       createMockConfig("test-model", "test-prompt"),
-			configLoadErr:    nil,
-			expectedURLs:     nil,
-			expectedConfig:   nil,
-			expectedErr:      "source file contains no URLs",
-			expectConfigLoad: false,
-		},
-		{
-			name:             "Config load error",
-			urlFlag:          "http://example.com/feed.xml",
-			sourceFlag:       "",
-			mockConfig:       nil,
-			configLoadErr:    fmt.Errorf("mock config load error"),
-			expectedURLs:     nil,
-			expectedConfig:   nil,
-			expectedErr:      "failed to load config: mock config load error",
-			expectConfigLoad: true,
+			name:         "Empty source file",
+			urlFlag:      "",
+			sourceFlag:   "empty_source.txt",
+			expectedURLs: nil,
+			expectedErr:  "source file contains no URLs",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Create a mock ConfigRepository
-			mockConfigRepo := mock_domain.NewMockConfigRepository(ctrl)
-
-			if tt.expectConfigLoad {
-				if tt.configLoadErr != nil {
-					mockConfigRepo.EXPECT().Load().Return(nil, tt.configLoadErr).Times(1)
-				} else {
-					mockConfigRepo.EXPECT().Load().Return(tt.mockConfig, nil).Times(1)
-				}
-			} else {
-				mockConfigRepo.EXPECT().Load().Times(0)
-			}
-
 			// Create a dummy cobra.Command and set flags
 			cmd := &cobra.Command{}
 			cmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
@@ -361,7 +319,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 				cmd.Flags().Set("source", tt.sourceFlag)
 			}
 
-			params, err := newInstantRecommendParams(cmd, mockConfigRepo)
+			params, err := newInstantRecommendParams(cmd)
 
 			if tt.expectedErr != "" {
 				assert.Error(t, err)
@@ -371,7 +329,6 @@ func TestNewInstantRecommendParams(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, params)
 				assert.Equal(t, tt.expectedURLs, params.urls)
-				assert.Equal(t, tt.expectedConfig, params.config)
 			}
 		})
 	}

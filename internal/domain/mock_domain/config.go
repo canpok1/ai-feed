@@ -12,7 +12,6 @@ package mock_domain
 import (
 	reflect "reflect"
 
-	entity "github.com/canpok1/ai-feed/internal/domain/entity"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,10 +40,10 @@ func (m *MockConfigRepository) EXPECT() *MockConfigRepositoryMockRecorder {
 }
 
 // Load mocks base method.
-func (m *MockConfigRepository) Load() (*entity.Config, error) {
+func (m *MockConfigRepository) Load() (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Load")
-	ret0, _ := ret[0].(*entity.Config)
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -56,7 +55,7 @@ func (mr *MockConfigRepositoryMockRecorder) Load() *gomock.Call {
 }
 
 // Save mocks base method.
-func (m *MockConfigRepository) Save(config *entity.Config) error {
+func (m *MockConfigRepository) Save(config any) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", config)
 	ret0, _ := ret[0].(error)
