@@ -119,7 +119,6 @@ func MakeDefaultConfig() *Config {
 type ConfigRepository interface {
 	Save(config *Config) error
 	Load() (*Config, error)
-	GetDefaultPrompt() (*PromptConfig, error)
 	GetDefaultSystemPrompt() (string, error)
 	GetDefaultOutputs() ([]*OutputConfig, error)
 }
@@ -132,17 +131,6 @@ func NewYamlConfigRepository(filePath string) *YamlConfigRepository {
 	return &YamlConfigRepository{
 		filePath: filePath,
 	}
-}
-
-func (r *YamlConfigRepository) GetDefaultPrompt() (*PromptConfig, error) {
-	config, err := r.Load()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-	if config.DefaultProfile == nil || config.DefaultProfile.Prompt == nil {
-		return nil, fmt.Errorf("default prompt not found")
-	}
-	return config.DefaultProfile.Prompt, nil
 }
 
 func (r *YamlConfigRepository) GetDefaultSystemPrompt() (string, error) {
