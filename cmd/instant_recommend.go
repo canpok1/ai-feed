@@ -6,6 +6,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 
 	"github.com/spf13/cobra"
@@ -104,11 +105,11 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	}
 	viewers := []domain.Viewer{viewer}
 
-	if c.SlackAPI != nil {
+	if c != nil && c.SlackAPI != nil {
 		slackViewer := infra.NewSlackViewer(c.SlackAPI.ToEntity())
 		viewers = append(viewers, slackViewer)
 	}
-	if c.Misskey != nil {
+	if c != nil && c.Misskey != nil {
 		// TODO: MisskeyViewer の実装と初期化
 		// misskeyViewer := infra.NewMisskeyViewer(c.MisskeyConfig);
 		// viewers = append(viewers, misskeyViewer);
@@ -133,10 +134,24 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 		return nil
 	}
 
+	var aiConfigEntity *entity.AIConfig
+	if profile.AI != nil {
+		aiConfigEntity = profile.AI.ToEntity()
+	}
+
+	var promptConfigEntity *entity.PromptConfig
+	if profile.Prompt != nil {
+		promptConfigEntity = profile.Prompt.ToEntity()
+	}
+
+	if aiConfigEntity == nil || promptConfigEntity == nil {
+		return fmt.Errorf("AI model or prompt is not configured")
+	}
+
 	recommend, err := r.recommender.Recommend(
 		cmd.Context(),
-		profile.AI.ToEntity(),
-		profile.Prompt.ToEntity(),
+		aiConfigEntity,
+		promptConfigEntity,
 		allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)

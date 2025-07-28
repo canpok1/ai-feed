@@ -25,8 +25,12 @@ type AIConfig struct {
 }
 
 func (c *AIConfig) ToEntity() *entity.AIConfig {
+	var geminiEntity *entity.GeminiConfig
+	if c.Gemini != nil {
+		geminiEntity = c.Gemini.ToEntity()
+	}
 	return &entity.AIConfig{
-		Gemini: c.Gemini.ToEntity(),
+		Gemini: geminiEntity,
 	}
 }
 
@@ -112,6 +116,15 @@ func MakeDefaultConfig() *Config {
 	}
 }
 
+type ConfigRepository interface {
+	Save(config *Config) error
+	Load() (*Config, error)
+	GetDefaultAIModel() (*AIConfig, error)
+	GetDefaultPrompt() (*PromptConfig, error)
+	GetDefaultSystemPrompt() (string, error)
+	GetDefaultOutputs() ([]*OutputConfig, error)
+}
+
 type YamlConfigRepository struct {
 	filePath string
 }
@@ -120,6 +133,58 @@ func NewYamlConfigRepository(filePath string) *YamlConfigRepository {
 	return &YamlConfigRepository{
 		filePath: filePath,
 	}
+}
+
+func (r *YamlConfigRepository) GetDefaultAIModel() (*AIConfig, error) {
+	config, err := r.Load()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+	if config.DefaultProfile == nil || config.DefaultProfile.AI == nil || config.DefaultProfile.AI.Gemini == nil {
+		return nil, fmt.Errorf("default AI model not found")
+	}
+	return config.DefaultProfile.AI,
+		nil
+}
+
+func (r *YamlConfigRepository) GetDefaultPrompt() (*PromptConfig, error) {
+	config, err := r.Load()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+	if config.DefaultProfile == nil || config.DefaultProfile.Prompt == nil {
+		return nil, fmt.Errorf("default prompt not found")
+	}
+	return config.DefaultProfile.Prompt, nil
+}
+
+func (r *YamlConfigRepository) GetDefaultSystemPrompt() (string, error) {
+	config, err := r.Load()
+	if err != nil {
+		return "", fmt.Errorf("failed to load config: %w", err)
+	}
+	if config.DefaultProfile == nil || config.DefaultProfile.Prompt == nil || config.DefaultProfile.Prompt.SystemPrompt == "" {
+		return "", fmt.Errorf("default system prompt not found")
+	}
+	return config.DefaultProfile.Prompt.SystemPrompt, nil
+}
+
+func (r *YamlConfigRepository) GetDefaultOutputs() ([]*OutputConfig, error) {
+	config, err := r.Load()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+	if config.DefaultProfile == nil || config.DefaultProfile.Output == nil {
+		return nil, fmt.Errorf("default outputs not found")
+	}
+	outputs := []*OutputConfig{}
+	if config.DefaultProfile.Output.SlackAPI != nil {
+		outputs = append(outputs, &OutputConfig{SlackAPI: config.DefaultProfile.Output.SlackAPI})
+	}
+	if config.DefaultProfile.Output.Misskey != nil {
+		outputs = append(outputs, &OutputConfig{Misskey: config.DefaultProfile.Output.Misskey})
+	}
+	return outputs, nil
 }
 
 func (r *YamlConfigRepository) Save(config *Config) error {

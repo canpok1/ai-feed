@@ -43,18 +43,18 @@ func (m *MockRecommender) EXPECT() *MockRecommenderMockRecorder {
 }
 
 // Recommend mocks base method.
-func (m *MockRecommender) Recommend(arg0 context.Context, arg1 *entity.AIModelConfig, arg2 *entity.PromptConfig, arg3 string, arg4 []entity.Article) (*entity.Recommend, error) {
+func (m *MockRecommender) Recommend(arg0 context.Context, arg1 *entity.AIConfig, arg2 *entity.PromptConfig, arg3 []entity.Article) (*entity.Recommend, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Recommend", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "Recommend", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*entity.Recommend)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Recommend indicates an expected call of Recommend.
-func (mr *MockRecommenderMockRecorder) Recommend(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockRecommenderMockRecorder) Recommend(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recommend", reflect.TypeOf((*MockRecommender)(nil).Recommend), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recommend", reflect.TypeOf((*MockRecommender)(nil).Recommend), arg0, arg1, arg2, arg3)
 }
 
 // MockCommentGenerator is a mock of CommentGenerator interface.
@@ -121,16 +121,16 @@ func (m *MockCommentGeneratorFactory) EXPECT() *MockCommentGeneratorFactoryMockR
 }
 
 // MakeCommentGenerator mocks base method.
-func (m *MockCommentGeneratorFactory) MakeCommentGenerator(arg0 *entity.AIModelConfig, arg1 *entity.PromptConfig, arg2 string) (domain.CommentGenerator, error) {
+func (m *MockCommentGeneratorFactory) MakeCommentGenerator(arg0 *entity.AIConfig, arg1 *entity.PromptConfig) (domain.CommentGenerator, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeCommentGenerator", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "MakeCommentGenerator", arg0, arg1)
 	ret0, _ := ret[0].(domain.CommentGenerator)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MakeCommentGenerator indicates an expected call of MakeCommentGenerator.
-func (mr *MockCommentGeneratorFactoryMockRecorder) MakeCommentGenerator(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockCommentGeneratorFactoryMockRecorder) MakeCommentGenerator(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeCommentGenerator", reflect.TypeOf((*MockCommentGeneratorFactory)(nil).MakeCommentGenerator), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeCommentGenerator", reflect.TypeOf((*MockCommentGeneratorFactory)(nil).MakeCommentGenerator), arg0, arg1)
 }

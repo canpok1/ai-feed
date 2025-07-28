@@ -12,7 +12,7 @@ package mock_infra
 import (
 	reflect "reflect"
 
-	"github.com/canpok1/ai-feed/internal/infra"
+	infra "github.com/canpok1/ai-feed/internal/infra"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,10 +41,10 @@ func (m *MockConfigRepository) EXPECT() *MockConfigRepositoryMockRecorder {
 }
 
 // GetDefaultAIModel mocks base method.
-func (m *MockConfigRepository) GetDefaultAIModel() (*infra.AIModelConfig, error) {
+func (m *MockConfigRepository) GetDefaultAIModel() (*infra.AIConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDefaultAIModel")
-	ret0, _ := ret[0].(*infra.AIModelConfig)
+	ret0, _ := ret[0].(*infra.AIConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -98,4 +98,33 @@ func (m *MockConfigRepository) GetDefaultSystemPrompt() (string, error) {
 func (mr *MockConfigRepositoryMockRecorder) GetDefaultSystemPrompt() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDefaultSystemPrompt", reflect.TypeOf((*MockConfigRepository)(nil).GetDefaultSystemPrompt))
+}
+
+// Load mocks base method.
+func (m *MockConfigRepository) Load() (*infra.Config, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Load")
+	ret0, _ := ret[0].(*infra.Config)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Load indicates an expected call of Load.
+func (mr *MockConfigRepositoryMockRecorder) Load() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockConfigRepository)(nil).Load))
+}
+
+// Save mocks base method.
+func (m *MockConfigRepository) Save(config *infra.Config) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Save", config)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Save indicates an expected call of Save.
+func (mr *MockConfigRepositoryMockRecorder) Save(config any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConfigRepository)(nil).Save), config)
 }

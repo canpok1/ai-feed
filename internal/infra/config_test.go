@@ -24,23 +24,28 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 
 	// Test Save
 	configToSave := &Config{
-		General: GeneralConfig{
-			DefaultExecutionProfile: "test-profile",
-		},
-		Cache:         CacheConfig{},
-		AIModels:      map[string]AIModelConfig{},
-		SystemPrompts: map[string]string{},
-		Prompts:       map[string]PromptConfig{},
-		Outputs: map[string]OutputConfig{
-			"test-output": {
-				Type: "misskey",
-				MisskeyConfig: &MisskeyConfig{
-					APIToken: "test_token",
+		DefaultProfile: &Profile{
+			AI: &AIConfig{
+				Gemini: &GeminiConfig{
+					Type:   "gemini-test",
+					APIKey: "test_api_key",
+				},
+			},
+			Prompt: &PromptConfig{
+				SystemPrompt:          "test system prompt",
+				CommentPromptTemplate: "test comment prompt template",
+			},
+			Output: &OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					APIToken: "test_slack_token",
+					Channel:  "test_channel",
+				},
+				Misskey: &MisskeyConfig{
+					APIToken: "test_misskey_token",
 					APIURL:   "http://test.misskey.com",
 				},
 			},
 		},
-		ExecutionProfiles: map[string]ExecutionProfile{},
 	}
 
 	err := repo.Save(configToSave)
@@ -101,13 +106,12 @@ func TestOutputConfig_UnmarshalYAML(t *testing.T) {
 		{
 			name: "misskey type",
 			yamlInput: `
-type: misskey
-api_token: test_misskey_token
-api_url: https://misskey.example.com
+misskey:
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
 `,
 			expected: OutputConfig{
-				Type: "misskey",
-				MisskeyConfig: &MisskeyConfig{
+				Misskey: &MisskeyConfig{
 					APIToken: "test_misskey_token",
 					APIURL:   "https://misskey.example.com",
 				},
@@ -117,29 +121,19 @@ api_url: https://misskey.example.com
 		{
 			name: "slack-api type",
 			yamlInput: `
-type: slack-api
-api_token: test_slack_token
-channel: "#general"
+slack_api:
+  api_token: test_slack_token
+  channel: "#general"
 `,
 			expected: OutputConfig{
-				Type: "slack-api",
-				SlackAPIConfig: &SlackAPIConfig{
+				SlackAPI: &SlackAPIConfig{
 					APIToken: "test_slack_token",
 					Channel:  "#general",
 				},
 			},
 			expectedErr: "",
 		},
-		{
-			name: "unsupported type",
-			yamlInput: `
-type: unknown
-`,
-			expected: OutputConfig{
-				Type: "unknown",
-			},
-			expectedErr: "unsupported output type: unknown",
-		},
+		
 	}
 
 	for _, tt := range tests {
@@ -152,9 +146,8 @@ type: unknown
 				assert.Contains(t, err.Error(), tt.expectedErr)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expected.Type, actual.Type)
-				assert.Equal(t, tt.expected.MisskeyConfig, actual.MisskeyConfig)
-				assert.Equal(t, tt.expected.SlackAPIConfig, actual.SlackAPIConfig)
+				assert.Equal(t, tt.expected.Misskey, actual.Misskey)
+				assert.Equal(t, tt.expected.SlackAPI, actual.SlackAPI)
 			}
 		})
 	}
@@ -170,35 +163,32 @@ func TestOutputConfig_MarshalYAML(t *testing.T) {
 		{
 			name: "misskey type",
 			input: OutputConfig{
-				Type: "misskey",
-				MisskeyConfig: &MisskeyConfig{
+				Misskey: &MisskeyConfig{
 					APIToken: "test_misskey_token",
 					APIURL:   "https://misskey.example.com",
 				},
 			},
-			expectedYaml: `type: misskey\napi_token: test_misskey_token\napi_url: https://misskey.example.com\n`,
+			expectedYaml: `misskey:
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
+`,
 			expectedErr:  "",
 		},
 		{
 			name: "slack-api type",
 			input: OutputConfig{
-				Type: "slack-api",
-				SlackAPIConfig: &SlackAPIConfig{
+				SlackAPI: &SlackAPIConfig{
 					APIToken: "test_slack_token",
 					Channel:  "#general",
 				},
 			},
-			expectedYaml: `type: slack-api\napi_token: test_slack_token\nchannel: "#general"\n`,
+			expectedYaml: `slack_api:
+  api_token: test_slack_token
+  channel: "#general"
+`,
 			expectedErr:  "",
 		},
-		{
-			name: "unknown type (should fail)",
-			input: OutputConfig{
-				Type: "unknown",
-			},
-			expectedYaml: "",
-			expectedErr:  "unsupported output type: unknown",
-		},
+		
 	}
 
 	for _, tt := range tests {
@@ -215,9 +205,8 @@ func TestOutputConfig_MarshalYAML(t *testing.T) {
 				var actualOutput OutputConfig
 				err = yaml.Unmarshal(actualYaml, &actualOutput)
 				assert.NoError(t, err)
-				assert.Equal(t, tt.input.Type, actualOutput.Type)
-				assert.Equal(t, tt.input.MisskeyConfig, actualOutput.MisskeyConfig)
-				assert.Equal(t, tt.input.SlackAPIConfig, actualOutput.SlackAPIConfig)
+				assert.Equal(t, tt.input.Misskey, actualOutput.Misskey)
+				assert.Equal(t, tt.input.SlackAPI, actualOutput.SlackAPI)
 			}
 		})
 	}
