@@ -131,7 +131,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				urls: []string{"http://example.com/feed.xml"},
 			},
 			expectedStdout:       "",
-							expectedErrorMessage: toStringP("AI model or prompt is not configured"),
+			expectedErrorMessage: toStringP("AI model or prompt is not configured"),
 		},
 		{
 			name: "GetDefaultPrompt error",
@@ -148,7 +148,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				urls: []string{"http://example.com/feed.xml"},
 			},
 			expectedStdout:       "",
-							expectedErrorMessage: toStringP("AI model or prompt is not configured"),
+			expectedErrorMessage: toStringP("AI model or prompt is not configured"),
 		},
 	}
 
@@ -190,7 +190,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					Output: &infra.OutputConfig{},
 				}
 				if runErr == nil {
-					
+
 				}
 			case "GetDefaultPrompt error":
 				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
@@ -200,7 +200,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					Output: &infra.OutputConfig{},
 				}
 				if runErr == nil {
-					
+
 				}
 			}
 			// No need for the if/else block here anymore, as expectations are set within the switch.

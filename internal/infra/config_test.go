@@ -133,7 +133,6 @@ slack_api:
 			},
 			expectedErr: "",
 		},
-		
 	}
 
 	for _, tt := range tests {
@@ -172,7 +171,7 @@ func TestOutputConfig_MarshalYAML(t *testing.T) {
   api_token: test_misskey_token
   api_url: https://misskey.example.com
 `,
-			expectedErr:  "",
+			expectedErr: "",
 		},
 		{
 			name: "slack-api type",
@@ -186,9 +185,8 @@ func TestOutputConfig_MarshalYAML(t *testing.T) {
   api_token: test_slack_token
   channel: "#general"
 `,
-			expectedErr:  "",
+			expectedErr: "",
 		},
-		
 	}
 
 	for _, tt := range tests {

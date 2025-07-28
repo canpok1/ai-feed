@@ -1,7 +1,5 @@
 package infra
 
-//go:generate mockgen -source=config.go -destination=mock_infra/mock_config.go -package=mock_infra ConfigRepository
-
 import (
 	"fmt"
 	"os"
