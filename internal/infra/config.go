@@ -56,10 +56,6 @@ func (c *PromptConfig) ToEntity() *entity.PromptConfig {
 	}
 }
 
-type SystemPromptConfig struct {
-	Value string `yaml:"value"`
-}
-
 type OutputConfig struct {
 	SlackAPI *SlackAPIConfig `yaml:"slack_api,omitempty"`
 	Misskey  *MisskeyConfig  `yaml:"misskey,omitempty"`
