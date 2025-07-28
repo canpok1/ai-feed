@@ -6,7 +6,6 @@ import (
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 
 	"github.com/spf13/cobra"
@@ -136,19 +135,12 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 		return nil
 	}
 
-	var aiConfigEntity *entity.AIConfig
-	if profile.AI != nil {
-		aiConfigEntity = profile.AI.ToEntity()
-	}
-
-	var promptConfigEntity *entity.PromptConfig
-	if profile.Prompt != nil {
-		promptConfigEntity = profile.Prompt.ToEntity()
-	}
-
-	if aiConfigEntity == nil || promptConfigEntity == nil {
+	if profile.AI == nil || profile.Prompt == nil {
 		return fmt.Errorf("AI model or prompt is not configured")
 	}
+
+	aiConfigEntity := profile.AI.ToEntity()
+	promptConfigEntity := profile.Prompt.ToEntity()
 
 	recommend, err := r.recommender.Recommend(
 		cmd.Context(),
