@@ -119,7 +119,6 @@ func MakeDefaultConfig() *Config {
 type ConfigRepository interface {
 	Save(config *Config) error
 	Load() (*Config, error)
-	GetDefaultOutputs() ([]*OutputConfig, error)
 }
 
 type YamlConfigRepository struct {
@@ -130,24 +129,6 @@ func NewYamlConfigRepository(filePath string) *YamlConfigRepository {
 	return &YamlConfigRepository{
 		filePath: filePath,
 	}
-}
-
-func (r *YamlConfigRepository) GetDefaultOutputs() ([]*OutputConfig, error) {
-	config, err := r.Load()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-	if config.DefaultProfile == nil || config.DefaultProfile.Output == nil {
-		return nil, fmt.Errorf("default outputs not found")
-	}
-	outputs := []*OutputConfig{}
-	if config.DefaultProfile.Output.SlackAPI != nil {
-		outputs = append(outputs, &OutputConfig{SlackAPI: config.DefaultProfile.Output.SlackAPI})
-	}
-	if config.DefaultProfile.Output.Misskey != nil {
-		outputs = append(outputs, &OutputConfig{Misskey: config.DefaultProfile.Output.Misskey})
-	}
-	return outputs, nil
 }
 
 func (r *YamlConfigRepository) Save(config *Config) error {
