@@ -10,7 +10,6 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
 	"github.com/canpok1/ai-feed/internal/infra"
-	"github.com/canpok1/ai-feed/internal/infra/mock_infra"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -19,14 +18,14 @@ import (
 )
 
 // createMockConfig creates a mock entity.Config for testing purposes.
-func createMockConfig(modelName, promptName string, outputConfig infra.OutputConfig) *infra.Config {
+func createMockConfig(modelName, promptName string, outputConfig *infra.OutputConfig) *infra.Config {
 	return &infra.Config{
 		DefaultProfile: &infra.Profile{
 			AI: &infra.AIConfig{
 				Gemini: &infra.GeminiConfig{Type: "test-type", APIKey: "test-key"},
 			},
 			Prompt: &infra.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
-			Output: &outputConfig,
+			Output: outputConfig,
 		},
 	}
 }
@@ -166,27 +165,20 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)
 
-			mockConfig := mock_infra.NewMockConfigRepository(ctrl)
-
-			// Configure mockConfig expectations based on test case name
-			var outputConfig *infra.OutputConfig
 			var runner *instantRecommendRunner
 			var runErr error
 
 			var profile *infra.Profile
 
-			// Always mock GetDefaultOutputs as it's called early in makeInstantRecommendCmd
-			mockConfig.EXPECT().GetDefaultOutputs().Return([]*infra.OutputConfig{outputConfig}, nil).AnyTimes()
-
 			switch tt.name {
 			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
-				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, outputConfig)
-				profile = createMockConfig("test-model", "test-prompt", infra.OutputConfig{}).DefaultProfile
+				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, createMockConfig("test-model", "test-prompt", &infra.OutputConfig{}).DefaultProfile.Output)
+				profile = createMockConfig("test-model", "test-prompt", &infra.OutputConfig{}).DefaultProfile
 			case "GetDefaultAIModel error":
 				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
 				profile = &infra.Profile{
 					AI:     nil,
-					Prompt: createMockConfig("", "test-prompt", infra.OutputConfig{}).DefaultProfile.Prompt,
+					Prompt: createMockConfig("", "test-prompt", &infra.OutputConfig{}).DefaultProfile.Prompt,
 					Output: &infra.OutputConfig{},
 				}
 				if runErr == nil {
@@ -195,7 +187,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			case "GetDefaultPrompt error":
 				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
 				profile = &infra.Profile{
-					AI:     createMockConfig("test-model", "", infra.OutputConfig{}).DefaultProfile.AI,
+					AI:     createMockConfig("test-model", "", &infra.OutputConfig{}).DefaultProfile.AI,
 					Prompt: nil,
 					Output: &infra.OutputConfig{},
 				}
