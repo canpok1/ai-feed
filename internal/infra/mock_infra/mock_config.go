@@ -12,7 +12,7 @@ package mock_infra
 import (
 	reflect "reflect"
 
-	entity "github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/canpok1/ai-feed/internal/infra"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,10 +41,10 @@ func (m *MockConfigRepository) EXPECT() *MockConfigRepositoryMockRecorder {
 }
 
 // GetDefaultAIModel mocks base method.
-func (m *MockConfigRepository) GetDefaultAIModel() (*entity.AIModelConfig, error) {
+func (m *MockConfigRepository) GetDefaultAIModel() (*infra.AIModelConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDefaultAIModel")
-	ret0, _ := ret[0].(*entity.AIModelConfig)
+	ret0, _ := ret[0].(*infra.AIModelConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -56,10 +56,10 @@ func (mr *MockConfigRepositoryMockRecorder) GetDefaultAIModel() *gomock.Call {
 }
 
 // GetDefaultOutputs mocks base method.
-func (m *MockConfigRepository) GetDefaultOutputs() ([]*entity.OutputConfig, error) {
+func (m *MockConfigRepository) GetDefaultOutputs() ([]*infra.OutputConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDefaultOutputs")
-	ret0, _ := ret[0].([]*entity.OutputConfig)
+	ret0, _ := ret[0].([]*infra.OutputConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -71,10 +71,10 @@ func (mr *MockConfigRepositoryMockRecorder) GetDefaultOutputs() *gomock.Call {
 }
 
 // GetDefaultPrompt mocks base method.
-func (m *MockConfigRepository) GetDefaultPrompt() (*entity.PromptConfig, error) {
+func (m *MockConfigRepository) GetDefaultPrompt() (*infra.PromptConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDefaultPrompt")
-	ret0, _ := ret[0].(*entity.PromptConfig)
+	ret0, _ := ret[0].(*infra.PromptConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

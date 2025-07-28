@@ -19,8 +19,8 @@ import (
 )
 
 // createMockConfig creates a mock entity.Config for testing purposes.
-func createMockConfig(modelName, promptName string, outputConfigs ...entity.OutputConfig) *infra.Config {
-	outputsMap := make(map[string]entity.OutputConfig)
+func createMockConfig(modelName, promptName string, outputConfigs ...infra.OutputConfig) *infra.Config {
+	outputsMap := make(map[string]infra.OutputConfig)
 	outputNames := make([]string, 0, len(outputConfigs))
 	for i, oc := range outputConfigs {
 		name := fmt.Sprintf("output-%d", i)
@@ -29,20 +29,20 @@ func createMockConfig(modelName, promptName string, outputConfigs ...entity.Outp
 	}
 
 	return &infra.Config{
-		General: entity.GeneralConfig{
+		General: infra.GeneralConfig{
 			DefaultExecutionProfile: "default",
 		},
-		AIModels: map[string]entity.AIModelConfig{
+		AIModels: map[string]infra.AIModelConfig{
 			modelName: {Type: "test-type", APIKey: "test-key"},
 		},
-		Prompts: map[string]entity.PromptConfig{
+		Prompts: map[string]infra.PromptConfig{
 			promptName: {CommentPromptTemplate: "test-prompt-template"},
 		},
 		SystemPrompts: map[string]string{
 			promptName: "test-system-message",
 		},
 		Outputs: outputsMap,
-		ExecutionProfiles: map[string]entity.ExecutionProfile{
+		ExecutionProfiles: map[string]infra.ExecutionProfile{
 			"default": {AIModel: modelName, Prompt: promptName, SystemPrompt: promptName, Outputs: outputNames},
 		},
 	}
@@ -186,7 +186,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			mockConfig := mock_infra.NewMockConfigRepository(ctrl)
 
 			// Configure mockConfig expectations based on test case name
-			var outputConfigs []*entity.OutputConfig
+			var outputConfigs []*infra.OutputConfig
 			var runner *instantRecommendRunner
 			var runErr error
 
@@ -197,8 +197,8 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
 				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, outputConfigs)
 				if runErr == nil { // Only set expectations if runner creation was successful
-					mockConfig.EXPECT().GetDefaultAIModel().Return(&entity.AIModelConfig{Type: "test-type", APIKey: "test-key"}, nil).Times(1)
-					mockConfig.EXPECT().GetDefaultPrompt().Return(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, nil).Times(1)
+					mockConfig.EXPECT().GetDefaultAIModel().Return(&infra.AIModelConfig{Type: "test-type", APIKey: "test-key"}, nil).Times(1)
+					mockConfig.EXPECT().GetDefaultPrompt().Return(&infra.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, nil).Times(1)
 					mockConfig.EXPECT().GetDefaultSystemPrompt().Return("test-system-message", nil).Times(1)
 				}
 			case "GetDefaultAIModel error":
@@ -211,7 +211,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			case "GetDefaultPrompt error":
 				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, nil)
 				if runErr == nil {
-					mockConfig.EXPECT().GetDefaultAIModel().Return(&entity.AIModelConfig{Type: "test-type", APIKey: "test-key"}, nil).Times(1)
+					mockConfig.EXPECT().GetDefaultAIModel().Return(&infra.AIModelConfig{Type: "test-type", APIKey: "test-key"}, nil).Times(1)
 					mockConfig.EXPECT().GetDefaultPrompt().Return(nil, fmt.Errorf("prompt not found: test-prompt")).Times(1)
 					mockConfig.EXPECT().GetDefaultSystemPrompt().Times(0)
 				}

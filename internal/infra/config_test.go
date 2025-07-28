@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/go-test/deep"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
@@ -25,23 +24,23 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 
 	// Test Save
 	configToSave := &Config{
-		General: entity.GeneralConfig{
+		General: GeneralConfig{
 			DefaultExecutionProfile: "test-profile",
 		},
-		Cache:         entity.CacheConfig{},
-		AIModels:      map[string]entity.AIModelConfig{},
+		Cache:         CacheConfig{},
+		AIModels:      map[string]AIModelConfig{},
 		SystemPrompts: map[string]string{},
-		Prompts:       map[string]entity.PromptConfig{},
-		Outputs: map[string]entity.OutputConfig{
+		Prompts:       map[string]PromptConfig{},
+		Outputs: map[string]OutputConfig{
 			"test-output": {
 				Type: "misskey",
-				MisskeyConfig: &entity.MisskeyConfig{
+				MisskeyConfig: &MisskeyConfig{
 					APIToken: "test_token",
 					APIURL:   "http://test.misskey.com",
 				},
 			},
 		},
-		ExecutionProfiles: map[string]entity.ExecutionProfile{},
+		ExecutionProfiles: map[string]ExecutionProfile{},
 	}
 
 	err := repo.Save(configToSave)
@@ -178,7 +177,7 @@ func TestOutputConfig_MarshalYAML(t *testing.T) {
 				},
 			},
 			expectedYaml: `type: misskey\napi_token: test_misskey_token\napi_url: https://misskey.example.com\n`,
-			expectedErr: "",
+			expectedErr:  "",
 		},
 		{
 			name: "slack-api type",
@@ -190,7 +189,7 @@ func TestOutputConfig_MarshalYAML(t *testing.T) {
 				},
 			},
 			expectedYaml: `type: slack-api\napi_token: test_slack_token\nchannel: "#general"\n`,
-			expectedErr: "",
+			expectedErr:  "",
 		},
 		{
 			name: "unknown type (should fail)",
