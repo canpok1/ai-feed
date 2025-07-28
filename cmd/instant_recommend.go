@@ -27,12 +27,7 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to load config: %w", loadErr)
 			}
 
-			outputConfigs, outputErr := config.GetDefaultOutputs()
-			if outputErr != nil {
-				return fmt.Errorf("failed to get default outputs: %w", outputErr)
-			}
-
-			runner, runnerErr := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), outputConfigs)
+			runner, runnerErr := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), config.DefaultProfile.Output)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -41,7 +36,7 @@ recommends one random article from the fetched list.`,
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-			return runner.Run(cmd, params, config)
+			return runner.Run(cmd, params, *config.DefaultProfile)
 		},
 	}
 
@@ -95,7 +90,7 @@ type instantRecommendRunner struct {
 	viewers     []domain.Viewer
 }
 
-func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfigs []*infra.OutputConfig) (*instantRecommendRunner, error) {
+func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, c *infra.OutputConfig) (*instantRecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -109,26 +104,16 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	}
 	viewers := []domain.Viewer{viewer}
 
-	for _, c := range outputConfigs {
-		switch c.Type {
-		case "slack-api":
-			if c.SlackAPIConfig == nil {
-				fmt.Fprintf(stderr, "Warning: slack-api output type found but SlackAPIConfig is nil, skipping\n")
-				continue
-			}
-			slackViewer := infra.NewSlackViewer(c.SlackAPIConfig.ToEntity())
+	if c != nil {
+		if c.SlackAPI != nil {
+			slackViewer := infra.NewSlackViewer(c.SlackAPI.ToEntity())
 			viewers = append(viewers, slackViewer)
-		case "misskey":
-			if c.MisskeyConfig == nil {
-				fmt.Fprintf(stderr, "Warning: misskey output type found but MisskeyConfig is nil, skipping\n")
-				continue
-			}
+		}
+		if c.Misskey != nil {
 			// TODO: MisskeyViewer の実装と初期化
 			// misskeyViewer := infra.NewMisskeyViewer(c.MisskeyConfig);
 			// viewers = append(viewers, misskeyViewer);
 			fmt.Fprintf(stderr, "Warning: misskey output type is not yet supported, skipping\n")
-		default:
-			fmt.Fprintf(stderr, "Warning: unsupported output type '%s' found, skipping\n", c.Type)
 		}
 	}
 
@@ -139,20 +124,7 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	}, nil
 }
 
-func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams, configRepo infra.ConfigRepository) error {
-	model, err := configRepo.GetDefaultAIModel()
-	if err != nil {
-		return fmt.Errorf("failed to get default AI model: %w", err)
-	}
-	prompt, err := configRepo.GetDefaultPrompt()
-	if err != nil {
-		return fmt.Errorf("failed to get default prompt: %w", err)
-	}
-	systemPrompt, err := configRepo.GetDefaultSystemPrompt()
-	if err != nil {
-		return fmt.Errorf("failed to get default system prompt: %w", err)
-	}
-
+func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams, profile infra.Profile) error {
 	allArticles, err := r.fetcher.Fetch(p.urls, 0)
 	if err != nil {
 		return fmt.Errorf("failed to fetch articles: %w", err)
@@ -163,11 +135,17 @@ func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendPara
 		return nil
 	}
 
+	if profile.AI == nil || profile.Prompt == nil {
+		return fmt.Errorf("AI model or prompt is not configured")
+	}
+
+	aiConfigEntity := profile.AI.ToEntity()
+	promptConfigEntity := profile.Prompt.ToEntity()
+
 	recommend, err := r.recommender.Recommend(
 		cmd.Context(),
-		model.ToEntity(),
-		prompt.ToEntity(),
-		systemPrompt,
+		aiConfigEntity,
+		promptConfigEntity,
 		allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)
