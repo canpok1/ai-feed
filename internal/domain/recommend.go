@@ -9,7 +9,7 @@ import (
 )
 
 type Recommender interface {
-	Recommend(context.Context, *entity.AIModelConfig, *entity.PromptConfig, string, []entity.Article) (*entity.Recommend, error)
+	Recommend(context.Context, *entity.AIConfig, *entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
 }
 
 type CommentGenerator interface {
@@ -17,7 +17,7 @@ type CommentGenerator interface {
 }
 
 type CommentGeneratorFactory interface {
-	MakeCommentGenerator(*entity.AIModelConfig, *entity.PromptConfig, string) (CommentGenerator, error)
+	MakeCommentGenerator(*entity.AIConfig, *entity.PromptConfig) (CommentGenerator, error)
 }
 
 type RandomRecommender struct {
@@ -32,9 +32,8 @@ func NewRandomRecommender(f CommentGeneratorFactory) Recommender {
 
 func (r *RandomRecommender) Recommend(
 	ctx context.Context,
-	model *entity.AIModelConfig,
+	model *entity.AIConfig,
 	prompt *entity.PromptConfig,
-	systemPrompt string,
 	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, fmt.Errorf("no articles found")
@@ -46,7 +45,7 @@ func (r *RandomRecommender) Recommend(
 	}
 
 	if (r.factory != nil) && (model != nil) && (prompt != nil) {
-		comment, err := generateComment(r.factory, model, prompt, systemPrompt, ctx, &article)
+		comment, err := generateComment(r.factory, model, prompt, ctx, &article)
 		if err != nil {
 			return nil, err
 		}
@@ -68,16 +67,15 @@ func NewFirstRecommender(f CommentGeneratorFactory) Recommender {
 
 func (r *FirstRecommender) Recommend(
 	ctx context.Context,
-	model *entity.AIModelConfig,
+	model *entity.AIConfig,
 	prompt *entity.PromptConfig,
-	systemPrompt string,
 	articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
 	}
 
 	article := articles[0]
-	comment, err := generateComment(r.factory, model, prompt, systemPrompt, ctx, &article)
+	comment, err := generateComment(r.factory, model, prompt, ctx, &article)
 	if err != nil {
 		return nil, err
 	}
@@ -89,16 +87,15 @@ func (r *FirstRecommender) Recommend(
 
 func generateComment(
 	factory CommentGeneratorFactory,
-	model *entity.AIModelConfig,
+	model *entity.AIConfig,
 	prompt *entity.PromptConfig,
-	systemPrompt string,
 	ctx context.Context,
 	article *entity.Article) (*string, error) {
 	if factory == nil || model == nil || prompt == nil {
 		return nil, fmt.Errorf("factory, model, or prompt is nil")
 	}
 
-	commentGenerator, err := factory.MakeCommentGenerator(model, prompt, systemPrompt)
+	commentGenerator, err := factory.MakeCommentGenerator(model, prompt)
 	if err != nil {
 		return nil, err
 	}
