@@ -22,7 +22,6 @@ recommends one random article from the fetched list.`,
 			if configPath == "" {
 				configPath = "./config.yml"
 			}
-			var config infra.ConfigRepository
 			config, loadErr := infra.NewYamlConfigRepository(configPath).Load()
 			if loadErr != nil {
 				return fmt.Errorf("failed to load config: %w", loadErr)
@@ -42,7 +41,7 @@ recommends one random article from the fetched list.`,
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-			return runner.Run(cmd, params, config.(infra.ConfigRepository))
+			return runner.Run(cmd, params, config)
 		},
 	}
 

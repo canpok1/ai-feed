@@ -83,7 +83,7 @@ func (c *Config) GetDefaultSystemPrompt() (string, error) {
 
 	systemPrompt, ok := c.SystemPrompts[profile.SystemPrompt]
 	if !ok {
-		return "", fmt.Errorf("system prompt not found: %s", systemPrompt)
+		return "", fmt.Errorf("system prompt not found: %s", profile.SystemPrompt)
 	}
 
 	return systemPrompt, nil
