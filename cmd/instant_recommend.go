@@ -105,15 +105,17 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 	}
 	viewers := []domain.Viewer{viewer}
 
-	if c != nil && c.SlackAPI != nil {
-		slackViewer := infra.NewSlackViewer(c.SlackAPI.ToEntity())
-		viewers = append(viewers, slackViewer)
-	}
-	if c != nil && c.Misskey != nil {
-		// TODO: MisskeyViewer の実装と初期化
-		// misskeyViewer := infra.NewMisskeyViewer(c.MisskeyConfig);
-		// viewers = append(viewers, misskeyViewer);
-		fmt.Fprintf(stderr, "Warning: misskey output type is not yet supported, skipping\n")
+	if c != nil {
+		if c.SlackAPI != nil {
+			slackViewer := infra.NewSlackViewer(c.SlackAPI.ToEntity())
+			viewers = append(viewers, slackViewer)
+		}
+		if c.Misskey != nil {
+			// TODO: MisskeyViewer の実装と初期化
+			// misskeyViewer := infra.NewMisskeyViewer(c.MisskeyConfig);
+			// viewers = append(viewers, misskeyViewer);
+			fmt.Fprintf(stderr, "Warning: misskey output type is not yet supported, skipping\n")
+		}
 	}
 
 	return &instantRecommendRunner{
