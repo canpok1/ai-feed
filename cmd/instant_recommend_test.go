@@ -181,9 +181,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					Prompt: createMockConfig("", "test-prompt", &infra.OutputConfig{}).DefaultProfile.Prompt,
 					Output: &infra.OutputConfig{},
 				}
-				if runErr == nil {
 
-				}
 			case "GetDefaultPrompt error":
 				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
 				profile = &infra.Profile{
@@ -191,9 +189,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					Prompt: nil,
 					Output: &infra.OutputConfig{},
 				}
-				if runErr == nil {
 
-				}
 			}
 			// No need for the if/else block here anymore, as expectations are set within the switch.
 
