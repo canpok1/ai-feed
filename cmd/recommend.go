@@ -115,10 +115,11 @@ func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			viewers = append(viewers, slackViewer)
 		}
 		if outputConfig.Misskey != nil {
-			// TODO: MisskeyViewer の実装と初期化
-			// misskeyViewer := infra.NewMisskeyViewer(outputConfig.MisskeyConfig);
-			// viewers = append(viewers, misskeyViewer);
-			fmt.Fprintf(stderr, "Warning: misskey output type is not yet supported, skipping\n")
+			misskeyViewer, err := infra.NewMisskeyViewer(outputConfig.Misskey.APIURL, outputConfig.Misskey.APIToken)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
+			}
+			viewers = append(viewers, misskeyViewer)
 		}
 	}
 
