@@ -16,6 +16,7 @@ type GeminiConfig struct {
 type PromptConfig struct {
 	SystemPrompt          string
 	CommentPromptTemplate string
+	FixedMessage          string
 }
 
 func (c *PromptConfig) BuildCommentPrompt(article *Article) string {
