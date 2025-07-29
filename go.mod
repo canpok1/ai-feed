@@ -13,6 +13,7 @@ require (
 require (
 	github.com/go-test/deep v1.1.1
 	github.com/slack-go/slack v0.17.3
+	github.com/yitsushi/go-misskey v1.1.6
 	google.golang.org/genai v1.17.0
 )
 
@@ -37,6 +38,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.7 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0 // indirect
