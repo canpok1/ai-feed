@@ -24,18 +24,39 @@ func (p *Profile) Merge(other *Profile) {
 		return
 	}
 	if other.AI != nil {
-		p.AI = other.AI
+		if p.AI == nil {
+			p.AI = &AIConfig{}
+		}
+		p.AI.Merge(other.AI)
 	}
 	if other.Prompt != nil {
-		p.Prompt = other.Prompt
+		if p.Prompt == nil {
+			p.Prompt = &PromptConfig{}
+		}
+		p.Prompt.Merge(other.Prompt)
 	}
 	if other.Output != nil {
-		p.Output = other.Output
+		if p.Output == nil {
+			p.Output = &OutputConfig{}
+		}
+		p.Output.Merge(other.Output)
 	}
 }
 
 type AIConfig struct {
 	Gemini *GeminiConfig `yaml:"gemini,omitempty"`
+}
+
+func (c *AIConfig) Merge(other *AIConfig) {
+	if other == nil {
+		return
+	}
+	if other.Gemini != nil {
+		if c.Gemini == nil {
+			c.Gemini = &GeminiConfig{}
+		}
+		c.Gemini.Merge(other.Gemini)
+	}
 }
 
 func (c *AIConfig) ToEntity() *entity.AIConfig {
@@ -53,6 +74,18 @@ type GeminiConfig struct {
 	APIKey string `yaml:"api_key"`
 }
 
+func (c *GeminiConfig) Merge(other *GeminiConfig) {
+	if other == nil {
+		return
+	}
+	if other.Type != "" {
+		c.Type = other.Type
+	}
+	if other.APIKey != "" {
+		c.APIKey = other.APIKey
+	}
+}
+
 func (c *GeminiConfig) ToEntity() *entity.GeminiConfig {
 	return &entity.GeminiConfig{
 		Type:   c.Type,
@@ -64,6 +97,21 @@ type PromptConfig struct {
 	SystemPrompt          string `yaml:"system_prompt,omitempty"`
 	CommentPromptTemplate string `yaml:"comment_prompt_template,omitempty"`
 	FixedMessage          string `yaml:"fixed_message,omitempty"`
+}
+
+func (c *PromptConfig) Merge(other *PromptConfig) {
+	if other == nil {
+		return
+	}
+	if other.SystemPrompt != "" {
+		c.SystemPrompt = other.SystemPrompt
+	}
+	if other.CommentPromptTemplate != "" {
+		c.CommentPromptTemplate = other.CommentPromptTemplate
+	}
+	if other.FixedMessage != "" {
+		c.FixedMessage = other.FixedMessage
+	}
 }
 
 func (c *PromptConfig) ToEntity() *entity.PromptConfig {
@@ -79,9 +127,39 @@ type OutputConfig struct {
 	Misskey  *MisskeyConfig  `yaml:"misskey,omitempty"`
 }
 
+func (c *OutputConfig) Merge(other *OutputConfig) {
+	if other == nil {
+		return
+	}
+	if other.SlackAPI != nil {
+		if c.SlackAPI == nil {
+			c.SlackAPI = &SlackAPIConfig{}
+		}
+		c.SlackAPI.Merge(other.SlackAPI)
+	}
+	if other.Misskey != nil {
+		if c.Misskey == nil {
+			c.Misskey = &MisskeyConfig{}
+		}
+		c.Misskey.Merge(other.Misskey)
+	}
+}
+
 type SlackAPIConfig struct {
 	APIToken string `yaml:"api_token"`
 	Channel  string `yaml:"channel"`
+}
+
+func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
+	if other == nil {
+		return
+	}
+	if other.APIToken != "" {
+		c.APIToken = other.APIToken
+	}
+	if other.Channel != "" {
+		c.Channel = other.Channel
+	}
 }
 
 func (c *SlackAPIConfig) ToEntity() *entity.SlackAPIConfig {
@@ -94,6 +172,18 @@ func (c *SlackAPIConfig) ToEntity() *entity.SlackAPIConfig {
 type MisskeyConfig struct {
 	APIToken string `yaml:"api_token"`
 	APIURL   string `yaml:"api_url"`
+}
+
+func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
+	if other == nil {
+		return
+	}
+	if other.APIToken != "" {
+		c.APIToken = other.APIToken
+	}
+	if other.APIURL != "" {
+		c.APIURL = other.APIURL
+	}
 }
 
 func MakeDefaultConfig() *Config {
