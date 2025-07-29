@@ -18,13 +18,13 @@ import (
 )
 
 // createMockConfig creates a mock entity.Config for testing purposes.
-func createMockConfig(modelName, promptName string, outputConfig *infra.OutputConfig) *infra.Config {
+func createMockConfig(promptConfig *infra.PromptConfig, outputConfig *infra.OutputConfig) *infra.Config {
 	return &infra.Config{
 		DefaultProfile: &infra.Profile{
 			AI: &infra.AIConfig{
 				Gemini: &infra.GeminiConfig{Type: "test-type", APIKey: "test-key"},
 			},
-			Prompt: &infra.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
+			Prompt: promptConfig,
 			Output: outputConfig,
 		},
 	}
@@ -169,23 +169,24 @@ func TestRecommendRunner_Run(t *testing.T) {
 			var runErr error
 
 			var profile *infra.Profile
+			mockConfig := createMockConfig(&infra.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, &infra.OutputConfig{})
 
 			switch tt.name {
 			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
-				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, createMockConfig("test-model", "test-prompt", &infra.OutputConfig{}).DefaultProfile.Output)
-				profile = createMockConfig("test-model", "test-prompt", &infra.OutputConfig{}).DefaultProfile
+				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, mockConfig.DefaultProfile.Output, mockConfig.DefaultProfile.Prompt)
+				profile = mockConfig.DefaultProfile
 			case "GetDefaultAIModel error":
-				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
+				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{}, &infra.PromptConfig{})
 				profile = &infra.Profile{
 					AI:     nil,
-					Prompt: createMockConfig("", "test-prompt", &infra.OutputConfig{}).DefaultProfile.Prompt,
+					Prompt: mockConfig.DefaultProfile.Prompt,
 					Output: &infra.OutputConfig{},
 				}
 
 			case "GetDefaultPrompt error":
-				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
+				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{}, &infra.PromptConfig{})
 				profile = &infra.Profile{
-					AI:     createMockConfig("test-model", "", &infra.OutputConfig{}).DefaultProfile.AI,
+					AI:     mockConfig.DefaultProfile.AI,
 					Prompt: nil,
 					Output: &infra.OutputConfig{},
 				}
