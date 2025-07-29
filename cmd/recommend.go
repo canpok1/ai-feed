@@ -118,11 +118,11 @@ func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	}
 
 	return &recommendRunner{
-		fetcher:     fetcher,
-		recommender: recommender,
-		viewers:     viewers,
-	},
-	nil
+			fetcher:     fetcher,
+			recommender: recommender,
+			viewers:     viewers,
+		},
+		nil
 }
 
 func (r *recommendRunner) Run(cmd *cobra.Command, p *recommendParams, profile infra.Profile) error {
