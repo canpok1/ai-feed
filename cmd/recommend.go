@@ -6,7 +6,6 @@ import (
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 
 	"github.com/spf13/cobra"
@@ -107,18 +106,15 @@ func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
-			var promptConfigEntity *entity.PromptConfig
-			if promptConfig != nil {
-				promptConfigEntity = promptConfig.ToEntity()
-			}
-			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity(), promptConfigEntity)
+			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity())
 			viewers = append(viewers, slackViewer)
 		}
 		if outputConfig.Misskey != nil {
-			// TODO: MisskeyViewer の実装と初期化
-			// misskeyViewer := infra.NewMisskeyViewer(outputConfig.MisskeyConfig);
-			// viewers = append(viewers, misskeyViewer);
-			fmt.Fprintf(stderr, "Warning: misskey output type is not yet supported, skipping\n")
+			misskeyViewer, err := infra.NewMisskeyViewer(outputConfig.Misskey.APIURL, outputConfig.Misskey.APIToken)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
+			}
+			viewers = append(viewers, misskeyViewer)
 		}
 	}
 
@@ -158,7 +154,7 @@ func (r *recommendRunner) Run(cmd *cobra.Command, p *recommendParams, profile in
 
 	var errs []error
 	for _, viewer := range r.viewers {
-		err = viewer.ViewRecommend(recommend)
+		err = viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", err))
 		}

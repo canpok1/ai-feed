@@ -10,7 +10,7 @@ import (
 
 type Viewer interface {
 	ViewArticles([]entity.Article) error
-	ViewRecommend(*entity.Recommend) error
+	ViewRecommend(*entity.Recommend, string) error
 }
 
 type StdViewer struct {
@@ -47,7 +47,7 @@ func (v *StdViewer) ViewArticles(articles []entity.Article) error {
 	return nil
 }
 
-func (v *StdViewer) ViewRecommend(recommend *entity.Recommend) error {
+func (v *StdViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	if recommend == nil {
 		fmt.Fprintln(v.writer, "No articles found in the feed.")
 		return nil
@@ -57,6 +57,10 @@ func (v *StdViewer) ViewRecommend(recommend *entity.Recommend) error {
 	fmt.Fprintf(v.writer, "Link: %s\n", recommend.Article.Link)
 	if recommend.Comment != nil {
 		fmt.Fprintf(v.writer, "Comment: %s\n", *recommend.Comment)
+	}
+	// fixedMessage を追加
+	if fixedMessage != "" {
+		fmt.Fprintf(v.writer, "Fixed Message: %s\n", fixedMessage)
 	}
 	return nil
 }
