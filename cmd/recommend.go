@@ -6,6 +6,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 
 	"github.com/spf13/cobra"
