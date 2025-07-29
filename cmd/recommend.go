@@ -27,7 +27,7 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to load config: %w", loadErr)
 			}
 
-			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), config.DefaultProfile.Output)
+			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), config.DefaultProfile.Output, config.DefaultProfile.Prompt)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -90,7 +90,7 @@ type recommendRunner struct {
 	viewers     []domain.Viewer
 }
 
-func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, c *infra.OutputConfig) (*recommendRunner, error) {
+func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*recommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -104,14 +104,14 @@ func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	}
 	viewers := []domain.Viewer{viewer}
 
-	if c != nil {
-		if c.SlackAPI != nil {
-			slackViewer := infra.NewSlackViewer(c.SlackAPI.ToEntity())
-			viewers = append(viewers, slackViewer)
-		}
-		if c.Misskey != nil {
+	if outputConfig != nil {
+			if outputConfig.SlackAPI != nil {
+				slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity(), promptConfig.ToEntity())
+				viewers = append(viewers, slackViewer)
+			}
+		if outputConfig.Misskey != nil {
 			// TODO: MisskeyViewer の実装と初期化
-			// misskeyViewer := infra.NewMisskeyViewer(c.MisskeyConfig);
+			// misskeyViewer := infra.NewMisskeyViewer(outputConfig.MisskeyConfig);
 			// viewers = append(viewers, misskeyViewer);
 			fmt.Fprintf(stderr, "Warning: misskey output type is not yet supported, skipping\n")
 		}

@@ -11,12 +11,14 @@ import (
 type SlackViewer struct {
 	client    *slack.Client
 	channelID string
+	promptConfig *entity.PromptConfig
 }
 
-func NewSlackViewer(config *entity.SlackAPIConfig) domain.Viewer {
+func NewSlackViewer(config *entity.SlackAPIConfig, promptConfig *entity.PromptConfig) domain.Viewer {
 	return &SlackViewer{
 		client:    slack.New(config.APIToken),
 		channelID: config.Channel,
+		promptConfig: promptConfig,
 	}
 }
 
@@ -37,6 +39,10 @@ func (v *SlackViewer) ViewRecommend(recommend *entity.Recommend) error {
 	messages = append(messages, recommend.Article.Link)
 
 	msg := strings.Join(messages, "\n")
+	if v.promptConfig != nil && v.promptConfig.FixedMessage != "" {
+		msg = msg + "\n" + v.promptConfig.FixedMessage
+	}
+
 	return v.postMessage(msg)
 }
 
