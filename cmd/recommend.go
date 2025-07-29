@@ -27,7 +27,23 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to load config: %w", loadErr)
 			}
 
-			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), config.DefaultProfile.Output, config.DefaultProfile.Prompt)
+			profilePath, err := cmd.Flags().GetString("profile")
+			if err != nil {
+				return fmt.Errorf("failed to get profile flag: %w", err)
+			}
+
+			var currentProfile infra.Profile
+			if profilePath != "" {
+				loadedProfile, loadProfileErr := infra.NewYamlProfileRepository(profilePath).LoadProfile()
+				if loadProfileErr != nil {
+					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
+				}
+				currentProfile = *loadedProfile
+			} else {
+				currentProfile = *config.DefaultProfile
+			}
+
+			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -36,7 +52,7 @@ recommends one random article from the fetched list.`,
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-			return runner.Run(cmd, params, *config.DefaultProfile)
+			return runner.Run(cmd, params, currentProfile)
 		},
 	}
 
