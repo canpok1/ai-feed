@@ -9,16 +9,14 @@ import (
 )
 
 type SlackViewer struct {
-	client       *slack.Client
-	channelID    string
-	promptConfig *entity.PromptConfig
+	client    *slack.Client
+	channelID string
 }
 
-func NewSlackViewer(config *entity.SlackAPIConfig, promptConfig *entity.PromptConfig) domain.Viewer {
+func NewSlackViewer(config *entity.SlackAPIConfig) domain.Viewer {
 	return &SlackViewer{
-		client:       slack.New(config.APIToken),
-		channelID:    config.Channel,
-		promptConfig: promptConfig,
+		client:    slack.New(config.APIToken),
+		channelID: config.Channel,
 	}
 }
 
@@ -27,7 +25,7 @@ func (s *SlackViewer) ViewArticles(articles []entity.Article) error {
 	return nil
 }
 
-func (v *SlackViewer) ViewRecommend(recommend *entity.Recommend) error {
+func (v *SlackViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	var messages []string
 	if recommend.Comment != nil && *recommend.Comment != "" {
 		messages = make([]string, 0, 3)
@@ -39,8 +37,10 @@ func (v *SlackViewer) ViewRecommend(recommend *entity.Recommend) error {
 	messages = append(messages, recommend.Article.Link)
 
 	msg := strings.Join(messages, "\n")
-	if v.promptConfig != nil && v.promptConfig.FixedMessage != "" {
-		msg = msg + "\n" + v.promptConfig.FixedMessage
+
+	// 引数で渡されたfixedMessageを使用
+	if fixedMessage != "" {
+		msg = msg + "\n" + fixedMessage
 	}
 
 	return v.postMessage(msg)

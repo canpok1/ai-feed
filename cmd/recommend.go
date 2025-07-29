@@ -6,7 +6,6 @@ import (
 
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 
 	"github.com/spf13/cobra"
@@ -107,11 +106,7 @@ func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
-			var promptConfigEntity *entity.PromptConfig
-			if promptConfig != nil {
-				promptConfigEntity = promptConfig.ToEntity()
-			}
-			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity(), promptConfigEntity)
+			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity())
 			viewers = append(viewers, slackViewer)
 		}
 		if outputConfig.Misskey != nil {
@@ -159,7 +154,7 @@ func (r *recommendRunner) Run(cmd *cobra.Command, p *recommendParams, profile in
 
 	var errs []error
 	for _, viewer := range r.viewers {
-		err = viewer.ViewRecommend(recommend)
+		err = viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", err))
 		}

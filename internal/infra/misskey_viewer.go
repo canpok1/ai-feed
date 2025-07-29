@@ -42,7 +42,7 @@ func (v *MisskeyViewer) ViewArticles(articles []entity.Article) error {
 }
 
 // ViewRecommend はMisskeyにノートを投稿します。
-func (v *MisskeyViewer) ViewRecommend(recommend *entity.Recommend) error {
+func (v *MisskeyViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	if recommend == nil {
 		return fmt.Errorf("recommend is nil")
 	}
@@ -50,6 +50,10 @@ func (v *MisskeyViewer) ViewRecommend(recommend *entity.Recommend) error {
 	text := fmt.Sprintf("Title: %s\nLink: %s", recommend.Article.Title, recommend.Article.Link)
 	if recommend.Comment != nil {
 		text = fmt.Sprintf("%s\nComment: %s", text, *recommend.Comment)
+	}
+	// fixedMessage を追加
+	if fixedMessage != "" {
+		text = fmt.Sprintf("%s\nFixed Message: %s", text, fixedMessage)
 	}
 
 	params := notes.CreateRequest{
