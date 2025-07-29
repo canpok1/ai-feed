@@ -106,7 +106,11 @@ func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
-			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity(), promptConfig.ToEntity())
+			var promptConfigEntity *entity.PromptConfig
+			if promptConfig != nil {
+				promptConfigEntity = promptConfig.ToEntity()
+			}
+			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity(), promptConfigEntity)
 			viewers = append(viewers, slackViewer)
 		}
 		if outputConfig.Misskey != nil {
