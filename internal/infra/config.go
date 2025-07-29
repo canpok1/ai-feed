@@ -97,7 +97,7 @@ func MakeDefaultConfig() *Config {
 記事URL: {{url}}
 記事内容:
 {{content}}`,
-				FixedMessage: "",
+				FixedMessage: "固定の文言です。",
 			},
 			Output: &OutputConfig{
 				SlackAPI: &SlackAPIConfig{
