@@ -18,6 +18,22 @@ type Profile struct {
 	Output *OutputConfig `yaml:"output,omitempty"`
 }
 
+// Merge merges the non-nil fields from the other profile into the current profile.
+func (p *Profile) Merge(other *Profile) {
+	if other == nil {
+		return
+	}
+	if other.AI != nil {
+		p.AI = other.AI
+	}
+	if other.Prompt != nil {
+		p.Prompt = other.Prompt
+	}
+	if other.Output != nil {
+		p.Output = other.Output
+	}
+}
+
 type AIConfig struct {
 	Gemini *GeminiConfig `yaml:"gemini,omitempty"`
 }

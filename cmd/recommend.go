@@ -33,14 +33,14 @@ recommends one random article from the fetched list.`,
 			}
 
 			var currentProfile infra.Profile
+			currentProfile = *config.DefaultProfile
+
 			if profilePath != "" {
 				loadedProfile, loadProfileErr := infra.NewYamlProfileRepository(profilePath).LoadProfile()
 				if loadProfileErr != nil {
 					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
 				}
-				currentProfile = *loadedProfile
-			} else {
-				currentProfile = *config.DefaultProfile
+				currentProfile.Merge(loadedProfile)
 			}
 
 			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
