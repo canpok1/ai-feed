@@ -34,12 +34,12 @@ func toStringP(value string) *string {
 	return &value
 }
 
-func TestInstantRecommendRunner_Run(t *testing.T) {
+func TestRecommendRunner_Run(t *testing.T) {
 	tests := []struct {
 		name                        string
 		mockFetchClientExpectations func(m *mock_domain.MockFetchClient)
 		mockRecommenderExpectations func(m *mock_domain.MockRecommender)
-		params                      *instantRecommendParams
+		params                      *recommendParams
 		expectedStdout              string
 		expectedStderr              string
 		expectedErrorMessage        *string
@@ -56,7 +56,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 					Article: entity.Article{Title: "Recommended Article", Link: "http://example.com/recommended"},
 				}, nil).Times(1)
 			},
-			params: &instantRecommendParams{
+			params: &recommendParams{
 				urls: []string{"http://example.com/feed.xml"},
 			},
 			expectedStdout: strings.Join([]string{
@@ -76,7 +76,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				// Should not be called if no articles are found
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
-			params: &instantRecommendParams{
+			params: &recommendParams{
 				urls: []string{"http://example.com/empty.xml"},
 			},
 			expectedStdout:       "No articles found in the feed.\n",
@@ -91,7 +91,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
-			params: &instantRecommendParams{
+			params: &recommendParams{
 				urls: []string{"http://invalid.com/feed.xml"},
 			},
 			expectedStdout:       "", // Changed to empty string
@@ -108,7 +108,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
 			},
-			params: &instantRecommendParams{
+			params: &recommendParams{
 				urls: []string{"http://example.com/feed.xml"},
 			},
 			expectedStdout:       "",
@@ -126,7 +126,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				// Recommend is not called if AI model or prompt is not found.
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
-			params: &instantRecommendParams{
+			params: &recommendParams{
 				urls: []string{"http://example.com/feed.xml"},
 			},
 			expectedStdout:       "",
@@ -143,7 +143,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				// Recommend is not called if AI model or prompt is not found.
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
-			params: &instantRecommendParams{
+			params: &recommendParams{
 				urls: []string{"http://example.com/feed.xml"},
 			},
 			expectedStdout:       "",
@@ -165,17 +165,17 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)
 
-			var runner *instantRecommendRunner
+			var runner *recommendRunner
 			var runErr error
 
 			var profile *infra.Profile
 
 			switch tt.name {
 			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
-				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, createMockConfig("test-model", "test-prompt", &infra.OutputConfig{}).DefaultProfile.Output)
+				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, createMockConfig("test-model", "test-prompt", &infra.OutputConfig{}).DefaultProfile.Output)
 				profile = createMockConfig("test-model", "test-prompt", &infra.OutputConfig{}).DefaultProfile
 			case "GetDefaultAIModel error":
-				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
+				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
 				profile = &infra.Profile{
 					AI:     nil,
 					Prompt: createMockConfig("", "test-prompt", &infra.OutputConfig{}).DefaultProfile.Prompt,
@@ -183,7 +183,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 				}
 
 			case "GetDefaultPrompt error":
-				runner, runErr = newInstantRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
+				runner, runErr = newRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{})
 				profile = &infra.Profile{
 					AI:     createMockConfig("test-model", "", &infra.OutputConfig{}).DefaultProfile.AI,
 					Prompt: nil,
@@ -218,7 +218,7 @@ func TestInstantRecommendRunner_Run(t *testing.T) {
 	}
 }
 
-func TestNewInstantRecommendParams(t *testing.T) {
+func TestNewRecommendParams(t *testing.T) {
 	tests := []struct {
 		name         string
 		urlFlag      string
@@ -294,7 +294,7 @@ func TestNewInstantRecommendParams(t *testing.T) {
 				cmd.Flags().Set("source", tt.sourceFlag)
 			}
 
-			params, err := newInstantRecommendParams(cmd)
+			params, err := newRecommendParams(cmd)
 
 			if tt.expectedErr != "" {
 				assert.Error(t, err)
