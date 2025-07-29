@@ -42,6 +42,7 @@ recommends one random article from the fetched list.`,
 
 	cmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
 	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
+	cmd.Flags().StringP("profile", "p", "", "Path to a profile YAML file")
 
 	return cmd
 }
