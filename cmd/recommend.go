@@ -105,10 +105,10 @@ func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	viewers := []domain.Viewer{viewer}
 
 	if outputConfig != nil {
-			if outputConfig.SlackAPI != nil {
-				slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity(), promptConfig.ToEntity())
-				viewers = append(viewers, slackViewer)
-			}
+		if outputConfig.SlackAPI != nil {
+			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity(), promptConfig.ToEntity())
+			viewers = append(viewers, slackViewer)
+		}
 		if outputConfig.Misskey != nil {
 			// TODO: MisskeyViewer の実装と初期化
 			// misskeyViewer := infra.NewMisskeyViewer(outputConfig.MisskeyConfig);

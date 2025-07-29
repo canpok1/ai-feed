@@ -9,15 +9,15 @@ import (
 )
 
 type SlackViewer struct {
-	client    *slack.Client
-	channelID string
+	client       *slack.Client
+	channelID    string
 	promptConfig *entity.PromptConfig
 }
 
 func NewSlackViewer(config *entity.SlackAPIConfig, promptConfig *entity.PromptConfig) domain.Viewer {
 	return &SlackViewer{
-		client:    slack.New(config.APIToken),
-		channelID: config.Channel,
+		client:       slack.New(config.APIToken),
+		channelID:    config.Channel,
 		promptConfig: promptConfig,
 	}
 }
