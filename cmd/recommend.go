@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func makeInstantRecommendCmd(fetchClient domain.FetchClient, recommender domain.Recommender) *cobra.Command {
+func makeRecommendCmd(fetchClient domain.FetchClient, recommender domain.Recommender) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "instant-recommend",
+		Use:   "recommend",
 		Short: "Recommend a random article from a given URL instantly.",
 		Long: `This command fetches articles from the specified URL and
 recommends one random article from the fetched list.`,
@@ -27,12 +27,12 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to load config: %w", loadErr)
 			}
 
-			runner, runnerErr := newInstantRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), config.DefaultProfile.Output)
+			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), config.DefaultProfile.Output)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
 
-			params, paramsErr := newInstantRecommendParams(cmd)
+			params, paramsErr := newRecommendParams(cmd)
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
@@ -46,11 +46,11 @@ recommends one random article from the fetched list.`,
 	return cmd
 }
 
-type instantRecommendParams struct {
+type recommendParams struct {
 	urls []string
 }
 
-func newInstantRecommendParams(cmd *cobra.Command) (*instantRecommendParams, error) {
+func newRecommendParams(cmd *cobra.Command) (*recommendParams, error) {
 	url, err := cmd.Flags().GetString("url")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get url flag: %w", err)
@@ -79,18 +79,18 @@ func newInstantRecommendParams(cmd *cobra.Command) (*instantRecommendParams, err
 		return nil, fmt.Errorf("either --url or --source must be specified")
 	}
 
-	return &instantRecommendParams{
+	return &recommendParams{
 		urls: urls,
 	}, nil
 }
 
-type instantRecommendRunner struct {
+type recommendRunner struct {
 	fetcher     *domain.Fetcher
 	recommender domain.Recommender
 	viewers     []domain.Viewer
 }
 
-func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, c *infra.OutputConfig) (*instantRecommendRunner, error) {
+func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, c *infra.OutputConfig) (*recommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -117,14 +117,14 @@ func newInstantRecommendRunner(fetchClient domain.FetchClient, recommender domai
 		}
 	}
 
-	return &instantRecommendRunner{
+	return &recommendRunner{
 		fetcher:     fetcher,
 		recommender: recommender,
 		viewers:     viewers,
 	}, nil
 }
 
-func (r *instantRecommendRunner) Run(cmd *cobra.Command, p *instantRecommendParams, profile infra.Profile) error {
+func (r *recommendRunner) Run(cmd *cobra.Command, p *recommendParams, profile infra.Profile) error {
 	allArticles, err := r.fetcher.Fetch(p.urls, 0)
 	if err != nil {
 		return fmt.Errorf("failed to fetch articles: %w", err)
