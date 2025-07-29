@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -47,14 +48,17 @@ func (v *MisskeyViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage 
 		return fmt.Errorf("recommend is nil")
 	}
 
-	text := fmt.Sprintf("Title: %s\nLink: %s", recommend.Article.Title, recommend.Article.Link)
+	var b strings.Builder
+	fmt.Fprintf(&b, "Title: %s\nLink: %s", recommend.Article.Title, recommend.Article.Link)
 	if recommend.Comment != nil {
-		text = fmt.Sprintf("%s\nComment: %s", text, *recommend.Comment)
+		fmt.Fprintf(&b, "\nComment: %s", *recommend.Comment)
 	}
 	// fixedMessage を追加
 	if fixedMessage != "" {
-		text = fmt.Sprintf("%s\nFixed Message: %s", text, fixedMessage)
+		fmt.Fprintf(&b, "\nFixed Message: %s", fixedMessage)
 	}
+
+	text := b.String()
 
 	params := notes.CreateRequest{
 		Text:       &text,
