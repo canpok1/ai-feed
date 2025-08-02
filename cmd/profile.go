@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +24,17 @@ func makeProfileInitCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			filePath := args[0]
+
+			// Check if file already exists to avoid accidental overwrites.
+			if _, err := os.Stat(filePath); !os.IsNotExist(err) {
+				if err == nil {
+					cmd.PrintErrf("Error: file already exists at %s. Please specify a new file path.\n", filePath)
+				} else {
+					cmd.PrintErrf("Error checking file path: %v\n", err)
+				}
+				return
+			}
+
 			profile := infra.NewDefaultProfile()
 			profileRepo := infra.NewYamlProfileRepository(filePath)
 			err := profileRepo.SaveProfile(profile)

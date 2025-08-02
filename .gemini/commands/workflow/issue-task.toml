@@ -2,6 +2,7 @@ description = "github issueを元にタスクファイルを作成"
 prompt = """
 github issue {{args}} の対応を行うための作業手順を考えて、
 1ファイル1タスクとして tmp/todo フォルダにファイルを作成してください。
+リポジトリ情報は `git remote -v` で確認すること。
 
 ## タスクファイルのフォーマット
 
