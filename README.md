@@ -12,7 +12,7 @@ AI Feedは、指定されたURLから記事をプレビューしたり、AIが�
     ```
 
 3. config.ymlを編集
-    - geminiのtypeにはモデルのバージョンを指定。具体的な値は[参考リンク](https://ai.google.dev/gemini-api/docs/models?hl=ja&_gl=1*8c7ay5*_up*MQ..*_ga*MTM5OTY0MTYwMy4xNzU0MTQ3OTcy*_ga_P1DBVKWT6V*czE3NTQxNDc5NzEkbzEkZzAkdDE3NTQxNDc5NzEkajYwJGwwJGgxNDUzNzcyODU2#model-versions)を参照。
+    - geminiのtypeにはモデルのバージョンを指定。具体的な値は[参考リンク](https://ai.google.dev/gemini-api/docs/models?hl=ja#model-versions)を参照。
     - 投稿文に固定文言を付与しないなら fixed_message を削除。
     - slackへの投稿を行わないなら slack_api を削除。
     - misskeyへの投稿を行わないなら misskey を削除。
