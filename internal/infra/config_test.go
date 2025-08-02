@@ -93,7 +93,7 @@ func TestYamlConfigRepository_Load_InvalidYaml(t *testing.T) {
 	repo := NewYamlConfigRepository(filePath)
 	_, err = repo.Load()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to unmarshal config")
+	assert.Contains(t, err.Error(), "failed to unmarshal YAML")
 }
 
 func TestOutputConfig_UnmarshalYAML(t *testing.T) {

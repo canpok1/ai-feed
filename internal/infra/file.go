@@ -1,41 +1,23 @@
 package infra
 
 import (
-	"bufio"
-	"net/url"
+	"fmt"
 	"os"
-	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
-func ReadURLsFromFile(filePath string, errCallback func(filePath, line string, err error) error) ([]string, error) {
-	file, err := os.Open(filePath)
+func loadYaml[T any](filePath string) (*T, error) {
+	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var urls []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
-		}
-
-		// URLバリデーション
-		if _, err := url.ParseRequestURI(line); err != nil {
-			if err := errCallback(filePath, line, err); err != nil {
-				return nil, err
-			}
-			continue
-		}
-
-		urls = append(urls, line)
+		return nil, fmt.Errorf("failed to read YAML file: %w", err)
 	}
 
-	if err := scanner.Err(); err != nil {
-		return nil, err
+	var v T
+	err = yaml.Unmarshal(data, &v)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal YAML: %w", err)
 	}
 
-	return urls, nil
+	return &v, nil
 }

@@ -208,18 +208,7 @@ func (r *YamlConfigRepository) Save(config *Config) error {
 }
 
 func (r *YamlConfigRepository) Load() (*Config, error) {
-	data, err := os.ReadFile(r.filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
-	}
-
-	var config Config
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
-	}
-
-	return &config, nil
+	return loadYaml[Config](r.filePath)
 }
 
 func mergeString(target *string, source string) {
