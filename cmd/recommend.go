@@ -33,7 +33,9 @@ recommends one random article from the fetched list.`,
 			}
 
 			var currentProfile infra.Profile
-			currentProfile = *config.DefaultProfile
+			if config.DefaultProfile != nil {
+				currentProfile = *config.DefaultProfile
+			}
 
 			if profilePath != "" {
 				loadedProfile, loadProfileErr := infra.NewYamlProfileRepository(profilePath).LoadProfile()
