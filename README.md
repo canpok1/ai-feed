@@ -68,7 +68,7 @@ make run option="preview --source urls.txt"
 
 ### `recommend` コマンド
 
-`recommend` コマンドは、指定されたURLまたはファイルから記事をフェッチし、AIがその中からランダムに1つの記事を推奨します。
+`recommend` コマンドは、指定されたURLまたはファイルから記事をフェッチし、ランダムに選択した1つの記事にAIによる紹介文を付けて推奨します。
 
 #### `--url` オプション
 
