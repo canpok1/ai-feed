@@ -11,10 +11,24 @@
             "args": [
                 "recommend",
                 "-u",
-                "https://zenn.dev/feed",
+                "${input:feedURL}",
                 "-p",
-                "profile.yml"
+                "${input:profileFile}"
             ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "feedURL",
+            "type": "promptString",
+            "description": "URL of the feed to recommend from",
+            "default": "https://zenn.dev/feed"
+        },
+        {
+            "id": "profileFile",
+            "type": "promptString",
+            "description": "Path to a profile YAML file",
+            "default": "profile.yml"
         }
     ]
 }
