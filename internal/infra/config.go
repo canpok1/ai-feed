@@ -18,8 +18,25 @@ type Profile struct {
 	Output *OutputConfig `yaml:"output,omitempty"`
 }
 
+// Merge merges the non-nil fields from the other profile into the current profile.
+func (p *Profile) Merge(other *Profile) {
+	if other == nil {
+		return
+	}
+	mergePtr(&p.AI, other.AI)
+	mergePtr(&p.Prompt, other.Prompt)
+	mergePtr(&p.Output, other.Output)
+}
+
 type AIConfig struct {
 	Gemini *GeminiConfig `yaml:"gemini,omitempty"`
+}
+
+func (c *AIConfig) Merge(other *AIConfig) {
+	if other == nil {
+		return
+	}
+	mergePtr(&c.Gemini, other.Gemini)
 }
 
 func (c *AIConfig) ToEntity() *entity.AIConfig {
@@ -37,6 +54,14 @@ type GeminiConfig struct {
 	APIKey string `yaml:"api_key"`
 }
 
+func (c *GeminiConfig) Merge(other *GeminiConfig) {
+	if other == nil {
+		return
+	}
+	mergeString(&c.Type, other.Type)
+	mergeString(&c.APIKey, other.APIKey)
+}
+
 func (c *GeminiConfig) ToEntity() *entity.GeminiConfig {
 	return &entity.GeminiConfig{
 		Type:   c.Type,
@@ -48,6 +73,15 @@ type PromptConfig struct {
 	SystemPrompt          string `yaml:"system_prompt,omitempty"`
 	CommentPromptTemplate string `yaml:"comment_prompt_template,omitempty"`
 	FixedMessage          string `yaml:"fixed_message,omitempty"`
+}
+
+func (c *PromptConfig) Merge(other *PromptConfig) {
+	if other == nil {
+		return
+	}
+	mergeString(&c.SystemPrompt, other.SystemPrompt)
+	mergeString(&c.CommentPromptTemplate, other.CommentPromptTemplate)
+	mergeString(&c.FixedMessage, other.FixedMessage)
 }
 
 func (c *PromptConfig) ToEntity() *entity.PromptConfig {
@@ -63,9 +97,25 @@ type OutputConfig struct {
 	Misskey  *MisskeyConfig  `yaml:"misskey,omitempty"`
 }
 
+func (c *OutputConfig) Merge(other *OutputConfig) {
+	if other == nil {
+		return
+	}
+	mergePtr(&c.SlackAPI, other.SlackAPI)
+	mergePtr(&c.Misskey, other.Misskey)
+}
+
 type SlackAPIConfig struct {
 	APIToken string `yaml:"api_token"`
 	Channel  string `yaml:"channel"`
+}
+
+func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
+	if other == nil {
+		return
+	}
+	mergeString(&c.APIToken, other.APIToken)
+	mergeString(&c.Channel, other.Channel)
 }
 
 func (c *SlackAPIConfig) ToEntity() *entity.SlackAPIConfig {
@@ -80,12 +130,20 @@ type MisskeyConfig struct {
 	APIURL   string `yaml:"api_url"`
 }
 
+func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
+	if other == nil {
+		return
+	}
+	mergeString(&c.APIToken, other.APIToken)
+	mergeString(&c.APIURL, other.APIURL)
+}
+
 func MakeDefaultConfig() *Config {
 	return &Config{
 		DefaultProfile: &Profile{
 			AI: &AIConfig{
 				Gemini: &GeminiConfig{
-					Type:   "gemini-2.5-flash",
+					Type:   "gemini-1.5-flash",
 					APIKey: "xxxxxx",
 				},
 			},
@@ -150,16 +208,27 @@ func (r *YamlConfigRepository) Save(config *Config) error {
 }
 
 func (r *YamlConfigRepository) Load() (*Config, error) {
-	data, err := os.ReadFile(r.filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
-	}
+	return loadYaml[Config](r.filePath)
+}
 
-	var config Config
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+func mergeString(target *string, source string) {
+	if source != "" {
+		*target = source
 	}
+}
 
-	return &config, nil
+type merger[T any] interface {
+	Merge(T)
+}
+
+func mergePtr[T any, P interface {
+	*T
+	merger[P]
+}](target *P, source P) {
+	if source != nil {
+		if *target == nil {
+			*target = new(T)
+		}
+		(*target).Merge(source)
+	}
 }

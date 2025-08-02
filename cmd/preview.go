@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
@@ -32,11 +33,7 @@ anything to your local cache.`,
 			}
 
 			if sourceFile != "" {
-				// Read URLs from file
-				fileURLs, err := infra.ReadURLsFromFile(sourceFile, func(filePath, line string, err error) error {
-					fmt.Fprintf(cmd.ErrOrStderr(), "Warning: Skipping invalid URL in %s on line '%s': %v\n", filePath, line, err)
-					return nil
-				})
+				fileURLs, err := internal.ReadURLsFromFile(sourceFile)
 				if err != nil {
 					return fmt.Errorf("failed to read URLs from file %s: %w", sourceFile, err)
 				}

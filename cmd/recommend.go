@@ -27,7 +27,25 @@ recommends one random article from the fetched list.`,
 				return fmt.Errorf("failed to load config: %w", loadErr)
 			}
 
-			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), config.DefaultProfile.Output, config.DefaultProfile.Prompt)
+			profilePath, err := cmd.Flags().GetString("profile")
+			if err != nil {
+				return fmt.Errorf("failed to get profile flag: %w", err)
+			}
+
+			var currentProfile infra.Profile
+			if config.DefaultProfile != nil {
+				currentProfile = *config.DefaultProfile
+			}
+
+			if profilePath != "" {
+				loadedProfile, loadProfileErr := infra.NewYamlProfileRepository(profilePath).LoadProfile()
+				if loadProfileErr != nil {
+					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
+				}
+				currentProfile.Merge(loadedProfile)
+			}
+
+			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -36,12 +54,13 @@ recommends one random article from the fetched list.`,
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-			return runner.Run(cmd, params, *config.DefaultProfile)
+			return runner.Run(cmd, params, currentProfile)
 		},
 	}
 
 	cmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
 	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
+	cmd.Flags().StringP("profile", "p", "", "Path to a profile YAML file")
 
 	return cmd
 }
