@@ -23,24 +23,9 @@ func (p *Profile) Merge(other *Profile) {
 	if other == nil {
 		return
 	}
-	if other.AI != nil {
-		if p.AI == nil {
-			p.AI = &AIConfig{}
-		}
-		p.AI.Merge(other.AI)
-	}
-	if other.Prompt != nil {
-		if p.Prompt == nil {
-			p.Prompt = &PromptConfig{}
-		}
-		p.Prompt.Merge(other.Prompt)
-	}
-	if other.Output != nil {
-		if p.Output == nil {
-			p.Output = &OutputConfig{}
-		}
-		p.Output.Merge(other.Output)
-	}
+	mergePtr(&p.AI, other.AI)
+	mergePtr(&p.Prompt, other.Prompt)
+	mergePtr(&p.Output, other.Output)
 }
 
 type AIConfig struct {
@@ -51,12 +36,7 @@ func (c *AIConfig) Merge(other *AIConfig) {
 	if other == nil {
 		return
 	}
-	if other.Gemini != nil {
-		if c.Gemini == nil {
-			c.Gemini = &GeminiConfig{}
-		}
-		c.Gemini.Merge(other.Gemini)
-	}
+	mergePtr(&c.Gemini, other.Gemini)
 }
 
 func (c *AIConfig) ToEntity() *entity.AIConfig {
@@ -78,12 +58,8 @@ func (c *GeminiConfig) Merge(other *GeminiConfig) {
 	if other == nil {
 		return
 	}
-	if other.Type != "" {
-		c.Type = other.Type
-	}
-	if other.APIKey != "" {
-		c.APIKey = other.APIKey
-	}
+	mergeString(&c.Type, other.Type)
+	mergeString(&c.APIKey, other.APIKey)
 }
 
 func (c *GeminiConfig) ToEntity() *entity.GeminiConfig {
@@ -103,15 +79,9 @@ func (c *PromptConfig) Merge(other *PromptConfig) {
 	if other == nil {
 		return
 	}
-	if other.SystemPrompt != "" {
-		c.SystemPrompt = other.SystemPrompt
-	}
-	if other.CommentPromptTemplate != "" {
-		c.CommentPromptTemplate = other.CommentPromptTemplate
-	}
-	if other.FixedMessage != "" {
-		c.FixedMessage = other.FixedMessage
-	}
+	mergeString(&c.SystemPrompt, other.SystemPrompt)
+	mergeString(&c.CommentPromptTemplate, other.CommentPromptTemplate)
+	mergeString(&c.FixedMessage, other.FixedMessage)
 }
 
 func (c *PromptConfig) ToEntity() *entity.PromptConfig {
@@ -131,18 +101,8 @@ func (c *OutputConfig) Merge(other *OutputConfig) {
 	if other == nil {
 		return
 	}
-	if other.SlackAPI != nil {
-		if c.SlackAPI == nil {
-			c.SlackAPI = &SlackAPIConfig{}
-		}
-		c.SlackAPI.Merge(other.SlackAPI)
-	}
-	if other.Misskey != nil {
-		if c.Misskey == nil {
-			c.Misskey = &MisskeyConfig{}
-		}
-		c.Misskey.Merge(other.Misskey)
-	}
+	mergePtr(&c.SlackAPI, other.SlackAPI)
+	mergePtr(&c.Misskey, other.Misskey)
 }
 
 type SlackAPIConfig struct {
@@ -154,12 +114,8 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	if other == nil {
 		return
 	}
-	if other.APIToken != "" {
-		c.APIToken = other.APIToken
-	}
-	if other.Channel != "" {
-		c.Channel = other.Channel
-	}
+	mergeString(&c.APIToken, other.APIToken)
+	mergeString(&c.Channel, other.Channel)
 }
 
 func (c *SlackAPIConfig) ToEntity() *entity.SlackAPIConfig {
@@ -178,12 +134,8 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	if other == nil {
 		return
 	}
-	if other.APIToken != "" {
-		c.APIToken = other.APIToken
-	}
-	if other.APIURL != "" {
-		c.APIURL = other.APIURL
-	}
+	mergeString(&c.APIToken, other.APIToken)
+	mergeString(&c.APIURL, other.APIURL)
 }
 
 func MakeDefaultConfig() *Config {
@@ -191,7 +143,7 @@ func MakeDefaultConfig() *Config {
 		DefaultProfile: &Profile{
 			AI: &AIConfig{
 				Gemini: &GeminiConfig{
-					Type:   "gemini-2.5-flash",
+					Type:   "gemini-1.5-flash",
 					APIKey: "xxxxxx",
 				},
 			},
@@ -268,4 +220,26 @@ func (r *YamlConfigRepository) Load() (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+func mergeString(target *string, source string) {
+	if source != "" {
+		*target = source
+	}
+}
+
+type merger[T any] interface {
+	Merge(T)
+}
+
+func mergePtr[T any, P interface {
+	*T
+	merger[P]
+}](target *P, source P) {
+	if source != nil {
+		if *target == nil {
+			*target = new(T)
+		}
+		(*target).Merge(source)
+	}
 }
