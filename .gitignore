@@ -34,6 +34,7 @@ go.work.sum
 # generated file
 ai-feed
 config.yml
+profile.yml
 
 # Added by goreleaser init:
 dist/

@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run recommend",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "env": {},
+            "args": [
+                "recommend",
+                "-u",
+                "https://zenn.dev/feed",
+                "-p",
+                "profile.yml"
+            ]
+        }
+    ]
+}
