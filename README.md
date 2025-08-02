@@ -2,6 +2,26 @@
 
 AI Feedは、指定されたURLから記事をプレビューしたり、AIが記事を推薦したり、プロファイルを管理したりするためのCLIツールです。
 
+## クイックスタート
+
+1. [リリース一覧](https://github.com/canpok1/ai-feed/releases)から自分の環境に合ったものをダウンロードして任意の場所に解凍する。
+
+2. configファイルを生成
+    ```
+    ./ai-feed config init
+    ```
+
+3. config.ymlを編集
+    - geminiのtypeにはモデルのバージョンを指定。具体的な値は[参考リンク](https://ai.google.dev/gemini-api/docs/models?hl=ja#model-versions)を参照。
+    - 投稿文に固定文言を付与しないなら fixed_message の行を削除。
+    - slackへの投稿を行わないなら slack_api のブロックを削除。
+    - misskeyへの投稿を行わないなら misskey のブロックを削除。
+
+4. おすすめ記事を表示
+    ```
+    ./ai-feed recommend --url {任意のRSSフィードのURL}
+    ```
+
 ## 開発環境
 
 ### 必要条件
