@@ -31,5 +31,7 @@ func Execute() error {
 	configCmd.AddCommand(configInitCmd)
 	rootCmd.AddCommand(configCmd)
 
+	rootCmd.AddCommand(makeProfileCmd())
+
 	return rootCmd.Execute()
 }
