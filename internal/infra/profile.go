@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -23,10 +24,13 @@ func (r *YamlProfileRepository) LoadProfile() (*Profile, error) {
 func (r *YamlProfileRepository) SaveProfile(profile *Profile) error {
 	data, err := yaml.Marshal(profile)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal profile to YAML: %w", err)
 	}
 
-	return os.WriteFile(r.filePath, data, 0644)
+	if err := os.WriteFile(r.filePath, data, 0644); err != nil {
+		return fmt.Errorf("failed to write profile to file %q: %w", r.filePath, err)
+	}
+	return nil
 }
 
 func NewDefaultProfile() *Profile {
