@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
@@ -33,7 +32,7 @@ anything to your local cache.`,
 			}
 
 			if sourceFile != "" {
-				fileURLs, err := internal.ReadURLsFromFile(sourceFile)
+				fileURLs, err := infra.ReadURLsFromFile(sourceFile)
 				if err != nil {
 					return fmt.Errorf("failed to read URLs from file %s: %w", sourceFile, err)
 				}

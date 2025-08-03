@@ -49,7 +49,7 @@ func TestNewRecommendParams(t *testing.T) {
 			urlFlag:      "",
 			sourceFlag:   "non_existent_file.txt",
 			expectedURLs: nil,
-			expectedErr:  "failed to read URLs from file: open non_existent_file.txt: no such file or directory",
+			expectedErr:  "failed to read URLs from file: failed to open file non_existent_file.txt: open non_existent_file.txt: no such file or directory",
 		},
 		{
 			name:         "Empty source file",
