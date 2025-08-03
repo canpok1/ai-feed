@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
 )
@@ -123,18 +122,4 @@ func makeProfileCheckCmd() *cobra.Command {
 		},
 	}
 	return cmd
-}
-
-// profileRepositoryAdapter はinfra.YamlProfileRepositoryをdomain.ProfileRepositoryに適応させるアダプター
-type profileRepositoryAdapter struct {
-	repo *infra.YamlProfileRepository
-}
-
-// LoadProfile はinfraのProfileをentityのProfileに変換して返す
-func (a *profileRepositoryAdapter) LoadProfile() (*entity.Profile, error) {
-	profile, err := a.repo.LoadProfile()
-	if err != nil {
-		return nil, err
-	}
-	return profile.ToEntity(), nil
 }
