@@ -195,7 +195,231 @@ type Viewer interface {
 - マジックナンバーは避ける
 - 設定可能な値はconfigに移動
 
-## 10. コミット前チェックリスト
+## 10. cmd/runner パッケージの設計パターン
+
+### 10.1 ビジネスロジック分離の原則
+CLIコマンドのビジネスロジックは`cmd/runner`パッケージに分離し、`cmd`パッケージはCLIの引数解析と依存性注入のみを担当する。
+
+```go
+// Good: cmd/runner/recommend.go
+type RecommendRunner struct {
+    fetcher     *domain.Fetcher
+    recommender domain.Recommender
+    viewers     []domain.Viewer
+}
+
+func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile infra.Profile) error {
+    // ビジネスロジックの実装
+}
+
+// Good: cmd/recommend.go
+func makeRecommendCmd(fetchClient domain.FetchClient, recommender domain.Recommender) *cobra.Command {
+    cmd := &cobra.Command{
+        RunE: func(cmd *cobra.Command, args []string) error {
+            // 引数解析と依存性注入のみ
+            recommendRunner, err := runner.NewRecommendRunner(...)
+            return recommendRunner.Run(cmd.Context(), params, currentProfile)
+        },
+    }
+}
+```
+
+### 10.2 パラメータ構造体パターン
+コマンドの実行パラメータは専用の構造体で定義し、コマンドライン引数と分離する。
+
+```go
+// Good: 実行パラメータの構造体
+type RecommendParams struct {
+    URLs []string
+}
+
+// Good: パラメータ作成関数
+func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
+    // フラグからパラメータを構築
+}
+```
+
+## 11. Sentinel Error パターン
+
+### 11.1 Sentinel Error の定義
+特定の状況を表すエラーはsentinel errorとして定義し、公開パッケージレベルで管理する。
+
+```go
+// Good: パッケージレベルでsentinel errorを定義
+var ErrNoArticlesFound = errors.New("no articles found in the feed")
+```
+
+### 11.2 Sentinel Error の使用
+sentinel errorの判定には`errors.Is`を使用し、型アサーションは避ける。
+
+```go
+// Good: errors.Isを使用した判定
+if errors.Is(err, runner.ErrNoArticlesFound) {
+    fmt.Fprintln(cmd.OutOrStdout(), "記事が見つかりませんでした。")
+    return nil
+}
+
+// Bad: 文字列比較
+if err.Error() == "no articles found in the feed" {
+    // エラーメッセージが変更されると動作しなくなる
+}
+```
+
+### 11.3 コメント規約
+sentinel errorには必ずその用途を説明する日本語コメントを付ける。
+
+```go
+// ErrNoArticlesFound は記事が見つからなかった場合のsentinel error
+var ErrNoArticlesFound = errors.New("no articles found in the feed")
+```
+
+## 12. 変数名の競合回避パターン
+
+### 12.1 err変数の再利用回避
+同一スコープ内で`err`変数を再利用することは避け、明確な変数名を使用する。
+
+```go
+// Good: 明確な変数名を使用
+err := r.recommender.Recommend(ctx, aiConfig, promptConfig, allArticles)
+if err != nil {
+    return fmt.Errorf("failed to recommend article: %w", err)
+}
+
+var errs []error
+for _, viewer := range r.viewers {
+    if viewErr := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
+        errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
+    }
+}
+
+// Bad: err変数の再利用
+err := r.recommender.Recommend(ctx, aiConfig, promptConfig, allArticles)
+if err != nil {
+    return fmt.Errorf("failed to recommend article: %w", err)
+}
+
+for _, viewer := range r.viewers {
+    if err := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); err != nil {
+        // errが再利用されており、可読性が低い
+    }
+}
+```
+
+### 12.2 パッケージ名と変数名の競合回避
+変数名がパッケージ名と競合する場合は、より具体的な変数名を使用する。
+
+```go
+// Good: 具体的な変数名を使用
+recommendRunner, runnerErr := runner.NewRecommendRunner(...)
+
+// Bad: パッケージ名と同じ変数名
+runner, runnerErr := runner.NewRecommendRunner(...)
+```
+
+## 13. Context の使用パターン
+
+### 13.1 Context の引数位置
+`context.Context`は常に関数の最初の引数として配置する。
+
+```go
+// Good: contextが最初の引数
+func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile infra.Profile) error
+
+// Good: メソッドでもcontextが最初
+func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.Article) (string, error)
+
+// Bad: contextが最初以外の位置
+func (r *RecommendRunner) Run(params *RecommendParams, ctx context.Context, profile infra.Profile) error
+```
+
+### 13.2 Context の伝播
+上位層から下位層にcontextを適切に伝播させる。
+
+```go
+// Good: コマンドレベルからビジネスロジックにcontextを伝播
+func makeRecommendCmd(...) *cobra.Command {
+    cmd := &cobra.Command{
+        RunE: func(cmd *cobra.Command, args []string) error {
+            return recommendRunner.Run(cmd.Context(), params, currentProfile)
+        },
+    }
+}
+```
+
+## 14. 高度なエラーハンドリング
+
+### 14.1 複数エラーの集約
+複数の処理でエラーが発生する可能性がある場合は、エラーを集約して処理を継続する。
+
+```go
+// Good: エラー集約パターン
+var errs []error
+for _, viewer := range r.viewers {
+    if viewErr := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
+        errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
+    }
+}
+
+if len(errs) > 0 {
+    return fmt.Errorf("failed to view all recommends: %v", errs)
+}
+```
+
+### 14.2 ユーザーフレンドリーなエラー処理
+特定のエラーに対してはユーザーフレンドリーなメッセージを表示し、正常終了扱いにする。
+
+```go
+// Good: ユーザーフレンドリーなエラー処理
+err = recommendRunner.Run(cmd.Context(), params, currentProfile)
+if err != nil {
+    if errors.Is(err, runner.ErrNoArticlesFound) {
+        fmt.Fprintln(cmd.OutOrStdout(), "記事が見つかりませんでした。")
+        return nil  // エラーではなく正常終了
+    }
+    return err
+}
+```
+
+## 15. マージ処理パターン
+
+### 15.1 階層的マージ
+設定やプロファイルのマージでは、nil チェックと階層的なマージを実装する。
+
+```go
+// Good: 階層的マージパターン
+func (p *Profile) Merge(other *Profile) {
+    if other == nil {
+        return
+    }
+    mergePtr(&p.AI, other.AI)
+    mergePtr(&p.Prompt, other.Prompt)  
+    mergePtr(&p.Output, other.Output)
+}
+```
+
+### 15.2 デフォルト値との組み合わせ
+設定ロジックでは、デフォルト値、設定ファイル、コマンドライン引数の優先順位を明確にする。
+
+```go
+// Good: 優先順位の明確な設定ロジック
+var currentProfile infra.Profile
+
+// 1. デフォルト値を設定
+if config.DefaultProfile != nil {
+    currentProfile = *config.DefaultProfile
+}
+
+// 2. プロファイルファイルでマージ（オーバーライド）
+if profilePath != "" {
+    loadedProfile, err := infra.NewYamlProfileRepository(profilePath).LoadProfile()
+    if err != nil {
+        return fmt.Errorf("failed to load profile from %s: %w", profilePath, err)
+    }
+    currentProfile.Merge(loadedProfile)
+}
+```
+
+## 16. コミット前チェックリスト
 
 1. `make fmt` - コードフォーマット
 2. `make lint` - 静的解析
