@@ -361,7 +361,8 @@ for _, viewer := range r.viewers {
 }
 
 if len(errs) > 0 {
-    return fmt.Errorf("failed to view all recommends: %v", errs)
+    // Go 1.20+では、errors.Joinを使用して個々のエラーをラップしつつ集約するのが推奨されます。
+    return errors.Join(errs...)
 }
 ```
 
