@@ -6,6 +6,11 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
+// ProfileRepository はプロファイルの永続化を担当するインターフェース
+type ProfileRepository interface {
+	LoadProfile() (*entity.Profile, error)
+}
+
 // ValidationResult はプロファイルバリデーションの結果を表現する
 type ValidationResult struct {
 	IsValid  bool     `json:"is_valid"`
