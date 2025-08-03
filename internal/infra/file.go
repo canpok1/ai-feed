@@ -28,7 +28,7 @@ func loadYaml[T any](filePath string) (*T, error) {
 func ReadURLsFromFile(filePath string) ([]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
 	}
 	defer file.Close()
 
