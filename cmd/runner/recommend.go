@@ -2,12 +2,16 @@ package runner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
 )
+
+// ErrNoArticlesFound は記事が見つからなかった場合のsentinel error
+var ErrNoArticlesFound = errors.New("no articles found in the feed")
 
 // RecommendParams はrecommendコマンドの実行パラメータを表す構造体
 type RecommendParams struct {
@@ -65,7 +69,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	}
 
 	if len(allArticles) == 0 {
-		return fmt.Errorf("no articles found in the feed")
+		return ErrNoArticlesFound
 	}
 
 	if profile.AI == nil || profile.Prompt == nil {

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/canpok1/ai-feed/cmd/runner"
@@ -45,7 +46,7 @@ recommends one random article from the fetched list.`,
 				currentProfile.Merge(loadedProfile)
 			}
 
-			runner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
+			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -54,7 +55,16 @@ recommends one random article from the fetched list.`,
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-			return runner.Run(cmd.Context(), params, currentProfile)
+			err = recommendRunner.Run(cmd.Context(), params, currentProfile)
+			if err != nil {
+				// 記事が見つからない場合は友好的なメッセージを表示してエラーではない扱いにする
+				if errors.Is(err, runner.ErrNoArticlesFound) {
+					fmt.Fprintln(cmd.OutOrStdout(), "記事が見つかりませんでした。")
+					return nil
+				}
+				return err
+			}
+			return nil
 		},
 	}
 
