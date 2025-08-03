@@ -90,9 +90,8 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 
 	var errs []error
 	for _, viewer := range r.viewers {
-		err = viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("failed to view recommend: %w", err))
+		if viewErr := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
+			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
 		}
 	}
 
