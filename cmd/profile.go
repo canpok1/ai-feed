@@ -61,8 +61,16 @@ func makeProfileCheckCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// config.ymlの読み込み
 			configPath := "./config.yml"
-			config, _ := infra.NewYamlConfigRepository(configPath).Load()
-			// 読み込みエラーは無視して処理を継続
+			config, err := infra.NewYamlConfigRepository(configPath).Load()
+			if err != nil {
+				// ファイルが存在しない場合は警告を表示しない
+				if _, statErr := os.Stat(configPath); os.IsNotExist(statErr) {
+					// ファイルが存在しない場合は何もしない
+				} else {
+					// ファイルが存在するが読み込み・パースに失敗した場合は警告を表示
+					cmd.PrintErrf("Warning: failed to load or parse %s, proceeding with empty default profile. Error: %v\n", configPath, err)
+				}
+			}
 
 			// デフォルトプロファイルの取得
 			var currentProfile infra.Profile
