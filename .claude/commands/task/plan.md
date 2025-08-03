@@ -11,9 +11,9 @@ github issue $ARGUMENTS の対応を行うための作業手順を考えて、
 
 ### ファイル名
 
-issue_{github issueの番号}_task_{2桁0埋めの1からの連番}_{タスク概要(英語)}.md
+issue_{github issueの番号}_plan_{2桁0埋めの1からの連番}_{タスク概要(英語)}.md
 
-例）issue #1 に対するタスクの場合、 `issue_1_task_01_sample_task.md` となる
+例）issue #1 に対するタスクの場合、 `issue_1_plan_01_sample_task.md` となる
 
 ### ファイル内容のテンプレート
 
