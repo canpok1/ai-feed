@@ -34,12 +34,12 @@ func TestProfileCheckCommand_NoArguments(t *testing.T) {
 	// コマンドを実行
 	_, err := cmd.ExecuteC()
 
-	// エラーが返されることを確認
-	assert.Error(t, err, "Command should return error when no arguments provided")
+	// エラーが返されることを確認（空のプロファイルはバリデーションエラーになる）
+	assert.Error(t, err, "Command should return validation error for empty profile")
 
-	// エラーメッセージが期待通りであることを確認
+	// バリデーションエラーメッセージが含まれることを確認
 	output := stderr.String()
-	assert.Contains(t, output, "accepts 1 arg(s), received 0", "Error message should indicate missing argument")
+	assert.Contains(t, output, "Profile validation failed", "Error message should indicate validation failure")
 }
 
 // TestProfileCheckCommand_PathResolution はパス解決のテストを実行する
