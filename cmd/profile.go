@@ -60,47 +60,62 @@ func makeProfileCheckCmd() *cobra.Command {
 		Short: "Validate profile file configuration.",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			filePath := args[0]
+			// config.ymlの読み込み
+			configPath := "./config.yml"
+			config, _ := infra.NewYamlConfigRepository(configPath).Load()
+			// 読み込みエラーは無視して処理を継続
 
-			// ファイルの存在確認
-			if _, err := os.Stat(filePath); os.IsNotExist(err) {
-				cmd.PrintErrf("Error: profile file not found at %s\n", filePath)
-				return err
-			} else if err != nil {
-				cmd.PrintErrf("Error: failed to access file: %v\n", err)
-				return err
-			}
+			// TODO: デフォルトプロファイルの処理を追加
+			_ = config // 現時点では使用しないが、後続タスクで使用するため保持
 
-			// プロファイルファイルの読み込み
-			profileRepo := &profileRepositoryAdapter{
-				repo: infra.NewYamlProfileRepository(filePath),
-			}
-			profile, err := profileRepo.LoadProfile()
-			if err != nil {
-				cmd.PrintErrf("Error: failed to load profile: %v\n", err)
-				return err
-			}
+			// 引数が指定されている場合の処理
+			if len(args) > 0 {
+				filePath := args[0]
 
-			// バリデーション実行
-			validator := domain.NewProfileValidator()
-			result := validator.Validate(profile)
-
-			// 結果の表示
-			if !result.IsValid {
-				cmd.PrintErrln("Profile validation failed:")
-				for _, err := range result.Errors {
-					cmd.PrintErrf("  ERROR: %s\n", err)
+				// ファイルの存在確認
+				if _, err := os.Stat(filePath); os.IsNotExist(err) {
+					cmd.PrintErrf("Error: profile file not found at %s\n", filePath)
+					return err
+				} else if err != nil {
+					cmd.PrintErrf("Error: failed to access file: %v\n", err)
+					return err
 				}
-				return fmt.Errorf("profile validation failed")
-			}
 
-			if len(result.Warnings) > 0 {
-				cmd.PrintErrln("Profile validation completed with warnings:")
-				for _, warning := range result.Warnings {
-					cmd.PrintErrf("  WARNING: %s\n", warning)
+				// プロファイルファイルの読み込み
+				profileRepo := &profileRepositoryAdapter{
+					repo: infra.NewYamlProfileRepository(filePath),
+				}
+				profile, err := profileRepo.LoadProfile()
+				if err != nil {
+					cmd.PrintErrf("Error: failed to load profile: %v\n", err)
+					return err
+				}
+
+				// バリデーション実行
+				validator := domain.NewProfileValidator()
+				result := validator.Validate(profile)
+
+				// 結果の表示
+				if !result.IsValid {
+					cmd.PrintErrln("Profile validation failed:")
+					for _, err := range result.Errors {
+						cmd.PrintErrf("  ERROR: %s\n", err)
+					}
+					return fmt.Errorf("profile validation failed")
+				}
+
+				if len(result.Warnings) > 0 {
+					cmd.PrintErrln("Profile validation completed with warnings:")
+					for _, warning := range result.Warnings {
+						cmd.PrintErrf("  WARNING: %s\n", warning)
+					}
+				} else {
+					cmd.Println("Profile validation successful")
 				}
 			} else {
-				cmd.Println("Profile validation successful")
+				// 引数なしの場合の処理
+				// TODO: デフォルトプロファイルのバリデーション処理を実装
+				return fmt.Errorf("default profile validation not yet implemented")
 			}
 
 			return nil
