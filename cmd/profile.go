@@ -65,8 +65,15 @@ func makeProfileCheckCmd() *cobra.Command {
 			config, _ := infra.NewYamlConfigRepository(configPath).Load()
 			// 読み込みエラーは無視して処理を継続
 
-			// TODO: デフォルトプロファイルの処理を追加
-			_ = config // 現時点では使用しないが、後続タスクで使用するため保持
+			// デフォルトプロファイルの取得
+			var currentProfile infra.Profile
+			if config != nil && config.DefaultProfile != nil {
+				currentProfile = *config.DefaultProfile
+			}
+			// 存在しない場合は空のプロファイルを使用（ゼロ値）
+
+			// TODO: currentProfileを次のタスクで使用する
+			_ = currentProfile
 
 			// 引数が指定されている場合の処理
 			if len(args) > 0 {
