@@ -2,7 +2,6 @@ package domain
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -55,10 +54,10 @@ func TestProfileServiceImpl_ValidateProfile(t *testing.T) {
 			name:      "正常なプロファイルファイルの読み込み",
 			inputPath: "valid_profile.yml",
 			setupFunc: func() (string, func()) {
-				tempDir, err := ioutil.TempDir("", "profile_test_")
+				tempDir, err := os.MkdirTemp("", "profile_test_")
 				require.NoError(t, err)
 				profilePath := filepath.Join(tempDir, "valid_profile.yml")
-				err = ioutil.WriteFile(profilePath, []byte("test: data"), 0644)
+				err = os.WriteFile(profilePath, []byte("test: data"), 0644)
 				require.NoError(t, err)
 				return profilePath, func() { os.RemoveAll(tempDir) }
 			},
@@ -90,10 +89,10 @@ func TestProfileServiceImpl_ValidateProfile(t *testing.T) {
 			name:      "ファイル読み込みエラー",
 			inputPath: "error_profile.yml",
 			setupFunc: func() (string, func()) {
-				tempDir, err := ioutil.TempDir("", "profile_test_")
+				tempDir, err := os.MkdirTemp("", "profile_test_")
 				require.NoError(t, err)
 				profilePath := filepath.Join(tempDir, "error_profile.yml")
-				err = ioutil.WriteFile(profilePath, []byte("test: data"), 0644)
+				err = os.WriteFile(profilePath, []byte("test: data"), 0644)
 				require.NoError(t, err)
 				return profilePath, func() { os.RemoveAll(tempDir) }
 			},
@@ -105,10 +104,10 @@ func TestProfileServiceImpl_ValidateProfile(t *testing.T) {
 			name:      "バリデーションでエラーがある場合",
 			inputPath: "invalid_profile.yml",
 			setupFunc: func() (string, func()) {
-				tempDir, err := ioutil.TempDir("", "profile_test_")
+				tempDir, err := os.MkdirTemp("", "profile_test_")
 				require.NoError(t, err)
 				profilePath := filepath.Join(tempDir, "invalid_profile.yml")
-				err = ioutil.WriteFile(profilePath, []byte("test: data"), 0644)
+				err = os.WriteFile(profilePath, []byte("test: data"), 0644)
 				require.NoError(t, err)
 				return profilePath, func() { os.RemoveAll(tempDir) }
 			},
@@ -277,13 +276,13 @@ func TestProfileServiceImpl_ResolvePath(t *testing.T) {
 // TestProfileServiceImpl_ValidateProfile_PathResolution はパス解決と統合したテストを実行する
 func TestProfileServiceImpl_ValidateProfile_PathResolution(t *testing.T) {
 	// テンポラリディレクトリ作成
-	tempDir, err := ioutil.TempDir("", "profile_path_test_")
+	tempDir, err := os.MkdirTemp("", "profile_path_test_")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempDir)
 
 	// テストファイル作成
 	profilePath := filepath.Join(tempDir, "test_profile.yml")
-	err = ioutil.WriteFile(profilePath, []byte("ai:\n  gemini:\n    api_key: test"), 0644)
+	err = os.WriteFile(profilePath, []byte("ai:\n  gemini:\n    api_key: test"), 0644)
 	require.NoError(t, err)
 
 	// 環境変数設定
@@ -388,14 +387,14 @@ func TestProfileServiceImpl_ErrorHandling(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// テンポラリディレクトリ作成
-			tempDir, err := ioutil.TempDir("", "error_test_")
+			tempDir, err := os.MkdirTemp("", "error_test_")
 			require.NoError(t, err)
 			defer os.RemoveAll(tempDir)
 
 			var testPath string
 			if tt.fileExists {
 				testPath = filepath.Join(tempDir, "test.yml")
-				err = ioutil.WriteFile(testPath, []byte("test: data"), 0644)
+				err = os.WriteFile(testPath, []byte("test: data"), 0644)
 				require.NoError(t, err)
 			} else {
 				testPath = filepath.Join(tempDir, "non_existent.yml")
