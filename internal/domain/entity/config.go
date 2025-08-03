@@ -36,3 +36,14 @@ type SlackAPIConfig struct {
 	APIToken string
 	Channel  string
 }
+
+type Profile struct {
+	AI     *AIConfig
+	Prompt *PromptConfig
+	Output *OutputConfig
+}
+
+type OutputConfig struct {
+	SlackAPI *SlackAPIConfig
+	Misskey  *MisskeyConfig
+}
