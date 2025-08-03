@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/canpok1/ai-feed/cmd/runner"
-	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
 
@@ -91,7 +90,7 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 
 	var urls []string
 	if sourcePath != "" {
-		urls, err = internal.ReadURLsFromFile(sourcePath)
+		urls, err = infra.ReadURLsFromFile(sourcePath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read URLs from file: %w", err)
 		}
