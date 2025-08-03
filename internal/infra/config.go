@@ -137,10 +137,7 @@ func (c *OutputConfig) ToEntity() *entity.OutputConfig {
 
 	var misskeyEntity *entity.MisskeyConfig
 	if c.Misskey != nil {
-		misskeyEntity = &entity.MisskeyConfig{
-			APIToken: c.Misskey.APIToken,
-			APIURL:   c.Misskey.APIURL,
-		}
+		misskeyEntity = c.Misskey.ToEntity()
 	}
 
 	return &entity.OutputConfig{
@@ -180,6 +177,13 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	}
 	mergeString(&c.APIToken, other.APIToken)
 	mergeString(&c.APIURL, other.APIURL)
+}
+
+func (c *MisskeyConfig) ToEntity() *entity.MisskeyConfig {
+	return &entity.MisskeyConfig{
+		APIToken: c.APIToken,
+		APIURL:   c.APIURL,
+	}
 }
 
 func MakeDefaultConfig() *Config {
