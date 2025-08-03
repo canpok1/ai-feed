@@ -122,4 +122,3 @@ func (a *profileRepositoryAdapter) LoadProfile() (*entity.Profile, error) {
 	}
 	return profile.ToEntity(), nil
 }
-

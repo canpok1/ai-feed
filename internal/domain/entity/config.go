@@ -6,9 +6,9 @@ import (
 
 // デフォルト値の定数
 const (
-	DefaultGeminiAPIKey       = "YOUR_GEMINI_API_KEY_HERE"
-	DefaultSlackAPIToken      = "xoxb-YOUR_SLACK_API_TOKEN_HERE"
-	DefaultMisskeyAPIToken    = "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE"
+	DefaultGeminiAPIKey    = "YOUR_GEMINI_API_KEY_HERE"
+	DefaultSlackAPIToken   = "xoxb-YOUR_SLACK_API_TOKEN_HERE"
+	DefaultMisskeyAPIToken = "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE"
 )
 
 type AIConfig struct {

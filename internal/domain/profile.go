@@ -129,25 +129,25 @@ func MaskSensitiveData(value string) string {
 	if value == "" {
 		return ""
 	}
-	
+
 	// デフォルト値の場合はそのまま返す
 	defaultValues := []string{
 		entity.DefaultGeminiAPIKey,
 		entity.DefaultSlackAPIToken,
 		entity.DefaultMisskeyAPIToken,
 	}
-	
+
 	for _, defaultVal := range defaultValues {
 		if value == defaultVal {
 			return value
 		}
 	}
-	
+
 	// 実際の値の場合はマスクする
 	if len(value) <= 8 {
 		return strings.Repeat("*", len(value))
 	}
-	
+
 	// 最初の4文字と最後の4文字を表示、中間をマスク
 	return value[:4] + strings.Repeat("*", len(value)-8) + value[len(value)-4:]
 }
