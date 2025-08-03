@@ -4,6 +4,13 @@ import (
 	"strings"
 )
 
+// デフォルト値の定数
+const (
+	DefaultGeminiAPIKey    = "YOUR_GEMINI_API_KEY_HERE"
+	DefaultSlackAPIToken   = "xoxb-YOUR_SLACK_API_TOKEN_HERE"
+	DefaultMisskeyAPIToken = "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE"
+)
+
 type AIConfig struct {
 	Gemini *GeminiConfig
 }
@@ -35,4 +42,15 @@ type MisskeyConfig struct {
 type SlackAPIConfig struct {
 	APIToken string
 	Channel  string
+}
+
+type Profile struct {
+	AI     *AIConfig
+	Prompt *PromptConfig
+	Output *OutputConfig
+}
+
+type OutputConfig struct {
+	SlackAPI *SlackAPIConfig
+	Misskey  *MisskeyConfig
 }

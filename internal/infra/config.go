@@ -28,6 +28,30 @@ func (p *Profile) Merge(other *Profile) {
 	mergePtr(&p.Output, other.Output)
 }
 
+// ToEntity converts infra.Profile to entity.Profile
+func (p *Profile) ToEntity() *entity.Profile {
+	var aiEntity *entity.AIConfig
+	if p.AI != nil {
+		aiEntity = p.AI.ToEntity()
+	}
+
+	var promptEntity *entity.PromptConfig
+	if p.Prompt != nil {
+		promptEntity = p.Prompt.ToEntity()
+	}
+
+	var outputEntity *entity.OutputConfig
+	if p.Output != nil {
+		outputEntity = p.Output.ToEntity()
+	}
+
+	return &entity.Profile{
+		AI:     aiEntity,
+		Prompt: promptEntity,
+		Output: outputEntity,
+	}
+}
+
 type AIConfig struct {
 	Gemini *GeminiConfig `yaml:"gemini,omitempty"`
 }
@@ -105,6 +129,23 @@ func (c *OutputConfig) Merge(other *OutputConfig) {
 	mergePtr(&c.Misskey, other.Misskey)
 }
 
+func (c *OutputConfig) ToEntity() *entity.OutputConfig {
+	var slackEntity *entity.SlackAPIConfig
+	if c.SlackAPI != nil {
+		slackEntity = c.SlackAPI.ToEntity()
+	}
+
+	var misskeyEntity *entity.MisskeyConfig
+	if c.Misskey != nil {
+		misskeyEntity = c.Misskey.ToEntity()
+	}
+
+	return &entity.OutputConfig{
+		SlackAPI: slackEntity,
+		Misskey:  misskeyEntity,
+	}
+}
+
 type SlackAPIConfig struct {
 	APIToken string `yaml:"api_token"`
 	Channel  string `yaml:"channel"`
@@ -136,6 +177,13 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	}
 	mergeString(&c.APIToken, other.APIToken)
 	mergeString(&c.APIURL, other.APIURL)
+}
+
+func (c *MisskeyConfig) ToEntity() *entity.MisskeyConfig {
+	return &entity.MisskeyConfig{
+		APIToken: c.APIToken,
+		APIURL:   c.APIURL,
+	}
 }
 
 func MakeDefaultConfig() *Config {
