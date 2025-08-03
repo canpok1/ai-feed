@@ -61,20 +61,31 @@ func makeProfileCheckCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			filePath := args[0]
 
-			// ProfileServiceを使用してバリデーション実行
-			validator := domain.NewProfileValidator()
-			repoFactory := func(path string) domain.ProfileRepository {
-				return &profileRepositoryAdapter{
-					repo: infra.NewYamlProfileRepository(path),
-				}
-			}
-			profileService := domain.NewProfileService(validator, repoFactory)
-			result, err := profileService.ValidateProfile(filePath)
-			if err != nil {
-				cmd.PrintErrf("Error: %v\n", err)
+			// ファイルの存在確認
+			if _, err := os.Stat(filePath); os.IsNotExist(err) {
+				cmd.PrintErrf("Error: profile file not found at %s\n", filePath)
+				os.Exit(1)
+				return
+			} else if err != nil {
+				cmd.PrintErrf("Error: failed to access file: %v\n", err)
 				os.Exit(1)
 				return
 			}
+
+			// プロファイルファイルの読み込み
+			profileRepo := &profileRepositoryAdapter{
+				repo: infra.NewYamlProfileRepository(filePath),
+			}
+			profile, err := profileRepo.LoadProfile()
+			if err != nil {
+				cmd.PrintErrf("Error: failed to load profile: %v\n", err)
+				os.Exit(1)
+				return
+			}
+
+			// バリデーション実行
+			validator := domain.NewProfileValidator()
+			result := validator.Validate(profile)
 
 			// 結果の表示
 			if !result.IsValid {
