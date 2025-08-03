@@ -57,7 +57,7 @@ func (v *ProfileValidatorImpl) validateRequiredFields(profile *entity.Profile) [
 	// Gemini APIキーの検証
 	if profile.AI == nil || profile.AI.Gemini == nil ||
 		profile.AI.Gemini.APIKey == "" ||
-		profile.AI.Gemini.APIKey == "YOUR_GEMINI_API_KEY_HERE" {
+		profile.AI.Gemini.APIKey == entity.DefaultGeminiAPIKey {
 		errors = append(errors, "Gemini API key is not configured")
 	}
 
@@ -94,7 +94,7 @@ func (v *ProfileValidatorImpl) validateWarningFields(profile *entity.Profile) []
 	} else {
 		// Slack APIトークンの検証
 		if profile.Output.SlackAPI.APIToken == "" ||
-			profile.Output.SlackAPI.APIToken == "xoxb-YOUR_SLACK_API_TOKEN_HERE" {
+			profile.Output.SlackAPI.APIToken == entity.DefaultSlackAPIToken {
 			warnings = append(warnings, "Slack API token is not configured")
 		}
 
@@ -111,7 +111,7 @@ func (v *ProfileValidatorImpl) validateWarningFields(profile *entity.Profile) []
 	} else {
 		// Misskey APIトークンの検証
 		if profile.Output.Misskey.APIToken == "" ||
-			profile.Output.Misskey.APIToken == "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE" {
+			profile.Output.Misskey.APIToken == entity.DefaultMisskeyAPIToken {
 			warnings = append(warnings, "Misskey API token is not configured")
 		}
 
@@ -132,9 +132,9 @@ func MaskSensitiveData(value string) string {
 	
 	// デフォルト値の場合はそのまま返す
 	defaultValues := []string{
-		"YOUR_GEMINI_API_KEY_HERE",
-		"xoxb-YOUR_SLACK_API_TOKEN_HERE",
-		"YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
+		entity.DefaultGeminiAPIKey,
+		entity.DefaultSlackAPIToken,
+		entity.DefaultMisskeyAPIToken,
 	}
 	
 	for _, defaultVal := range defaultValues {

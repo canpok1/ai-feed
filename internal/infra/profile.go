@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
 )
 
@@ -38,7 +39,7 @@ func NewDefaultProfile() *Profile {
 		AI: &AIConfig{
 			Gemini: &GeminiConfig{
 				Type:   "gemini-1.5-flash",
-				APIKey: "YOUR_GEMINI_API_KEY_HERE",
+				APIKey: entity.DefaultGeminiAPIKey,
 			},
 		},
 		Prompt: &PromptConfig{
@@ -53,11 +54,11 @@ func NewDefaultProfile() *Profile {
 		},
 		Output: &OutputConfig{
 			SlackAPI: &SlackAPIConfig{
-				APIToken: "xoxb-YOUR_SLACK_API_TOKEN_HERE",
+				APIToken: entity.DefaultSlackAPIToken,
 				Channel:  "#general",
 			},
 			Misskey: &MisskeyConfig{
-				APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
+				APIToken: entity.DefaultMisskeyAPIToken,
 				APIURL:   "https://misskey.social/api",
 			},
 		},
