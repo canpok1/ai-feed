@@ -72,10 +72,7 @@ func makeProfileCheckCmd() *cobra.Command {
 			}
 			// 存在しない場合は空のプロファイルを使用（ゼロ値）
 
-			// TODO: currentProfileを次のタスクで使用する
-			_ = currentProfile
-
-			// 引数が指定されている場合の処理
+			// 引数が指定されている場合は指定ファイルとマージ
 			if len(args) > 0 {
 				filePath := args[0]
 
@@ -88,41 +85,38 @@ func makeProfileCheckCmd() *cobra.Command {
 					return err
 				}
 
-				// プロファイルファイルの読み込み
-				profileRepo := &profileRepositoryAdapter{
-					repo: infra.NewYamlProfileRepository(filePath),
-				}
-				profile, err := profileRepo.LoadProfile()
+				// 指定されたプロファイルファイルの読み込み
+				loadedProfile, err := infra.NewYamlProfileRepository(filePath).LoadProfile()
 				if err != nil {
 					cmd.PrintErrf("Error: failed to load profile: %v\n", err)
 					return err
 				}
 
-				// バリデーション実行
-				validator := domain.NewProfileValidator()
-				result := validator.Validate(profile)
+				// デフォルトプロファイルとマージ
+				currentProfile.Merge(loadedProfile)
+			}
 
-				// 結果の表示
-				if !result.IsValid {
-					cmd.PrintErrln("Profile validation failed:")
-					for _, err := range result.Errors {
-						cmd.PrintErrf("  ERROR: %s\n", err)
-					}
-					return fmt.Errorf("profile validation failed")
+			// マージ後のプロファイルをentity.Profileに変換してバリデーション
+			entityProfile := currentProfile.ToEntity()
+			validator := domain.NewProfileValidator()
+			result := validator.Validate(entityProfile)
+
+			// 結果の表示
+			if !result.IsValid {
+				cmd.PrintErrln("Profile validation failed:")
+				for _, err := range result.Errors {
+					cmd.PrintErrf("  ERROR: %s\n", err)
 				}
+				return fmt.Errorf("profile validation failed")
+			}
 
-				if len(result.Warnings) > 0 {
-					cmd.PrintErrln("Profile validation completed with warnings:")
-					for _, warning := range result.Warnings {
-						cmd.PrintErrf("  WARNING: %s\n", warning)
-					}
-				} else {
-					cmd.Println("Profile validation successful")
+			if len(result.Warnings) > 0 {
+				cmd.PrintErrln("Profile validation completed with warnings:")
+				for _, warning := range result.Warnings {
+					cmd.PrintErrf("  WARNING: %s\n", warning)
 				}
 			} else {
-				// 引数なしの場合の処理
-				// TODO: デフォルトプロファイルのバリデーション処理を実装
-				return fmt.Errorf("default profile validation not yet implemented")
+				cmd.Println("Profile validation successful")
 			}
 
 			return nil
