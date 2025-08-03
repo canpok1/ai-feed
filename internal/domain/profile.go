@@ -78,30 +78,47 @@ func (v *ProfileValidatorImpl) validateRequiredFields(profile *entity.Profile) [
 func (v *ProfileValidatorImpl) validateWarningFields(profile *entity.Profile) []string {
 	var warnings []string
 
-	// Slack APIトークンの検証
-	if profile.Output == nil || profile.Output.SlackAPI == nil ||
-		profile.Output.SlackAPI.APIToken == "" ||
-		profile.Output.SlackAPI.APIToken == "xoxb-YOUR_SLACK_API_TOKEN_HERE" {
+	// Output設定が存在しない場合は早期リターン
+	if profile.Output == nil {
 		warnings = append(warnings, "Slack API token is not configured")
-	}
-
-	// Slack チャンネルの検証
-	if profile.Output == nil || profile.Output.SlackAPI == nil ||
-		profile.Output.SlackAPI.Channel == "" {
 		warnings = append(warnings, "Slack channel is not configured")
-	}
-
-	// Misskey APIトークンの検証
-	if profile.Output == nil || profile.Output.Misskey == nil ||
-		profile.Output.Misskey.APIToken == "" ||
-		profile.Output.Misskey.APIToken == "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE" {
 		warnings = append(warnings, "Misskey API token is not configured")
+		warnings = append(warnings, "Misskey API URL is not configured")
+		return warnings
 	}
 
-	// Misskey API URLの検証
-	if profile.Output == nil || profile.Output.Misskey == nil ||
-		profile.Output.Misskey.APIURL == "" {
+	// Slack設定の検証
+	if profile.Output.SlackAPI == nil {
+		warnings = append(warnings, "Slack API token is not configured")
+		warnings = append(warnings, "Slack channel is not configured")
+	} else {
+		// Slack APIトークンの検証
+		if profile.Output.SlackAPI.APIToken == "" ||
+			profile.Output.SlackAPI.APIToken == "xoxb-YOUR_SLACK_API_TOKEN_HERE" {
+			warnings = append(warnings, "Slack API token is not configured")
+		}
+
+		// Slack チャンネルの検証
+		if profile.Output.SlackAPI.Channel == "" {
+			warnings = append(warnings, "Slack channel is not configured")
+		}
+	}
+
+	// Misskey設定の検証
+	if profile.Output.Misskey == nil {
+		warnings = append(warnings, "Misskey API token is not configured")
 		warnings = append(warnings, "Misskey API URL is not configured")
+	} else {
+		// Misskey APIトークンの検証
+		if profile.Output.Misskey.APIToken == "" ||
+			profile.Output.Misskey.APIToken == "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE" {
+			warnings = append(warnings, "Misskey API token is not configured")
+		}
+
+		// Misskey API URLの検証
+		if profile.Output.Misskey.APIURL == "" {
+			warnings = append(warnings, "Misskey API URL is not configured")
+		}
 	}
 
 	return warnings
