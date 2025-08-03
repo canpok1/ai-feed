@@ -1,13 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"os/user"
-	"path/filepath"
-	"strings"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
 )
@@ -64,37 +61,20 @@ func makeProfileCheckCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			filePath := args[0]
 
-			// パス解決を実行
-			resolvedPath, err := resolvePath(filePath)
-			if err != nil {
-				cmd.PrintErrf("Error resolving path: %v\n", err)
-				os.Exit(1)
-				return
-			}
-
-			// ファイルの存在確認
-			if _, err := os.Stat(resolvedPath); os.IsNotExist(err) {
-				cmd.PrintErrf("Error: profile file not found at %s\n", resolvedPath)
-				os.Exit(1)
-				return
-			} else if err != nil {
-				cmd.PrintErrf("Error accessing file: %v\n", err)
-				os.Exit(1)
-				return
-			}
-
-			// プロファイルファイルの読み込み
-			profileRepo := infra.NewYamlProfileRepository(resolvedPath)
-			profile, err := profileRepo.LoadProfile()
-			if err != nil {
-				cmd.PrintErrf("Error loading profile: %v\n", err)
-				os.Exit(1)
-				return
-			}
-
-			// バリデーション実行
+			// ProfileServiceを使用してバリデーション実行
 			validator := domain.NewProfileValidator()
-			result := validator.Validate(profile.ToEntity())
+			repoFactory := func(path string) domain.ProfileRepository {
+				return &profileRepositoryAdapter{
+					repo: infra.NewYamlProfileRepository(path),
+				}
+			}
+			profileService := domain.NewProfileService(validator, repoFactory)
+			result, err := profileService.ValidateProfile(filePath)
+			if err != nil {
+				cmd.PrintErrf("Error: %v\n", err)
+				os.Exit(1)
+				return
+			}
 
 			// 結果の表示
 			if !result.IsValid {
@@ -119,26 +99,17 @@ func makeProfileCheckCmd() *cobra.Command {
 	return cmd
 }
 
-// resolvePath はパス文字列を解決する（ホームディレクトリや環境変数を展開）
-func resolvePath(path string) (string, error) {
-	// 環境変数の展開
-	path = os.ExpandEnv(path)
+// profileRepositoryAdapter はinfra.YamlProfileRepositoryをdomain.ProfileRepositoryに適応させるアダプター
+type profileRepositoryAdapter struct {
+	repo *infra.YamlProfileRepository
+}
 
-	// ホームディレクトリの展開
-	if strings.HasPrefix(path, "~/") {
-		usr, err := user.Current()
-		if err != nil {
-			return "", fmt.Errorf("failed to get current user: %w", err)
-		}
-		path = filepath.Join(usr.HomeDir, path[2:])
-	}
-
-	// 絶対パスに変換
-	absPath, err := filepath.Abs(path)
+// LoadProfile はinfraのProfileをentityのProfileに変換して返す
+func (a *profileRepositoryAdapter) LoadProfile() (*entity.Profile, error) {
+	profile, err := a.repo.LoadProfile()
 	if err != nil {
-		return "", fmt.Errorf("failed to resolve absolute path: %w", err)
+		return nil, err
 	}
-
-	return absPath, nil
+	return profile.ToEntity(), nil
 }
 
