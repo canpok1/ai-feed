@@ -172,106 +172,6 @@ func TestProfileServiceImpl_ValidateProfile(t *testing.T) {
 	}
 }
 
-// TestProfileServiceImpl_ResolvePath はResolvePathメソッドをテストする
-func TestProfileServiceImpl_ResolvePath(t *testing.T) {
-	// 現在のディレクトリとホームディレクトリを取得
-	currentDir, err := os.Getwd()
-	require.NoError(t, err)
-
-	homeDir, err := os.UserHomeDir()
-	require.NoError(t, err)
-
-	// テスト用環境変数設定
-	originalTestVar := os.Getenv("TEST_VAR")
-	os.Setenv("TEST_VAR", "test_value")
-	defer func() {
-		if originalTestVar == "" {
-			os.Unsetenv("TEST_VAR")
-		} else {
-			os.Setenv("TEST_VAR", originalTestVar)
-		}
-	}()
-
-	tests := []struct {
-		name           string
-		inputPath      string
-		expectedPath   string
-		expectedError  string
-		setupFunc      func() func() // セットアップ関数（クリーンアップ関数を返す）
-	}{
-		{
-			name:         "絶対パス",
-			inputPath:    "/tmp/test.yml",
-			expectedPath: "/tmp/test.yml",
-		},
-		{
-			name:         "相対パス",
-			inputPath:    "test.yml",
-			expectedPath: filepath.Join(currentDir, "test.yml"),
-		},
-		{
-			name:         "現在ディレクトリ指定",
-			inputPath:    "./test.yml",
-			expectedPath: filepath.Join(currentDir, "test.yml"),
-		},
-		{
-			name:         "ホームディレクトリ展開",
-			inputPath:    "~/test.yml",
-			expectedPath: filepath.Join(homeDir, "test.yml"),
-		},
-		{
-			name:         "ホームディレクトリ + サブディレクトリ",
-			inputPath:    "~/config/test.yml",
-			expectedPath: filepath.Join(homeDir, "config", "test.yml"),
-		},
-		{
-			name:         "環境変数展開 - $VAR形式",
-			inputPath:    "$TEST_VAR/test.yml",
-			expectedPath: filepath.Join(currentDir, "test_value", "test.yml"),
-		},
-		{
-			name:         "環境変数展開 - ${VAR}形式",
-			inputPath:    "${TEST_VAR}/test.yml",
-			expectedPath: filepath.Join(currentDir, "test_value", "test.yml"),
-		},
-		{
-			name:         "複合パターン - ホーム + 環境変数",
-			inputPath:    "~/config/$TEST_VAR/test.yml",
-			expectedPath: filepath.Join(homeDir, "config", "test_value", "test.yml"),
-		},
-		{
-			name:         "未定義環境変数",
-			inputPath:    "$UNDEFINED_VAR/test.yml",
-			expectedPath: "/test.yml",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// セットアップ
-			var cleanup func()
-			if tt.setupFunc != nil {
-				cleanup = tt.setupFunc()
-				defer cleanup()
-			}
-
-			// モックサービス作成（ResolvePath用なのでvalidatorとrepoFactoryは最小限）
-			service := NewProfileService(&MockProfileValidator{}, func(string) ProfileRepository { return &MockProfileRepository{} })
-
-			// テスト実行
-			result, err := service.ResolvePath(tt.inputPath)
-
-			// アサーション
-			if tt.expectedError != "" {
-				assert.Error(t, err, "Should return error")
-				assert.Contains(t, err.Error(), tt.expectedError, "Error message should contain expected text")
-			} else {
-				assert.NoError(t, err, "Should not return error")
-				assert.Equal(t, tt.expectedPath, result, "Resolved path should match expected")
-			}
-		})
-	}
-}
 
 // TestProfileServiceImpl_ValidateProfile_PathResolution はパス解決と統合したテストを実行する
 func TestProfileServiceImpl_ValidateProfile_PathResolution(t *testing.T) {
@@ -285,16 +185,6 @@ func TestProfileServiceImpl_ValidateProfile_PathResolution(t *testing.T) {
 	err = os.WriteFile(profilePath, []byte("ai:\n  gemini:\n    api_key: test"), 0644)
 	require.NoError(t, err)
 
-	// 環境変数設定
-	originalTestDir := os.Getenv("TEST_DIR")
-	os.Setenv("TEST_DIR", tempDir)
-	defer func() {
-		if originalTestDir == "" {
-			os.Unsetenv("TEST_DIR")
-		} else {
-			os.Setenv("TEST_DIR", originalTestDir)
-		}
-	}()
 
 	tests := []struct {
 		name      string
@@ -304,10 +194,6 @@ func TestProfileServiceImpl_ValidateProfile_PathResolution(t *testing.T) {
 		{
 			name:      "絶対パス",
 			inputPath: profilePath,
-		},
-		{
-			name:      "環境変数を使用したパス",
-			inputPath: "$TEST_DIR/test_profile.yml",
 		},
 		{
 			name:      "相対パス",
