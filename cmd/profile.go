@@ -58,7 +58,7 @@ func makeProfileCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "check [file path]",
 		Short: "Validate profile file configuration.",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
 
