@@ -1,0 +1,16 @@
+{
+    "hooks": {
+        "PostToolUse": [
+            {
+                "matcher": "Write|Edit|MultiEdit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "make fmt",
+                        "timeout": 30000
+                    }
+                ]
+            }
+        ]
+    }
+}
