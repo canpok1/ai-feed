@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
 )
@@ -58,32 +57,56 @@ func makeProfileCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "check [file path]",
 		Short: "Validate profile file configuration.",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			filePath := args[0]
-
-			// ファイルの存在確認
-			if _, err := os.Stat(filePath); os.IsNotExist(err) {
-				cmd.PrintErrf("Error: profile file not found at %s\n", filePath)
-				return err
-			} else if err != nil {
-				cmd.PrintErrf("Error: failed to access file: %v\n", err)
-				return err
-			}
-
-			// プロファイルファイルの読み込み
-			profileRepo := &profileRepositoryAdapter{
-				repo: infra.NewYamlProfileRepository(filePath),
-			}
-			profile, err := profileRepo.LoadProfile()
+			// config.ymlの読み込み
+			configPath := "./config.yml"
+			config, err := infra.NewYamlConfigRepository(configPath).Load()
 			if err != nil {
-				cmd.PrintErrf("Error: failed to load profile: %v\n", err)
-				return err
+				// ファイルが存在しない場合は警告を表示しない
+				if _, statErr := os.Stat(configPath); os.IsNotExist(statErr) {
+					// ファイルが存在しない場合は何もしない
+				} else {
+					// ファイルが存在するが読み込み・パースに失敗した場合は警告を表示
+					cmd.PrintErrf("Warning: failed to load or parse %s, proceeding with empty default profile. Error: %v\n", configPath, err)
+				}
 			}
 
-			// バリデーション実行
+			// デフォルトプロファイルの取得
+			var currentProfile infra.Profile
+			if config != nil && config.DefaultProfile != nil {
+				currentProfile = *config.DefaultProfile
+			}
+			// 存在しない場合は空のプロファイルを使用（ゼロ値）
+
+			// 引数が指定されている場合は指定ファイルとマージ
+			if len(args) > 0 {
+				filePath := args[0]
+
+				// ファイルの存在確認
+				if _, err := os.Stat(filePath); os.IsNotExist(err) {
+					cmd.PrintErrf("Error: profile file not found at %s\n", filePath)
+					return err
+				} else if err != nil {
+					cmd.PrintErrf("Error: failed to access file: %v\n", err)
+					return err
+				}
+
+				// 指定されたプロファイルファイルの読み込み
+				loadedProfile, err := infra.NewYamlProfileRepository(filePath).LoadProfile()
+				if err != nil {
+					cmd.PrintErrf("Error: failed to load profile: %v\n", err)
+					return err
+				}
+
+				// デフォルトプロファイルとマージ
+				currentProfile.Merge(loadedProfile)
+			}
+
+			// マージ後のプロファイルをentity.Profileに変換してバリデーション
+			entityProfile := currentProfile.ToEntity()
 			validator := domain.NewProfileValidator()
-			result := validator.Validate(profile)
+			result := validator.Validate(entityProfile)
 
 			// 結果の表示
 			if !result.IsValid {
@@ -107,18 +130,4 @@ func makeProfileCheckCmd() *cobra.Command {
 		},
 	}
 	return cmd
-}
-
-// profileRepositoryAdapter はinfra.YamlProfileRepositoryをdomain.ProfileRepositoryに適応させるアダプター
-type profileRepositoryAdapter struct {
-	repo *infra.YamlProfileRepository
-}
-
-// LoadProfile はinfraのProfileをentityのProfileに変換して返す
-func (a *profileRepositoryAdapter) LoadProfile() (*entity.Profile, error) {
-	profile, err := a.repo.LoadProfile()
-	if err != nil {
-		return nil, err
-	}
-	return profile.ToEntity(), nil
 }
