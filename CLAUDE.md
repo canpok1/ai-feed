@@ -74,6 +74,30 @@ go test -v ./...
 - 新しい外部依存関係を追加する際は `go mod tidy` を実行する
 - インターフェースを変更した後は `make generate` でモックを再生成する
 
+## セキュリティとトークン管理
+
+### GitHub Personal Access Token の設定
+
+Claude CodeとMCP GitHub統合を使用するには、GITHUB_PERSONAL_ACCESS_TOKENが必要です。
+
+#### トークンの作成
+1. GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)
+2. 以下の権限を付与:
+   - `repo` (リポジトリへの完全アクセス)
+   - `read:org` (組織情報の読み取り)
+
+#### 安全な設定方法
+```bash
+# プロジェクトルートに .env ファイルを作成（.gitignoreに含まれているため安全）
+echo "GITHUB_PERSONAL_ACCESS_TOKEN=your_token_here" > .env
+```
+
+#### 重要な注意事項
+- **絶対にトークンをコードやコミットに含めないでください**
+- .envファイルは.gitignoreに含まれており、リポジトリにコミットされません
+- 開発環境でのみ使用し、本番環境では適切な秘密管理システムを使用してください
+- トークンは定期的にローテーションすることを推奨します
+
 ## その他
 - リポジトリ情報は `git remote -v` で取得する
 - 常に日本語で回答すること
