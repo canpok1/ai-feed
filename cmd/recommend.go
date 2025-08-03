@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 
+	"github.com/canpok1/ai-feed/cmd/runner"
 	"github.com/canpok1/ai-feed/internal"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
@@ -45,7 +45,7 @@ recommends one random article from the fetched list.`,
 				currentProfile.Merge(loadedProfile)
 			}
 
-			runner, runnerErr := newRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
+			runner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -54,7 +54,7 @@ recommends one random article from the fetched list.`,
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-			return runner.Run(cmd, params, currentProfile)
+			return runner.Run(cmd.Context(), params, currentProfile)
 		},
 	}
 
@@ -65,11 +65,7 @@ recommends one random article from the fetched list.`,
 	return cmd
 }
 
-type recommendParams struct {
-	urls []string
-}
-
-func newRecommendParams(cmd *cobra.Command) (*recommendParams, error) {
+func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 	url, err := cmd.Flags().GetString("url")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get url flag: %w", err)
@@ -98,90 +94,7 @@ func newRecommendParams(cmd *cobra.Command) (*recommendParams, error) {
 		return nil, fmt.Errorf("either --url or --source must be specified")
 	}
 
-	return &recommendParams{
-		urls: urls,
+	return &runner.RecommendParams{
+		URLs: urls,
 	}, nil
-}
-
-type recommendRunner struct {
-	fetcher     *domain.Fetcher
-	recommender domain.Recommender
-	viewers     []domain.Viewer
-}
-
-func newRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*recommendRunner, error) {
-	fetcher := domain.NewFetcher(
-		fetchClient,
-		func(url string, err error) error {
-			fmt.Fprintf(stderr, "Error fetching feed from %s: %v\n", url, err)
-			return err
-		},
-	)
-	viewer, err := domain.NewStdViewer(stdout)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create viewer: %w", err)
-	}
-	viewers := []domain.Viewer{viewer}
-
-	if outputConfig != nil {
-		if outputConfig.SlackAPI != nil {
-			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity())
-			viewers = append(viewers, slackViewer)
-		}
-		if outputConfig.Misskey != nil {
-			misskeyViewer, err := infra.NewMisskeyViewer(outputConfig.Misskey.APIURL, outputConfig.Misskey.APIToken)
-			if err != nil {
-				return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
-			}
-			viewers = append(viewers, misskeyViewer)
-		}
-	}
-
-	return &recommendRunner{
-		fetcher:     fetcher,
-		recommender: recommender,
-		viewers:     viewers,
-	}, nil
-}
-
-func (r *recommendRunner) Run(cmd *cobra.Command, p *recommendParams, profile infra.Profile) error {
-	allArticles, err := r.fetcher.Fetch(p.urls, 0)
-	if err != nil {
-		return fmt.Errorf("failed to fetch articles: %w", err)
-	}
-
-	if len(allArticles) == 0 {
-		fmt.Fprintln(cmd.OutOrStdout(), "No articles found in the feed.")
-		return nil
-	}
-
-	if profile.AI == nil || profile.Prompt == nil {
-		return fmt.Errorf("AI model or prompt is not configured")
-	}
-
-	aiConfigEntity := profile.AI.ToEntity()
-	promptConfigEntity := profile.Prompt.ToEntity()
-
-	recommend, err := r.recommender.Recommend(
-		cmd.Context(),
-		aiConfigEntity,
-		promptConfigEntity,
-		allArticles)
-	if err != nil {
-		return fmt.Errorf("failed to recommend article: %w", err)
-	}
-
-	var errs []error
-	for _, viewer := range r.viewers {
-		err = viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("failed to view recommend: %w", err))
-		}
-	}
-
-	if len(errs) > 0 {
-		return fmt.Errorf("failed to view all recommends: %v", errs)
-	}
-
-	return nil
 }
