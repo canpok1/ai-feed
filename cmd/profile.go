@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -58,18 +59,16 @@ func makeProfileCheckCmd() *cobra.Command {
 		Use:   "check [file path]",
 		Short: "Validate profile file configuration.",
 		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
 
 			// ファイルの存在確認
 			if _, err := os.Stat(filePath); os.IsNotExist(err) {
 				cmd.PrintErrf("Error: profile file not found at %s\n", filePath)
-				os.Exit(1)
-				return
+				return err
 			} else if err != nil {
 				cmd.PrintErrf("Error: failed to access file: %v\n", err)
-				os.Exit(1)
-				return
+				return err
 			}
 
 			// プロファイルファイルの読み込み
@@ -79,8 +78,7 @@ func makeProfileCheckCmd() *cobra.Command {
 			profile, err := profileRepo.LoadProfile()
 			if err != nil {
 				cmd.PrintErrf("Error: failed to load profile: %v\n", err)
-				os.Exit(1)
-				return
+				return err
 			}
 
 			// バリデーション実行
@@ -93,8 +91,7 @@ func makeProfileCheckCmd() *cobra.Command {
 				for _, err := range result.Errors {
 					cmd.PrintErrf("  ERROR: %s\n", err)
 				}
-				os.Exit(2)
-				return
+				return fmt.Errorf("profile validation failed")
 			}
 
 			if len(result.Warnings) > 0 {
@@ -105,6 +102,8 @@ func makeProfileCheckCmd() *cobra.Command {
 			} else {
 				cmd.Println("Profile validation successful")
 			}
+
+			return nil
 		},
 	}
 	return cmd
