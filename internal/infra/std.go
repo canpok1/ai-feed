@@ -29,10 +29,7 @@ func NewStdViewer(writer io.Writer) (domain.Viewer, error) {
 		return nil, fmt.Errorf("writer cannot be nil")
 	}
 
-	loc, err := time.LoadLocation("Asia/Tokyo")
-	if err != nil {
-		return nil, err
-	}
+	loc := time.Local
 
 	messageBuilder, err := NewMessageBuilder(recommendTemplate)
 	if err != nil {
