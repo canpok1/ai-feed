@@ -58,7 +58,7 @@ anything to your local cache.`,
 				return fmt.Errorf("failed to fetch articles: %w", err)
 			}
 
-			viewer, err := domain.NewStdViewer(cmd.OutOrStdout())
+			viewer, err := infra.NewStdViewer(cmd.OutOrStdout())
 			if err != nil {
 				return fmt.Errorf("failed to create viewer: %w", err)
 			}

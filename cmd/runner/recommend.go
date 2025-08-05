@@ -34,7 +34,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			return err
 		},
 	)
-	viewer, err := domain.NewStdViewer(stdout)
+	viewer, err := infra.NewStdViewer(stdout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create viewer: %w", err)
 	}
