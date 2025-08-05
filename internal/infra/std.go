@@ -9,10 +9,18 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
+// recommendTemplate は推薦記事の出力テンプレート
+const recommendTemplate = `Title: {{ .Article.Title }}
+Link: {{ .Article.Link }}
+{{ if .Comment }}Comment: {{ .Comment }}
+{{ end }}{{ if .FixedMessage }}Fixed Message: {{ .FixedMessage }}
+{{ end }}`
+
 // StdViewer は標準出力にデータを表示するViewer実装
 type StdViewer struct {
-	loc    *time.Location
-	writer io.Writer
+	loc            *time.Location
+	writer         io.Writer
+	messageBuilder *MessageBuilder
 }
 
 // NewStdViewer は新しいStdViewerを作成する
@@ -26,9 +34,15 @@ func NewStdViewer(writer io.Writer) (domain.Viewer, error) {
 		return nil, err
 	}
 
+	messageBuilder, err := NewMessageBuilder(recommendTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create message builder: %w", err)
+	}
+
 	return &StdViewer{
-		loc:    loc,
-		writer: writer,
+		loc:            loc,
+		writer:         writer,
+		messageBuilder: messageBuilder,
 	}, nil
 }
 
@@ -53,14 +67,11 @@ func (v *StdViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage stri
 		return nil
 	}
 
-	fmt.Fprintf(v.writer, "Title: %s\n", recommend.Article.Title)
-	fmt.Fprintf(v.writer, "Link: %s\n", recommend.Article.Link)
-	if recommend.Comment != nil {
-		fmt.Fprintf(v.writer, "Comment: %s\n", *recommend.Comment)
+	message, err := v.messageBuilder.BuildRecommendMessage(recommend, fixedMessage)
+	if err != nil {
+		return fmt.Errorf("failed to build recommend message: %w", err)
 	}
-	// fixedMessage を追加
-	if fixedMessage != "" {
-		fmt.Fprintf(v.writer, "Fixed Message: %s\n", fixedMessage)
-	}
+
+	fmt.Fprint(v.writer, message)
 	return nil
 }
