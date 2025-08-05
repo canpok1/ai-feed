@@ -79,4 +79,3 @@ func TestStdViewer_ViewRecommend(t *testing.T) {
 		})
 	}
 }
-
