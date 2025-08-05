@@ -47,4 +47,3 @@ func (b *MessageBuilder) BuildRecommendMessage(r *entity.Recommend, fixedMessage
 
 	return buf.String(), nil
 }
-

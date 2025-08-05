@@ -8,4 +8,3 @@ type Viewer interface {
 	ViewArticles([]entity.Article) error
 	ViewRecommend(*entity.Recommend, string) error
 }
-

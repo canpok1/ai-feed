@@ -142,4 +142,3 @@ func TestMessageBuilder_BuildRecommendMessage_ExecutionError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "NonExistentField")
 }
-
