@@ -107,6 +107,14 @@ func TestMessageBuilder_BuildRecommendMessage(t *testing.T) {
 			},
 			expected: "No date\n",
 		},
+		{
+			name:         "recommendがnil",
+			template:     "Title: {{ .Article.Title }}",
+			recommend:    nil,
+			fixedMessage: "テストメッセージ",
+			expected:     "",
+			expectError:  true,
+		},
 	}
 
 	for _, tt := range tests {

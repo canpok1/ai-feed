@@ -2,6 +2,7 @@ package infra
 
 import (
 	"bytes"
+	"fmt"
 	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -33,6 +34,10 @@ type templateData struct {
 
 // BuildRecommendMessage はentity.Recommendとfixed messageを元にメッセージを生成する
 func (b *MessageBuilder) BuildRecommendMessage(r *entity.Recommend, fixedMessage string) (string, error) {
+	if r == nil {
+		return "", fmt.Errorf("recommend cannot be nil")
+	}
+
 	data := templateData{
 		Article:      r.Article,
 		Comment:      r.Comment,
