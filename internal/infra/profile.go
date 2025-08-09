@@ -9,10 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// profileYmlTemplate は、profile initコマンドで生成するprofile.ymlのテンプレート文字列
-const profileYmlTemplate = `# AI Feedのプロファイル設定ファイル
-# このファイルの設定は config.yml のデフォルトプロファイル設定を上書きします
-# AI設定
+// commonProfileTemplate は、プロファイル設定の共通部分のテンプレート文字列
+const commonProfileTemplate = `# AI設定
 ai:
   gemini:
     type: gemini-2.5-flash                  # 使用するGeminiモデル
@@ -40,8 +38,12 @@ output:
   # Misskey投稿設定
   misskey:
     api_token: xxxxxx                       # Misskeyアクセストークン
-    api_url: https://misskey.social/api     # MisskeyのAPIエンドポイント
-`
+    api_url: https://misskey.social/api     # MisskeyのAPIエンドポイント`
+
+// profileYmlTemplate は、profile initコマンドで生成するprofile.ymlのテンプレート文字列
+var profileYmlTemplate = `# AI Feedのプロファイル設定ファイル
+# このファイルの設定は config.yml のデフォルトプロファイル設定を上書きします
+` + commonProfileTemplate
 
 type YamlProfileRepository struct {
 	filePath string
