@@ -38,3 +38,5 @@ profile.yml
 
 # Added by goreleaser init:
 dist/
+
+tmp/
