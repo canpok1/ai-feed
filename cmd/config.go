@@ -30,8 +30,8 @@ func makeConfigInitCmd() *cobra.Command {
 
 			configRepo := infra.NewYamlConfigRepository(filePath)
 
-			config := infra.MakeDefaultConfig()
-			if err := configRepo.Save(config); err != nil {
+			// テンプレートを使用してコメント付きconfig.ymlを生成
+			if err := configRepo.SaveWithTemplate(); err != nil {
 				return err
 			}
 			fmt.Printf("%s generated\n", filePath)

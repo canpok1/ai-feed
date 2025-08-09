@@ -3,6 +3,7 @@ package infra
 import (
 	"fmt"
 	"os"
+	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
@@ -23,10 +24,10 @@ default_profile:
   comment_prompt_template: |                          # 記事紹介文生成用のプロンプトテンプレート
     以下の記事の紹介文を100字以内で作成してください。
     ---
-    記事タイトル: {{title}}
-    記事URL: {{url}}
+    記事タイトル: {{"{{title}}"}}
+    記事URL: {{"{{url}}"}}
     記事内容:
-    {{content}}
+    {{"{{content}}"}}
   fixed_message: 固定の文言です。                      # 記事紹介文に追加する固定文言
   
   # 出力先設定
@@ -273,6 +274,32 @@ func NewYamlConfigRepository(filePath string) *YamlConfigRepository {
 	}
 }
 
+// SaveWithTemplate は、テンプレートを使用してコメント付きconfig.ymlファイルを生成する
+func (r *YamlConfigRepository) SaveWithTemplate() error {
+	// Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
+	file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		if os.IsExist(err) {
+			return fmt.Errorf("config file already exists: %s", r.filePath)
+		}
+		return fmt.Errorf("failed to create config file: %s, %w", r.filePath, err)
+	}
+	defer file.Close()
+
+	// テンプレートを実行してファイルに書き込み
+	tmpl, err := template.New("config").Parse(configYmlTemplate)
+	if err != nil {
+		return fmt.Errorf("failed to parse config template: %w", err)
+	}
+
+	err = tmpl.Execute(file, nil)
+	if err != nil {
+		return fmt.Errorf("failed to execute config template: %w", err)
+	}
+
+	return nil
+}
+
 func (r *YamlConfigRepository) Save(config *Config) error {
 	// Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
 	file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
@@ -284,11 +311,14 @@ func (r *YamlConfigRepository) Save(config *Config) error {
 	}
 	defer file.Close()
 
-	encoder := yaml.NewEncoder(file)
-	encoder.SetIndent(2)
-	err = encoder.Encode(config)
+	// 構造体をYAMLエンコードして書き込み（既存のテスト互換性のため）
+	data, err := yaml.Marshal(config)
 	if err != nil {
 		return fmt.Errorf("failed to encode config: %w", err)
+	}
+
+	if _, err := file.Write(data); err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
 	}
 
 	return nil
