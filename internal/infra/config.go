@@ -35,6 +35,7 @@ default_profile:
     # Slack投稿設定
     slack_api:
       api_token: xxxxxx           # Slack Bot Token
+      api_url: https://example.com # Slack API URL
       channel: "#general"         # 投稿先チャンネル
     
     # Misskey投稿設定
