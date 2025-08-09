@@ -8,6 +8,40 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// configYmlTemplate は、config initコマンドで生成するconfig.ymlのテンプレート文字列
+const configYmlTemplate = `# AI Feedの設定ファイル
+# このファイルには全プロファイル共通のデフォルト設定を定義します
+default_profile:
+  # AI設定
+  ai:
+    gemini:
+      type: gemini-1.5-flash      # 使用するGeminiモデル
+      api_key: xxxxxx             # Google AI Studio APIキー
+  
+  # プロンプト設定
+  system_prompt: あなたはXXXXなAIアシスタントです。  # AIに与えるシステムプロンプト
+  comment_prompt_template: |                          # 記事紹介文生成用のプロンプトテンプレート
+    以下の記事の紹介文を100字以内で作成してください。
+    ---
+    記事タイトル: {{title}}
+    記事URL: {{url}}
+    記事内容:
+    {{content}}
+  fixed_message: 固定の文言です。                      # 記事紹介文に追加する固定文言
+  
+  # 出力先設定
+  output:
+    # Slack投稿設定
+    slack_api:
+      api_token: xoxb-xxxxxx      # Slack Bot Token
+      channel: "#general"         # 投稿先チャンネル
+    
+    # Misskey投稿設定
+    misskey:
+      api_token: YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE  # Misskeyアクセストークン
+      api_url: https://misskey.social/api            # MisskeyのAPIエンドポイント
+`
+
 type Config struct {
 	DefaultProfile *Profile `yaml:"default_profile,omitempty"`
 }
