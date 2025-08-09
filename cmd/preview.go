@@ -5,6 +5,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra/message"
 	"github.com/spf13/cobra"
 )
 
@@ -58,7 +59,7 @@ anything to your local cache.`,
 				return fmt.Errorf("failed to fetch articles: %w", err)
 			}
 
-			viewer, err := infra.NewStdViewer(cmd.OutOrStdout())
+			viewer, err := message.NewStdViewer(cmd.OutOrStdout())
 			if err != nil {
 				return fmt.Errorf("failed to create viewer: %w", err)
 			}
