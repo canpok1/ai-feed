@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestNewSlackViewer はNewSlackViewer関数をテストする
-func TestNewSlackViewer(t *testing.T) {
+// TestNewSlackSender はNewSlackSender関数をテストする
+func TestNewSlackSender(t *testing.T) {
 	tests := []struct {
 		name             string
 		config           *entity.SlackAPIConfig
@@ -58,14 +58,14 @@ func TestNewSlackViewer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			viewer := NewSlackViewer(tt.config)
+			viewer := NewSlackSender(tt.config)
 			require.NotNil(t, viewer)
 
-			slackViewer, ok := viewer.(*SlackViewer)
-			require.True(t, ok, "Should be SlackViewer type")
+			slackSender, ok := viewer.(*SlackSender)
+			require.True(t, ok, "Should be SlackSender type")
 
 			// テンプレートが正しくパースされていることを確認
-			require.NotNil(t, slackViewer.tmpl, "Template should be parsed and stored")
+			require.NotNil(t, slackSender.tmpl, "Template should be parsed and stored")
 
 			// テンプレートの内容を確認するため、空のデータで実行してみる
 			var buf bytes.Buffer
@@ -75,12 +75,12 @@ func TestNewSlackViewer(t *testing.T) {
 					Link:  "https://test.com",
 				},
 			}
-			err := slackViewer.tmpl.Execute(&buf, testData)
+			err := slackSender.tmpl.Execute(&buf, testData)
 			assert.NoError(t, err, "Template should be executable")
 			assert.NotEmpty(t, buf.String(), "Template execution should produce output")
 
-			assert.Equal(t, tt.config.Channel, slackViewer.channelID)
-			assert.NotNil(t, slackViewer.client)
+			assert.Equal(t, tt.config.Channel, slackSender.channelID)
+			assert.NotNil(t, slackSender.client)
 		})
 	}
 }

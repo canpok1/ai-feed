@@ -35,7 +35,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			return err
 		},
 	)
-	viewer, err := message.NewStdViewer(stdout)
+	viewer, err := message.NewStdSender(stdout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create viewer: %w", err)
 	}
@@ -43,11 +43,11 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
-			slackViewer := message.NewSlackViewer(outputConfig.SlackAPI.ToEntity())
+			slackViewer := message.NewSlackSender(outputConfig.SlackAPI.ToEntity())
 			viewers = append(viewers, slackViewer)
 		}
 		if outputConfig.Misskey != nil {
-			misskeyViewer, err := message.NewMisskeyViewer(outputConfig.Misskey.APIURL, outputConfig.Misskey.APIToken)
+			misskeyViewer, err := message.NewMisskeySender(outputConfig.Misskey.APIURL, outputConfig.Misskey.APIToken)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
 			}

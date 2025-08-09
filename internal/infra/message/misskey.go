@@ -13,13 +13,13 @@ import (
 	"github.com/yitsushi/go-misskey/services/notes"
 )
 
-// MisskeyViewer はMisskey APIと通信するためのクライアントです。
-type MisskeyViewer struct {
+// MisskeySender はMisskey APIと通信するためのクライアントです。
+type MisskeySender struct {
 	client *misskey.Client
 }
 
-// NewMisskeyViewer は新しいMisskeyViewerのインスタンスを作成します。
-func NewMisskeyViewer(instanceURL, accessToken string) (domain.MessageSender, error) {
+// NewMisskeySender は新しいMisskeySenderのインスタンスを作成します。
+func NewMisskeySender(instanceURL, accessToken string) (domain.MessageSender, error) {
 	parsedURL, err := url.Parse(instanceURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse instance URL: %w", err)
@@ -34,16 +34,16 @@ func NewMisskeyViewer(instanceURL, accessToken string) (domain.MessageSender, er
 		return nil, fmt.Errorf("failed to create Misskey client: %w", err)
 	}
 
-	return &MisskeyViewer{client: client}, nil
+	return &MisskeySender{client: client}, nil
 }
 
-// SendArticles はMisskeyViewerでは未実装です。
-func (v *MisskeyViewer) SendArticles(articles []entity.Article) error {
+// SendArticles はMisskeySenderでは未実装です。
+func (v *MisskeySender) SendArticles(articles []entity.Article) error {
 	return nil
 }
 
 // SendRecommend はMisskeyにノートを投稿します。
-func (v *MisskeyViewer) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
+func (v *MisskeySender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	if recommend == nil {
 		return fmt.Errorf("recommend is nil")
 	}
