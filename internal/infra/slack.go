@@ -1,7 +1,9 @@
 package infra
 
 import (
+	"bytes"
 	"strings"
+	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -20,14 +22,22 @@ type SlackTemplateData struct {
 }
 
 type SlackViewer struct {
-	client    *slack.Client
-	channelID string
+	client          *slack.Client
+	channelID       string
+	messageTemplate string
 }
 
 func NewSlackViewer(config *entity.SlackAPIConfig) domain.Viewer {
+	// メッセージテンプレートの設定
+	messageTemplate := DefaultSlackMessageTemplate
+	if config.MessageTemplate != nil && strings.TrimSpace(*config.MessageTemplate) != "" {
+		messageTemplate = *config.MessageTemplate
+	}
+
 	return &SlackViewer{
-		client:    slack.New(config.APIToken),
-		channelID: config.Channel,
+		client:          slack.New(config.APIToken),
+		channelID:       config.Channel,
+		messageTemplate: messageTemplate,
 	}
 }
 
@@ -37,24 +47,25 @@ func (s *SlackViewer) ViewArticles(articles []entity.Article) error {
 }
 
 func (v *SlackViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage string) error {
-	var messages []string
-	if recommend.Comment != nil && *recommend.Comment != "" {
-		messages = make([]string, 0, 3)
-		messages = append(messages, *recommend.Comment)
-	} else {
-		messages = make([]string, 0, 2)
-	}
-	messages = append(messages, recommend.Article.Title)
-	messages = append(messages, recommend.Article.Link)
-
-	msg := strings.Join(messages, "\n")
-
-	// 引数で渡されたfixedMessageを使用
-	if fixedMessage != "" {
-		msg = msg + "\n" + fixedMessage
+	// テンプレートデータを作成
+	templateData := &SlackTemplateData{
+		Article:      &recommend.Article,
+		Comment:      recommend.Comment,
+		FixedMessage: fixedMessage,
 	}
 
-	return v.postMessage(msg)
+	// テンプレートをパースして実行
+	tmpl, err := template.New("slack_message").Parse(v.messageTemplate)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, templateData); err != nil {
+		return err
+	}
+
+	return v.postMessage(buf.String())
 }
 
 func (v *SlackViewer) postMessage(msg string) error {
