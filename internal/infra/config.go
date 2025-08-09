@@ -147,8 +147,9 @@ func (c *OutputConfig) ToEntity() *entity.OutputConfig {
 }
 
 type SlackAPIConfig struct {
-	APIToken string `yaml:"api_token"`
-	Channel  string `yaml:"channel"`
+	APIToken        string  `yaml:"api_token"`
+	Channel         string  `yaml:"channel"`
+	MessageTemplate *string `yaml:"message_template,omitempty"`
 }
 
 func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
@@ -157,12 +158,16 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	}
 	mergeString(&c.APIToken, other.APIToken)
 	mergeString(&c.Channel, other.Channel)
+	if other.MessageTemplate != nil {
+		c.MessageTemplate = other.MessageTemplate
+	}
 }
 
 func (c *SlackAPIConfig) ToEntity() *entity.SlackAPIConfig {
 	return &entity.SlackAPIConfig{
-		APIToken: c.APIToken,
-		Channel:  c.Channel,
+		APIToken:        c.APIToken,
+		Channel:         c.Channel,
+		MessageTemplate: c.MessageTemplate,
 	}
 }
 
