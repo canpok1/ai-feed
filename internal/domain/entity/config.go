@@ -40,8 +40,9 @@ type MisskeyConfig struct {
 }
 
 type SlackAPIConfig struct {
-	APIToken string
-	Channel  string
+	APIToken        string
+	Channel         string
+	MessageTemplate *string
 }
 
 type Profile struct {

@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"fmt"
 	"strings"
+	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
@@ -71,6 +73,13 @@ func (v *ProfileValidatorImpl) validateRequiredFields(profile *entity.Profile) [
 		errors = append(errors, "Comment prompt template is not configured")
 	}
 
+	// Slackメッセージテンプレートの検証
+	if profile.Output != nil && profile.Output.SlackAPI != nil && profile.Output.SlackAPI.MessageTemplate != nil {
+		if err := validateSlackMessageTemplate(*profile.Output.SlackAPI.MessageTemplate); err != nil {
+			errors = append(errors, fmt.Sprintf("Slack message template is invalid: %v", err))
+		}
+	}
+
 	return errors
 }
 
@@ -122,6 +131,22 @@ func (v *ProfileValidatorImpl) validateWarningFields(profile *entity.Profile) []
 	}
 
 	return warnings
+}
+
+// validateSlackMessageTemplate はSlackメッセージテンプレートの構文を検証する
+func validateSlackMessageTemplate(templateStr string) error {
+	// 空文字列や空白のみの場合はエラーとしない（デフォルトテンプレートが使用される）
+	if strings.TrimSpace(templateStr) == "" {
+		return nil
+	}
+
+	// text/templateでパースして構文チェック
+	_, err := template.New("slack_message").Parse(templateStr)
+	if err != nil {
+		return fmt.Errorf("テンプレート構文エラー: %w", err)
+	}
+
+	return nil
 }
 
 // MaskSensitiveData はAPIキーなどの機密情報をマスクする
