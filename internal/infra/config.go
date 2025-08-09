@@ -34,12 +34,12 @@ default_profile:
   output:
     # Slack投稿設定
     slack_api:
-      api_token: xoxb-xxxxxx      # Slack Bot Token
+      api_token: xxxxxx           # Slack Bot Token
       channel: "#general"         # 投稿先チャンネル
     
     # Misskey投稿設定
     misskey:
-      api_token: YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE  # Misskeyアクセストークン
+      api_token: xxxxxx           # Misskeyアクセストークン
       api_url: https://misskey.social/api            # MisskeyのAPIエンドポイント
 `
 
