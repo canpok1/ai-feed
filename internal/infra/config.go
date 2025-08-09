@@ -3,10 +3,29 @@ package infra
 import (
 	"fmt"
 	"os"
+	"strings"
+	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
 )
+
+// indentLines は文字列の各行に指定されたインデントを追加する
+func indentLines(text, indent string) string {
+	lines := strings.Split(text, "\n")
+	for i, line := range lines {
+		if line != "" {
+			lines[i] = indent + line
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+// configYmlTemplate は、config initコマンドで生成するconfig.ymlのテンプレート文字列
+var configYmlTemplate = `# AI Feedの設定ファイル
+# このファイルには全プロファイル共通のデフォルト設定を定義します
+default_profile:
+` + indentLines(commonProfileTemplate, "  ")
 
 type Config struct {
 	DefaultProfile *Profile `yaml:"default_profile,omitempty"`
@@ -239,6 +258,32 @@ func NewYamlConfigRepository(filePath string) *YamlConfigRepository {
 	}
 }
 
+// SaveWithTemplate は、テンプレートを使用してコメント付きconfig.ymlファイルを生成する
+func (r *YamlConfigRepository) SaveWithTemplate() error {
+	// Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
+	file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		if os.IsExist(err) {
+			return fmt.Errorf("config file already exists: %s", r.filePath)
+		}
+		return fmt.Errorf("failed to create config file: %s, %w", r.filePath, err)
+	}
+	defer file.Close()
+
+	// テンプレートを実行してファイルに書き込み
+	tmpl, err := template.New("config").Parse(configYmlTemplate)
+	if err != nil {
+		return fmt.Errorf("failed to parse config template: %w", err)
+	}
+
+	err = tmpl.Execute(file, nil)
+	if err != nil {
+		return fmt.Errorf("failed to execute config template: %w", err)
+	}
+
+	return nil
+}
+
 func (r *YamlConfigRepository) Save(config *Config) error {
 	// Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
 	file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
@@ -250,11 +295,14 @@ func (r *YamlConfigRepository) Save(config *Config) error {
 	}
 	defer file.Close()
 
-	encoder := yaml.NewEncoder(file)
-	encoder.SetIndent(2)
-	err = encoder.Encode(config)
+	// 構造体をYAMLエンコードして書き込み（既存のテスト互換性のため）
+	data, err := yaml.Marshal(config)
 	if err != nil {
 		return fmt.Errorf("failed to encode config: %w", err)
+	}
+
+	if _, err := file.Write(data); err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
 	}
 
 	return nil
