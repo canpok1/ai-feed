@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStdViewer_ViewRecommend(t *testing.T) {
+func TestStdViewer_SendRecommend(t *testing.T) {
 	comment := "これはおすすめの記事です"
 	now := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
 
@@ -72,7 +72,7 @@ func TestStdViewer_ViewRecommend(t *testing.T) {
 			viewer, err := NewStdViewer(&buf)
 			require.NoError(t, err)
 
-			err = viewer.ViewRecommend(tt.recommend, tt.fixedMessage)
+			err = viewer.SendRecommend(tt.recommend, tt.fixedMessage)
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.expected, buf.String())

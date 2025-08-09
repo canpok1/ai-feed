@@ -63,7 +63,7 @@ anything to your local cache.`,
 				return fmt.Errorf("failed to create viewer: %w", err)
 			}
 
-			err = viewer.ViewArticles(allArticles)
+			err = viewer.SendArticles(allArticles)
 			if err != nil {
 				return fmt.Errorf("failed to view articles: %w", err)
 			}

@@ -16,54 +16,54 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockViewer is a mock of Viewer interface.
-type MockViewer struct {
+// MockMessageSender is a mock of MessageSender interface.
+type MockMessageSender struct {
 	ctrl     *gomock.Controller
-	recorder *MockViewerMockRecorder
+	recorder *MockMessageSenderMockRecorder
 	isgomock struct{}
 }
 
-// MockViewerMockRecorder is the mock recorder for MockViewer.
-type MockViewerMockRecorder struct {
-	mock *MockViewer
+// MockMessageSenderMockRecorder is the mock recorder for MockMessageSender.
+type MockMessageSenderMockRecorder struct {
+	mock *MockMessageSender
 }
 
-// NewMockViewer creates a new mock instance.
-func NewMockViewer(ctrl *gomock.Controller) *MockViewer {
-	mock := &MockViewer{ctrl: ctrl}
-	mock.recorder = &MockViewerMockRecorder{mock}
+// NewMockMessageSender creates a new mock instance.
+func NewMockMessageSender(ctrl *gomock.Controller) *MockMessageSender {
+	mock := &MockMessageSender{ctrl: ctrl}
+	mock.recorder = &MockMessageSenderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockViewer) EXPECT() *MockViewerMockRecorder {
+func (m *MockMessageSender) EXPECT() *MockMessageSenderMockRecorder {
 	return m.recorder
 }
 
-// ViewArticles mocks base method.
-func (m *MockViewer) ViewArticles(arg0 []entity.Article) error {
+// SendArticles mocks base method.
+func (m *MockMessageSender) SendArticles(arg0 []entity.Article) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ViewArticles", arg0)
+	ret := m.ctrl.Call(m, "SendArticles", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ViewArticles indicates an expected call of ViewArticles.
-func (mr *MockViewerMockRecorder) ViewArticles(arg0 any) *gomock.Call {
+// SendArticles indicates an expected call of SendArticles.
+func (mr *MockMessageSenderMockRecorder) SendArticles(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewArticles", reflect.TypeOf((*MockViewer)(nil).ViewArticles), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendArticles", reflect.TypeOf((*MockMessageSender)(nil).SendArticles), arg0)
 }
 
-// ViewRecommend mocks base method.
-func (m *MockViewer) ViewRecommend(arg0 *entity.Recommend) error {
+// SendRecommend mocks base method.
+func (m *MockMessageSender) SendRecommend(arg0 *entity.Recommend, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ViewRecommend", arg0)
+	ret := m.ctrl.Call(m, "SendRecommend", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ViewRecommend indicates an expected call of ViewRecommend.
-func (mr *MockViewerMockRecorder) ViewRecommend(arg0 any) *gomock.Call {
+// SendRecommend indicates an expected call of SendRecommend.
+func (mr *MockMessageSenderMockRecorder) SendRecommend(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewRecommend", reflect.TypeOf((*MockViewer)(nil).ViewRecommend), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRecommend", reflect.TypeOf((*MockMessageSender)(nil).SendRecommend), arg0, arg1)
 }

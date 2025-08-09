@@ -22,7 +22,7 @@ type RecommendParams struct {
 type RecommendRunner struct {
 	fetcher     *domain.Fetcher
 	recommender domain.Recommender
-	viewers     []domain.Viewer
+	viewers     []domain.MessageSender
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
@@ -38,7 +38,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	if err != nil {
 		return nil, fmt.Errorf("failed to create viewer: %w", err)
 	}
-	viewers := []domain.Viewer{viewer}
+	viewers := []domain.MessageSender{viewer}
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
@@ -90,7 +90,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 
 	var errs []error
 	for _, viewer := range r.viewers {
-		if viewErr := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
+		if viewErr := viewer.SendRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
 		}
 	}

@@ -24,7 +24,7 @@ type StdViewer struct {
 }
 
 // NewStdViewer は新しいStdViewerを作成する
-func NewStdViewer(writer io.Writer) (domain.Viewer, error) {
+func NewStdViewer(writer io.Writer) (domain.MessageSender, error) {
 	if writer == nil {
 		return nil, fmt.Errorf("writer cannot be nil")
 	}
@@ -43,8 +43,8 @@ func NewStdViewer(writer io.Writer) (domain.Viewer, error) {
 	}, nil
 }
 
-// ViewArticles は記事のリストを表示する
-func (v *StdViewer) ViewArticles(articles []entity.Article) error {
+// SendArticles は記事のリストを表示する
+func (v *StdViewer) SendArticles(articles []entity.Article) error {
 	for _, article := range articles {
 		fmt.Fprintf(v.writer, "Title: %s\n", article.Title)
 		fmt.Fprintf(v.writer, "Link: %s\n", article.Link)
@@ -57,8 +57,8 @@ func (v *StdViewer) ViewArticles(articles []entity.Article) error {
 	return nil
 }
 
-// ViewRecommend は推薦記事を表示する
-func (v *StdViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage string) error {
+// SendRecommend は推薦記事を表示する
+func (v *StdViewer) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	if recommend == nil {
 		fmt.Fprintln(v.writer, "No articles found in the feed.")
 		return nil

@@ -19,7 +19,7 @@ type MisskeyViewer struct {
 }
 
 // NewMisskeyViewer は新しいMisskeyViewerのインスタンスを作成します。
-func NewMisskeyViewer(instanceURL, accessToken string) (domain.Viewer, error) {
+func NewMisskeyViewer(instanceURL, accessToken string) (domain.MessageSender, error) {
 	parsedURL, err := url.Parse(instanceURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse instance URL: %w", err)
@@ -37,13 +37,13 @@ func NewMisskeyViewer(instanceURL, accessToken string) (domain.Viewer, error) {
 	return &MisskeyViewer{client: client}, nil
 }
 
-// ViewArticles はMisskeyViewerでは未実装です。
-func (v *MisskeyViewer) ViewArticles(articles []entity.Article) error {
+// SendArticles はMisskeyViewerでは未実装です。
+func (v *MisskeyViewer) SendArticles(articles []entity.Article) error {
 	return nil
 }
 
-// ViewRecommend はMisskeyにノートを投稿します。
-func (v *MisskeyViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage string) error {
+// SendRecommend はMisskeyにノートを投稿します。
+func (v *MisskeyViewer) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	if recommend == nil {
 		return fmt.Errorf("recommend is nil")
 	}

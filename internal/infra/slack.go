@@ -27,7 +27,7 @@ type SlackViewer struct {
 	tmpl      *template.Template
 }
 
-func NewSlackViewer(config *entity.SlackAPIConfig) domain.Viewer {
+func NewSlackViewer(config *entity.SlackAPIConfig) domain.MessageSender {
 	// メッセージテンプレートの設定
 	messageTemplate := DefaultSlackMessageTemplate
 	if config.MessageTemplate != nil && strings.TrimSpace(*config.MessageTemplate) != "" {
@@ -44,12 +44,12 @@ func NewSlackViewer(config *entity.SlackAPIConfig) domain.Viewer {
 	}
 }
 
-func (s *SlackViewer) ViewArticles(articles []entity.Article) error {
+func (s *SlackViewer) SendArticles(articles []entity.Article) error {
 	// TODO 実装
 	return nil
 }
 
-func (v *SlackViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage string) error {
+func (v *SlackViewer) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	// テンプレートデータを作成
 	templateData := &SlackTemplateData{
 		Article:      &recommend.Article,
