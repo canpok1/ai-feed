@@ -16,7 +16,7 @@ const profileYmlTemplate = `# AI Feedのプロファイル設定ファイル
 ai:
   gemini:
     type: gemini-1.5-flash                  # 使用するGeminiモデル
-    api_key: YOUR_GEMINI_API_KEY_HERE       # Google AI Studio APIキー
+    api_key: xxxxxx                         # Google AI Studio APIキー
 
 # プロンプト設定
 system_prompt: あなたはXXXXなAIアシスタントです。    # AIに与えるシステムプロンプト
@@ -33,13 +33,13 @@ fixed_message: 固定の文言です。                     # 記事紹介文に
 output:
   # Slack投稿設定
   slack_api:
-    api_token: xoxb-YOUR_SLACK_API_TOKEN_HERE   # Slack Bot Token
-    channel: "#general"                         # 投稿先チャンネル
+    api_token: xxxxxx                       # Slack Bot Token
+    channel: "#general"                     # 投稿先チャンネル
   
   # Misskey投稿設定
   misskey:
-    api_token: YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE  # Misskeyアクセストークン
-    api_url: https://misskey.social/api            # MisskeyのAPIエンドポイント
+    api_token: xxxxxx                       # Misskeyアクセストークン
+    api_url: https://misskey.social/api     # MisskeyのAPIエンドポイント
 `
 
 type YamlProfileRepository struct {
