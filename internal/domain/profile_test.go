@@ -450,3 +450,183 @@ func TestProfileValidatorImpl_validateWarningFields(t *testing.T) {
 		})
 	}
 }
+
+// TestValidateSlackMessageTemplate はSlackメッセージテンプレートのバリデーション機能をテストする
+func TestValidateSlackMessageTemplate(t *testing.T) {
+	tests := []struct {
+		name        string
+		template    string
+		expectError bool
+		errorSubstr string
+	}{
+		{
+			name:        "正常なテンプレート",
+			template:    "{{.Article.Title}}\n{{.Article.Link}}",
+			expectError: false,
+		},
+		{
+			name:        "デフォルトテンプレート",
+			template:    `{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}`,
+			expectError: false,
+		},
+		{
+			name:        "空文字列（エラーなし）",
+			template:    "",
+			expectError: false,
+		},
+		{
+			name:        "空白のみ（エラーなし）",
+			template:    "   \n\t  ",
+			expectError: false,
+		},
+		{
+			name:        "無効な構文（未閉じの中括弧）",
+			template:    "{{.Article.Title",
+			expectError: true,
+			errorSubstr: "テンプレート構文エラー",
+		},
+		{
+			name:        "無効な構文（不正な関数）",
+			template:    "{{.Article.Title | invalidFunc}}",
+			expectError: true,
+			errorSubstr: "テンプレート構文エラー",
+		},
+		{
+			name:        "複雑な有効テンプレート",
+			template:    `タイトル: {{.Article.Title}}{{if .Comment}}\nコメント: {{.Comment}}{{end}}\nURL: {{.Article.Link}}`,
+			expectError: false,
+		},
+		{
+			name:        "カスタムテンプレート例",
+			template:    "記事: {{.Article.Title}} - {{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateSlackMessageTemplate(tt.template)
+
+			if tt.expectError {
+				assert.Error(t, err, "Should return error for invalid template")
+				if tt.errorSubstr != "" {
+					assert.Contains(t, err.Error(), tt.errorSubstr, "Error message should contain expected substring")
+				}
+			} else {
+				assert.NoError(t, err, "Should not return error for valid template")
+			}
+		})
+	}
+}
+
+// TestProfileValidatorImpl_validateRequiredFields_SlackMessageTemplate はSlackメッセージテンプレートの必須項目バリデーションをテストする
+func TestProfileValidatorImpl_validateRequiredFields_SlackMessageTemplate(t *testing.T) {
+	validator := &ProfileValidatorImpl{}
+	validTemplate := "{{.Article.Title}}\n{{.Article.Link}}"
+	invalidTemplate := "{{.Article.Title"
+
+	tests := []struct {
+		name           string
+		profile        *entity.Profile
+		expectedErrors []string
+	}{
+		{
+			name: "有効なSlackメッセージテンプレート",
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{APIKey: "valid-key"},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "valid prompt",
+					CommentPromptTemplate: "valid template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						APIToken:        "valid-token",
+						Channel:         "#general",
+						MessageTemplate: &validTemplate,
+					},
+				},
+			},
+			expectedErrors: nil,
+		},
+		{
+			name: "無効なSlackメッセージテンプレート",
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{APIKey: "valid-key"},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "valid prompt",
+					CommentPromptTemplate: "valid template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						APIToken:        "valid-token",
+						Channel:         "#general",
+						MessageTemplate: &invalidTemplate,
+					},
+				},
+			},
+			expectedErrors: []string{"Slack message template is invalid"},
+		},
+		{
+			name: "Slackメッセージテンプレートがnil（エラーなし）",
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{APIKey: "valid-key"},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "valid prompt",
+					CommentPromptTemplate: "valid template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						APIToken:        "valid-token",
+						Channel:         "#general",
+						MessageTemplate: nil,
+					},
+				},
+			},
+			expectedErrors: nil,
+		},
+		{
+			name: "SlackAPI設定がnil（エラーなし）",
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{APIKey: "valid-key"},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "valid prompt",
+					CommentPromptTemplate: "valid template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: nil,
+				},
+			},
+			expectedErrors: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			errors := validator.validateRequiredFields(tt.profile)
+
+			if tt.expectedErrors == nil {
+				assert.Empty(t, errors, "Should not return errors")
+			} else {
+				assert.NotEmpty(t, errors, "Should return errors")
+				for _, expectedError := range tt.expectedErrors {
+					found := false
+					for _, err := range errors {
+						if assert.Contains(t, err, expectedError) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found, "Should contain expected error: %s", expectedError)
+				}
+			}
+		})
+	}
+}
