@@ -59,17 +59,21 @@ func (r *YamlProfileRepository) LoadProfile() (*Profile, error) {
 
 // SaveProfileWithTemplate は、テンプレートを使用してコメント付きprofile.ymlファイルを生成する
 func (r *YamlProfileRepository) SaveProfileWithTemplate() error {
+	// Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
+	file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+	if err != nil {
+		if os.IsExist(err) {
+			return fmt.Errorf("profile file already exists: %s", r.filePath)
+		}
+		return fmt.Errorf("failed to create profile file: %s, %w", r.filePath, err)
+	}
+	defer file.Close()
+
 	// テンプレートを実行してファイルに書き込み
 	tmpl, err := template.New("profile").Parse(profileYmlTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to parse profile template: %w", err)
 	}
-
-	file, err := os.Create(r.filePath)
-	if err != nil {
-		return fmt.Errorf("failed to create profile file: %w", err)
-	}
-	defer file.Close()
 
 	err = tmpl.Execute(file, nil)
 	if err != nil {
