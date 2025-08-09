@@ -8,6 +8,39 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// profileYmlTemplate は、profile initコマンドで生成するprofile.ymlのテンプレート文字列
+const profileYmlTemplate = `# AI Feedのプロファイル設定ファイル
+# このファイルの設定は config.yml のデフォルトプロファイル設定を上書きします
+# AI設定
+ai:
+  gemini:
+    type: gemini-1.5-flash                  # 使用するGeminiモデル
+    api_key: YOUR_GEMINI_API_KEY_HERE       # Google AI Studio APIキー
+
+# プロンプト設定
+system_prompt: あなたはXXXXなAIアシスタントです。    # AIに与えるシステムプロンプト
+comment_prompt_template: |                         # 記事紹介文生成用のプロンプトテンプレート
+  以下の記事の紹介文を100字以内で作成してください。
+  ---
+  記事タイトル: {{title}}
+  記事URL: {{url}}
+  記事内容:
+  {{content}}
+fixed_message: 固定の文言です。                     # 記事紹介文に追加する固定文言
+
+# 出力先設定
+output:
+  # Slack投稿設定
+  slack_api:
+    api_token: xoxb-YOUR_SLACK_API_TOKEN_HERE   # Slack Bot Token
+    channel: "#general"                         # 投稿先チャンネル
+  
+  # Misskey投稿設定
+  misskey:
+    api_token: YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE  # Misskeyアクセストークン
+    api_url: https://misskey.social/api            # MisskeyのAPIエンドポイント
+`
+
 type YamlProfileRepository struct {
 	filePath string
 }
