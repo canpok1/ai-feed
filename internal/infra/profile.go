@@ -15,7 +15,7 @@ const profileYmlTemplate = `# AI Feedのプロファイル設定ファイル
 # AI設定
 ai:
   gemini:
-    type: gemini-1.5-flash                  # 使用するGeminiモデル
+    type: gemini-2.5-flash                  # 使用するGeminiモデル
     api_key: xxxxxx                         # Google AI Studio APIキー
 
 # プロンプト設定
