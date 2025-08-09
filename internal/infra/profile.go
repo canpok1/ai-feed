@@ -3,6 +3,7 @@ package infra
 import (
 	"fmt"
 	"os"
+	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
@@ -22,10 +23,10 @@ system_prompt: あなたはXXXXなAIアシスタントです。    # AIに与え
 comment_prompt_template: |                         # 記事紹介文生成用のプロンプトテンプレート
   以下の記事の紹介文を100字以内で作成してください。
   ---
-  記事タイトル: {{title}}
-  記事URL: {{url}}
+  記事タイトル: {{"{{title}}"}}
+  記事URL: {{"{{url}}"}}
   記事内容:
-  {{content}}
+  {{"{{content}}"}}
 fixed_message: 固定の文言です。                     # 記事紹介文に追加する固定文言
 
 # 出力先設定
@@ -53,6 +54,28 @@ func NewYamlProfileRepository(filePath string) *YamlProfileRepository {
 
 func (r *YamlProfileRepository) LoadProfile() (*Profile, error) {
 	return loadYaml[Profile](r.filePath)
+}
+
+// SaveProfileWithTemplate は、テンプレートを使用してコメント付きprofile.ymlファイルを生成する
+func (r *YamlProfileRepository) SaveProfileWithTemplate() error {
+	// テンプレートを実行してファイルに書き込み
+	tmpl, err := template.New("profile").Parse(profileYmlTemplate)
+	if err != nil {
+		return fmt.Errorf("failed to parse profile template: %w", err)
+	}
+
+	file, err := os.Create(r.filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create profile file: %w", err)
+	}
+	defer file.Close()
+
+	err = tmpl.Execute(file, nil)
+	if err != nil {
+		return fmt.Errorf("failed to execute profile template: %w", err)
+	}
+
+	return nil
 }
 
 func (r *YamlProfileRepository) SaveProfile(profile *Profile) error {

@@ -39,9 +39,9 @@ func makeProfileInitCmd() *cobra.Command {
 				return
 			}
 
-			profile := infra.NewDefaultProfile()
 			profileRepo := infra.NewYamlProfileRepository(filePath)
-			err := profileRepo.SaveProfile(profile)
+			// テンプレートを使用してコメント付きprofile.ymlを生成
+			err := profileRepo.SaveProfileWithTemplate()
 			if err != nil {
 				cmd.PrintErrf("Failed to create profile file: %v\n", err)
 				return
