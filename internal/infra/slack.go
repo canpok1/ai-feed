@@ -8,6 +8,17 @@ import (
 	"github.com/slack-go/slack"
 )
 
+const DefaultSlackMessageTemplate = `{{if .Comment}}{{.Comment}}
+{{end}}{{.Article.Title}}
+{{.Article.Link}}{{if .FixedMessage}}
+{{.FixedMessage}}{{end}}`
+
+type SlackTemplateData struct {
+	Article      *entity.Article
+	Comment      *string
+	FixedMessage string
+}
+
 type SlackViewer struct {
 	client    *slack.Client
 	channelID string
