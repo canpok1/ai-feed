@@ -22,9 +22,9 @@ type SlackTemplateData struct {
 }
 
 type SlackViewer struct {
-	client          *slack.Client
-	channelID       string
-	messageTemplate string
+	client    *slack.Client
+	channelID string
+	tmpl      *template.Template
 }
 
 func NewSlackViewer(config *entity.SlackAPIConfig) domain.Viewer {
@@ -34,10 +34,13 @@ func NewSlackViewer(config *entity.SlackAPIConfig) domain.Viewer {
 		messageTemplate = *config.MessageTemplate
 	}
 
+	// 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
+	tmpl := template.Must(template.New("slack_message").Parse(messageTemplate))
+
 	return &SlackViewer{
-		client:          slack.New(config.APIToken),
-		channelID:       config.Channel,
-		messageTemplate: messageTemplate,
+		client:    slack.New(config.APIToken),
+		channelID: config.Channel,
+		tmpl:      tmpl,
 	}
 }
 
@@ -54,14 +57,9 @@ func (v *SlackViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage st
 		FixedMessage: fixedMessage,
 	}
 
-	// テンプレートをパースして実行
-	tmpl, err := template.New("slack_message").Parse(v.messageTemplate)
-	if err != nil {
-		return err
-	}
-
+	// パース済みテンプレートを直接実行
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, templateData); err != nil {
+	if err := v.tmpl.Execute(&buf, templateData); err != nil {
 		return err
 	}
 
