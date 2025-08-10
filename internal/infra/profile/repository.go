@@ -23,7 +23,7 @@ func NewYamlProfileRepository(filePath string) domain.ProfileRepository {
 	}
 }
 
-// NewYamlProfileRepositoryImpl は具体的な実装を返す（ユニットテスト等で使用）
+// NewYamlProfileRepositoryImpl は具体的な実装を返す（infra.Profileを直接扱う必要がある内部パッケージやテストで使用）
 func NewYamlProfileRepositoryImpl(filePath string) *YamlProfileRepository {
 	return &YamlProfileRepository{
 		filePath: filePath,
