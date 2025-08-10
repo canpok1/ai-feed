@@ -12,10 +12,10 @@ system_prompt: あなたはXXXXなAIアシスタントです。    # AIに与え
 comment_prompt_template: |                         # 記事紹介文生成用のプロンプトテンプレート
   以下の記事の紹介文を100字以内で作成してください。
   ---
-  記事タイトル: {{title}}
-  記事URL: {{url}}
+  記事タイトル: {{"{{title}}"}}
+  記事URL: {{"{{url}}"}}
   記事内容:
-  {{content}}
+  {{"{{content}}"}}
 fixed_message: 固定の文言です。                     # 記事紹介文に追加する固定文言
 
 # 出力先設定
@@ -28,5 +28,5 @@ output:
   
   # Misskey投稿設定
   misskey:
-    api_token: xxxxxx                       # Misskeyアクセストークン
+    api_token: xxxxxx                           # Misskeyアクセストークン
     api_url: https://misskey.social/api     # MisskeyのAPIエンドポイント`
