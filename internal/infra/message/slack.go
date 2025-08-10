@@ -44,11 +44,6 @@ func NewSlackSender(config *entity.SlackAPIConfig) domain.MessageSender {
 	}
 }
 
-func (s *SlackSender) SendArticles(articles []entity.Article) error {
-	// TODO 実装
-	return nil
-}
-
 func (v *SlackSender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	// テンプレートデータを作成
 	templateData := &SlackTemplateData{
