@@ -26,8 +26,8 @@ func (a *Article) Validate() *ValidationResult {
 	if a.Link == "" {
 		errors = append(errors, "記事のリンクが設定されていません")
 	} else {
-		// URL形式チェック
-		if _, err := url.Parse(a.Link); err != nil {
+		// URL形式チェック（絶対URLであることを確認）
+		if parsedURL, err := url.Parse(a.Link); err != nil || !parsedURL.IsAbs() {
 			errors = append(errors, "記事のリンクが正しいURL形式ではありません")
 		}
 	}

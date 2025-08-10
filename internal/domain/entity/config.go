@@ -152,8 +152,8 @@ func (m *MisskeyConfig) Validate() *ValidationResult {
 	if m.APIURL == "" {
 		errors = append(errors, "Misskey API URLが設定されていません")
 	} else {
-		// URL形式チェック
-		if _, err := url.Parse(m.APIURL); err != nil {
+		// URL形式チェック（絶対URLであることを確認）
+		if parsedURL, err := url.Parse(m.APIURL); err != nil || !parsedURL.IsAbs() {
 			errors = append(errors, "Misskey API URLが正しいURL形式ではありません")
 		}
 	}

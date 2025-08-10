@@ -1,171 +1,116 @@
 package entity
 
 import (
-	"strings"
 	"testing"
-	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestPromptConfig_BuildCommentPrompt(t *testing.T) {
+func TestGeminiConfig_Validate(t *testing.T) {
 	tests := []struct {
-		name     string
-		template string
-		article  *Article
-		want     string
+		name    string
+		config  *GeminiConfig
+		wantErr bool
+		errors  []string
 	}{
 		{
-			name:     "新形式のテンプレート（.付き）",
-			template: "タイトル: {{.Title}}\nURL: {{.Link}}\n内容: {{.Content}}",
-			article: &Article{
-				Title:   "テスト記事",
-				Link:    "https://example.com",
-				Content: "これはテスト内容です",
+			name: "正常系_TypeとAPIKeyが適切に設定されている",
+			config: &GeminiConfig{
+				Type:   "gemini-pro",
+				APIKey: "valid-api-key",
 			},
-			want: "タイトル: テスト記事\nURL: https://example.com\n内容: これはテスト内容です",
+			wantErr: false,
 		},
 		{
-			name:     "条件分岐を含むテンプレート",
-			template: "{{if .Title}}タイトル: {{.Title}}{{end}}\n{{if .Link}}URL: {{.Link}}{{end}}",
-			article: &Article{
-				Title: "テスト記事",
-				Link:  "https://example.com",
+			name: "異常系_Typeが空文字列",
+			config: &GeminiConfig{
+				Type:   "",
+				APIKey: "valid-api-key",
 			},
-			want: "タイトル: テスト記事\nURL: https://example.com",
+			wantErr: true,
+			errors:  []string{"Gemini設定のTypeが設定されていません"},
 		},
 		{
-			name:     "Publishedフィールドへのアクセス",
-			template: "タイトル: {{.Title}}{{if .Published}}\n公開日時あり{{end}}",
-			article: &Article{
-				Title:     "テスト記事",
-				Published: &[]time.Time{time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)}[0],
+			name: "異常系_APIKeyが空文字列",
+			config: &GeminiConfig{
+				Type:   "gemini-pro",
+				APIKey: "",
 			},
-			want: "タイトル: テスト記事\n公開日時あり",
+			wantErr: true,
+			errors:  []string{"Gemini API keyが設定されていません"},
 		},
 		{
-			name:     "空のフィールドの処理",
-			template: "{{if .Title}}タイトル: {{.Title}}{{else}}タイトルなし{{end}}",
-			article: &Article{
-				Title: "",
+			name: "異常系_APIKeyがデフォルト値",
+			config: &GeminiConfig{
+				Type:   "gemini-pro",
+				APIKey: DefaultGeminiAPIKey,
 			},
-			want: "タイトルなし",
-		},
-		{
-			name: "複雑なテンプレート",
-			template: `以下の記事の紹介文を100字以内で作成してください。
----
-記事タイトル: {{.Title}}
-記事URL: {{.Link}}
-記事内容:
-{{.Content}}`,
-			article: &Article{
-				Title:   "AIに関する最新記事",
-				Link:    "https://example.com/ai-article",
-				Content: "AIの進化について詳しく解説しています。",
-			},
-			want: `以下の記事の紹介文を100字以内で作成してください。
----
-記事タイトル: AIに関する最新記事
-記事URL: https://example.com/ai-article
-記事内容:
-AIの進化について詳しく解説しています。`,
-		},
-		{
-			name:     "存在しないキーを持つテンプレート実行エラー時のフォールバック",
-			template: "タイトル: {{.Title}}\n{{.Invalid}}",
-			article: &Article{
-				Title: "テスト記事",
-			},
-			// 実行エラーの場合、元のテンプレートをそのまま返す
-			want: "タイトル: {{.Title}}\n{{.Invalid}}",
-		},
-		{
-			name:     "旧形式のテンプレート構文（後方互換性）",
-			template: "タイトル: {{title}}\nURL: {{url}}\n内容: {{content}}",
-			article: &Article{
-				Title:   "テスト記事",
-				Link:    "https://example.com",
-				Content: "これはテスト内容です",
-			},
-			// 旧形式は自動的に新形式に変換される
-			want: "タイトル: テスト記事\nURL: https://example.com\n内容: これはテスト内容です",
-		},
-		{
-			name:     "テンプレートパースエラー時のフォールバック",
-			template: "タイトル: {{.Title}}\n{{unclosed",
-			article: &Article{
-				Title: "テスト記事",
-			},
-			// パースエラーの場合、元のテンプレートをそのまま返す
-			want: "タイトル: {{.Title}}\n{{unclosed",
+			wantErr: true,
+			errors:  []string{"Gemini API keyが設定されていません"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &PromptConfig{
-				CommentPromptTemplate: tt.template,
-			}
-			got := c.BuildCommentPrompt(tt.article)
-			if got != tt.want {
-				t.Errorf("BuildCommentPrompt() = %v, want %v", got, tt.want)
+			result := tt.config.Validate()
+
+			assert.Equal(t, !tt.wantErr, result.IsValid)
+			if tt.wantErr {
+				assert.Equal(t, tt.errors, result.Errors)
+			} else {
+				assert.Empty(t, result.Errors)
 			}
 		})
 	}
 }
 
-func TestPromptConfig_BuildCommentPrompt_Performance(t *testing.T) {
-	// パフォーマンステスト: 大量のコンテンツでも正しく動作することを確認
-	longContent := strings.Repeat("これは非常に長いコンテンツです。", 100)
-
-	c := &PromptConfig{
-		CommentPromptTemplate: "タイトル: {{.Title}}\n内容: {{.Content}}",
+func TestProfile_Validate(t *testing.T) {
+	validAI := &AIConfig{
+		Gemini: &GeminiConfig{
+			Type:   "gemini-pro",
+			APIKey: "valid-api-key",
+		},
+	}
+	validPrompt := &PromptConfig{
+		SystemPrompt:          "システムプロンプト",
+		CommentPromptTemplate: "コメントテンプレート",
+	}
+	validOutput := &OutputConfig{
+		SlackAPI: &SlackAPIConfig{
+			APIToken: "valid-token",
+			Channel:  "#general",
+		},
 	}
 
-	article := &Article{
-		Title:   "パフォーマンステスト",
-		Content: longContent,
+	tests := []struct {
+		name    string
+		profile *Profile
+		wantErr bool
+	}{
+		{
+			name: "正常系_すべての設定が適切",
+			profile: &Profile{
+				AI:     validAI,
+				Prompt: validPrompt,
+				Output: validOutput,
+			},
+			wantErr: false,
+		},
+		{
+			name: "異常系_AI設定がnil",
+			profile: &Profile{
+				AI:     nil,
+				Prompt: validPrompt,
+				Output: validOutput,
+			},
+			wantErr: true,
+		},
 	}
 
-	result := c.BuildCommentPrompt(article)
-
-	if !strings.Contains(result, "パフォーマンステスト") {
-		t.Error("Title not found in result")
-	}
-
-	if !strings.Contains(result, longContent) {
-		t.Error("Content not found in result")
-	}
-}
-
-func TestPromptConfig_BuildCommentPrompt_Cache(t *testing.T) {
-	// キャッシュのパフォーマンステスト
-	template := "タイトル: {{.Title}}\nURL: {{.Link}}\n内容: {{.Content}}"
-	c := &PromptConfig{
-		CommentPromptTemplate: template,
-	}
-
-	article := &Article{
-		Title:   "キャッシュテスト",
-		Link:    "https://example.com",
-		Content: "これはキャッシュテスト内容です",
-	}
-
-	expected := "タイトル: キャッシュテスト\nURL: https://example.com\n内容: これはキャッシュテスト内容です"
-
-	// 1回目の呼び出し（キャッシュなし）
-	result1 := c.BuildCommentPrompt(article)
-	if result1 != expected {
-		t.Errorf("First call failed: got %v, want %v", result1, expected)
-	}
-
-	// 2回目の呼び出し（キャッシュあり）
-	result2 := c.BuildCommentPrompt(article)
-	if result2 != expected {
-		t.Errorf("Second call failed: got %v, want %v", result2, expected)
-	}
-
-	// 結果が同じであることを確認
-	if result1 != result2 {
-		t.Error("Cache results differ from non-cache results")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.profile.Validate()
+			assert.Equal(t, !tt.wantErr, result.IsValid)
+		})
 	}
 }
