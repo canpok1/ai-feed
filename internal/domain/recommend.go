@@ -9,7 +9,7 @@ import (
 )
 
 type Recommender interface {
-	Recommend(context.Context, *entity.AIConfig, *entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
+	Recommend(context.Context, []entity.Article) (*entity.Recommend, error)
 }
 
 type RandomRecommender struct {
