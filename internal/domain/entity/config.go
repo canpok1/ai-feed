@@ -87,3 +87,10 @@ type OutputConfig struct {
 	SlackAPI *SlackAPIConfig
 	Misskey  *MisskeyConfig
 }
+
+// ValidationResult はバリデーション結果を表現する
+type ValidationResult struct {
+	IsValid  bool     `json:"is_valid"`
+	Errors   []string `json:"errors,omitempty"`
+	Warnings []string `json:"warnings,omitempty"`
+}

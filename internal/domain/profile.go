@@ -16,14 +16,7 @@ type ProfileRepository interface {
 // ProfileValidator はプロファイルファイルのバリデーションを行うインターフェース
 type ProfileValidator interface {
 	// Validate はプロファイルの内容をバリデーションする
-	Validate(profile *entity.Profile) *ValidationResult
-}
-
-// ValidationResult はプロファイルバリデーションの結果を表現する
-type ValidationResult struct {
-	IsValid  bool     `json:"is_valid"`
-	Errors   []string `json:"errors,omitempty"`
-	Warnings []string `json:"warnings,omitempty"`
+	Validate(profile *entity.Profile) *entity.ValidationResult
 }
 
 // ProfileValidatorImpl はProfileValidatorの実装
@@ -35,7 +28,7 @@ func NewProfileValidator() ProfileValidator {
 }
 
 // Validate はプロファイルの内容をバリデーションする
-func (v *ProfileValidatorImpl) Validate(profile *entity.Profile) *ValidationResult {
+func (v *ProfileValidatorImpl) Validate(profile *entity.Profile) *entity.ValidationResult {
 	var errors []string
 	var warnings []string
 
@@ -45,7 +38,7 @@ func (v *ProfileValidatorImpl) Validate(profile *entity.Profile) *ValidationResu
 	// 警告項目のバリデーション
 	warnings = append(warnings, v.validateWarningFields(profile)...)
 
-	return &ValidationResult{
+	return &entity.ValidationResult{
 		IsValid:  len(errors) == 0,
 		Errors:   errors,
 		Warnings: warnings,
