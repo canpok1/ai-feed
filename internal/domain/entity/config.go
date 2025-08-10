@@ -26,6 +26,26 @@ type GeminiConfig struct {
 	APIKey string
 }
 
+// Validate はGeminiConfigの内容をバリデーションする
+func (g *GeminiConfig) Validate() *ValidationResult {
+	var errors []string
+
+	// Type: 必須項目（空文字列でない）
+	if g.Type == "" {
+		errors = append(errors, "Gemini設定のTypeが設定されていません")
+	}
+
+	// APIKey: 必須項目（空文字列でない）
+	if g.APIKey == "" || g.APIKey == DefaultGeminiAPIKey {
+		errors = append(errors, "Gemini API keyが設定されていません")
+	}
+
+	return &ValidationResult{
+		IsValid: len(errors) == 0,
+		Errors:  errors,
+	}
+}
+
 type PromptConfig struct {
 	SystemPrompt          string
 	CommentPromptTemplate string
