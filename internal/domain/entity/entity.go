@@ -52,3 +52,27 @@ type Recommend struct {
 	Article Article
 	Comment *string
 }
+
+// Validate はRecommendの内容をバリデーションする
+func (r *Recommend) Validate() *ValidationResult {
+	var errors []string
+	var warnings []string
+
+	// Article: 必須項目、Articleのバリデーションも実行
+	articleResult := r.Article.Validate()
+	if !articleResult.IsValid {
+		errors = append(errors, articleResult.Errors...)
+	}
+	warnings = append(warnings, articleResult.Warnings...)
+
+	// Comment: 任意項目だが、設定されている場合は空文字列でないこと
+	if r.Comment != nil && *r.Comment == "" {
+		warnings = append(warnings, "推薦コメントが空です")
+	}
+
+	return &ValidationResult{
+		IsValid:  len(errors) == 0,
+		Errors:   errors,
+		Warnings: warnings,
+	}
+}
