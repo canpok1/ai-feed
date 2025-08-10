@@ -10,7 +10,6 @@
 make setup
 
 # アプリケーションの実行
-make run option="preview"
 make run option="recommend"
 
 # バイナリのビルド
@@ -34,9 +33,6 @@ make clean
 
 ### 特定のテストの実行
 ```bash
-# 特定のテストファイルを実行
-go test ./cmd/preview_test.go
-
 # 特定のパッケージのテストを実行
 go test ./internal/domain/...
 
@@ -48,7 +44,7 @@ go test -v ./...
 
 このプロジェクトはCobraフレームワークを使用したGo CLIアプリケーションで、クリーンアーキテクチャパターンを採用しています：
 
-- **cmd/**: Cobraを使用したCLIコマンドの実装。各コマンド（preview、recommend、config、profile）は個別のファイルに分かれています。
+- **cmd/**: Cobraを使用したCLIコマンドの実装。各コマンド（recommend、config、profile）は個別のファイルに分かれています。
 - **internal/domain/**: インターフェースとエンティティを含むコアビジネスロジック。アプリケーションのメインロジックが存在します。
 - **internal/infra/**: 外部サービス（RSSフェッチ、AI連携、Slack/Misskey投稿）のインフラストラクチャ実装。
 
