@@ -78,7 +78,7 @@ go test -v ./...
 
 ### GitHub Personal Access Token の設定
 
-Claude CodeとMCP GitHub統合を使用するには、GITHUB_PERSONAL_ACCESS_TOKENが必要です。
+GitHub CLIを使用するには、GH_TOKENが必要です。
 
 #### トークンの作成
 1. GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)
@@ -89,7 +89,7 @@ Claude CodeとMCP GitHub統合を使用するには、GITHUB_PERSONAL_ACCESS_TOK
 #### 安全な設定方法
 ```bash
 # プロジェクトルートに .env ファイルを作成（.gitignoreに含まれているため安全）
-echo "GITHUB_PERSONAL_ACCESS_TOKEN=your_token_here" > .env
+echo "GH_TOKEN=your_token_here" > .env
 ```
 
 #### 重要な注意事項
