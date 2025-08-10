@@ -13,12 +13,16 @@ type Recommender interface {
 }
 
 type RandomRecommender struct {
-	factory CommentGeneratorFactory
+	factory      CommentGeneratorFactory
+	aiConfig     *entity.AIConfig
+	promptConfig *entity.PromptConfig
 }
 
-func NewRandomRecommender(f CommentGeneratorFactory) Recommender {
+func NewRandomRecommender(f CommentGeneratorFactory, ai *entity.AIConfig, prompt *entity.PromptConfig) Recommender {
 	return &RandomRecommender{
-		factory: f,
+		factory:      f,
+		aiConfig:     ai,
+		promptConfig: prompt,
 	}
 }
 
