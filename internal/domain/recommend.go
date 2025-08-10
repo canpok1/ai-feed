@@ -26,11 +26,7 @@ func NewRandomRecommender(f CommentGeneratorFactory, ai *entity.AIConfig, prompt
 	}
 }
 
-func (r *RandomRecommender) Recommend(
-	ctx context.Context,
-	model *entity.AIConfig,
-	prompt *entity.PromptConfig,
-	articles []entity.Article) (*entity.Recommend, error) {
+func (r *RandomRecommender) Recommend(ctx context.Context, articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, fmt.Errorf("no articles found")
 	}
@@ -40,8 +36,8 @@ func (r *RandomRecommender) Recommend(
 		Article: article,
 	}
 
-	if (r.factory != nil) && (model != nil) && (prompt != nil) {
-		comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+	if (r.factory != nil) && (r.aiConfig != nil) && (r.promptConfig != nil) {
+		comment, err := generateComment(r.factory, r.aiConfig, r.promptConfig, ctx, &article)
 		if err != nil {
 			return nil, err
 		}
