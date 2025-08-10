@@ -28,4 +28,4 @@ services:
     environment:
       # GitHub Personal Access Token for GitHub CLI 
       # セキュリティ上の注意: .envファイルでトークンを管理し、リポジトリにコミットしないでください
-      GH_TOKEN: ${GITHUB_PERSONAL_ACCESS_TOKEN}
+      GH_TOKEN: ${GH_TOKEN}
