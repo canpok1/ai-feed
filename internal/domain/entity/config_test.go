@@ -24,16 +24,6 @@ func TestPromptConfig_BuildCommentPrompt(t *testing.T) {
 			want: "タイトル: テスト記事\nURL: https://example.com\n内容: これはテスト内容です",
 		},
 		{
-			name:     "旧形式のテンプレート（.なし）- 互換性確認",
-			template: "タイトル: {{title}}\nURL: {{url}}\n内容: {{content}}",
-			article: &Article{
-				Title:   "テスト記事",
-				Link:    "https://example.com",
-				Content: "これはテスト内容です",
-			},
-			want: "タイトル: テスト記事\nURL: https://example.com\n内容: これはテスト内容です",
-		},
-		{
 			name:     "条件分岐を含むテンプレート",
 			template: "{{if .Title}}タイトル: {{.Title}}{{end}}\n{{if .Link}}URL: {{.Link}}{{end}}",
 			article: &Article{
@@ -80,13 +70,24 @@ func TestPromptConfig_BuildCommentPrompt(t *testing.T) {
 AIの進化について詳しく解説しています。`,
 		},
 		{
-			name:     "無効なテンプレート構文のフォールバック",
+			name:     "無効なテンプレート構文の場合",
 			template: "タイトル: {{.Title}}\n{{invalid}}",
 			article: &Article{
 				Title: "テスト記事",
 			},
-			// 無効なテンプレートの場合、元の文字列がそのまま返される（フォールバック）
-			want: "タイトル: {{.Title}}\n{{invalid}}",
+			// 無効なテンプレートの場合、空文字列が返される
+			want: "",
+		},
+		{
+			name:     "旧形式のテンプレート構文（サポート外）",
+			template: "タイトル: {{title}}\nURL: {{url}}\n内容: {{content}}",
+			article: &Article{
+				Title:   "テスト記事",
+				Link:    "https://example.com", 
+				Content: "これはテスト内容です",
+			},
+			// 旧形式は未定義変数としてエラーになり、空文字列が返される
+			want: "",
 		},
 	}
 
