@@ -6,6 +6,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,7 @@ func makeProfileInitCmd() *cobra.Command {
 				return
 			}
 
-			profileRepo := infra.NewYamlProfileRepository(filePath)
+			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			// テンプレートを使用してコメント付きprofile.ymlを生成
 			err := profileRepo.SaveProfileWithTemplate()
 			if err != nil {
@@ -93,14 +94,14 @@ func makeProfileCheckCmd() *cobra.Command {
 				}
 
 				// 指定されたプロファイルファイルの読み込み
-				loadedProfile, err := infra.NewYamlProfileRepository(filePath).LoadProfile()
+				loadedInfraProfile, err := profile.NewYamlProfileRepositoryImpl(filePath).LoadInfraProfile()
 				if err != nil {
 					cmd.PrintErrf("Error: failed to load profile: %v\n", err)
 					return err
 				}
 
 				// デフォルトプロファイルとマージ
-				currentProfile.Merge(loadedProfile)
+				currentProfile.Merge(loadedInfraProfile)
 			}
 
 			// マージ後のプロファイルをentity.Profileに変換してバリデーション

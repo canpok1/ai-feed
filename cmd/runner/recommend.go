@@ -8,6 +8,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra/message"
 )
 
 // ErrNoArticlesFound は記事が見つからなかった場合のsentinel error
@@ -22,7 +23,7 @@ type RecommendParams struct {
 type RecommendRunner struct {
 	fetcher     *domain.Fetcher
 	recommender domain.Recommender
-	viewers     []domain.Viewer
+	viewers     []domain.MessageSender
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
@@ -34,19 +35,19 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			return err
 		},
 	)
-	viewer, err := infra.NewStdViewer(stdout)
+	viewer, err := message.NewStdSender(stdout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create viewer: %w", err)
 	}
-	viewers := []domain.Viewer{viewer}
+	viewers := []domain.MessageSender{viewer}
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
-			slackViewer := infra.NewSlackViewer(outputConfig.SlackAPI.ToEntity())
+			slackViewer := message.NewSlackSender(outputConfig.SlackAPI.ToEntity())
 			viewers = append(viewers, slackViewer)
 		}
 		if outputConfig.Misskey != nil {
-			misskeyViewer, err := infra.NewMisskeyViewer(outputConfig.Misskey.APIURL, outputConfig.Misskey.APIToken)
+			misskeyViewer, err := message.NewMisskeySender(outputConfig.Misskey.APIURL, outputConfig.Misskey.APIToken)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
 			}
@@ -90,7 +91,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 
 	var errs []error
 	for _, viewer := range r.viewers {
-		if viewErr := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
+		if viewErr := viewer.SendRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
 		}
 	}

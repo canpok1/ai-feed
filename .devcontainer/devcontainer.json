@@ -16,7 +16,8 @@
 			"moby": "true"
 		},
 		"ghcr.io/devcontainers/features/go:1": {},
-		"ghcr.io/devcontainers/features/node:1": {}
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {}
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

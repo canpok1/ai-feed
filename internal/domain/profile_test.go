@@ -271,7 +271,7 @@ func TestMaskSensitiveData(t *testing.T) {
 
 // TestProfileValidatorImpl_validateRequiredFields は必須項目バリデーションをテストする
 func TestProfileValidatorImpl_validateRequiredFields(t *testing.T) {
-	validator := &ProfileValidatorImpl{}
+	validator := NewProfileValidator().(*ProfileValidatorImpl)
 
 	tests := []struct {
 		name           string
@@ -365,7 +365,7 @@ func TestProfileValidatorImpl_validateRequiredFields(t *testing.T) {
 
 // TestProfileValidatorImpl_validateWarningFields は警告項目バリデーションをテストする
 func TestProfileValidatorImpl_validateWarningFields(t *testing.T) {
-	validator := &ProfileValidatorImpl{}
+	validator := NewProfileValidator().(*ProfileValidatorImpl)
 
 	tests := []struct {
 		name             string
@@ -505,7 +505,7 @@ func TestValidateSlackMessageTemplate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateSlackMessageTemplate(tt.template)
+			err := ValidateSlackMessageTemplate(tt.template)
 
 			if tt.expectError {
 				assert.Error(t, err, "Should return error for invalid template")
@@ -521,7 +521,7 @@ func TestValidateSlackMessageTemplate(t *testing.T) {
 
 // TestProfileValidatorImpl_validateRequiredFields_SlackMessageTemplate はSlackメッセージテンプレートの必須項目バリデーションをテストする
 func TestProfileValidatorImpl_validateRequiredFields_SlackMessageTemplate(t *testing.T) {
-	validator := &ProfileValidatorImpl{}
+	validator := NewProfileValidator().(*ProfileValidatorImpl)
 	validTemplate := "{{.Article.Title}}\n{{.Article.Link}}"
 	invalidTemplate := "{{.Article.Title"
 

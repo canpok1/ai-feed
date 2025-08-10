@@ -12,14 +12,6 @@ type Recommender interface {
 	Recommend(context.Context, *entity.AIConfig, *entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
 }
 
-type CommentGenerator interface {
-	Generate(context.Context, *entity.Article) (string, error)
-}
-
-type CommentGeneratorFactory interface {
-	MakeCommentGenerator(*entity.AIConfig, *entity.PromptConfig) (CommentGenerator, error)
-}
-
 type RandomRecommender struct {
 	factory CommentGeneratorFactory
 }

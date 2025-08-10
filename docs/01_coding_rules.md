@@ -287,7 +287,7 @@ if err != nil {
 
 var errs []error
 for _, viewer := range r.viewers {
-    if viewErr := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
+    if viewErr := viewer.SendRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
         errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
     }
 }
@@ -299,7 +299,7 @@ if err != nil {
 }
 
 for _, viewer := range r.viewers {
-    if err := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); err != nil {
+    if err := viewer.SendRecommend(recommend, profile.Prompt.FixedMessage); err != nil {
         // errが再利用されており、可読性が低い
     }
 }
@@ -355,7 +355,7 @@ func makeRecommendCmd(...) *cobra.Command {
 // Good: エラー集約パターン
 var errs []error
 for _, viewer := range r.viewers {
-    if viewErr := viewer.ViewRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
+    if viewErr := viewer.SendRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
         errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
     }
 }

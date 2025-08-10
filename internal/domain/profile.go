@@ -13,17 +13,17 @@ type ProfileRepository interface {
 	LoadProfile() (*entity.Profile, error)
 }
 
+// ProfileValidator はプロファイルファイルのバリデーションを行うインターフェース
+type ProfileValidator interface {
+	// Validate はプロファイルの内容をバリデーションする
+	Validate(profile *entity.Profile) *ValidationResult
+}
+
 // ValidationResult はプロファイルバリデーションの結果を表現する
 type ValidationResult struct {
 	IsValid  bool     `json:"is_valid"`
 	Errors   []string `json:"errors,omitempty"`
 	Warnings []string `json:"warnings,omitempty"`
-}
-
-// ProfileValidator はプロファイルファイルのバリデーションを行うインターフェース
-type ProfileValidator interface {
-	// Validate はプロファイルの内容をバリデーションする
-	Validate(profile *entity.Profile) *ValidationResult
 }
 
 // ProfileValidatorImpl はProfileValidatorの実装
@@ -75,7 +75,7 @@ func (v *ProfileValidatorImpl) validateRequiredFields(profile *entity.Profile) [
 
 	// Slackメッセージテンプレートの検証
 	if profile.Output != nil && profile.Output.SlackAPI != nil && profile.Output.SlackAPI.MessageTemplate != nil {
-		if err := validateSlackMessageTemplate(*profile.Output.SlackAPI.MessageTemplate); err != nil {
+		if err := v.validateSlackMessageTemplate(*profile.Output.SlackAPI.MessageTemplate); err != nil {
 			errors = append(errors, fmt.Sprintf("Slack message template is invalid: %v", err))
 		}
 	}
@@ -134,7 +134,12 @@ func (v *ProfileValidatorImpl) validateWarningFields(profile *entity.Profile) []
 }
 
 // validateSlackMessageTemplate はSlackメッセージテンプレートの構文を検証する
-func validateSlackMessageTemplate(templateStr string) error {
+func (v *ProfileValidatorImpl) validateSlackMessageTemplate(templateStr string) error {
+	return ValidateSlackMessageTemplate(templateStr)
+}
+
+// ValidateSlackMessageTemplate はSlackメッセージテンプレートの構文を検証する
+func ValidateSlackMessageTemplate(templateStr string) error {
 	// 空文字列や空白のみの場合はエラーとしない（デフォルトテンプレートが使用される）
 	if strings.TrimSpace(templateStr) == "" {
 		return nil

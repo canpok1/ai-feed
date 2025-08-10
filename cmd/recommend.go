@@ -7,6 +7,7 @@ import (
 	"github.com/canpok1/ai-feed/cmd/runner"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra/profile"
 
 	"github.com/spf13/cobra"
 )
@@ -38,11 +39,11 @@ recommends one random article from the fetched list.`,
 			}
 
 			if profilePath != "" {
-				loadedProfile, loadProfileErr := infra.NewYamlProfileRepository(profilePath).LoadProfile()
+				loadedInfraProfile, loadProfileErr := profile.NewYamlProfileRepositoryImpl(profilePath).LoadInfraProfile()
 				if loadProfileErr != nil {
 					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
 				}
-				currentProfile.Merge(loadedProfile)
+				currentProfile.Merge(loadedInfraProfile)
 			}
 
 			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)

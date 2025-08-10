@@ -1,4 +1,4 @@
-package infra
+package message
 
 import (
 	"fmt"
@@ -16,15 +16,15 @@ Link: {{ .Article.Link }}
 {{ end }}{{ if .FixedMessage }}Fixed Message: {{ .FixedMessage }}
 {{ end }}`
 
-// StdViewer は標準出力にデータを表示するViewer実装
-type StdViewer struct {
+// StdSender は標準出力にデータを送信するSender実装
+type StdSender struct {
 	loc            *time.Location
 	writer         io.Writer
 	messageBuilder *MessageBuilder
 }
 
-// NewStdViewer は新しいStdViewerを作成する
-func NewStdViewer(writer io.Writer) (domain.Viewer, error) {
+// NewStdSender は新しいStdSenderを作成する
+func NewStdSender(writer io.Writer) (domain.MessageSender, error) {
 	if writer == nil {
 		return nil, fmt.Errorf("writer cannot be nil")
 	}
@@ -36,15 +36,15 @@ func NewStdViewer(writer io.Writer) (domain.Viewer, error) {
 		return nil, fmt.Errorf("failed to create message builder: %w", err)
 	}
 
-	return &StdViewer{
+	return &StdSender{
 		loc:            loc,
 		writer:         writer,
 		messageBuilder: messageBuilder,
 	}, nil
 }
 
-// ViewArticles は記事のリストを表示する
-func (v *StdViewer) ViewArticles(articles []entity.Article) error {
+// SendArticles は記事のリストを表示する
+func (v *StdSender) SendArticles(articles []entity.Article) error {
 	for _, article := range articles {
 		fmt.Fprintf(v.writer, "Title: %s\n", article.Title)
 		fmt.Fprintf(v.writer, "Link: %s\n", article.Link)
@@ -57,8 +57,8 @@ func (v *StdViewer) ViewArticles(articles []entity.Article) error {
 	return nil
 }
 
-// ViewRecommend は推薦記事を表示する
-func (v *StdViewer) ViewRecommend(recommend *entity.Recommend, fixedMessage string) error {
+// SendRecommend は推薦記事を表示する
+func (v *StdSender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	if recommend == nil {
 		fmt.Fprintln(v.writer, "No articles found in the feed.")
 		return nil
