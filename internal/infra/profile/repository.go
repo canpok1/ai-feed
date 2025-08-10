@@ -3,7 +3,6 @@ package profile
 import (
 	"fmt"
 	"os"
-	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -56,15 +55,15 @@ func (r *YamlProfileRepository) SaveProfileWithTemplate() error {
 	}
 	defer file.Close()
 
-	// テンプレートを実行してファイルに書き込み
-	tmpl, err := template.New("profile").Parse(profileYmlTemplate)
+	// 埋め込まれたYAMLファイルの内容を取得してファイルに書き込み
+	templateData, err := infra.GetProfileTemplate()
 	if err != nil {
-		return fmt.Errorf("failed to parse profile template: %w", err)
+		return fmt.Errorf("failed to get profile template: %w", err)
 	}
 
-	err = tmpl.Execute(file, nil)
+	_, err = file.Write(templateData)
 	if err != nil {
-		return fmt.Errorf("failed to execute profile template: %w", err)
+		return fmt.Errorf("failed to write profile template: %w", err)
 	}
 
 	return nil

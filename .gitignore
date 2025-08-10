@@ -35,6 +35,8 @@ go.work.sum
 ai-feed
 config.yml
 profile.yml
+!internal/infra/templates/config.yml
+!internal/infra/templates/profile.yml
 
 # Added by goreleaser init:
 dist/

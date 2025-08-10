@@ -1,8 +1,14 @@
 package entity
 
 import (
+	"bytes"
 	"strings"
+	"sync"
+	"text/template"
 )
+
+// テンプレートキャッシュ（スレッドセーフ）
+var templateCache sync.Map
 
 // デフォルト値の定数
 const (
@@ -26,12 +32,38 @@ type PromptConfig struct {
 	FixedMessage          string
 }
 
+// BuildCommentPrompt はtext/templateを使用してコメントプロンプトを生成する
 func (c *PromptConfig) BuildCommentPrompt(article *Article) string {
-	prompt := c.CommentPromptTemplate
-	prompt = strings.ReplaceAll(prompt, "{{title}}", article.Title)
-	prompt = strings.ReplaceAll(prompt, "{{url}}", article.Link)
-	prompt = strings.ReplaceAll(prompt, "{{content}}", article.Content)
-	return prompt
+	// 後方互換性のため、古い形式のプレースホルダーを新形式に変換
+	templateStr := c.CommentPromptTemplate
+	templateStr = strings.ReplaceAll(templateStr, "{{title}}", "{{.Title}}")
+	templateStr = strings.ReplaceAll(templateStr, "{{url}}", "{{.Link}}")
+	templateStr = strings.ReplaceAll(templateStr, "{{content}}", "{{.Content}}")
+
+	// キャッシュからテンプレートを取得
+	var tmpl *template.Template
+	if cached, ok := templateCache.Load(templateStr); ok {
+		tmpl = cached.(*template.Template)
+	} else {
+		// キャッシュにない場合はパースして保存
+		var err error
+		tmpl, err = template.New("comment").Parse(templateStr)
+		if err != nil {
+			// テンプレートの解析に失敗した場合は、元のテンプレートを返す
+			return c.CommentPromptTemplate
+		}
+		// パース成功したテンプレートをキャッシュに保存
+		templateCache.Store(templateStr, tmpl)
+	}
+
+	var buf bytes.Buffer
+	err := tmpl.Execute(&buf, article)
+	if err != nil {
+		// テンプレートの実行に失敗した場合も、元のテンプレートを返す
+		return c.CommentPromptTemplate
+	}
+
+	return buf.String()
 }
 
 type MisskeyConfig struct {
