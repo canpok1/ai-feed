@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/infra/comment"
 	"github.com/canpok1/ai-feed/internal/infra/fetch"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +19,7 @@ func makeRootCmd() *cobra.Command {
 func Execute() error {
 	rootCmd := makeRootCmd()
 
-	recommendCmd := makeRecommendCmd(fetch.NewFetchClient(), domain.NewRandomRecommender(comment.NewCommentGeneratorFactory()))
+	recommendCmd := makeRecommendCmd(fetch.NewFetchClient())
 	rootCmd.AddCommand(recommendCmd)
 
 	configCmd := makeConfigCmd()
