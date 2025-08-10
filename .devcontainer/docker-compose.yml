@@ -26,7 +26,6 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
     environment:
-      # GitHub Personal Access Token for Claude Code and MCP GitHub integration
+      # GitHub Personal Access Token for GitHub CLI 
       # セキュリティ上の注意: .envファイルでトークンを管理し、リポジトリにコミットしないでください
-      # 詳細な設定方法はCLAUDE.mdを参照してください
-      GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_PERSONAL_ACCESS_TOKEN}
+      GH_TOKEN: ${GITHUB_PERSONAL_ACCESS_TOKEN}
