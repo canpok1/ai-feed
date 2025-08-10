@@ -37,11 +37,6 @@ func NewMisskeySender(instanceURL, accessToken string) (domain.MessageSender, er
 	return &MisskeySender{client: client}, nil
 }
 
-// SendArticles はMisskeySenderでは未実装です。
-func (v *MisskeySender) SendArticles(articles []entity.Article) error {
-	return nil
-}
-
 // SendRecommend はMisskeyにノートを投稿します。
 func (v *MisskeySender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	if recommend == nil {
