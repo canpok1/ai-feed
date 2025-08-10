@@ -136,3 +136,36 @@ func TestPromptConfig_BuildCommentPrompt_Performance(t *testing.T) {
 		t.Error("Content not found in result")
 	}
 }
+
+func TestPromptConfig_BuildCommentPrompt_Cache(t *testing.T) {
+	// キャッシュのパフォーマンステスト
+	template := "タイトル: {{.Title}}\nURL: {{.Link}}\n内容: {{.Content}}"
+	c := &PromptConfig{
+		CommentPromptTemplate: template,
+	}
+
+	article := &Article{
+		Title:   "キャッシュテスト",
+		Link:    "https://example.com",
+		Content: "これはキャッシュテスト内容です",
+	}
+
+	expected := "タイトル: キャッシュテスト\nURL: https://example.com\n内容: これはキャッシュテスト内容です"
+
+	// 1回目の呼び出し（キャッシュなし）
+	result1 := c.BuildCommentPrompt(article)
+	if result1 != expected {
+		t.Errorf("First call failed: got %v, want %v", result1, expected)
+	}
+
+	// 2回目の呼び出し（キャッシュあり）
+	result2 := c.BuildCommentPrompt(article)
+	if result2 != expected {
+		t.Errorf("Second call failed: got %v, want %v", result2, expected)
+	}
+
+	// 結果が同じであることを確認
+	if result1 != result2 {
+		t.Error("Cache results differ from non-cache results")
+	}
+}

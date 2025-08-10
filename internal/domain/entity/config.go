@@ -3,8 +3,12 @@ package entity
 import (
 	"bytes"
 	"strings"
+	"sync"
 	"text/template"
 )
+
+// テンプレートキャッシュ（スレッドセーフ）
+var templateCache sync.Map
 
 // デフォルト値の定数
 const (
@@ -36,15 +40,24 @@ func (c *PromptConfig) BuildCommentPrompt(article *Article) string {
 	templateStr = strings.ReplaceAll(templateStr, "{{url}}", "{{.Link}}")
 	templateStr = strings.ReplaceAll(templateStr, "{{content}}", "{{.Content}}")
 
-	// text/templateを使用してテンプレートを解析・実行
-	tmpl, err := template.New("comment").Parse(templateStr)
-	if err != nil {
-		// テンプレートの解析に失敗した場合は、元のテンプレートを返す
-		return c.CommentPromptTemplate
+	// キャッシュからテンプレートを取得
+	var tmpl *template.Template
+	if cached, ok := templateCache.Load(templateStr); ok {
+		tmpl = cached.(*template.Template)
+	} else {
+		// キャッシュにない場合はパースして保存
+		var err error
+		tmpl, err = template.New("comment").Parse(templateStr)
+		if err != nil {
+			// テンプレートの解析に失敗した場合は、元のテンプレートを返す
+			return c.CommentPromptTemplate
+		}
+		// パース成功したテンプレートをキャッシュに保存
+		templateCache.Store(templateStr, tmpl)
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, article)
+	err := tmpl.Execute(&buf, article)
 	if err != nil {
 		// テンプレートの実行に失敗した場合も、元のテンプレートを返す
 		return c.CommentPromptTemplate
