@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"net/url"
 	"time"
 )
 
@@ -15,37 +14,29 @@ type Article struct {
 
 // Validate はArticleの内容をバリデーションする
 func (a *Article) Validate() *ValidationResult {
-	var errors []string
+	builder := NewValidationBuilder()
 
 	// Title: 必須項目（空文字列でない）
-	if a.Title == "" {
-		errors = append(errors, "記事のタイトルが設定されていません")
+	if err := ValidateRequired(a.Title, "記事のタイトル"); err != nil {
+		builder.AddError(err.Error())
 	}
 
 	// Link: 必須項目（空文字列でない）、URL形式であること
-	if a.Link == "" {
-		errors = append(errors, "記事のリンクが設定されていません")
-	} else {
-		// URL形式チェック（絶対URLであることを確認）
-		if parsedURL, err := url.Parse(a.Link); err != nil || !parsedURL.IsAbs() {
-			errors = append(errors, "記事のリンクが正しいURL形式ではありません")
-		}
+	if err := ValidateURL(a.Link, "記事のリンク"); err != nil {
+		builder.AddError(err.Error())
 	}
 
 	// Published: nilでないこと
 	if a.Published == nil {
-		errors = append(errors, "記事の公開日時が設定されていません")
+		builder.AddError("記事の公開日時が設定されていません")
 	}
 
 	// Content: 必須項目（空文字列でない）
-	if a.Content == "" {
-		errors = append(errors, "記事の内容が設定されていません")
+	if err := ValidateRequired(a.Content, "記事の内容"); err != nil {
+		builder.AddError(err.Error())
 	}
 
-	return &ValidationResult{
-		IsValid: len(errors) == 0,
-		Errors:  errors,
-	}
+	return builder.Build()
 }
 
 type Recommend struct {
@@ -55,24 +46,15 @@ type Recommend struct {
 
 // Validate はRecommendの内容をバリデーションする
 func (r *Recommend) Validate() *ValidationResult {
-	var errors []string
-	var warnings []string
+	builder := NewValidationBuilder()
 
 	// Article: 必須項目、Articleのバリデーションも実行
-	articleResult := r.Article.Validate()
-	if !articleResult.IsValid {
-		errors = append(errors, articleResult.Errors...)
-	}
-	warnings = append(warnings, articleResult.Warnings...)
+	builder.MergeResult(r.Article.Validate())
 
 	// Comment: 任意項目だが、設定されている場合は空文字列でないこと
 	if r.Comment != nil && *r.Comment == "" {
-		warnings = append(warnings, "推薦コメントが空です")
+		builder.AddWarning("推薦コメントが空です")
 	}
 
-	return &ValidationResult{
-		IsValid:  len(errors) == 0,
-		Errors:   errors,
-		Warnings: warnings,
-	}
+	return builder.Build()
 }

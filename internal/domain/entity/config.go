@@ -3,7 +3,6 @@ package entity
 import (
 	"bytes"
 	"fmt"
-	"net/url"
 	"strings"
 	"sync"
 	"text/template"
@@ -25,26 +24,17 @@ type AIConfig struct {
 
 // Validate はAIConfigの内容をバリデーションする
 func (a *AIConfig) Validate() *ValidationResult {
-	var errors []string
-	var warnings []string
+	builder := NewValidationBuilder()
 
 	// Gemini: 必須項目（nilでない）
 	if a.Gemini == nil {
-		errors = append(errors, "Gemini設定が設定されていません")
+		builder.AddError("Gemini設定が設定されていません")
 	} else {
 		// GeminiConfig.Validate()を呼び出して、結果を集約
-		geminiResult := a.Gemini.Validate()
-		if !geminiResult.IsValid {
-			errors = append(errors, geminiResult.Errors...)
-		}
-		warnings = append(warnings, geminiResult.Warnings...)
+		builder.MergeResult(a.Gemini.Validate())
 	}
 
-	return &ValidationResult{
-		IsValid:  len(errors) == 0,
-		Errors:   errors,
-		Warnings: warnings,
-	}
+	return builder.Build()
 }
 
 type GeminiConfig struct {
@@ -54,22 +44,19 @@ type GeminiConfig struct {
 
 // Validate はGeminiConfigの内容をバリデーションする
 func (g *GeminiConfig) Validate() *ValidationResult {
-	var errors []string
+	builder := NewValidationBuilder()
 
 	// Type: 必須項目（空文字列でない）
-	if g.Type == "" {
-		errors = append(errors, "Gemini設定のTypeが設定されていません")
+	if err := ValidateRequired(g.Type, "Gemini設定のType"); err != nil {
+		builder.AddError(err.Error())
 	}
 
 	// APIKey: 必須項目（空文字列でない）
-	if g.APIKey == "" || g.APIKey == DefaultGeminiAPIKey {
-		errors = append(errors, "Gemini API keyが設定されていません")
+	if err := ValidateRequiredWithDefault(g.APIKey, DefaultGeminiAPIKey, "Gemini API key"); err != nil {
+		builder.AddError(err.Error())
 	}
 
-	return &ValidationResult{
-		IsValid: len(errors) == 0,
-		Errors:  errors,
-	}
+	return builder.Build()
 }
 
 type PromptConfig struct {
@@ -80,24 +67,21 @@ type PromptConfig struct {
 
 // Validate はPromptConfigの内容をバリデーションする
 func (p *PromptConfig) Validate() *ValidationResult {
-	var errors []string
+	builder := NewValidationBuilder()
 
 	// SystemPrompt: 必須項目（空文字列でない）
-	if p.SystemPrompt == "" {
-		errors = append(errors, "システムプロンプトが設定されていません")
+	if err := ValidateRequired(p.SystemPrompt, "システムプロンプト"); err != nil {
+		builder.AddError(err.Error())
 	}
 
 	// CommentPromptTemplate: 必須項目（空文字列でない）
-	if p.CommentPromptTemplate == "" {
-		errors = append(errors, "コメントプロンプトテンプレートが設定されていません")
+	if err := ValidateRequired(p.CommentPromptTemplate, "コメントプロンプトテンプレート"); err != nil {
+		builder.AddError(err.Error())
 	}
 
 	// FixedMessage: 任意項目（空文字列でも可）
 
-	return &ValidationResult{
-		IsValid: len(errors) == 0,
-		Errors:  errors,
-	}
+	return builder.Build()
 }
 
 // BuildCommentPrompt はtext/templateを使用してコメントプロンプトを生成する
@@ -141,27 +125,19 @@ type MisskeyConfig struct {
 
 // Validate はMisskeyConfigの内容をバリデーションする
 func (m *MisskeyConfig) Validate() *ValidationResult {
-	var errors []string
+	builder := NewValidationBuilder()
 
 	// APIToken: 必須項目（空文字列でない）
-	if m.APIToken == "" || m.APIToken == DefaultMisskeyAPIToken {
-		errors = append(errors, "Misskey APIトークンが設定されていません")
+	if err := ValidateRequiredWithDefault(m.APIToken, DefaultMisskeyAPIToken, "Misskey APIトークン"); err != nil {
+		builder.AddError(err.Error())
 	}
 
 	// APIURL: 必須項目（空文字列でない）、URL形式であること
-	if m.APIURL == "" {
-		errors = append(errors, "Misskey API URLが設定されていません")
-	} else {
-		// URL形式チェック（絶対URLであることを確認）
-		if parsedURL, err := url.Parse(m.APIURL); err != nil || !parsedURL.IsAbs() {
-			errors = append(errors, "Misskey API URLが正しいURL形式ではありません")
-		}
+	if err := ValidateURL(m.APIURL, "Misskey API URL"); err != nil {
+		builder.AddError(err.Error())
 	}
 
-	return &ValidationResult{
-		IsValid: len(errors) == 0,
-		Errors:  errors,
-	}
+	return builder.Build()
 }
 
 type SlackAPIConfig struct {
@@ -172,29 +148,26 @@ type SlackAPIConfig struct {
 
 // Validate はSlackAPIConfigの内容をバリデーションする
 func (s *SlackAPIConfig) Validate() *ValidationResult {
-	var errors []string
+	builder := NewValidationBuilder()
 
 	// APIToken: 必須項目（空文字列でない）
-	if s.APIToken == "" || s.APIToken == DefaultSlackAPIToken {
-		errors = append(errors, "Slack APIトークンが設定されていません")
+	if err := ValidateRequiredWithDefault(s.APIToken, DefaultSlackAPIToken, "Slack APIトークン"); err != nil {
+		builder.AddError(err.Error())
 	}
 
 	// Channel: 必須項目（空文字列でない）
-	if s.Channel == "" {
-		errors = append(errors, "Slackチャンネルが設定されていません")
+	if err := ValidateRequired(s.Channel, "Slackチャンネル"); err != nil {
+		builder.AddError(err.Error())
 	}
 
 	// MessageTemplate: 存在する場合はtext/templateとして妥当であること
 	if s.MessageTemplate != nil {
 		if err := s.validateSlackMessageTemplate(*s.MessageTemplate); err != nil {
-			errors = append(errors, fmt.Sprintf("Slackメッセージテンプレートが無効です: %v", err))
+			builder.AddError(fmt.Sprintf("Slackメッセージテンプレートが無効です: %v", err))
 		}
 	}
 
-	return &ValidationResult{
-		IsValid: len(errors) == 0,
-		Errors:  errors,
-	}
+	return builder.Build()
 }
 
 // validateSlackMessageTemplate はSlackメッセージテンプレートの構文を検証する
@@ -221,47 +194,30 @@ type Profile struct {
 
 // Validate はProfileの内容をバリデーションする
 func (p *Profile) Validate() *ValidationResult {
-	var errors []string
-	var warnings []string
+	builder := NewValidationBuilder()
 
 	// AI: 必須項目（nilでない）
 	if p.AI == nil {
-		errors = append(errors, "AI設定が設定されていません")
+		builder.AddError("AI設定が設定されていません")
 	} else {
-		aiResult := p.AI.Validate()
-		if !aiResult.IsValid {
-			errors = append(errors, aiResult.Errors...)
-		}
-		warnings = append(warnings, aiResult.Warnings...)
+		builder.MergeResult(p.AI.Validate())
 	}
 
 	// Prompt: 必須項目（nilでない）
 	if p.Prompt == nil {
-		errors = append(errors, "プロンプト設定が設定されていません")
+		builder.AddError("プロンプト設定が設定されていません")
 	} else {
-		promptResult := p.Prompt.Validate()
-		if !promptResult.IsValid {
-			errors = append(errors, promptResult.Errors...)
-		}
-		warnings = append(warnings, promptResult.Warnings...)
+		builder.MergeResult(p.Prompt.Validate())
 	}
 
 	// Output: 必須項目（nilでない）
 	if p.Output == nil {
-		errors = append(errors, "出力設定が設定されていません")
+		builder.AddError("出力設定が設定されていません")
 	} else {
-		outputResult := p.Output.Validate()
-		if !outputResult.IsValid {
-			errors = append(errors, outputResult.Errors...)
-		}
-		warnings = append(warnings, outputResult.Warnings...)
+		builder.MergeResult(p.Output.Validate())
 	}
 
-	return &ValidationResult{
-		IsValid:  len(errors) == 0,
-		Errors:   errors,
-		Warnings: warnings,
-	}
+	return builder.Build()
 }
 
 type OutputConfig struct {
@@ -271,36 +227,23 @@ type OutputConfig struct {
 
 // Validate はOutputConfigの内容をバリデーションする
 func (o *OutputConfig) Validate() *ValidationResult {
-	var errors []string
-	var warnings []string
+	builder := NewValidationBuilder()
 
 	// SlackAPIとMisskeyの少なくとも一方は設定されている必要がある
 	if o.SlackAPI == nil && o.Misskey == nil {
-		errors = append(errors, "SlackAPI設定またはMisskey設定の少なくとも一方が必要です")
+		builder.AddError("SlackAPI設定またはMisskey設定の少なくとも一方が必要です")
 	}
 
 	// 設定されているConfigオブジェクトに対してそれぞれのValidate()メソッドを呼び出す
 	if o.SlackAPI != nil {
-		slackResult := o.SlackAPI.Validate()
-		if !slackResult.IsValid {
-			errors = append(errors, slackResult.Errors...)
-		}
-		warnings = append(warnings, slackResult.Warnings...)
+		builder.MergeResult(o.SlackAPI.Validate())
 	}
 
 	if o.Misskey != nil {
-		misskeyResult := o.Misskey.Validate()
-		if !misskeyResult.IsValid {
-			errors = append(errors, misskeyResult.Errors...)
-		}
-		warnings = append(warnings, misskeyResult.Warnings...)
+		builder.MergeResult(o.Misskey.Validate())
 	}
 
-	return &ValidationResult{
-		IsValid:  len(errors) == 0,
-		Errors:   errors,
-		Warnings: warnings,
-	}
+	return builder.Build()
 }
 
 // ValidationResult はバリデーション結果を表現する
