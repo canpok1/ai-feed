@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
@@ -270,15 +269,15 @@ func (r *YamlConfigRepository) SaveWithTemplate() error {
 	}
 	defer file.Close()
 
-	// テンプレートを実行してファイルに書き込み
-	tmpl, err := template.New("config").Parse(configYmlTemplate)
+	// 埋め込まれたYAMLファイルの内容を取得してファイルに書き込み
+	templateData, err := GetConfigTemplate()
 	if err != nil {
-		return fmt.Errorf("failed to parse config template: %w", err)
+		return fmt.Errorf("failed to get config template: %w", err)
 	}
 
-	err = tmpl.Execute(file, nil)
+	_, err = file.Write(templateData)
 	if err != nil {
-		return fmt.Errorf("failed to execute config template: %w", err)
+		return fmt.Errorf("failed to write config template: %w", err)
 	}
 
 	return nil
