@@ -21,6 +21,30 @@ type AIConfig struct {
 	Gemini *GeminiConfig
 }
 
+// Validate はAIConfigの内容をバリデーションする
+func (a *AIConfig) Validate() *ValidationResult {
+	var errors []string
+	var warnings []string
+
+	// Gemini: 必須項目（nilでない）
+	if a.Gemini == nil {
+		errors = append(errors, "Gemini設定が設定されていません")
+	} else {
+		// GeminiConfig.Validate()を呼び出して、結果を集約
+		geminiResult := a.Gemini.Validate()
+		if !geminiResult.IsValid {
+			errors = append(errors, geminiResult.Errors...)
+		}
+		warnings = append(warnings, geminiResult.Warnings...)
+	}
+
+	return &ValidationResult{
+		IsValid:  len(errors) == 0,
+		Errors:   errors,
+		Warnings: warnings,
+	}
+}
+
 type GeminiConfig struct {
 	Type   string
 	APIKey string
