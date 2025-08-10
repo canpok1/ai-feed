@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
@@ -106,8 +105,7 @@ func makeProfileCheckCmd() *cobra.Command {
 
 			// マージ後のプロファイルをentity.Profileに変換してバリデーション
 			entityProfile := currentProfile.ToEntity()
-			validator := domain.NewProfileValidator()
-			result := validator.Validate(entityProfile)
+			result := entityProfile.Validate()
 
 			// 結果の表示
 			if !result.IsValid {
