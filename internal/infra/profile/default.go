@@ -5,11 +5,6 @@ import (
 	"github.com/canpok1/ai-feed/internal/infra"
 )
 
-// profileYmlTemplate は、profile initコマンドで生成するprofile.ymlのテンプレート文字列
-var profileYmlTemplate = `# AI Feedのプロファイル設定ファイル
-# このファイルの設定は config.yml のデフォルトプロファイル設定を上書きします
-` + infra.ProfileTemplateCore
-
 // NewDefaultProfile はデフォルトのプロファイルを生成する
 func NewDefaultProfile() *infra.Profile {
 	return &infra.Profile{

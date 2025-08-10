@@ -3,28 +3,10 @@ package infra
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
 )
-
-// indentLines は文字列の各行に指定されたインデントを追加する
-func indentLines(text, indent string) string {
-	lines := strings.Split(text, "\n")
-	for i, line := range lines {
-		if line != "" {
-			lines[i] = indent + line
-		}
-	}
-	return strings.Join(lines, "\n")
-}
-
-// configYmlTemplate は、config initコマンドで生成するconfig.ymlのテンプレート文字列
-var configYmlTemplate = `# AI Feedの設定ファイル
-# このファイルには全プロファイル共通のデフォルト設定を定義します
-default_profile:
-` + indentLines(ProfileTemplateCore, "  ")
 
 type Config struct {
 	DefaultProfile *Profile `yaml:"default_profile,omitempty"`
