@@ -61,17 +61,13 @@ func NewFirstRecommender(f CommentGeneratorFactory, ai *entity.AIConfig, prompt 
 	}
 }
 
-func (r *FirstRecommender) Recommend(
-	ctx context.Context,
-	model *entity.AIConfig,
-	prompt *entity.PromptConfig,
-	articles []entity.Article) (*entity.Recommend, error) {
+func (r *FirstRecommender) Recommend(ctx context.Context, articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
 	}
 
 	article := articles[0]
-	comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+	comment, err := generateComment(r.factory, r.aiConfig, r.promptConfig, ctx, &article)
 	if err != nil {
 		return nil, err
 	}
