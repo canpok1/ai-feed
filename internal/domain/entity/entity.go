@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"net/url"
+	"time"
+)
 
 // Article represents a single article in a feed.
 type Article struct {
@@ -8,6 +11,41 @@ type Article struct {
 	Link      string
 	Published *time.Time
 	Content   string
+}
+
+// Validate はArticleの内容をバリデーションする
+func (a *Article) Validate() *ValidationResult {
+	var errors []string
+
+	// Title: 必須項目（空文字列でない）
+	if a.Title == "" {
+		errors = append(errors, "記事のタイトルが設定されていません")
+	}
+
+	// Link: 必須項目（空文字列でない）、URL形式であること
+	if a.Link == "" {
+		errors = append(errors, "記事のリンクが設定されていません")
+	} else {
+		// URL形式チェック
+		if _, err := url.Parse(a.Link); err != nil {
+			errors = append(errors, "記事のリンクが正しいURL形式ではありません")
+		}
+	}
+
+	// Published: nilでないこと
+	if a.Published == nil {
+		errors = append(errors, "記事の公開日時が設定されていません")
+	}
+
+	// Content: 必須項目（空文字列でない）
+	if a.Content == "" {
+		errors = append(errors, "記事の内容が設定されていません")
+	}
+
+	return &ValidationResult{
+		IsValid: len(errors) == 0,
+		Errors:  errors,
+	}
 }
 
 type Recommend struct {
