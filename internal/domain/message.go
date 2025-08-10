@@ -5,6 +5,5 @@ import (
 )
 
 type MessageSender interface {
-	SendArticles([]entity.Article) error
 	SendRecommend(*entity.Recommend, string) error
 }
