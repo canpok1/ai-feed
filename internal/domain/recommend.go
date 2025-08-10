@@ -52,12 +52,16 @@ func (r *RandomRecommender) Recommend(
 }
 
 type FirstRecommender struct {
-	factory CommentGeneratorFactory
+	factory      CommentGeneratorFactory
+	aiConfig     *entity.AIConfig
+	promptConfig *entity.PromptConfig
 }
 
-func NewFirstRecommender(f CommentGeneratorFactory) Recommender {
+func NewFirstRecommender(f CommentGeneratorFactory, ai *entity.AIConfig, prompt *entity.PromptConfig) Recommender {
 	return &FirstRecommender{
-		factory: f,
+		factory:      f,
+		aiConfig:     ai,
+		promptConfig: prompt,
 	}
 }
 
