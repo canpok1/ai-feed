@@ -22,10 +22,7 @@ func Execute() error {
 	recommendCmd := makeRecommendCmd(fetch.NewFetchClient())
 	rootCmd.AddCommand(recommendCmd)
 
-	configCmd := makeConfigCmd()
-	configInitCmd := makeConfigInitCmd()
-	configCmd.AddCommand(configInitCmd)
-	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(makeInitCmd())
 
 	rootCmd.AddCommand(makeProfileCmd())
 

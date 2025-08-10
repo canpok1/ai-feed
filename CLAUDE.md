@@ -44,7 +44,7 @@ go test -v ./...
 
 このプロジェクトはCobraフレームワークを使用したGo CLIアプリケーションで、クリーンアーキテクチャパターンを採用しています：
 
-- **cmd/**: Cobraを使用したCLIコマンドの実装。各コマンド（recommend、config、profile）は個別のファイルに分かれています。
+- **cmd/**: Cobraを使用したCLIコマンドの実装。各コマンド（recommend、init、profile）は個別のファイルに分かれています。
 - **internal/domain/**: インターフェースとエンティティを含むコアビジネスロジック。アプリケーションのメインロジックが存在します。
 - **internal/infra/**: 外部サービス（RSSフェッチ、AI連携、Slack/Misskey投稿）のインフラストラクチャ実装。
 
@@ -52,7 +52,7 @@ go test -v ./...
 
 ## 主要なアーキテクチャ上の決定事項
 
-1. **設定システム**: YAMLファイル（config.ymlとprofile.yml）を使用。configコマンドでこれらのファイルを管理します。
+1. **設定システム**: YAMLファイル（config.ymlとprofile.yml）を使用。initコマンドでconfig.ymlを生成し、profileコマンドでprofile.ymlを管理します。
 
 2. **AI連携**: 現在はGoogle Gemini APIを使用して記事の推薦文を生成。AIのプロンプトと動作はprofile.ymlでカスタマイズ可能です。
 
