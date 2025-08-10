@@ -65,7 +65,7 @@ pr_{PRの番号}_task_{2桁0埋めの1からの連番}_{タスク概要(英語)}
 ### 完了条件
 
 ### 備考
-- レビューコメント投稿者がgemini-code-assistの場合、対応完了後にレビューコメントをresolveすること。
+- レビューコメント投稿者がgemini-code-assistの場合、対応完了後にコミットとpushを行いレビューコメントをresolveすること。
     - resolveするためのコマンド。THREAD_IDはレビュースレッドIDに置き換えること。
         - `gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "THREAD_ID"}) { thread { id isResolved } } }'`
 ```
