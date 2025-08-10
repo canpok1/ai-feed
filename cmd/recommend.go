@@ -6,6 +6,7 @@ import (
 
 	"github.com/canpok1/ai-feed/cmd/runner"
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/comment"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
@@ -48,21 +49,21 @@ recommends one random article from the fetched list.`,
 			}
 
 			// AIConfig と PromptConfig を取得
-			var aiConfig *infra.AIConfig
-			var promptConfig *infra.PromptConfig
-
+			var aiConfigEntity *entity.AIConfig
 			if currentProfile.AI != nil {
-				aiConfig = currentProfile.AI
+				aiConfigEntity = currentProfile.AI.ToEntity()
 			}
+
+			var promptConfigEntity *entity.PromptConfig
 			if currentProfile.Prompt != nil {
-				promptConfig = currentProfile.Prompt
+				promptConfigEntity = currentProfile.Prompt.ToEntity()
 			}
 
 			// Recommender を作成
 			recommender := domain.NewRandomRecommender(
 				comment.NewCommentGeneratorFactory(),
-				aiConfig.ToEntity(),
-				promptConfig.ToEntity(),
+				aiConfigEntity,
+				promptConfigEntity,
 			)
 
 			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
