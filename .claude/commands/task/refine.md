@@ -31,4 +31,5 @@ issue_{github issueの番号}_refine_{2桁0埋めの1からの連番}_{タスク
 
 ### 備考
 - 本タスクではgithub issue以外（ソースコードなど）の編集は禁止
+- github issue の更新は `gh issue edit` コマンドで行うこと
 ```
