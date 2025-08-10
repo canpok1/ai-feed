@@ -309,7 +309,7 @@ func (r *YamlConfigRepository) Save(config *Config) error {
 }
 
 func (r *YamlConfigRepository) Load() (*Config, error) {
-	return loadYaml[Config](r.filePath)
+	return LoadYAML[Config](r.filePath)
 }
 
 func mergeString(target *string, source string) {

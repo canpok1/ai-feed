@@ -41,7 +41,7 @@ func (r *YamlProfileRepository) LoadProfile() (*entity.Profile, error) {
 
 // LoadInfraProfile はプロファイルをファイルから読み込み、infra.Profileを返す（内部実装用）
 func (r *YamlProfileRepository) LoadInfraProfile() (*infra.Profile, error) {
-	return loadYaml[infra.Profile](r.filePath)
+	return infra.LoadYAML[infra.Profile](r.filePath)
 }
 
 // SaveProfileWithTemplate はテンプレートを使用してコメント付きprofile.ymlファイルを生成する
@@ -81,19 +81,4 @@ func (r *YamlProfileRepository) SaveProfile(profile *infra.Profile) error {
 		return fmt.Errorf("failed to write profile to file %q: %w", r.filePath, err)
 	}
 	return nil
-}
-
-// loadYaml はYAMLファイルを読み込んで指定された型にデコードする
-func loadYaml[T any](filePath string) (*T, error) {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file %q: %w", filePath, err)
-	}
-
-	var result T
-	if err := yaml.Unmarshal(data, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal YAML from file %q: %w", filePath, err)
-	}
-
-	return &result, nil
 }

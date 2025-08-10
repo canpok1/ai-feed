@@ -9,7 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func loadYaml[T any](filePath string) (*T, error) {
+// LoadYAML はYAMLファイルを読み込んで指定された型にデコードする
+func LoadYAML[T any](filePath string) (*T, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read YAML file: %w", err)
