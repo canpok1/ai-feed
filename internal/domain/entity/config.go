@@ -219,9 +219,88 @@ type Profile struct {
 	Output *OutputConfig
 }
 
+// Validate はProfileの内容をバリデーションする
+func (p *Profile) Validate() *ValidationResult {
+	var errors []string
+	var warnings []string
+
+	// AI: 必須項目（nilでない）
+	if p.AI == nil {
+		errors = append(errors, "AI設定が設定されていません")
+	} else {
+		aiResult := p.AI.Validate()
+		if !aiResult.IsValid {
+			errors = append(errors, aiResult.Errors...)
+		}
+		warnings = append(warnings, aiResult.Warnings...)
+	}
+
+	// Prompt: 必須項目（nilでない）
+	if p.Prompt == nil {
+		errors = append(errors, "プロンプト設定が設定されていません")
+	} else {
+		promptResult := p.Prompt.Validate()
+		if !promptResult.IsValid {
+			errors = append(errors, promptResult.Errors...)
+		}
+		warnings = append(warnings, promptResult.Warnings...)
+	}
+
+	// Output: 必須項目（nilでない）
+	if p.Output == nil {
+		errors = append(errors, "出力設定が設定されていません")
+	} else {
+		outputResult := p.Output.Validate()
+		if !outputResult.IsValid {
+			errors = append(errors, outputResult.Errors...)
+		}
+		warnings = append(warnings, outputResult.Warnings...)
+	}
+
+	return &ValidationResult{
+		IsValid:  len(errors) == 0,
+		Errors:   errors,
+		Warnings: warnings,
+	}
+}
+
 type OutputConfig struct {
 	SlackAPI *SlackAPIConfig
 	Misskey  *MisskeyConfig
+}
+
+// Validate はOutputConfigの内容をバリデーションする
+func (o *OutputConfig) Validate() *ValidationResult {
+	var errors []string
+	var warnings []string
+
+	// SlackAPIとMisskeyの少なくとも一方は設定されている必要がある
+	if o.SlackAPI == nil && o.Misskey == nil {
+		errors = append(errors, "SlackAPI設定またはMisskey設定の少なくとも一方が必要です")
+	}
+
+	// 設定されているConfigオブジェクトに対してそれぞれのValidate()メソッドを呼び出す
+	if o.SlackAPI != nil {
+		slackResult := o.SlackAPI.Validate()
+		if !slackResult.IsValid {
+			errors = append(errors, slackResult.Errors...)
+		}
+		warnings = append(warnings, slackResult.Warnings...)
+	}
+
+	if o.Misskey != nil {
+		misskeyResult := o.Misskey.Validate()
+		if !misskeyResult.IsValid {
+			errors = append(errors, misskeyResult.Errors...)
+		}
+		warnings = append(warnings, misskeyResult.Warnings...)
+	}
+
+	return &ValidationResult{
+		IsValid:  len(errors) == 0,
+		Errors:   errors,
+		Warnings: warnings,
+	}
 }
 
 // ValidationResult はバリデーション結果を表現する
