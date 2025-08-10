@@ -25,7 +25,7 @@ func indentLines(text, indent string) string {
 var configYmlTemplate = `# AI Feedの設定ファイル
 # このファイルには全プロファイル共通のデフォルト設定を定義します
 default_profile:
-` + indentLines(commonProfileTemplate, "  ")
+` + indentLines(ProfileTemplateCore, "  ")
 
 type Config struct {
 	DefaultProfile *Profile `yaml:"default_profile,omitempty"`
