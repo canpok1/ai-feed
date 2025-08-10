@@ -73,18 +73,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		return ErrNoArticlesFound
 	}
 
-	if profile.AI == nil || profile.Prompt == nil {
-		return fmt.Errorf("AI model or prompt is not configured")
-	}
-
-	aiConfigEntity := profile.AI.ToEntity()
-	promptConfigEntity := profile.Prompt.ToEntity()
-
-	recommend, err := r.recommender.Recommend(
-		ctx,
-		aiConfigEntity,
-		promptConfigEntity,
-		allArticles)
+	recommend, err := r.recommender.Recommend(ctx, allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
