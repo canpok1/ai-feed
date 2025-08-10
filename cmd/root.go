@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/comment"
+	"github.com/canpok1/ai-feed/internal/infra/fetch"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ func Execute() error {
 	previewCmd := makePreviewCmd()
 	rootCmd.AddCommand(previewCmd)
 
-	recommendCmd := makeRecommendCmd(infra.NewFetchClient(), domain.NewRandomRecommender(comment.NewCommentGeneratorFactory()))
+	recommendCmd := makeRecommendCmd(fetch.NewFetchClient(), domain.NewRandomRecommender(comment.NewCommentGeneratorFactory()))
 	rootCmd.AddCommand(recommendCmd)
 
 	configCmd := makeConfigCmd()

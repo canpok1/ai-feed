@@ -1,4 +1,4 @@
-package infra
+package fetch
 
 import (
 	"github.com/canpok1/ai-feed/internal/domain"

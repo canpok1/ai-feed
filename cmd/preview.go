@@ -5,6 +5,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra/fetch"
 	"github.com/canpok1/ai-feed/internal/infra/message"
 	"github.com/spf13/cobra"
 )
@@ -48,7 +49,7 @@ anything to your local cache.`,
 			}
 
 			fetcher := domain.NewFetcher(
-				infra.NewFetchClient(),
+				fetch.NewFetchClient(),
 				func(url string, err error) error {
 					fmt.Fprintf(cmd.ErrOrStderr(), "Error fetching feed from %s: %v\n", url, err)
 					return nil
