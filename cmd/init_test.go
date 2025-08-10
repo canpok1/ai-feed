@@ -5,19 +5,22 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestInitCommand_Success は正常系のテストを実行する
 func TestInitCommand_Success(t *testing.T) {
-	// 作業ディレクトリを一時的に変更
-	originalWd, _ := os.Getwd()
-	tempDir, err := os.MkdirTemp("", "init_test")
-	assert.NoError(t, err)
-	os.Chdir(tempDir)
-	defer func() {
-		os.Chdir(originalWd)
-		os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
+
+	originalWd, err := os.Getwd()
+	require.NoError(t, err)
+
+	err = os.Chdir(tempDir)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		assert.NoError(t, os.Chdir(originalWd))
+	})
 
 	cmd := makeInitCmd()
 
@@ -37,15 +40,17 @@ func TestInitCommand_Success(t *testing.T) {
 
 // TestInitCommand_FileExists は既存ファイルがある場合のテストを実行する
 func TestInitCommand_FileExists(t *testing.T) {
-	// 作業ディレクトリを一時的に変更
-	originalWd, _ := os.Getwd()
-	tempDir, err := os.MkdirTemp("", "init_test")
-	assert.NoError(t, err)
-	os.Chdir(tempDir)
-	defer func() {
-		os.Chdir(originalWd)
-		os.RemoveAll(tempDir)
-	}()
+	tempDir := t.TempDir()
+
+	originalWd, err := os.Getwd()
+	require.NoError(t, err)
+
+	err = os.Chdir(tempDir)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		assert.NoError(t, os.Chdir(originalWd))
+	})
 
 	// 既存のconfig.ymlを作成
 	existingContent := "existing content"
