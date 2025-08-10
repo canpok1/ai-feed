@@ -9,24 +9,24 @@ import (
 )
 
 type Recommender interface {
-	Recommend(context.Context, *entity.AIConfig, *entity.PromptConfig, []entity.Article) (*entity.Recommend, error)
+	Recommend(context.Context, []entity.Article) (*entity.Recommend, error)
 }
 
 type RandomRecommender struct {
-	factory CommentGeneratorFactory
+	factory      CommentGeneratorFactory
+	aiConfig     *entity.AIConfig
+	promptConfig *entity.PromptConfig
 }
 
-func NewRandomRecommender(f CommentGeneratorFactory) Recommender {
+func NewRandomRecommender(f CommentGeneratorFactory, ai *entity.AIConfig, prompt *entity.PromptConfig) Recommender {
 	return &RandomRecommender{
-		factory: f,
+		factory:      f,
+		aiConfig:     ai,
+		promptConfig: prompt,
 	}
 }
 
-func (r *RandomRecommender) Recommend(
-	ctx context.Context,
-	model *entity.AIConfig,
-	prompt *entity.PromptConfig,
-	articles []entity.Article) (*entity.Recommend, error) {
+func (r *RandomRecommender) Recommend(ctx context.Context, articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, fmt.Errorf("no articles found")
 	}
@@ -36,8 +36,8 @@ func (r *RandomRecommender) Recommend(
 		Article: article,
 	}
 
-	if (r.factory != nil) && (model != nil) && (prompt != nil) {
-		comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+	if (r.factory != nil) && (r.aiConfig != nil) && (r.promptConfig != nil) {
+		comment, err := generateComment(r.factory, r.aiConfig, r.promptConfig, ctx, &article)
 		if err != nil {
 			return nil, err
 		}
@@ -48,26 +48,26 @@ func (r *RandomRecommender) Recommend(
 }
 
 type FirstRecommender struct {
-	factory CommentGeneratorFactory
+	factory      CommentGeneratorFactory
+	aiConfig     *entity.AIConfig
+	promptConfig *entity.PromptConfig
 }
 
-func NewFirstRecommender(f CommentGeneratorFactory) Recommender {
+func NewFirstRecommender(f CommentGeneratorFactory, ai *entity.AIConfig, prompt *entity.PromptConfig) Recommender {
 	return &FirstRecommender{
-		factory: f,
+		factory:      f,
+		aiConfig:     ai,
+		promptConfig: prompt,
 	}
 }
 
-func (r *FirstRecommender) Recommend(
-	ctx context.Context,
-	model *entity.AIConfig,
-	prompt *entity.PromptConfig,
-	articles []entity.Article) (*entity.Recommend, error) {
+func (r *FirstRecommender) Recommend(ctx context.Context, articles []entity.Article) (*entity.Recommend, error) {
 	if len(articles) == 0 {
 		return nil, nil
 	}
 
 	article := articles[0]
-	comment, err := generateComment(r.factory, model, prompt, ctx, &article)
+	comment, err := generateComment(r.factory, r.aiConfig, r.promptConfig, ctx, &article)
 	if err != nil {
 		return nil, err
 	}

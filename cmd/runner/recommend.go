@@ -73,25 +73,19 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		return ErrNoArticlesFound
 	}
 
-	if profile.AI == nil || profile.Prompt == nil {
-		return fmt.Errorf("AI model or prompt is not configured")
-	}
-
-	aiConfigEntity := profile.AI.ToEntity()
-	promptConfigEntity := profile.Prompt.ToEntity()
-
-	recommend, err := r.recommender.Recommend(
-		ctx,
-		aiConfigEntity,
-		promptConfigEntity,
-		allArticles)
+	recommend, err := r.recommender.Recommend(ctx, allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
 
 	var errs []error
+	fixedMessage := ""
+	if profile.Prompt != nil {
+		fixedMessage = profile.Prompt.FixedMessage
+	}
+
 	for _, viewer := range r.viewers {
-		if viewErr := viewer.SendRecommend(recommend, profile.Prompt.FixedMessage); viewErr != nil {
+		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
 		}
 	}

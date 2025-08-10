@@ -40,20 +40,6 @@ func (m *MockMessageSender) EXPECT() *MockMessageSenderMockRecorder {
 	return m.recorder
 }
 
-// SendArticles mocks base method.
-func (m *MockMessageSender) SendArticles(arg0 []entity.Article) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendArticles", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SendArticles indicates an expected call of SendArticles.
-func (mr *MockMessageSenderMockRecorder) SendArticles(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendArticles", reflect.TypeOf((*MockMessageSender)(nil).SendArticles), arg0)
-}
-
 // SendRecommend mocks base method.
 func (m *MockMessageSender) SendRecommend(arg0 *entity.Recommend, arg1 string) error {
 	m.ctrl.T.Helper()

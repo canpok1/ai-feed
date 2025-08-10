@@ -6,13 +6,15 @@ import (
 
 	"github.com/canpok1/ai-feed/cmd/runner"
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra/comment"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 
 	"github.com/spf13/cobra"
 )
 
-func makeRecommendCmd(fetchClient domain.FetchClient, recommender domain.Recommender) *cobra.Command {
+func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "recommend",
 		Short: "Recommend a random article from a given URL instantly.",
@@ -45,6 +47,24 @@ recommends one random article from the fetched list.`,
 				}
 				currentProfile.Merge(loadedInfraProfile)
 			}
+
+			// AIConfig と PromptConfig を取得
+			var aiConfigEntity *entity.AIConfig
+			if currentProfile.AI != nil {
+				aiConfigEntity = currentProfile.AI.ToEntity()
+			}
+
+			var promptConfigEntity *entity.PromptConfig
+			if currentProfile.Prompt != nil {
+				promptConfigEntity = currentProfile.Prompt.ToEntity()
+			}
+
+			// Recommender を作成
+			recommender := domain.NewRandomRecommender(
+				comment.NewCommentGeneratorFactory(),
+				aiConfigEntity,
+				promptConfigEntity,
+			)
 
 			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
 			if runnerErr != nil {

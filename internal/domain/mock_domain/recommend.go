@@ -42,16 +42,16 @@ func (m *MockRecommender) EXPECT() *MockRecommenderMockRecorder {
 }
 
 // Recommend mocks base method.
-func (m *MockRecommender) Recommend(arg0 context.Context, arg1 *entity.AIConfig, arg2 *entity.PromptConfig, arg3 []entity.Article) (*entity.Recommend, error) {
+func (m *MockRecommender) Recommend(arg0 context.Context, arg1 []entity.Article) (*entity.Recommend, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Recommend", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "Recommend", arg0, arg1)
 	ret0, _ := ret[0].(*entity.Recommend)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Recommend indicates an expected call of Recommend.
-func (mr *MockRecommenderMockRecorder) Recommend(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockRecommenderMockRecorder) Recommend(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recommend", reflect.TypeOf((*MockRecommender)(nil).Recommend), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recommend", reflect.TypeOf((*MockRecommender)(nil).Recommend), arg0, arg1)
 }

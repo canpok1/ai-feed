@@ -43,20 +43,6 @@ func NewStdSender(writer io.Writer) (domain.MessageSender, error) {
 	}, nil
 }
 
-// SendArticles は記事のリストを表示する
-func (v *StdSender) SendArticles(articles []entity.Article) error {
-	for _, article := range articles {
-		fmt.Fprintf(v.writer, "Title: %s\n", article.Title)
-		fmt.Fprintf(v.writer, "Link: %s\n", article.Link)
-		if article.Published != nil {
-			fmt.Fprintf(v.writer, "Published: %s\n", article.Published.In(v.loc).Format("2006-01-02 15:04:05 JST"))
-		}
-		fmt.Fprintf(v.writer, "Content: %s\n", article.Content)
-		fmt.Fprintln(v.writer, "---")
-	}
-	return nil
-}
-
 // SendRecommend は推薦記事を表示する
 func (v *StdSender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	if recommend == nil {

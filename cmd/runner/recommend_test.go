@@ -134,7 +134,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&entity.Recommend{
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(&entity.Recommend{
 					Article: entity.Article{Title: "Recommended Article", Link: "http://example.com/recommended"},
 				}, nil).Times(1)
 			},
@@ -150,7 +150,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
 				// Should not be called if no articles are found
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/empty.xml"},
@@ -163,7 +163,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Fetch(gomock.Any()).Return(nil, fmt.Errorf("mock fetch error")).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &RecommendParams{
 				URLs: []string{"http://invalid.com/feed.xml"},
@@ -178,7 +178,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
 			},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
@@ -192,13 +192,15 @@ func TestRecommendRunner_Run(t *testing.T) {
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				// Recommend is not called if AI model or prompt is not found.
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				// Recommend is called - config is handled by Recommender constructor now.
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(&entity.Recommend{
+					Article: entity.Article{Title: "Test Article", Link: "http://example.com/test"},
+				}, nil).Times(1)
 			},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
-			expectedErrorMessage: toStringP("AI model or prompt is not configured"),
+			expectedErrorMessage: nil,
 		},
 		{
 			name: "Prompt not configured",
@@ -207,13 +209,15 @@ func TestRecommendRunner_Run(t *testing.T) {
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				// Recommend is not called if AI model or prompt is not found.
-				m.EXPECT().Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				// Recommend is called - config is handled by Recommender constructor now.
+				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(&entity.Recommend{
+					Article: entity.Article{Title: "Test Article", Link: "http://example.com/test"},
+				}, nil).Times(1)
 			},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
-			expectedErrorMessage: toStringP("AI model or prompt is not configured"),
+			expectedErrorMessage: nil,
 		},
 	}
 
