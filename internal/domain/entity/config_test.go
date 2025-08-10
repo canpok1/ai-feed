@@ -70,24 +70,33 @@ func TestPromptConfig_BuildCommentPrompt(t *testing.T) {
 AIの進化について詳しく解説しています。`,
 		},
 		{
-			name:     "無効なテンプレート構文の場合",
-			template: "タイトル: {{.Title}}\n{{invalid}}",
+			name:     "存在しないキーを持つテンプレート実行エラー時のフォールバック",
+			template: "タイトル: {{.Title}}\n{{.Invalid}}",
 			article: &Article{
 				Title: "テスト記事",
 			},
-			// 無効なテンプレートの場合、空文字列が返される
-			want: "",
+			// 実行エラーの場合、元のテンプレートをそのまま返す
+			want: "タイトル: {{.Title}}\n{{.Invalid}}",
 		},
 		{
-			name:     "旧形式のテンプレート構文（サポート外）",
+			name:     "旧形式のテンプレート構文（後方互換性）",
 			template: "タイトル: {{title}}\nURL: {{url}}\n内容: {{content}}",
 			article: &Article{
 				Title:   "テスト記事",
-				Link:    "https://example.com", 
+				Link:    "https://example.com",
 				Content: "これはテスト内容です",
 			},
-			// 旧形式は未定義変数としてエラーになり、空文字列が返される
-			want: "",
+			// 旧形式は自動的に新形式に変換される
+			want: "タイトル: テスト記事\nURL: https://example.com\n内容: これはテスト内容です",
+		},
+		{
+			name:     "テンプレートパースエラー時のフォールバック",
+			template: "タイトル: {{.Title}}\n{{unclosed",
+			article: &Article{
+				Title: "テスト記事",
+			},
+			// パースエラーの場合、元のテンプレートをそのまま返す
+			want: "タイトル: {{.Title}}\n{{unclosed",
 		},
 	}
 

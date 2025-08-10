@@ -2,6 +2,7 @@ package entity
 
 import (
 	"bytes"
+	"strings"
 	"text/template"
 )
 
@@ -29,17 +30,24 @@ type PromptConfig struct {
 
 // BuildCommentPrompt はtext/templateを使用してコメントプロンプトを生成する
 func (c *PromptConfig) BuildCommentPrompt(article *Article) string {
-	tmpl, err := template.New("comment").Parse(c.CommentPromptTemplate)
+	// 後方互換性のため、古い形式のプレースホルダーを新形式に変換
+	templateStr := c.CommentPromptTemplate
+	templateStr = strings.ReplaceAll(templateStr, "{{title}}", "{{.Title}}")
+	templateStr = strings.ReplaceAll(templateStr, "{{url}}", "{{.Link}}")
+	templateStr = strings.ReplaceAll(templateStr, "{{content}}", "{{.Content}}")
+
+	// text/templateを使用してテンプレートを解析・実行
+	tmpl, err := template.New("comment").Parse(templateStr)
 	if err != nil {
-		// テンプレート解析エラーの場合は空文字列を返す
-		return ""
+		// テンプレートの解析に失敗した場合は、元のテンプレートを返す
+		return c.CommentPromptTemplate
 	}
 
 	var buf bytes.Buffer
 	err = tmpl.Execute(&buf, article)
 	if err != nil {
-		// テンプレート実行エラーの場合も空文字列を返す
-		return ""
+		// テンプレートの実行に失敗した場合も、元のテンプレートを返す
+		return c.CommentPromptTemplate
 	}
 
 	return buf.String()
