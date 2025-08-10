@@ -21,9 +21,6 @@ func makeRootCmd() *cobra.Command {
 func Execute() error {
 	rootCmd := makeRootCmd()
 
-	previewCmd := makePreviewCmd()
-	rootCmd.AddCommand(previewCmd)
-
 	recommendCmd := makeRecommendCmd(fetch.NewFetchClient(), domain.NewRandomRecommender(comment.NewCommentGeneratorFactory()))
 	rootCmd.AddCommand(recommendCmd)
 
