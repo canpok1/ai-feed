@@ -80,12 +80,21 @@ func (p *PromptConfig) Validate() *ValidationResult {
 }
 
 // BuildCommentPrompt はtext/templateを使用してコメントプロンプトを生成する
-func (c *PromptConfig) BuildCommentPrompt(article *Article) string {
+func (c *PromptConfig) BuildCommentPrompt(article *Article) (string, error) {
 	// 後方互換性のため、古い形式のプレースホルダーを新形式に変換
 	templateStr := c.CommentPromptTemplate
 	templateStr = strings.ReplaceAll(templateStr, "{{title}}", "{{.Title}}")
 	templateStr = strings.ReplaceAll(templateStr, "{{url}}", "{{.Link}}")
 	templateStr = strings.ReplaceAll(templateStr, "{{content}}", "{{.Content}}")
+
+	// 別名記法（{{TITLE}}など）を既存記法に変換
+	converter := NewPromptTemplateAliasConverter()
+	convertedTemplate, err := converter.Convert(templateStr)
+	if err != nil {
+		// 別名変換でエラーが発生した場合は、エラーを伝播する
+		return "", fmt.Errorf("テンプレート変換エラー: %w", err)
+	}
+	templateStr = convertedTemplate
 
 	// キャッシュからテンプレートを取得
 	var tmpl *template.Template
@@ -96,21 +105,21 @@ func (c *PromptConfig) BuildCommentPrompt(article *Article) string {
 		var err error
 		tmpl, err = template.New("comment").Parse(templateStr)
 		if err != nil {
-			// テンプレートの解析に失敗した場合は、元のテンプレートを返す
-			return c.CommentPromptTemplate
+			// テンプレートの解析に失敗した場合は、エラーを返す
+			return "", fmt.Errorf("テンプレート解析エラー: %w", err)
 		}
 		// パース成功したテンプレートをキャッシュに保存
 		templateCache.Store(templateStr, tmpl)
 	}
 
 	var buf bytes.Buffer
-	err := tmpl.Execute(&buf, article)
+	err = tmpl.Execute(&buf, article)
 	if err != nil {
-		// テンプレートの実行に失敗した場合も、元のテンプレートを返す
-		return c.CommentPromptTemplate
+		// テンプレートの実行に失敗した場合も、エラーを返す
+		return "", fmt.Errorf("テンプレート実行エラー: %w", err)
 	}
 
-	return buf.String()
+	return buf.String(), nil
 }
 
 type MisskeyConfig struct {
