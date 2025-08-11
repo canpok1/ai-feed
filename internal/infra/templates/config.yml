@@ -60,8 +60,7 @@ default_profile:
       #   {{FIXED_MESSAGE}} - 固定メッセージ
       message_template: |
         {{COMMENT}}
-        {{TITLE}}
-        {{URL}}
+        <{{URL}}|{{TITLE}}>
         {{FIXED_MESSAGE}}
     
     # Misskey投稿設定
@@ -85,6 +84,5 @@ default_profile:
       #   {{FIXED_MESSAGE}} - 固定メッセージ
       message_template: |
         {{COMMENT}}
-        {{TITLE}}
-        {{URL}}
+        [{{TITLE}}]({{URL}})
         {{FIXED_MESSAGE}}
