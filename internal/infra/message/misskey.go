@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -52,7 +53,7 @@ func NewMisskeySender(instanceURL, accessToken string, messageTemplate *string) 
 
 	// テンプレートの設定
 	var templateStr string
-	if messageTemplate != nil && *messageTemplate != "" {
+	if messageTemplate != nil && strings.TrimSpace(*messageTemplate) != "" {
 		templateStr = *messageTemplate
 	} else {
 		templateStr = DefaultMisskeyMessageTemplate
