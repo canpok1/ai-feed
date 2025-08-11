@@ -150,6 +150,51 @@ make run option="profile init my_profile.yml"
 make run option="config init"
 ```
 
+## テンプレート記法
+
+profile.ymlの設定でメッセージテンプレートを定義する際に、記事情報を動的に埋め込むためのテンプレート記法を使用できます。
+
+### 基本的な記法
+
+従来の記法（ドット記法）と新しい別名記法の両方がサポートされています：
+
+| データ | 従来記法 | 別名記法 |
+|--------|----------|----------|
+| 記事タイトル | `{{.Title}}` または `{{.Article.Title}}` | `{{TITLE}}` |
+| 記事URL | `{{.Link}}` または `{{.Article.Link}}` | `{{URL}}` |
+| 記事内容 | `{{.Content}}` または `{{.Article.Content}}` | `{{CONTENT}}` |
+| AIコメント | `{{.Comment}}` | `{{COMMENT}}` |
+| 固定メッセージ | `{{.FixedMessage}}` | `{{FIXED_MESSAGE}}` |
+
+### 使用例
+
+```yaml
+# PromptConfig での使用例
+comment_prompt_template: |
+  以下の記事について簡潔に紹介してください：
+  タイトル: {{TITLE}}
+  URL: {{URL}}
+  内容: {{CONTENT}}
+
+# SlackAPI での使用例
+output:
+  slack_api:
+    message_template: |
+      📰 おすすめ記事
+      {{TITLE}}
+      {{URL}}
+      {{if .Comment}}
+      💬 {{COMMENT}}
+      {{end}}
+```
+
+### 注意事項
+
+- **別名記法**: 大文字のみ使用可能（例: `{{TITLE}}`は正しいが、`{{title}}`や`{{Title}}`はエラー）
+- **後方互換性**: 既存の記法も引き続き使用可能
+- **混在可能**: 同一テンプレート内で新旧記法を混在させることも可能
+- **条件分岐**: `{{if .Comment}}`などの制御構文も使用可能
+
 ## APIキーの設定
 
 AI FeedでAPIキーやトークンを設定する方法は2つあります：
