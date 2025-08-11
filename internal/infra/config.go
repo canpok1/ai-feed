@@ -232,10 +232,27 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 		return nil, err
 	}
 
+	// MessageTemplateの別名変換処理
+	var convertedTemplate *string
+	if c.MessageTemplate != nil && *c.MessageTemplate != "" {
+		converter := entity.NewSlackTemplateAliasConverter()
+		converted, err := converter.Convert(*c.MessageTemplate)
+		if err != nil {
+			// 別名変換エラーの場合は、エラーを返す
+			if aliasErr, ok := err.(*entity.TemplateAliasError); ok {
+				return nil, fmt.Errorf("テンプレートエラー: %s", aliasErr.Message)
+			}
+			return nil, err
+		}
+		convertedTemplate = &converted
+	} else {
+		convertedTemplate = c.MessageTemplate
+	}
+
 	return &entity.SlackAPIConfig{
 		APIToken:        apiToken,
 		Channel:         c.Channel,
-		MessageTemplate: c.MessageTemplate,
+		MessageTemplate: convertedTemplate,
 	}, nil
 }
 
