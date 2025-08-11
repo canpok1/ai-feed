@@ -66,10 +66,12 @@ func TestProfile_Validate(t *testing.T) {
 		SystemPrompt:          "システムプロンプト",
 		CommentPromptTemplate: "コメントテンプレート",
 	}
+	validTemplate := "{{.Article.Title}} {{.Article.Link}}"
 	validOutput := &OutputConfig{
 		SlackAPI: &SlackAPIConfig{
-			APIToken: "valid-token",
-			Channel:  "#general",
+			APIToken:        "valid-token",
+			Channel:         "#general",
+			MessageTemplate: &validTemplate,
 		},
 	}
 

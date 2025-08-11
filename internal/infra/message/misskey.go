@@ -45,6 +45,10 @@ func NewMisskeySender(instanceURL, accessToken string, messageTemplate *string) 
 	}
 
 	// 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
+	// ただし、テストやバリデーション前の呼び出しに対応するため念のためnilチェックを行う
+	if messageTemplate == nil || *messageTemplate == "" {
+		return nil, fmt.Errorf("MessageTemplate is required and must be validated before creating MisskeySender")
+	}
 	tmpl := template.Must(template.New("misskey_message").Parse(*messageTemplate))
 
 	return &MisskeySender{
