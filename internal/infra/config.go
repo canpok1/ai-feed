@@ -74,8 +74,9 @@ func (c *AIConfig) ToEntity() *entity.AIConfig {
 }
 
 type GeminiConfig struct {
-	Type   string `yaml:"type"`
-	APIKey string `yaml:"api_key"`
+	Type      string `yaml:"type"`
+	APIKey    string `yaml:"api_key"`
+	APIKeyEnv string `yaml:"api_key_env,omitempty"`
 }
 
 func (c *GeminiConfig) Merge(other *GeminiConfig) {
@@ -148,6 +149,7 @@ func (c *OutputConfig) ToEntity() *entity.OutputConfig {
 
 type SlackAPIConfig struct {
 	APIToken        string  `yaml:"api_token"`
+	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	Channel         string  `yaml:"channel"`
 	MessageTemplate *string `yaml:"message_template,omitempty"`
 }
@@ -172,8 +174,9 @@ func (c *SlackAPIConfig) ToEntity() *entity.SlackAPIConfig {
 }
 
 type MisskeyConfig struct {
-	APIToken string `yaml:"api_token"`
-	APIURL   string `yaml:"api_url"`
+	APIToken    string `yaml:"api_token"`
+	APITokenEnv string `yaml:"api_token_env,omitempty"`
+	APIURL      string `yaml:"api_url"`
 }
 
 func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
