@@ -59,8 +59,6 @@ func ValidateRequired(value, fieldName string) error {
 	return nil
 }
 
-
-
 // ValidateURL はURLが正しい形式であることを検証する
 func ValidateURL(urlStr, fieldName string) error {
 	if urlStr == "" {

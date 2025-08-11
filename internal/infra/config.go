@@ -97,11 +97,12 @@ func (c *GeminiConfig) Merge(other *GeminiConfig) {
 	}
 	mergeString(&c.Type, other.Type)
 	mergeString(&c.APIKey, other.APIKey)
+	mergeString(&c.APIKeyEnv, other.APIKeyEnv)
 }
 
 func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
 	apiKey := c.APIKey
-	
+
 	// APIKeyが空でAPIKeyEnvが指定されている場合、環境変数から取得
 	if apiKey == "" && c.APIKeyEnv != "" {
 		envValue := os.Getenv(c.APIKeyEnv)
@@ -110,7 +111,7 @@ func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
 		}
 		apiKey = envValue
 	}
-	
+
 	return &entity.GeminiConfig{
 		Type:   c.Type,
 		APIKey: apiKey,
@@ -190,6 +191,7 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 		return
 	}
 	mergeString(&c.APIToken, other.APIToken)
+	mergeString(&c.APITokenEnv, other.APITokenEnv)
 	mergeString(&c.Channel, other.Channel)
 	if other.MessageTemplate != nil {
 		c.MessageTemplate = other.MessageTemplate
@@ -198,7 +200,7 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	apiToken := c.APIToken
-	
+
 	// APITokenが空でAPITokenEnvが指定されている場合、環境変数から取得
 	if apiToken == "" && c.APITokenEnv != "" {
 		envValue := os.Getenv(c.APITokenEnv)
@@ -207,7 +209,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 		}
 		apiToken = envValue
 	}
-	
+
 	return &entity.SlackAPIConfig{
 		APIToken:        apiToken,
 		Channel:         c.Channel,
@@ -226,12 +228,13 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 		return
 	}
 	mergeString(&c.APIToken, other.APIToken)
+	mergeString(&c.APITokenEnv, other.APITokenEnv)
 	mergeString(&c.APIURL, other.APIURL)
 }
 
 func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	apiToken := c.APIToken
-	
+
 	// APITokenが空でAPITokenEnvが指定されている場合、環境変数から取得
 	if apiToken == "" && c.APITokenEnv != "" {
 		envValue := os.Getenv(c.APITokenEnv)
@@ -240,7 +243,7 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 		}
 		apiToken = envValue
 	}
-	
+
 	return &entity.MisskeyConfig{
 		APIToken: apiToken,
 		APIURL:   c.APIURL,

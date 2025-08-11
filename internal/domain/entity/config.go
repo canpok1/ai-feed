@@ -13,7 +13,6 @@ var templateCache sync.Map
 
 // デフォルト値の定数
 
-
 type AIConfig struct {
 	Gemini *GeminiConfig
 }
