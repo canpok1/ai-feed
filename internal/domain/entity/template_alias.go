@@ -11,8 +11,6 @@ import (
 type TemplateAliasConverter struct {
 	// aliasMap は別名から既存記法へのマッピング
 	aliasMap map[string]string
-	// aliasPattern は別名記法を検出する正規表現
-	aliasPattern *regexp.Regexp
 }
 
 // NewPromptTemplateAliasConverter はPromptConfig用の別名変換器を作成する
@@ -23,8 +21,6 @@ func NewPromptTemplateAliasConverter() *TemplateAliasConverter {
 			"URL":     ".Link",
 			"CONTENT": ".Content",
 		},
-		// 大文字のみの別名を検出するパターン
-		aliasPattern: regexp.MustCompile(`\{\{([A-Z_]+)\}\}`),
 	}
 }
 
@@ -38,8 +34,6 @@ func NewSlackTemplateAliasConverter() *TemplateAliasConverter {
 			"COMMENT":       ".Comment",
 			"FIXED_MESSAGE": ".FixedMessage",
 		},
-		// 大文字のみの別名を検出するパターン
-		aliasPattern: regexp.MustCompile(`\{\{([A-Z_]+)\}\}`),
 	}
 }
 
