@@ -254,8 +254,3 @@ func executeSlackTemplate(templateStr string, data *SlackTemplateData) (string, 
 
 	return buf.String(), nil
 }
-
-// stringPtr はstring値のポインタを返すヘルパー関数
-func stringPtr(s string) *string {
-	return &s
-}
