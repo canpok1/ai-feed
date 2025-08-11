@@ -218,10 +218,10 @@ output:
     api_token: your_slack_token
     channel: "#general"
     message_template: |
-      {{if .Comment}}{{.Comment}}
-      {{end}}{{.Article.Title}}
-      {{.Article.Link}}{{if .FixedMessage}}
-      {{.FixedMessage}}{{end}}
+      {{if .Comment}}{{COMMENT}}
+      {{end}}{{TITLE}}
+      {{URL}}{{if .FixedMessage}}
+      {{FIXED_MESSAGE}}{{end}}
 ```
 
 ### Misskeyメッセージテンプレート
@@ -232,10 +232,10 @@ output:
     api_token: your_misskey_token
     api_url: https://your-misskey-instance.com
     message_template: |
-      {{if .Comment}}{{.Comment}}
-      {{end}}{{.Article.Title}}
-      {{.Article.Link}}{{if .FixedMessage}}
-      {{.FixedMessage}}{{end}}
+      {{if .Comment}}{{COMMENT}}
+      {{end}}{{TITLE}}
+      {{URL}}{{if .FixedMessage}}
+      {{FIXED_MESSAGE}}{{end}}
 ```
 
 ### 利用可能な変数
@@ -252,13 +252,13 @@ output:
 
 ```yaml
 message_template: |
-  {{if .Comment}}💬 {{.Comment}}
+  {{if .Comment}}💬 {{COMMENT}}
   
-  {{end}}📰 {{.Article.Title}}
-  🔗 {{.Article.Link}}
+  {{end}}📰 {{TITLE}}
+  🔗 {{URL}}
   {{if .FixedMessage}}
   
-  📌 {{.FixedMessage}}{{end}}
+  📌 {{FIXED_MESSAGE}}{{end}}
 ```
 
 ## APIキーの設定
