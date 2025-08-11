@@ -123,8 +123,9 @@ func (c *PromptConfig) BuildCommentPrompt(article *Article) (string, error) {
 }
 
 type MisskeyConfig struct {
-	APIToken string
-	APIURL   string
+	APIToken        string
+	APIURL          string
+	MessageTemplate *string
 }
 
 // Validate はMisskeyConfigの内容をバリデーションする

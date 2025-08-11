@@ -55,7 +55,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			if err != nil {
 				return nil, fmt.Errorf("failed to process Misskey config: %w", err)
 			}
-			misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken)
+			misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken, misskeyConfig.MessageTemplate)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
 			}

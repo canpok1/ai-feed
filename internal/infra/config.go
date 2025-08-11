@@ -254,9 +254,10 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 }
 
 type MisskeyConfig struct {
-	APIToken    string `yaml:"api_token"`
-	APITokenEnv string `yaml:"api_token_env,omitempty"`
-	APIURL      string `yaml:"api_url"`
+	APIToken        string  `yaml:"api_token"`
+	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
+	APIURL          string  `yaml:"api_url"`
+	MessageTemplate *string `yaml:"message_template,omitempty"`
 }
 
 func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
@@ -276,6 +277,9 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	}
 
 	mergeString(&c.APIURL, other.APIURL)
+	if other.MessageTemplate != nil {
+		c.MessageTemplate = other.MessageTemplate
+	}
 }
 
 func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
@@ -284,9 +288,24 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 		return nil, err
 	}
 
+	// MessageTemplateの別名変換処理
+	var convertedTemplate *string
+	if c.MessageTemplate != nil && *c.MessageTemplate != "" {
+		converter := entity.NewMisskeyTemplateAliasConverter()
+		converted, err := converter.Convert(*c.MessageTemplate)
+		if err != nil {
+			// 別名変換エラーの場合は、エラーをラップして返す
+			return nil, fmt.Errorf("テンプレートエラー: %w", err)
+		}
+		convertedTemplate = &converted
+	} else {
+		convertedTemplate = c.MessageTemplate
+	}
+
 	return &entity.MisskeyConfig{
-		APIToken: apiToken,
-		APIURL:   c.APIURL,
+		APIToken:        apiToken,
+		APIURL:          c.APIURL,
+		MessageTemplate: convertedTemplate,
 	}, nil
 }
 

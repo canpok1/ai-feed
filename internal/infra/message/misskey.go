@@ -1,10 +1,12 @@
 package message
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
+	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -13,13 +15,28 @@ import (
 	"github.com/yitsushi/go-misskey/services/notes"
 )
 
+// MisskeyTemplateData はMisskeyメッセージテンプレートで使用するデータ
+type MisskeyTemplateData struct {
+	Article      *entity.Article
+	Comment      *string
+	FixedMessage string
+}
+
+// DefaultMisskeyMessageTemplate はデフォルトのMisskeyメッセージテンプレート
+const DefaultMisskeyMessageTemplate = `{{if .Comment}}{{.Comment}}
+{{end}}{{.Article.Title}}
+{{.Article.Link}}{{if .FixedMessage}}
+{{.FixedMessage}}{{end}}`
+
 // MisskeySender はMisskey APIと通信するためのクライアントです。
+
 type MisskeySender struct {
 	client *misskey.Client
+	tmpl   *template.Template
 }
 
 // NewMisskeySender は新しいMisskeySenderのインスタンスを作成します。
-func NewMisskeySender(instanceURL, accessToken string) (domain.MessageSender, error) {
+func NewMisskeySender(instanceURL, accessToken string, messageTemplate *string) (domain.MessageSender, error) {
 	parsedURL, err := url.Parse(instanceURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse instance URL: %w", err)
@@ -34,7 +51,21 @@ func NewMisskeySender(instanceURL, accessToken string) (domain.MessageSender, er
 		return nil, fmt.Errorf("failed to create Misskey client: %w", err)
 	}
 
-	return &MisskeySender{client: client}, nil
+	// テンプレートの設定
+	var templateStr string
+	if messageTemplate != nil && *messageTemplate != "" {
+		templateStr = *messageTemplate
+	} else {
+		templateStr = DefaultMisskeyMessageTemplate
+	}
+
+	// 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
+	tmpl := template.Must(template.New("misskey_message").Parse(templateStr))
+
+	return &MisskeySender{
+		client: client,
+		tmpl:   tmpl,
+	}, nil
 }
 
 // SendRecommend はMisskeyにノートを投稿します。
@@ -43,17 +74,20 @@ func (v *MisskeySender) SendRecommend(recommend *entity.Recommend, fixedMessage 
 		return fmt.Errorf("recommend is nil")
 	}
 
-	var b strings.Builder
-	fmt.Fprintf(&b, "Title: %s\nLink: %s", recommend.Article.Title, recommend.Article.Link)
-	if recommend.Comment != nil {
-		fmt.Fprintf(&b, "\nComment: %s", *recommend.Comment)
-	}
-	// fixedMessage を追加
-	if fixedMessage != "" {
-		fmt.Fprintf(&b, "\nFixed Message: %s", fixedMessage)
+	// テンプレートデータを作成
+	templateData := &MisskeyTemplateData{
+		Article:      &recommend.Article,
+		Comment:      recommend.Comment,
+		FixedMessage: fixedMessage,
 	}
 
-	text := b.String()
+	// パース済みテンプレートを直接実行
+	var buf bytes.Buffer
+	if err := v.tmpl.Execute(&buf, templateData); err != nil {
+		return err
+	}
+
+	text := buf.String()
 
 	params := notes.CreateRequest{
 		Text:       &text,
