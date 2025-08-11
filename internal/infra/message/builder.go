@@ -15,7 +15,18 @@ type MessageBuilder struct {
 
 // NewMessageBuilder は新しいMessageBuilderを作成する
 func NewMessageBuilder(recommendTemplate string) (*MessageBuilder, error) {
-	tmpl, err := template.New("recommend").Parse(recommendTemplate)
+	// 別名記法を既存記法に変換
+	converter := entity.NewSlackTemplateAliasConverter()
+	convertedTemplate, err := converter.Convert(recommendTemplate)
+	if err != nil {
+		// 別名変換エラーの場合は、詳細なエラーメッセージを返す
+		if aliasErr, ok := err.(*entity.TemplateAliasError); ok {
+			return nil, fmt.Errorf("テンプレートエラー: %s", aliasErr.Message)
+		}
+		return nil, err
+	}
+
+	tmpl, err := template.New("recommend").Parse(convertedTemplate)
 	if err != nil {
 		return nil, err
 	}
