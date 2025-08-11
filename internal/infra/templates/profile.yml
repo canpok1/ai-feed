@@ -36,7 +36,7 @@ output:
     # 注意: api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
     channel: "#general"                     # 投稿先チャンネル
     
-    # Slackメッセージテンプレート（オプション）
+    # Slackメッセージテンプレート（必須）
     # 利用可能なパラメータ:
     #   {{.Comment}}         - AIが生成したコメント（存在する場合のみ）
     #   {{.Article.Title}}   - 記事のタイトル
@@ -59,7 +59,7 @@ output:
     # 注意: api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
     api_url: https://example.com            # MisskeyのAPIエンドポイント
     
-    # Misskeyノートテンプレート（オプション）
+    # Misskeyメッセージテンプレート（必須）
     # 利用可能なパラメータ:
     #   {{.Comment}}         - AIが生成したコメント（存在する場合のみ）
     #   {{.Article.Title}}   - 記事のタイトル
