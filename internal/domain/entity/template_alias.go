@@ -13,6 +13,15 @@ type TemplateAliasConverter struct {
 	aliasMap map[string]string
 }
 
+// messageTemplateAliasMap はSlackとMisskey共通のメッセージテンプレート用別名マップ
+var messageTemplateAliasMap = map[string]string{
+	"TITLE":         ".Article.Title",
+	"URL":           ".Article.Link",
+	"CONTENT":       ".Article.Content",
+	"COMMENT":       ".Comment",
+	"FIXED_MESSAGE": ".FixedMessage",
+}
+
 // NewPromptTemplateAliasConverter はPromptConfig用の別名変換器を作成する
 func NewPromptTemplateAliasConverter() *TemplateAliasConverter {
 	return &TemplateAliasConverter{
@@ -27,26 +36,14 @@ func NewPromptTemplateAliasConverter() *TemplateAliasConverter {
 // NewSlackTemplateAliasConverter はSlackAPIConfig用の別名変換器を作成する
 func NewSlackTemplateAliasConverter() *TemplateAliasConverter {
 	return &TemplateAliasConverter{
-		aliasMap: map[string]string{
-			"TITLE":         ".Article.Title",
-			"URL":           ".Article.Link",
-			"CONTENT":       ".Article.Content",
-			"COMMENT":       ".Comment",
-			"FIXED_MESSAGE": ".FixedMessage",
-		},
+		aliasMap: messageTemplateAliasMap,
 	}
 }
 
 // NewMisskeyTemplateAliasConverter はMisskeyConfig用の別名変換器を作成する
 func NewMisskeyTemplateAliasConverter() *TemplateAliasConverter {
 	return &TemplateAliasConverter{
-		aliasMap: map[string]string{
-			"TITLE":         ".Article.Title",
-			"URL":           ".Article.Link",
-			"CONTENT":       ".Article.Content",
-			"COMMENT":       ".Comment",
-			"FIXED_MESSAGE": ".FixedMessage",
-		},
+		aliasMap: messageTemplateAliasMap,
 	}
 }
 
