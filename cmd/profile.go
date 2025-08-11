@@ -104,7 +104,10 @@ func makeProfileCheckCmd() *cobra.Command {
 			}
 
 			// マージ後のプロファイルをentity.Profileに変換してバリデーション
-			entityProfile := currentProfile.ToEntity()
+			entityProfile, err := currentProfile.ToEntity()
+			if err != nil {
+				return fmt.Errorf("failed to process profile: %w", err)
+			}
 			result := entityProfile.Validate()
 
 			// 結果の表示

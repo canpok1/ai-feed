@@ -29,10 +29,14 @@ func (p *Profile) Merge(other *Profile) {
 }
 
 // ToEntity converts infra.Profile to entity.Profile
-func (p *Profile) ToEntity() *entity.Profile {
+func (p *Profile) ToEntity() (*entity.Profile, error) {
 	var aiEntity *entity.AIConfig
 	if p.AI != nil {
-		aiEntity = p.AI.ToEntity()
+		var err error
+		aiEntity, err = p.AI.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var promptEntity *entity.PromptConfig
@@ -42,14 +46,18 @@ func (p *Profile) ToEntity() *entity.Profile {
 
 	var outputEntity *entity.OutputConfig
 	if p.Output != nil {
-		outputEntity = p.Output.ToEntity()
+		var err error
+		outputEntity, err = p.Output.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &entity.Profile{
 		AI:     aiEntity,
 		Prompt: promptEntity,
 		Output: outputEntity,
-	}
+	}, nil
 }
 
 type AIConfig struct {
@@ -63,14 +71,18 @@ func (c *AIConfig) Merge(other *AIConfig) {
 	mergePtr(&c.Gemini, other.Gemini)
 }
 
-func (c *AIConfig) ToEntity() *entity.AIConfig {
+func (c *AIConfig) ToEntity() (*entity.AIConfig, error) {
 	var geminiEntity *entity.GeminiConfig
 	if c.Gemini != nil {
-		geminiEntity = c.Gemini.ToEntity()
+		var err error
+		geminiEntity, err = c.Gemini.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &entity.AIConfig{
 		Gemini: geminiEntity,
-	}
+	}, nil
 }
 
 type GeminiConfig struct {
@@ -87,11 +99,22 @@ func (c *GeminiConfig) Merge(other *GeminiConfig) {
 	mergeString(&c.APIKey, other.APIKey)
 }
 
-func (c *GeminiConfig) ToEntity() *entity.GeminiConfig {
+func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
+	apiKey := c.APIKey
+	
+	// APIKeyが空でAPIKeyEnvが指定されている場合、環境変数から取得
+	if apiKey == "" && c.APIKeyEnv != "" {
+		envValue := os.Getenv(c.APIKeyEnv)
+		if envValue == "" {
+			return nil, fmt.Errorf("環境変数 '%s' が設定されていません。ai.gemini.api_key_env で指定された環境変数を設定してください。", c.APIKeyEnv)
+		}
+		apiKey = envValue
+	}
+	
 	return &entity.GeminiConfig{
 		Type:   c.Type,
-		APIKey: c.APIKey,
-	}
+		APIKey: apiKey,
+	}, nil
 }
 
 type PromptConfig struct {
@@ -130,21 +153,29 @@ func (c *OutputConfig) Merge(other *OutputConfig) {
 	mergePtr(&c.Misskey, other.Misskey)
 }
 
-func (c *OutputConfig) ToEntity() *entity.OutputConfig {
+func (c *OutputConfig) ToEntity() (*entity.OutputConfig, error) {
 	var slackEntity *entity.SlackAPIConfig
 	if c.SlackAPI != nil {
-		slackEntity = c.SlackAPI.ToEntity()
+		var err error
+		slackEntity, err = c.SlackAPI.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var misskeyEntity *entity.MisskeyConfig
 	if c.Misskey != nil {
-		misskeyEntity = c.Misskey.ToEntity()
+		var err error
+		misskeyEntity, err = c.Misskey.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &entity.OutputConfig{
 		SlackAPI: slackEntity,
 		Misskey:  misskeyEntity,
-	}
+	}, nil
 }
 
 type SlackAPIConfig struct {
@@ -165,12 +196,23 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	}
 }
 
-func (c *SlackAPIConfig) ToEntity() *entity.SlackAPIConfig {
+func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
+	apiToken := c.APIToken
+	
+	// APITokenが空でAPITokenEnvが指定されている場合、環境変数から取得
+	if apiToken == "" && c.APITokenEnv != "" {
+		envValue := os.Getenv(c.APITokenEnv)
+		if envValue == "" {
+			return nil, fmt.Errorf("環境変数 '%s' が設定されていません。output.slack_api.api_token_env で指定された環境変数を設定してください。", c.APITokenEnv)
+		}
+		apiToken = envValue
+	}
+	
 	return &entity.SlackAPIConfig{
-		APIToken:        c.APIToken,
+		APIToken:        apiToken,
 		Channel:         c.Channel,
 		MessageTemplate: c.MessageTemplate,
-	}
+	}, nil
 }
 
 type MisskeyConfig struct {
@@ -187,11 +229,22 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	mergeString(&c.APIURL, other.APIURL)
 }
 
-func (c *MisskeyConfig) ToEntity() *entity.MisskeyConfig {
-	return &entity.MisskeyConfig{
-		APIToken: c.APIToken,
-		APIURL:   c.APIURL,
+func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
+	apiToken := c.APIToken
+	
+	// APITokenが空でAPITokenEnvが指定されている場合、環境変数から取得
+	if apiToken == "" && c.APITokenEnv != "" {
+		envValue := os.Getenv(c.APITokenEnv)
+		if envValue == "" {
+			return nil, fmt.Errorf("環境変数 '%s' が設定されていません。output.misskey.api_token_env で指定された環境変数を設定してください。", c.APITokenEnv)
+		}
+		apiToken = envValue
 	}
+	
+	return &entity.MisskeyConfig{
+		APIToken: apiToken,
+		APIURL:   c.APIURL,
+	}, nil
 }
 
 func MakeDefaultConfig() *Config {

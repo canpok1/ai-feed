@@ -35,7 +35,7 @@ func (r *YamlProfileRepository) LoadProfile() (*entity.Profile, error) {
 	if err != nil {
 		return nil, err
 	}
-	return infraProfile.ToEntity(), nil
+	return infraProfile.ToEntity()
 }
 
 // LoadInfraProfile はプロファイルをファイルから読み込み、infra.Profileを返す（内部実装用）

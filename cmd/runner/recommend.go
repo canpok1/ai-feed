@@ -43,11 +43,19 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
-			slackViewer := message.NewSlackSender(outputConfig.SlackAPI.ToEntity())
+			slackConfig, err := outputConfig.SlackAPI.ToEntity()
+			if err != nil {
+				return nil, fmt.Errorf("failed to process Slack API config: %w", err)
+			}
+			slackViewer := message.NewSlackSender(slackConfig)
 			viewers = append(viewers, slackViewer)
 		}
 		if outputConfig.Misskey != nil {
-			misskeyViewer, err := message.NewMisskeySender(outputConfig.Misskey.APIURL, outputConfig.Misskey.APIToken)
+			misskeyConfig, err := outputConfig.Misskey.ToEntity()
+			if err != nil {
+				return nil, fmt.Errorf("failed to process Misskey config: %w", err)
+			}
+			misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
 			}

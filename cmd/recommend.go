@@ -51,7 +51,11 @@ recommends one random article from the fetched list.`,
 			// AIConfig と PromptConfig を取得
 			var aiConfigEntity *entity.AIConfig
 			if currentProfile.AI != nil {
-				aiConfigEntity = currentProfile.AI.ToEntity()
+				var err error
+				aiConfigEntity, err = currentProfile.AI.ToEntity()
+				if err != nil {
+					return fmt.Errorf("failed to process AI config: %w", err)
+				}
 			}
 
 			var promptConfigEntity *entity.PromptConfig
