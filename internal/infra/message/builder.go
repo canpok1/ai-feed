@@ -19,11 +19,8 @@ func NewMessageBuilder(recommendTemplate string) (*MessageBuilder, error) {
 	converter := entity.NewSlackTemplateAliasConverter()
 	convertedTemplate, err := converter.Convert(recommendTemplate)
 	if err != nil {
-		// 別名変換エラーの場合は、詳細なエラーメッセージを返す
-		if aliasErr, ok := err.(*entity.TemplateAliasError); ok {
-			return nil, fmt.Errorf("テンプレートエラー: %s", aliasErr.Message)
-		}
-		return nil, err
+		// 別名変換エラーの場合は、エラーをラップして返す
+		return nil, fmt.Errorf("テンプレートエラー: %w", err)
 	}
 
 	tmpl, err := template.New("recommend").Parse(convertedTemplate)
