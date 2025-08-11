@@ -39,15 +39,6 @@ func TestGeminiConfig_Validate(t *testing.T) {
 			wantErr: true,
 			errors:  []string{"Gemini API keyが設定されていません"},
 		},
-		{
-			name: "異常系_APIKeyがデフォルト値",
-			config: &GeminiConfig{
-				Type:   "gemini-pro",
-				APIKey: DefaultGeminiAPIKey,
-			},
-			wantErr: true,
-			errors:  []string{"Gemini API keyが設定されていません"},
-		},
 	}
 
 	for _, tt := range tests {

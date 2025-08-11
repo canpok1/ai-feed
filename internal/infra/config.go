@@ -29,10 +29,14 @@ func (p *Profile) Merge(other *Profile) {
 }
 
 // ToEntity converts infra.Profile to entity.Profile
-func (p *Profile) ToEntity() *entity.Profile {
+func (p *Profile) ToEntity() (*entity.Profile, error) {
 	var aiEntity *entity.AIConfig
 	if p.AI != nil {
-		aiEntity = p.AI.ToEntity()
+		var err error
+		aiEntity, err = p.AI.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var promptEntity *entity.PromptConfig
@@ -42,14 +46,18 @@ func (p *Profile) ToEntity() *entity.Profile {
 
 	var outputEntity *entity.OutputConfig
 	if p.Output != nil {
-		outputEntity = p.Output.ToEntity()
+		var err error
+		outputEntity, err = p.Output.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &entity.Profile{
 		AI:     aiEntity,
 		Prompt: promptEntity,
 		Output: outputEntity,
-	}
+	}, nil
 }
 
 type AIConfig struct {
@@ -63,19 +71,24 @@ func (c *AIConfig) Merge(other *AIConfig) {
 	mergePtr(&c.Gemini, other.Gemini)
 }
 
-func (c *AIConfig) ToEntity() *entity.AIConfig {
+func (c *AIConfig) ToEntity() (*entity.AIConfig, error) {
 	var geminiEntity *entity.GeminiConfig
 	if c.Gemini != nil {
-		geminiEntity = c.Gemini.ToEntity()
+		var err error
+		geminiEntity, err = c.Gemini.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &entity.AIConfig{
 		Gemini: geminiEntity,
-	}
+	}, nil
 }
 
 type GeminiConfig struct {
-	Type   string `yaml:"type"`
-	APIKey string `yaml:"api_key"`
+	Type      string `yaml:"type"`
+	APIKey    string `yaml:"api_key"`
+	APIKeyEnv string `yaml:"api_key_env,omitempty"`
 }
 
 func (c *GeminiConfig) Merge(other *GeminiConfig) {
@@ -83,14 +96,44 @@ func (c *GeminiConfig) Merge(other *GeminiConfig) {
 		return
 	}
 	mergeString(&c.Type, other.Type)
-	mergeString(&c.APIKey, other.APIKey)
+
+	// プロファイルファイルでapi_key_envが指定されている場合、
+	// デフォルトのapi_keyを無効にして環境変数を優先する
+	if other.APIKeyEnv != "" && other.APIKey == "" {
+		c.APIKey = ""
+		c.APIKeyEnv = other.APIKeyEnv
+	} else {
+		// 通常のマージ処理
+		mergeString(&c.APIKey, other.APIKey)
+		mergeString(&c.APIKeyEnv, other.APIKeyEnv)
+	}
 }
 
-func (c *GeminiConfig) ToEntity() *entity.GeminiConfig {
+// resolveSecret は、直接指定された値または環境変数から値を解決する
+func resolveSecret(value, envVar, configPath string) (string, error) {
+	if value != "" {
+		return value, nil
+	}
+	if envVar != "" {
+		secret := os.Getenv(envVar)
+		if secret == "" {
+			return "", fmt.Errorf("環境変数 '%s' が設定されていません。%s で指定された環境変数を設定してください。", envVar, configPath)
+		}
+		return secret, nil
+	}
+	return "", nil
+}
+
+func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
+	apiKey, err := resolveSecret(c.APIKey, c.APIKeyEnv, "ai.gemini.api_key_env")
+	if err != nil {
+		return nil, err
+	}
+
 	return &entity.GeminiConfig{
 		Type:   c.Type,
-		APIKey: c.APIKey,
-	}
+		APIKey: apiKey,
+	}, nil
 }
 
 type PromptConfig struct {
@@ -129,25 +172,34 @@ func (c *OutputConfig) Merge(other *OutputConfig) {
 	mergePtr(&c.Misskey, other.Misskey)
 }
 
-func (c *OutputConfig) ToEntity() *entity.OutputConfig {
+func (c *OutputConfig) ToEntity() (*entity.OutputConfig, error) {
 	var slackEntity *entity.SlackAPIConfig
 	if c.SlackAPI != nil {
-		slackEntity = c.SlackAPI.ToEntity()
+		var err error
+		slackEntity, err = c.SlackAPI.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var misskeyEntity *entity.MisskeyConfig
 	if c.Misskey != nil {
-		misskeyEntity = c.Misskey.ToEntity()
+		var err error
+		misskeyEntity, err = c.Misskey.ToEntity()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &entity.OutputConfig{
 		SlackAPI: slackEntity,
 		Misskey:  misskeyEntity,
-	}
+	}, nil
 }
 
 type SlackAPIConfig struct {
 	APIToken        string  `yaml:"api_token"`
+	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	Channel         string  `yaml:"channel"`
 	MessageTemplate *string `yaml:"message_template,omitempty"`
 }
@@ -156,72 +208,72 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	if other == nil {
 		return
 	}
-	mergeString(&c.APIToken, other.APIToken)
+
+	// プロファイルファイルでapi_token_envが指定されている場合、
+	// デフォルトのapi_tokenを無効にして環境変数を優先する
+	if other.APITokenEnv != "" && other.APIToken == "" {
+		c.APIToken = ""
+		c.APITokenEnv = other.APITokenEnv
+	} else {
+		// 通常のマージ処理
+		mergeString(&c.APIToken, other.APIToken)
+		mergeString(&c.APITokenEnv, other.APITokenEnv)
+	}
+
 	mergeString(&c.Channel, other.Channel)
 	if other.MessageTemplate != nil {
 		c.MessageTemplate = other.MessageTemplate
 	}
 }
 
-func (c *SlackAPIConfig) ToEntity() *entity.SlackAPIConfig {
+func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
+	apiToken, err := resolveSecret(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
+	if err != nil {
+		return nil, err
+	}
+
 	return &entity.SlackAPIConfig{
-		APIToken:        c.APIToken,
+		APIToken:        apiToken,
 		Channel:         c.Channel,
 		MessageTemplate: c.MessageTemplate,
-	}
+	}, nil
 }
 
 type MisskeyConfig struct {
-	APIToken string `yaml:"api_token"`
-	APIURL   string `yaml:"api_url"`
+	APIToken    string `yaml:"api_token"`
+	APITokenEnv string `yaml:"api_token_env,omitempty"`
+	APIURL      string `yaml:"api_url"`
 }
 
 func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	if other == nil {
 		return
 	}
-	mergeString(&c.APIToken, other.APIToken)
+
+	// プロファイルファイルでapi_token_envが指定されている場合、
+	// デフォルトのapi_tokenを無効にして環境変数を優先する
+	if other.APITokenEnv != "" && other.APIToken == "" {
+		c.APIToken = ""
+		c.APITokenEnv = other.APITokenEnv
+	} else {
+		// 通常のマージ処理
+		mergeString(&c.APIToken, other.APIToken)
+		mergeString(&c.APITokenEnv, other.APITokenEnv)
+	}
+
 	mergeString(&c.APIURL, other.APIURL)
 }
 
-func (c *MisskeyConfig) ToEntity() *entity.MisskeyConfig {
-	return &entity.MisskeyConfig{
-		APIToken: c.APIToken,
-		APIURL:   c.APIURL,
+func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
+	apiToken, err := resolveSecret(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
+	if err != nil {
+		return nil, err
 	}
-}
 
-func MakeDefaultConfig() *Config {
-	return &Config{
-		DefaultProfile: &Profile{
-			AI: &AIConfig{
-				Gemini: &GeminiConfig{
-					Type:   "gemini-1.5-flash",
-					APIKey: "xxxxxx",
-				},
-			},
-			Prompt: &PromptConfig{
-				SystemPrompt: "あなたはXXXXなAIアシスタントです。",
-				CommentPromptTemplate: `以下の記事の紹介文を100字以内で作成してください。
----
-記事タイトル: {{title}}
-記事URL: {{url}}
-記事内容:
-{{content}}`,
-				FixedMessage: "固定の文言です。",
-			},
-			Output: &OutputConfig{
-				SlackAPI: &SlackAPIConfig{
-					APIToken: "xoxb-xxxxxx",
-					Channel:  "#general",
-				},
-				Misskey: &MisskeyConfig{
-					APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
-					APIURL:   "https://misskey.social/api",
-				},
-			},
-		},
-	}
+	return &entity.MisskeyConfig{
+		APIToken: apiToken,
+		APIURL:   c.APIURL,
+	}, nil
 }
 
 type ConfigRepository interface {

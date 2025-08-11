@@ -99,12 +99,21 @@ func makeProfileCheckCmd() *cobra.Command {
 					return err
 				}
 
-				// デフォルトプロファイルとマージ
-				currentProfile.Merge(loadedInfraProfile)
+				// config.ymlが存在する場合はマージ、存在しない場合はloadedInfraProfileをそのまま使用
+				if config != nil && config.DefaultProfile != nil {
+					// デフォルトプロファイルとマージ
+					currentProfile.Merge(loadedInfraProfile)
+				} else {
+					// config.ymlが存在しない場合は、読み込んだプロファイルをそのまま使用
+					currentProfile = *loadedInfraProfile
+				}
 			}
 
 			// マージ後のプロファイルをentity.Profileに変換してバリデーション
-			entityProfile := currentProfile.ToEntity()
+			entityProfile, err := currentProfile.ToEntity()
+			if err != nil {
+				return fmt.Errorf("failed to process profile: %w", err)
+			}
 			result := entityProfile.Validate()
 
 			// 結果の表示

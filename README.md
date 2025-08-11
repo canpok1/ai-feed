@@ -13,6 +13,7 @@ AI Feedは、指定されたURLから記事をプレビューしたり、AIが�
 
 3. config.ymlを編集
     - geminiのtypeにはモデルのバージョンを指定。具体的な値は[参考リンク](https://ai.google.dev/gemini-api/docs/models?hl=ja#model-versions)を参照。
+    - APIキー・トークンの設定方法は[APIキーの設定](#apiキーの設定)を参照。
     - 投稿文に固定文言を付与しないなら fixed_message の行を削除。
     - slackへの投稿を行わないなら slack_api のブロックを削除。
     - misskeyへの投稿を行わないなら misskey のブロックを削除。
@@ -148,3 +149,71 @@ make run option="profile init my_profile.yml"
 ```bash
 make run option="config init"
 ```
+
+## APIキーの設定
+
+AI FeedでAPIキーやトークンを設定する方法は2つあります：
+
+### 方法1: ファイルに直接記述
+
+config.ymlやprofile.ymlファイルに直接APIキーを記述する方法です。
+
+```yaml
+# config.ymlの例
+ai:
+  gemini:
+    api_key: your_actual_gemini_api_key_here
+
+output:
+  slack_api:
+    api_token: your_actual_slack_token_here
+  misskey:
+    api_token: your_actual_misskey_token_here
+```
+
+### 方法2: 環境変数から取得（推奨）
+
+セキュリティ上の理由から、APIキーを環境変数から取得する方法を推奨します。
+
+```yaml
+# config.ymlまたはprofile.ymlの例
+ai:
+  gemini:
+    api_key_env: GEMINI_API_KEY  # 環境変数名を指定
+
+output:
+  slack_api:
+    api_token_env: SLACK_TOKEN  # 環境変数名を指定
+  misskey:
+    api_token_env: MISSKEY_TOKEN  # 環境変数名を指定
+```
+
+環境変数の設定例：
+```bash
+# 環境変数を設定
+export GEMINI_API_KEY="your_actual_gemini_api_key_here"
+export SLACK_TOKEN="your_actual_slack_token_here"
+export MISSKEY_TOKEN="your_actual_misskey_token_here"
+
+# ai-feedを実行
+./ai-feed recommend --url https://example.com/feed.xml
+```
+
+### 優先順位
+
+両方の設定方法を併用した場合の優先順位：
+
+1. **直接指定が最優先**: `api_key`や`api_token`が設定されている場合、環境変数の設定は無視されます
+2. **環境変数**: 直接指定がない場合、環境変数から取得します
+3. **エラー**: 直接指定も環境変数もない場合はエラーになります
+
+### エラー対応
+
+環境変数が設定されていない場合、以下のようなエラーが表示されます：
+
+```
+Profile validation failed:
+  ERROR: 環境変数 'GEMINI_API_KEY' が設定されていません。ai.gemini.api_key_env で指定された環境変数を設定してください。
+```
+
+このエラーが発生した場合は、指定された環境変数名で正しくAPIキーが設定されているかを確認してください。
