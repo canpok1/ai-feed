@@ -197,6 +197,19 @@ func (c *OutputConfig) ToEntity() (*entity.OutputConfig, error) {
 	}, nil
 }
 
+// convertMessageTemplate は、メッセージテンプレートの別名変換処理を行う共通ヘルパー関数
+func convertMessageTemplate(template *string, converter *entity.TemplateAliasConverter) (*string, error) {
+	if template != nil && *template != "" {
+		converted, err := converter.Convert(*template)
+		if err != nil {
+			// 別名変換エラーの場合は、エラーをラップして返す
+			return nil, fmt.Errorf("テンプレートエラー: %w", err)
+		}
+		return &converted, nil
+	}
+	return template, nil
+}
+
 type SlackAPIConfig struct {
 	APIToken        string  `yaml:"api_token"`
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
@@ -233,17 +246,10 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	}
 
 	// MessageTemplateの別名変換処理
-	var convertedTemplate *string
-	if c.MessageTemplate != nil && *c.MessageTemplate != "" {
-		converter := entity.NewSlackTemplateAliasConverter()
-		converted, err := converter.Convert(*c.MessageTemplate)
-		if err != nil {
-			// 別名変換エラーの場合は、エラーをラップして返す
-			return nil, fmt.Errorf("テンプレートエラー: %w", err)
-		}
-		convertedTemplate = &converted
-	} else {
-		convertedTemplate = c.MessageTemplate
+	converter := entity.NewSlackTemplateAliasConverter()
+	convertedTemplate, err := convertMessageTemplate(c.MessageTemplate, converter)
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.SlackAPIConfig{
@@ -289,17 +295,10 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	}
 
 	// MessageTemplateの別名変換処理
-	var convertedTemplate *string
-	if c.MessageTemplate != nil && *c.MessageTemplate != "" {
-		converter := entity.NewMisskeyTemplateAliasConverter()
-		converted, err := converter.Convert(*c.MessageTemplate)
-		if err != nil {
-			// 別名変換エラーの場合は、エラーをラップして返す
-			return nil, fmt.Errorf("テンプレートエラー: %w", err)
-		}
-		convertedTemplate = &converted
-	} else {
-		convertedTemplate = c.MessageTemplate
+	converter := entity.NewMisskeyTemplateAliasConverter()
+	convertedTemplate, err := convertMessageTemplate(c.MessageTemplate, converter)
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.MisskeyConfig{
