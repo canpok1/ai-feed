@@ -66,10 +66,12 @@ func TestProfile_Validate(t *testing.T) {
 		SystemPrompt:          "システムプロンプト",
 		CommentPromptTemplate: "コメントテンプレート",
 	}
+	validTemplate := "{{.Article.Title}} {{.Article.Link}}"
 	validOutput := &OutputConfig{
 		SlackAPI: &SlackAPIConfig{
-			APIToken: "valid-token",
-			Channel:  "#general",
+			APIToken:        "valid-token",
+			Channel:         "#general",
+			MessageTemplate: &validTemplate,
 		},
 	}
 
@@ -118,10 +120,11 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		errors  []string
 	}{
 		{
-			name: "正常系_必須項目のみ",
+			name: "正常系_必須項目すべて",
 			config: &MisskeyConfig{
-				APIToken: "valid-token",
-				APIURL:   "https://misskey.example.com",
+				APIToken:        "valid-token",
+				APIURL:          "https://misskey.example.com",
+				MessageTemplate: &validTemplate,
 			},
 			wantErr: false,
 		},
@@ -135,19 +138,30 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "正常系_空のテンプレート",
+			name: "異常系_MessageTemplateが未設定",
+			config: &MisskeyConfig{
+				APIToken: "valid-token",
+				APIURL:   "https://misskey.example.com",
+			},
+			wantErr: true,
+			errors:  []string{"Misskeyメッセージテンプレートが設定されていません。config.yml または profile.yml で message_template を設定してください。\n設定例:\nmisskey:\n  message_template: |\n    {{if .Comment}}{{.Comment}}\n    {{end}}{{.Article.Title}}\n    {{.Article.Link}}"},
+		},
+		{
+			name: "異常系_MessageTemplateが空文字列",
 			config: &MisskeyConfig{
 				APIToken:        "valid-token",
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &emptyTemplate,
 			},
-			wantErr: false,
+			wantErr: true,
+			errors:  []string{"Misskeyメッセージテンプレートが設定されていません。config.yml または profile.yml で message_template を設定してください。\n設定例:\nmisskey:\n  message_template: |\n    {{if .Comment}}{{.Comment}}\n    {{end}}{{.Article.Title}}\n    {{.Article.Link}}"},
 		},
 		{
 			name: "異常系_APITokenが空",
 			config: &MisskeyConfig{
-				APIToken: "",
-				APIURL:   "https://misskey.example.com",
+				APIToken:        "",
+				APIURL:          "https://misskey.example.com",
+				MessageTemplate: &validTemplate,
 			},
 			wantErr: true,
 			errors:  []string{"Misskey APIトークンが設定されていません"},
@@ -155,8 +169,9 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APIURLが空",
 			config: &MisskeyConfig{
-				APIToken: "valid-token",
-				APIURL:   "",
+				APIToken:        "valid-token",
+				APIURL:          "",
+				MessageTemplate: &validTemplate,
 			},
 			wantErr: true,
 			errors:  []string{"Misskey API URLが設定されていません"},
@@ -164,8 +179,9 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APIURLが不正なURL",
 			config: &MisskeyConfig{
-				APIToken: "valid-token",
-				APIURL:   "not-a-url",
+				APIToken:        "valid-token",
+				APIURL:          "not-a-url",
+				MessageTemplate: &validTemplate,
 			},
 			wantErr: true,
 			errors:  []string{"Misskey API URLが正しいURL形式ではありません"},
@@ -183,15 +199,14 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_複数のエラー",
 			config: &MisskeyConfig{
-				APIToken:        "",
-				APIURL:          "not-a-url",
-				MessageTemplate: &invalidTemplate,
+				APIToken: "",
+				APIURL:   "not-a-url",
 			},
 			wantErr: true,
 			errors: []string{
 				"Misskey APIトークンが設定されていません",
 				"Misskey API URLが正しいURL形式ではありません",
-				"Misskeyメッセージテンプレートが無効です: テンプレート構文エラー: template: misskey_message:1: unclosed action",
+				"Misskeyメッセージテンプレートが設定されていません。config.yml または profile.yml で message_template を設定してください。\n設定例:\nmisskey:\n  message_template: |\n    {{if .Comment}}{{.Comment}}\n    {{end}}{{.Article.Title}}\n    {{.Article.Link}}",
 			},
 		},
 	}

@@ -49,8 +49,9 @@ func TestNewRecommendRunner(t *testing.T) {
 			name: "Successful creation with SlackAPI viewer",
 			outputConfig: &infra.OutputConfig{
 				SlackAPI: &infra.SlackAPIConfig{
-					APIToken: "test-token",
-					Channel:  "#test",
+					APIToken:        "test-token",
+					Channel:         "#test",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			promptConfig: &infra.PromptConfig{CommentPromptTemplate: "test-template"},
@@ -60,8 +61,9 @@ func TestNewRecommendRunner(t *testing.T) {
 			name: "Successful creation with Misskey viewer",
 			outputConfig: &infra.OutputConfig{
 				Misskey: &infra.MisskeyConfig{
-					APIToken: "test-token",
-					APIURL:   "https://test.misskey.io/api",
+					APIToken:        "test-token",
+					APIURL:          "https://test.misskey.io/api",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			promptConfig: &infra.PromptConfig{CommentPromptTemplate: "test-template"},

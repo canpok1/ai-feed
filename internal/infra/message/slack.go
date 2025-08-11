@@ -2,18 +2,12 @@ package message
 
 import (
 	"bytes"
-	"strings"
 	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/slack-go/slack"
 )
-
-const DefaultSlackMessageTemplate = `{{if .Comment}}{{.Comment}}
-{{end}}{{.Article.Title}}
-{{.Article.Link}}{{if .FixedMessage}}
-{{.FixedMessage}}{{end}}`
 
 type SlackTemplateData struct {
 	Article      *entity.Article
@@ -28,14 +22,12 @@ type SlackSender struct {
 }
 
 func NewSlackSender(config *entity.SlackAPIConfig) domain.MessageSender {
-	// メッセージテンプレートの設定
-	messageTemplate := DefaultSlackMessageTemplate
-	if config.MessageTemplate != nil && strings.TrimSpace(*config.MessageTemplate) != "" {
-		messageTemplate = *config.MessageTemplate
-	}
-
 	// 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
-	tmpl := template.Must(template.New("slack_message").Parse(messageTemplate))
+	// ただし、テストやバリデーション前の呼び出しに対応するため念のためnilチェックを行う
+	if config.MessageTemplate == nil || *config.MessageTemplate == "" {
+		panic("MessageTemplate is required and must be validated before creating SlackSender")
+	}
+	tmpl := template.Must(template.New("slack_message").Parse(*config.MessageTemplate))
 
 	return &SlackSender{
 		client:    slack.New(config.APIToken),

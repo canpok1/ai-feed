@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -21,12 +20,6 @@ type MisskeyTemplateData struct {
 	Comment      *string
 	FixedMessage string
 }
-
-// DefaultMisskeyMessageTemplate はデフォルトのMisskeyメッセージテンプレート
-const DefaultMisskeyMessageTemplate = `{{if .Comment}}{{.Comment}}
-{{end}}{{.Article.Title}}
-{{.Article.Link}}{{if .FixedMessage}}
-{{.FixedMessage}}{{end}}`
 
 // MisskeySender はMisskey APIと通信するためのクライアントです。
 
@@ -51,16 +44,12 @@ func NewMisskeySender(instanceURL, accessToken string, messageTemplate *string) 
 		return nil, fmt.Errorf("failed to create Misskey client: %w", err)
 	}
 
-	// テンプレートの設定
-	var templateStr string
-	if messageTemplate != nil && strings.TrimSpace(*messageTemplate) != "" {
-		templateStr = *messageTemplate
-	} else {
-		templateStr = DefaultMisskeyMessageTemplate
-	}
-
 	// 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
-	tmpl := template.Must(template.New("misskey_message").Parse(templateStr))
+	// ただし、テストやバリデーション前の呼び出しに対応するため念のためnilチェックを行う
+	if messageTemplate == nil || *messageTemplate == "" {
+		return nil, fmt.Errorf("MessageTemplate is required and must be validated before creating MisskeySender")
+	}
+	tmpl := template.Must(template.New("misskey_message").Parse(*messageTemplate))
 
 	return &MisskeySender{
 		client: client,
