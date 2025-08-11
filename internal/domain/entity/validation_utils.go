@@ -59,13 +59,7 @@ func ValidateRequired(value, fieldName string) error {
 	return nil
 }
 
-// ValidateRequiredWithDefault は必須項目がデフォルト値でないことを検証する
-func ValidateRequiredWithDefault(value, defaultValue, fieldName string) error {
-	if value == "" || value == defaultValue {
-		return fmt.Errorf("%sが設定されていません", fieldName)
-	}
-	return nil
-}
+
 
 // ValidateURL はURLが正しい形式であることを検証する
 func ValidateURL(urlStr, fieldName string) error {

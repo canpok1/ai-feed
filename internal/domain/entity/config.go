@@ -12,11 +12,7 @@ import (
 var templateCache sync.Map
 
 // デフォルト値の定数
-const (
-	DefaultGeminiAPIKey    = "YOUR_GEMINI_API_KEY_HERE"
-	DefaultSlackAPIToken   = "xoxb-YOUR_SLACK_API_TOKEN_HERE"
-	DefaultMisskeyAPIToken = "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE"
-)
+
 
 type AIConfig struct {
 	Gemini *GeminiConfig
@@ -52,7 +48,7 @@ func (g *GeminiConfig) Validate() *ValidationResult {
 	}
 
 	// APIKey: 必須項目（空文字列でない）
-	if err := ValidateRequiredWithDefault(g.APIKey, DefaultGeminiAPIKey, "Gemini API key"); err != nil {
+	if err := ValidateRequired(g.APIKey, "Gemini API key"); err != nil {
 		builder.AddError(err.Error())
 	}
 
@@ -128,7 +124,7 @@ func (m *MisskeyConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
 	// APIToken: 必須項目（空文字列でない）
-	if err := ValidateRequiredWithDefault(m.APIToken, DefaultMisskeyAPIToken, "Misskey APIトークン"); err != nil {
+	if err := ValidateRequired(m.APIToken, "Misskey APIトークン"); err != nil {
 		builder.AddError(err.Error())
 	}
 
@@ -151,7 +147,7 @@ func (s *SlackAPIConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
 	// APIToken: 必須項目（空文字列でない）
-	if err := ValidateRequiredWithDefault(s.APIToken, DefaultSlackAPIToken, "Slack APIトークン"); err != nil {
+	if err := ValidateRequired(s.APIToken, "Slack APIトークン"); err != nil {
 		builder.AddError(err.Error())
 	}
 
