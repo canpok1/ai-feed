@@ -4,73 +4,85 @@
 # AI設定
 ai:
   gemini:
-    type: gemini-2.5-flash                  # 使用するGeminiモデル
-    api_key: xxxxxx                         # Google AI Studio APIキー
-    # api_key_env: GEMINI_API_KEY           # 環境変数からAPIキーを取得する場合
-    # 注意: api_keyとapi_key_envの両方が指定された場合、api_keyが優先されます
+    # 使用するGeminiモデル
+    # 下記URLの仕様に従ったモデルバージョン名を指定してください。
+    # https://ai.google.dev/gemini-api/docs/models?hl=ja#model-versions
+    type: gemini-2.5-flash
 
-# プロンプト設定
-system_prompt: あなたはXXXXなAIアシスタントです。    # AIに与えるシステムプロンプト
+    # Gemini APIキー
+    # キーを直接指定する場合は api_key 環境変数から読み込む場合は api_key_env
+    # api_keyとapi_key_envの両方が指定された場合、api_keyが優先されます
+    api_key: xxxxxx
+    api_key_env: GEMINI_API_KEY
+
+# システムプロンプト
+# AIの性格などを指定
+system_prompt: |
+  あなたは次の特徴を持っています。
+  - 陽気な性格
 
 # 記事紹介文生成用のプロンプトテンプレート
 # 利用可能なパラメータ:
-#   {{.Title}}   - 記事のタイトル
-#   {{.Link}}    - 記事のURL
-#   {{.Content}} - 記事の本文内容
+#   {{TITLE}}   - 記事のタイトル
+#   {{URL}}     - 記事のURL
+#   {{CONTENT}} - 記事の本文内容
 comment_prompt_template: |
   以下の記事の紹介文を100字以内で作成してください。
   ---
-  記事タイトル: {{.Title}}
-  記事URL: {{.Link}}
+  記事タイトル: {{TITLE}}
+  記事URL: {{URL}}
   記事内容:
-  {{.Content}}
+  {{CONTENT}}
 
-fixed_message: 固定の文言です。                     # 記事紹介文に追加する固定文言
+# 記事紹介文に追加する固定文言
+fixed_message: ※固定の文言です。
 
 # 出力先設定
 output:
   # Slack投稿設定
+  # 投稿しない場合は削除してください。
   slack_api:
-    api_token: xxxxxx                       # Slack Bot Token
-    # api_token_env: SLACK_TOKEN            # 環境変数からトークンを取得する場合
-    # 注意: api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
-    channel: "#general"                     # 投稿先チャンネル
+    # Slack のトークン
+    # 直接指定する場合は api_token 環境変数から読み込む場合は api_token_env
+    # api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
+    api_token: xxxxxx
+    api_token_env: SLACK_TOKEN
     
-    # Slackメッセージテンプレート（必須）
+    # 投稿先チャンネル(#付き)
+    channel: "#general"
+    
+    # メッセージテンプレート
     # 利用可能なパラメータ:
-    #   {{.Comment}}         - AIが生成したコメント（存在する場合のみ）
-    #   {{.Article.Title}}   - 記事のタイトル
-    #   {{.Article.Link}}    - 記事のURL
-    #   {{.Article.Content}} - 記事の本文内容
-    #   {{.FixedMessage}}    - 固定メッセージ（設定されている場合のみ）
-    # 条件分岐:
-    #   {{if .Comment}}...{{end}}      - コメントが存在する場合のみ表示
-    #   {{if .FixedMessage}}...{{end}} - 固定メッセージが存在する場合のみ表示
+    #   {{COMMENT}}       - AIが生成したコメント
+    #   {{TITLE}}         - 記事のタイトル
+    #   {{URL}}           - 記事のURL
+    #   {{CONTENT}}       - 記事の本文内容
+    #   {{FIXED_MESSAGE}} - 固定メッセージ
     message_template: |
-      {{if .Comment}}{{.Comment}}
-      {{end}}{{.Article.Title}}
-      {{.Article.Link}}{{if .FixedMessage}}
-      {{.FixedMessage}}{{end}}
+      {{COMMENT}}
+      <{{URL}}|{{TITLE}}>
+      {{FIXED_MESSAGE}}
   
   # Misskey投稿設定
+  # 投稿しない場合は削除してください。
   misskey:
-    api_token: xxxxxx                       # Misskeyアクセストークン
-    # api_token_env: MISSKEY_TOKEN          # 環境変数からトークンを取得する場合
-    # 注意: api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
-    api_url: https://example.com            # MisskeyのAPIエンドポイント
+    # Misskey のアクセストークン
+    # 直接指定する場合は api_token 環境変数から読み込む場合は api_token_env
+    # api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
+    api_token: xxxxxx
+    api_token_env: MISSKEY_TOKEN
+
+    # Misskey のサーバーのURL
+    api_url: https://example.com
     
-    # Misskeyメッセージテンプレート（必須）
+    # メッセージテンプレート
     # 利用可能なパラメータ:
-    #   {{.Comment}}         - AIが生成したコメント（存在する場合のみ）
-    #   {{.Article.Title}}   - 記事のタイトル
-    #   {{.Article.Link}}    - 記事のURL
-    #   {{.Article.Content}} - 記事の本文内容
-    #   {{.FixedMessage}}    - 固定メッセージ（設定されている場合のみ）
-    # 条件分岐:
-    #   {{if .Comment}}...{{end}}      - コメントが存在する場合のみ表示
-    #   {{if .FixedMessage}}...{{end}} - 固定メッセージが存在する場合のみ表示
+    #   {{COMMENT}}       - AIが生成したコメント
+    #   {{TITLE}}         - 記事のタイトル
+    #   {{URL}}           - 記事のURL
+    #   {{CONTENT}}       - 記事の本文内容
+    #   {{FIXED_MESSAGE}} - 固定メッセージ
     message_template: |
-      {{if .Comment}}{{.Comment}}
-      {{end}}{{.Article.Title}}
-      {{.Article.Link}}{{if .FixedMessage}}
-      {{.FixedMessage}}{{end}}
+      {{COMMENT}}
+      [{{TITLE}}]({{URL}})
+      {{FIXED_MESSAGE}}
