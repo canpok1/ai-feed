@@ -322,4 +322,3 @@ func TestGetValidAliases(t *testing.T) {
 		assert.Contains(t, aliasesStr, "{{FIXED_MESSAGE}}")
 	})
 }
-

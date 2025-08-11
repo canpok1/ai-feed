@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -137,13 +138,7 @@ func isTemplateControl(s string) bool {
 	}
 
 	firstWord := strings.ToLower(parts[0])
-	for _, control := range controls {
-		if firstWord == control {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(controls, firstWord)
 }
 
 // getValidAliases は使用可能な別名のリストを返す
@@ -154,4 +149,3 @@ func (c *TemplateAliasConverter) getValidAliases() []string {
 	}
 	return aliases
 }
-
