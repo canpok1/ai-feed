@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"text/template"
 
 	"github.com/canpok1/ai-feed/internal/domain"

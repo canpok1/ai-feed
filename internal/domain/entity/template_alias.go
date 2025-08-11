@@ -37,6 +37,19 @@ func NewSlackTemplateAliasConverter() *TemplateAliasConverter {
 	}
 }
 
+// NewMisskeyTemplateAliasConverter はMisskeyConfig用の別名変換器を作成する
+func NewMisskeyTemplateAliasConverter() *TemplateAliasConverter {
+	return &TemplateAliasConverter{
+		aliasMap: map[string]string{
+			"TITLE":         ".Article.Title",
+			"URL":           ".Article.Link",
+			"CONTENT":       ".Article.Content",
+			"COMMENT":       ".Comment",
+			"FIXED_MESSAGE": ".FixedMessage",
+		},
+	}
+}
+
 // TemplateAliasError はテンプレート別名変換のエラー
 type TemplateAliasError struct {
 	InvalidAlias string

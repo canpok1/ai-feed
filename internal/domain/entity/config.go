@@ -142,7 +142,30 @@ func (m *MisskeyConfig) Validate() *ValidationResult {
 		builder.AddError(err.Error())
 	}
 
+	// MessageTemplate: 存在する場合はtext/templateとして妥当であること
+	if m.MessageTemplate != nil {
+		if err := m.validateMisskeyMessageTemplate(*m.MessageTemplate); err != nil {
+			builder.AddError(fmt.Sprintf("Misskeyメッセージテンプレートが無効です: %v", err))
+		}
+	}
+
 	return builder.Build()
+}
+
+// validateMisskeyMessageTemplate はMisskeyメッセージテンプレートの構文を検証する
+func (m *MisskeyConfig) validateMisskeyMessageTemplate(templateStr string) error {
+	// 空文字列や空白のみの場合はエラーとしない（デフォルトテンプレートが使用される）
+	if strings.TrimSpace(templateStr) == "" {
+		return nil
+	}
+
+	// text/templateでパースして構文チェック
+	_, err := template.New("misskey_message").Parse(templateStr)
+	if err != nil {
+		return fmt.Errorf("テンプレート構文エラー: %w", err)
+	}
+
+	return nil
 }
 
 type SlackAPIConfig struct {
