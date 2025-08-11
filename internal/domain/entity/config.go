@@ -142,8 +142,10 @@ func (m *MisskeyConfig) Validate() *ValidationResult {
 		builder.AddError(err.Error())
 	}
 
-	// MessageTemplate: 存在する場合はtext/templateとして妥当であること
-	if m.MessageTemplate != nil {
+	// MessageTemplate: 必須項目
+	if m.MessageTemplate == nil || strings.TrimSpace(*m.MessageTemplate) == "" {
+		builder.AddError("Misskeyメッセージテンプレートが設定されていません。config.yml または profile.yml で message_template を設定してください。\n設定例:\nmisskey:\n  message_template: |\n    {{if .Comment}}{{.Comment}}\n    {{end}}{{.Article.Title}}\n    {{.Article.Link}}")
+	} else {
 		if err := m.validateMisskeyMessageTemplate(*m.MessageTemplate); err != nil {
 			builder.AddError(fmt.Sprintf("Misskeyメッセージテンプレートが無効です: %v", err))
 		}
@@ -154,11 +156,6 @@ func (m *MisskeyConfig) Validate() *ValidationResult {
 
 // validateMisskeyMessageTemplate はMisskeyメッセージテンプレートの構文を検証する
 func (m *MisskeyConfig) validateMisskeyMessageTemplate(templateStr string) error {
-	// 空文字列や空白のみの場合はエラーとしない（デフォルトテンプレートが使用される）
-	if strings.TrimSpace(templateStr) == "" {
-		return nil
-	}
-
 	// text/templateでパースして構文チェック
 	_, err := template.New("misskey_message").Parse(templateStr)
 	if err != nil {
@@ -188,8 +185,10 @@ func (s *SlackAPIConfig) Validate() *ValidationResult {
 		builder.AddError(err.Error())
 	}
 
-	// MessageTemplate: 存在する場合はtext/templateとして妥当であること
-	if s.MessageTemplate != nil {
+	// MessageTemplate: 必須項目
+	if s.MessageTemplate == nil || strings.TrimSpace(*s.MessageTemplate) == "" {
+		builder.AddError("Slackメッセージテンプレートが設定されていません。config.yml または profile.yml で message_template を設定してください。\n設定例:\nslack_api:\n  message_template: |\n    {{if .Comment}}{{.Comment}}\n    {{end}}{{.Article.Title}}\n    {{.Article.Link}}")
+	} else {
 		if err := s.validateSlackMessageTemplate(*s.MessageTemplate); err != nil {
 			builder.AddError(fmt.Sprintf("Slackメッセージテンプレートが無効です: %v", err))
 		}
@@ -200,11 +199,6 @@ func (s *SlackAPIConfig) Validate() *ValidationResult {
 
 // validateSlackMessageTemplate はSlackメッセージテンプレートの構文を検証する
 func (s *SlackAPIConfig) validateSlackMessageTemplate(templateStr string) error {
-	// 空文字列や空白のみの場合はエラーとしない（デフォルトテンプレートが使用される）
-	if strings.TrimSpace(templateStr) == "" {
-		return nil
-	}
-
 	// text/templateでパースして構文チェック
 	_, err := template.New("slack_message").Parse(templateStr)
 	if err != nil {
