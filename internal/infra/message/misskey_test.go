@@ -22,30 +22,6 @@ func TestNewMisskeySender(t *testing.T) {
 		expectError      bool
 	}{
 		{
-			name:             "デフォルトテンプレート（MessageTemplateがnil）",
-			instanceURL:      "https://misskey.example.com",
-			accessToken:      "test-token",
-			messageTemplate:  nil,
-			expectedTemplate: DefaultMisskeyMessageTemplate,
-			expectError:      false,
-		},
-		{
-			name:             "デフォルトテンプレート（MessageTemplateが空文字列）",
-			instanceURL:      "https://misskey.example.com",
-			accessToken:      "test-token",
-			messageTemplate:  stringPtr(""),
-			expectedTemplate: DefaultMisskeyMessageTemplate,
-			expectError:      false,
-		},
-		{
-			name:             "デフォルトテンプレート（MessageTemplateが空白のみ）",
-			instanceURL:      "https://misskey.example.com",
-			accessToken:      "test-token",
-			messageTemplate:  stringPtr("   \n\t  "),
-			expectedTemplate: DefaultMisskeyMessageTemplate,
-			expectError:      false,
-		},
-		{
 			name:             "カスタムテンプレート",
 			instanceURL:      "https://misskey.example.com",
 			accessToken:      "test-token",
@@ -111,7 +87,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 	}{
 		{
 			name:            "デフォルトテンプレート（全フィールドあり）",
-			messageTemplate: DefaultMisskeyMessageTemplate,
+			messageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
 			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
@@ -127,7 +103,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（コメントなし）",
-			messageTemplate: DefaultMisskeyMessageTemplate,
+			messageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
 			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
@@ -143,7 +119,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（固定メッセージなし）",
-			messageTemplate: DefaultMisskeyMessageTemplate,
+			messageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
 			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
@@ -159,7 +135,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（コメントと固定メッセージなし）",
-			messageTemplate: DefaultMisskeyMessageTemplate,
+			messageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
 			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",

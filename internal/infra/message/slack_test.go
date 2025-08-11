@@ -19,33 +19,6 @@ func TestNewSlackSender(t *testing.T) {
 		expectedTemplate string
 	}{
 		{
-			name: "デフォルトテンプレート（MessageTemplateがnil）",
-			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
-				Channel:         "#test",
-				MessageTemplate: nil,
-			},
-			expectedTemplate: DefaultSlackMessageTemplate,
-		},
-		{
-			name: "デフォルトテンプレート（MessageTemplateが空文字列）",
-			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
-				Channel:         "#test",
-				MessageTemplate: stringPtr(""),
-			},
-			expectedTemplate: DefaultSlackMessageTemplate,
-		},
-		{
-			name: "デフォルトテンプレート（MessageTemplateが空白のみ）",
-			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
-				Channel:         "#test",
-				MessageTemplate: stringPtr("   \n\t  "),
-			},
-			expectedTemplate: DefaultSlackMessageTemplate,
-		},
-		{
 			name: "カスタムテンプレート",
 			config: &entity.SlackAPIConfig{
 				APIToken:        "xoxb-test-token",
@@ -98,7 +71,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 	}{
 		{
 			name:            "デフォルトテンプレート（全フィールドあり）",
-			messageTemplate: DefaultSlackMessageTemplate,
+			messageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
 			templateData: &SlackTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
@@ -114,7 +87,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（コメントなし）",
-			messageTemplate: DefaultSlackMessageTemplate,
+			messageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
 			templateData: &SlackTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
@@ -130,7 +103,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（固定メッセージなし）",
-			messageTemplate: DefaultSlackMessageTemplate,
+			messageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
 			templateData: &SlackTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
@@ -146,7 +119,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（コメントと固定メッセージなし）",
-			messageTemplate: DefaultSlackMessageTemplate,
+			messageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}{{.Article.Title}}\n{{.Article.Link}}{{if .FixedMessage}}\n{{.FixedMessage}}{{end}}",
 			templateData: &SlackTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
