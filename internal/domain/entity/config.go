@@ -87,6 +87,16 @@ func (c *PromptConfig) BuildCommentPrompt(article *Article) string {
 	templateStr = strings.ReplaceAll(templateStr, "{{url}}", "{{.Link}}")
 	templateStr = strings.ReplaceAll(templateStr, "{{content}}", "{{.Content}}")
 
+	// 別名記法（{{TITLE}}など）を既存記法に変換
+	converter := NewPromptTemplateAliasConverter()
+	convertedTemplate, err := converter.Convert(templateStr)
+	if err != nil {
+		// 別名変換でエラーが発生した場合は、元のテンプレートを返す
+		// TODO: より適切なエラーハンドリングを検討
+		return c.CommentPromptTemplate
+	}
+	templateStr = convertedTemplate
+
 	// キャッシュからテンプレートを取得
 	var tmpl *template.Template
 	if cached, ok := templateCache.Load(templateStr); ok {
@@ -104,7 +114,7 @@ func (c *PromptConfig) BuildCommentPrompt(article *Article) string {
 	}
 
 	var buf bytes.Buffer
-	err := tmpl.Execute(&buf, article)
+	err = tmpl.Execute(&buf, article)
 	if err != nil {
 		// テンプレートの実行に失敗した場合も、元のテンプレートを返す
 		return c.CommentPromptTemplate
