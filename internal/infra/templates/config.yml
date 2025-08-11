@@ -57,4 +57,4 @@ default_profile:
       api_token: xxxxxx                       # Misskeyアクセストークン
       # api_token_env: MISSKEY_TOKEN          # 環境変数からトークンを取得する場合
       # 注意: api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
-      api_url: https://misskey.social/api     # MisskeyのAPIエンドポイント
+      api_url: https://example.com            # MisskeyのAPIエンドポイント

@@ -250,39 +250,6 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	}, nil
 }
 
-func MakeDefaultConfig() *Config {
-	return &Config{
-		DefaultProfile: &Profile{
-			AI: &AIConfig{
-				Gemini: &GeminiConfig{
-					Type:   "gemini-1.5-flash",
-					APIKey: "xxxxxx",
-				},
-			},
-			Prompt: &PromptConfig{
-				SystemPrompt: "あなたはXXXXなAIアシスタントです。",
-				CommentPromptTemplate: `以下の記事の紹介文を100字以内で作成してください。
----
-記事タイトル: {{title}}
-記事URL: {{url}}
-記事内容:
-{{content}}`,
-				FixedMessage: "固定の文言です。",
-			},
-			Output: &OutputConfig{
-				SlackAPI: &SlackAPIConfig{
-					APIToken: "xoxb-xxxxxx",
-					Channel:  "#general",
-				},
-				Misskey: &MisskeyConfig{
-					APIToken: "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
-					APIURL:   "https://misskey.social/api",
-				},
-			},
-		},
-	}
-}
-
 type ConfigRepository interface {
 	Save(config *Config) error
 	Load() (*Config, error)

@@ -76,7 +76,16 @@ func TestYamlConfigRepository_Save_InvalidPath(t *testing.T) {
 	invalidPath := "/nonexistent_dir/test_config.yaml" // This path should not exist and cause an error
 	repo := NewYamlConfigRepository(invalidPath)
 
-	configToSave := MakeDefaultConfig()
+	configToSave := &Config{
+		DefaultProfile: &Profile{
+			AI: &AIConfig{
+				Gemini: &GeminiConfig{
+					Type:   "gemini-test",
+					APIKey: "test-api-key",
+				},
+			},
+		},
+	}
 	err := repo.Save(configToSave)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to create config file")
