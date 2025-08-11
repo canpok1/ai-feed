@@ -6,6 +6,8 @@ default_profile:
     gemini:
       type: gemini-2.5-flash                  # 使用するGeminiモデル
       api_key: xxxxxx                         # Google AI Studio APIキー
+      # api_key_env: GEMINI_API_KEY           # 環境変数からAPIキーを取得する場合
+      # 注意: api_keyとapi_key_envの両方が指定された場合、api_keyが優先されます
 
   # プロンプト設定
   system_prompt: あなたはXXXXなAIアシスタントです。    # AIに与えるシステムプロンプト
@@ -30,6 +32,8 @@ default_profile:
     # Slack投稿設定
     slack_api:
       api_token: xxxxxx                       # Slack Bot Token
+      # api_token_env: SLACK_TOKEN            # 環境変数からトークンを取得する場合
+      # 注意: api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
       channel: "#general"                     # 投稿先チャンネル
       
       # Slackメッセージテンプレート（オプション）
@@ -51,4 +55,6 @@ default_profile:
     # Misskey投稿設定
     misskey:
       api_token: xxxxxx                       # Misskeyアクセストークン
+      # api_token_env: MISSKEY_TOKEN          # 環境変数からトークンを取得する場合
+      # 注意: api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
       api_url: https://misskey.social/api     # MisskeyのAPIエンドポイント
