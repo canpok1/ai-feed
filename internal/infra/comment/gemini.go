@@ -39,7 +39,7 @@ func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.A
 	if err != nil {
 		return "", fmt.Errorf("プロンプト生成エラー: %w", err)
 	}
-	
+
 	contents := genai.Text(prompt)
 	config := genai.GenerateContentConfig{}
 	if g.systemPrompt != "" {
