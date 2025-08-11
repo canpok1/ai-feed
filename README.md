@@ -186,6 +186,17 @@ output:
       {{if .Comment}}
       💬 {{COMMENT}}
       {{end}}
+
+# Misskey での使用例
+output:
+  misskey:
+    message_template: |
+      📰 おすすめ記事
+      {{TITLE}}
+      {{URL}}
+      {{if .Comment}}
+      💬 {{COMMENT}}
+      {{end}}
 ```
 
 ### 注意事項
@@ -194,6 +205,61 @@ output:
 - **後方互換性**: 既存の記法も引き続き使用可能
 - **混在可能**: 同一テンプレート内で新旧記法を混在させることも可能
 - **条件分岐**: `{{if .Comment}}`などの制御構文も使用可能
+
+## メッセージテンプレート設定
+
+SlackやMisskeyへの投稿時に、カスタムメッセージテンプレートを使用できます。テンプレートが指定されない場合は、デフォルトテンプレートが使用されます。
+
+### Slackメッセージテンプレート
+
+```yaml
+output:
+  slack_api:
+    api_token: your_slack_token
+    channel: "#general"
+    message_template: |
+      {{if .Comment}}{{COMMENT}}
+      {{end}}{{TITLE}}
+      {{URL}}{{if .FixedMessage}}
+      {{FIXED_MESSAGE}}{{end}}
+```
+
+### Misskeyメッセージテンプレート
+
+```yaml
+output:
+  misskey:
+    api_token: your_misskey_token
+    api_url: https://your-misskey-instance.com
+    message_template: |
+      {{if .Comment}}{{COMMENT}}
+      {{end}}{{TITLE}}
+      {{URL}}{{if .FixedMessage}}
+      {{FIXED_MESSAGE}}{{end}}
+```
+
+### 利用可能な変数
+
+- `{{.Comment}}` または `{{COMMENT}}`: AIが生成した推薦コメント
+- `{{.Article.Title}}` または `{{TITLE}}`: 記事のタイトル
+- `{{.Article.Link}}` または `{{URL}}`: 記事のURL
+- `{{.Article.Content}}` または `{{CONTENT}}`: 記事の本文
+- `{{.FixedMessage}}` または `{{FIXED_MESSAGE}}`: 設定で指定した固定メッセージ
+
+### テンプレートの条件分岐
+
+テンプレート内で条件分岐を使用して、データが存在する場合のみ表示することができます：
+
+```yaml
+message_template: |
+  {{if .Comment}}💬 {{COMMENT}}
+  
+  {{end}}📰 {{TITLE}}
+  🔗 {{URL}}
+  {{if .FixedMessage}}
+  
+  📌 {{FIXED_MESSAGE}}{{end}}
+```
 
 ## APIキーの設定
 

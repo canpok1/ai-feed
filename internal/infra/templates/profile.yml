@@ -58,3 +58,19 @@ output:
     # api_token_env: MISSKEY_TOKEN          # 環境変数からトークンを取得する場合
     # 注意: api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
     api_url: https://example.com            # MisskeyのAPIエンドポイント
+    
+    # Misskeyノートテンプレート（オプション）
+    # 利用可能なパラメータ:
+    #   {{.Comment}}         - AIが生成したコメント（存在する場合のみ）
+    #   {{.Article.Title}}   - 記事のタイトル
+    #   {{.Article.Link}}    - 記事のURL
+    #   {{.Article.Content}} - 記事の本文内容
+    #   {{.FixedMessage}}    - 固定メッセージ（設定されている場合のみ）
+    # 条件分岐:
+    #   {{if .Comment}}...{{end}}      - コメントが存在する場合のみ表示
+    #   {{if .FixedMessage}}...{{end}} - 固定メッセージが存在する場合のみ表示
+    message_template: |
+      {{if .Comment}}{{.Comment}}
+      {{end}}{{.Article.Title}}
+      {{.Article.Link}}{{if .FixedMessage}}
+      {{.FixedMessage}}{{end}}

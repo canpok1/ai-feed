@@ -11,95 +11,108 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestNewSlackSender はNewSlackSender関数をテストする
-func TestNewSlackSender(t *testing.T) {
+// TestNewMisskeySender はNewMisskeySender関数をテストする
+func TestNewMisskeySender(t *testing.T) {
 	tests := []struct {
 		name             string
-		config           *entity.SlackAPIConfig
+		instanceURL      string
+		accessToken      string
+		messageTemplate  *string
 		expectedTemplate string
+		expectError      bool
 	}{
 		{
-			name: "デフォルトテンプレート（MessageTemplateがnil）",
-			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
-				Channel:         "#test",
-				MessageTemplate: nil,
-			},
-			expectedTemplate: DefaultSlackMessageTemplate,
+			name:             "デフォルトテンプレート（MessageTemplateがnil）",
+			instanceURL:      "https://misskey.example.com",
+			accessToken:      "test-token",
+			messageTemplate:  nil,
+			expectedTemplate: DefaultMisskeyMessageTemplate,
+			expectError:      false,
 		},
 		{
-			name: "デフォルトテンプレート（MessageTemplateが空文字列）",
-			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
-				Channel:         "#test",
-				MessageTemplate: stringPtr(""),
-			},
-			expectedTemplate: DefaultSlackMessageTemplate,
+			name:             "デフォルトテンプレート（MessageTemplateが空文字列）",
+			instanceURL:      "https://misskey.example.com",
+			accessToken:      "test-token",
+			messageTemplate:  stringPtr(""),
+			expectedTemplate: DefaultMisskeyMessageTemplate,
+			expectError:      false,
 		},
 		{
-			name: "デフォルトテンプレート（MessageTemplateが空白のみ）",
-			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
-				Channel:         "#test",
-				MessageTemplate: stringPtr("   \n\t  "),
-			},
-			expectedTemplate: DefaultSlackMessageTemplate,
+			name:             "デフォルトテンプレート（MessageTemplateが空白のみ）",
+			instanceURL:      "https://misskey.example.com",
+			accessToken:      "test-token",
+			messageTemplate:  stringPtr("   \n\t  "),
+			expectedTemplate: DefaultMisskeyMessageTemplate,
+			expectError:      false,
 		},
 		{
-			name: "カスタムテンプレート",
-			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
-				Channel:         "#test",
-				MessageTemplate: stringPtr("タイトル: {{.Article.Title}}\nURL: {{.Article.Link}}"),
-			},
+			name:             "カスタムテンプレート",
+			instanceURL:      "https://misskey.example.com",
+			accessToken:      "test-token",
+			messageTemplate:  stringPtr("タイトル: {{.Article.Title}}\nURL: {{.Article.Link}}"),
 			expectedTemplate: "タイトル: {{.Article.Title}}\nURL: {{.Article.Link}}",
+			expectError:      false,
+		},
+		{
+			name:            "無効なURL",
+			instanceURL:     "invalid-url",
+			accessToken:     "test-token",
+			messageTemplate: nil,
+			expectError:     true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			viewer := NewSlackSender(tt.config)
+			viewer, err := NewMisskeySender(tt.instanceURL, tt.accessToken, tt.messageTemplate)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, viewer)
+				return
+			}
+
+			require.NoError(t, err)
 			require.NotNil(t, viewer)
 
-			slackSender, ok := viewer.(*SlackSender)
-			require.True(t, ok, "Should be SlackSender type")
+			misskeySender, ok := viewer.(*MisskeySender)
+			require.True(t, ok, "Should be MisskeySender type")
 
 			// テンプレートが正しくパースされていることを確認
-			require.NotNil(t, slackSender.tmpl, "Template should be parsed and stored")
+			require.NotNil(t, misskeySender.tmpl, "Template should be parsed and stored")
 
 			// テンプレートの内容を確認するため、空のデータで実行してみる
 			var buf bytes.Buffer
-			testData := &SlackTemplateData{
+			testData := &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title: "Test Title",
 					Link:  "https://test.com",
 				},
 			}
-			err := slackSender.tmpl.Execute(&buf, testData)
+			err = misskeySender.tmpl.Execute(&buf, testData)
 			assert.NoError(t, err, "Template should be executable")
 			assert.NotEmpty(t, buf.String(), "Template execution should produce output")
 
-			assert.Equal(t, tt.config.Channel, slackSender.channelID)
-			assert.NotNil(t, slackSender.client)
+			assert.NotNil(t, misskeySender.client)
 		})
 	}
 }
 
-// TestSlackTemplateExecution はSlackメッセージテンプレートの実行をテストする
-func TestSlackTemplateExecution(t *testing.T) {
+// TestMisskeyTemplateExecution はMisskeyメッセージテンプレートの実行をテストする
+func TestMisskeyTemplateExecution(t *testing.T) {
 	publishedTime := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name            string
 		messageTemplate string
-		templateData    *SlackTemplateData
+		templateData    *MisskeyTemplateData
 		expectedMessage string
 		expectError     bool
 	}{
 		{
 			name:            "デフォルトテンプレート（全フィールドあり）",
-			messageTemplate: DefaultSlackMessageTemplate,
-			templateData: &SlackTemplateData{
+			messageTemplate: DefaultMisskeyMessageTemplate,
+			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
 					Link:      "https://example.com/article",
@@ -114,8 +127,8 @@ func TestSlackTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（コメントなし）",
-			messageTemplate: DefaultSlackMessageTemplate,
-			templateData: &SlackTemplateData{
+			messageTemplate: DefaultMisskeyMessageTemplate,
+			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
 					Link:      "https://example.com/article",
@@ -130,8 +143,8 @@ func TestSlackTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（固定メッセージなし）",
-			messageTemplate: DefaultSlackMessageTemplate,
-			templateData: &SlackTemplateData{
+			messageTemplate: DefaultMisskeyMessageTemplate,
+			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
 					Link:      "https://example.com/article",
@@ -146,8 +159,8 @@ func TestSlackTemplateExecution(t *testing.T) {
 		},
 		{
 			name:            "デフォルトテンプレート（コメントと固定メッセージなし）",
-			messageTemplate: DefaultSlackMessageTemplate,
-			templateData: &SlackTemplateData{
+			messageTemplate: DefaultMisskeyMessageTemplate,
+			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "テスト記事",
 					Link:      "https://example.com/article",
@@ -163,7 +176,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 		{
 			name:            "カスタムテンプレート（全フィールド使用）",
 			messageTemplate: "記事: {{.Article.Title}} ({{.Article.Link}}){{if .Comment}}\nコメント: {{.Comment}}{{end}}{{if .FixedMessage}}\n補足: {{.FixedMessage}}{{end}}",
-			templateData: &SlackTemplateData{
+			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "カスタム記事",
 					Link:      "https://example.com/custom",
@@ -179,7 +192,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 		{
 			name:            "シンプルなカスタムテンプレート",
 			messageTemplate: "{{.Article.Title}} - {{.Article.Link}}",
-			templateData: &SlackTemplateData{
+			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "シンプル記事",
 					Link:      "https://example.com/simple",
@@ -195,7 +208,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 		{
 			name:            "日本語テンプレート",
 			messageTemplate: "タイトル: {{.Article.Title}}\nリンク: {{.Article.Link}}{{if .Comment}}\n推薦理由: {{.Comment}}{{end}}",
-			templateData: &SlackTemplateData{
+			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "日本語記事タイトル",
 					Link:      "https://example.com/japanese-article",
@@ -211,7 +224,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 		{
 			name:            "無効なテンプレート構文",
 			messageTemplate: "{{.Article.Title",
-			templateData: &SlackTemplateData{
+			templateData: &MisskeyTemplateData{
 				Article: &entity.Article{
 					Title:     "エラー記事",
 					Link:      "https://example.com/error",
@@ -228,7 +241,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actualMessage, err := executeSlackTemplate(tt.messageTemplate, tt.templateData)
+			actualMessage, err := executeMisskeyTemplate(tt.messageTemplate, tt.templateData)
 
 			if tt.expectError {
 				assert.Error(t, err, "Should return error for invalid template")
@@ -240,9 +253,9 @@ func TestSlackTemplateExecution(t *testing.T) {
 	}
 }
 
-// executeSlackTemplate はテスト用のヘルパー関数：Slackテンプレートを実行してメッセージを生成する
-func executeSlackTemplate(templateStr string, data *SlackTemplateData) (string, error) {
-	tmpl, err := template.New("slack_message").Parse(templateStr)
+// executeMisskeyTemplate はテスト用のヘルパー関数：Misskeyテンプレートを実行してメッセージを生成する
+func executeMisskeyTemplate(templateStr string, data *MisskeyTemplateData) (string, error) {
+	tmpl, err := template.New("misskey_message").Parse(templateStr)
 	if err != nil {
 		return "", err
 	}
