@@ -100,16 +100,25 @@ func (c *GeminiConfig) Merge(other *GeminiConfig) {
 	mergeString(&c.APIKeyEnv, other.APIKeyEnv)
 }
 
-func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
-	apiKey := c.APIKey
-
-	// APIKeyが空でAPIKeyEnvが指定されている場合、環境変数から取得
-	if apiKey == "" && c.APIKeyEnv != "" {
-		envValue := os.Getenv(c.APIKeyEnv)
-		if envValue == "" {
-			return nil, fmt.Errorf("環境変数 '%s' が設定されていません。ai.gemini.api_key_env で指定された環境変数を設定してください。", c.APIKeyEnv)
+// resolveSecret は、直接指定された値または環境変数から値を解決する
+func resolveSecret(value, envVar, configPath string) (string, error) {
+	if value != "" {
+		return value, nil
+	}
+	if envVar != "" {
+		secret := os.Getenv(envVar)
+		if secret == "" {
+			return "", fmt.Errorf("環境変数 '%s' が設定されていません。%s で指定された環境変数を設定してください。", envVar, configPath)
 		}
-		apiKey = envValue
+		return secret, nil
+	}
+	return "", nil
+}
+
+func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
+	apiKey, err := resolveSecret(c.APIKey, c.APIKeyEnv, "ai.gemini.api_key_env")
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.GeminiConfig{
@@ -199,15 +208,9 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 }
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
-	apiToken := c.APIToken
-
-	// APITokenが空でAPITokenEnvが指定されている場合、環境変数から取得
-	if apiToken == "" && c.APITokenEnv != "" {
-		envValue := os.Getenv(c.APITokenEnv)
-		if envValue == "" {
-			return nil, fmt.Errorf("環境変数 '%s' が設定されていません。output.slack_api.api_token_env で指定された環境変数を設定してください。", c.APITokenEnv)
-		}
-		apiToken = envValue
+	apiToken, err := resolveSecret(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.SlackAPIConfig{
@@ -233,15 +236,9 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 }
 
 func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
-	apiToken := c.APIToken
-
-	// APITokenが空でAPITokenEnvが指定されている場合、環境変数から取得
-	if apiToken == "" && c.APITokenEnv != "" {
-		envValue := os.Getenv(c.APITokenEnv)
-		if envValue == "" {
-			return nil, fmt.Errorf("環境変数 '%s' が設定されていません。output.misskey.api_token_env で指定された環境変数を設定してください。", c.APITokenEnv)
-		}
-		apiToken = envValue
+	apiToken, err := resolveSecret(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.MisskeyConfig{
