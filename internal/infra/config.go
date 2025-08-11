@@ -96,8 +96,17 @@ func (c *GeminiConfig) Merge(other *GeminiConfig) {
 		return
 	}
 	mergeString(&c.Type, other.Type)
-	mergeString(&c.APIKey, other.APIKey)
-	mergeString(&c.APIKeyEnv, other.APIKeyEnv)
+
+	// プロファイルファイルでapi_key_envが指定されている場合、
+	// デフォルトのapi_keyを無効にして環境変数を優先する
+	if other.APIKeyEnv != "" && other.APIKey == "" {
+		c.APIKey = ""
+		c.APIKeyEnv = other.APIKeyEnv
+	} else {
+		// 通常のマージ処理
+		mergeString(&c.APIKey, other.APIKey)
+		mergeString(&c.APIKeyEnv, other.APIKeyEnv)
+	}
 }
 
 // resolveSecret は、直接指定された値または環境変数から値を解決する
@@ -199,8 +208,18 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	if other == nil {
 		return
 	}
-	mergeString(&c.APIToken, other.APIToken)
-	mergeString(&c.APITokenEnv, other.APITokenEnv)
+
+	// プロファイルファイルでapi_token_envが指定されている場合、
+	// デフォルトのapi_tokenを無効にして環境変数を優先する
+	if other.APITokenEnv != "" && other.APIToken == "" {
+		c.APIToken = ""
+		c.APITokenEnv = other.APITokenEnv
+	} else {
+		// 通常のマージ処理
+		mergeString(&c.APIToken, other.APIToken)
+		mergeString(&c.APITokenEnv, other.APITokenEnv)
+	}
+
 	mergeString(&c.Channel, other.Channel)
 	if other.MessageTemplate != nil {
 		c.MessageTemplate = other.MessageTemplate
@@ -230,8 +249,18 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	if other == nil {
 		return
 	}
-	mergeString(&c.APIToken, other.APIToken)
-	mergeString(&c.APITokenEnv, other.APITokenEnv)
+
+	// プロファイルファイルでapi_token_envが指定されている場合、
+	// デフォルトのapi_tokenを無効にして環境変数を優先する
+	if other.APITokenEnv != "" && other.APIToken == "" {
+		c.APIToken = ""
+		c.APITokenEnv = other.APITokenEnv
+	} else {
+		// 通常のマージ処理
+		mergeString(&c.APIToken, other.APIToken)
+		mergeString(&c.APITokenEnv, other.APITokenEnv)
+	}
+
 	mergeString(&c.APIURL, other.APIURL)
 }
 
