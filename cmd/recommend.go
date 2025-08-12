@@ -76,7 +76,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				promptConfigEntity,
 			)
 
-			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
+			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}

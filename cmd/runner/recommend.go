@@ -28,7 +28,7 @@ type RecommendRunner struct {
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
-func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*RecommendRunner, error) {
+func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*RecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
