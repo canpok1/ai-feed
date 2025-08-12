@@ -98,6 +98,14 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		fixedMessage = profile.Prompt.FixedMessage
 	}
 
+	// 推薦記事の詳細情報をログ出力
+	slog.Info("推薦記事を選択しました",
+		"title", recommend.Article.Title,
+		"link", recommend.Article.Link,
+		"comment", recommend.Comment,
+		"fixed_message", fixedMessage,
+	)
+
 	slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
 	for _, viewer := range r.viewers {
 		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
