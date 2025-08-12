@@ -12,12 +12,12 @@ import (
 	"github.com/fatih/color"
 )
 
-var (
-	debugColor = color.New(color.FgHiBlack) // 灰色
-	infoColor  = color.New(color.FgGreen)   // 緑色
-	warnColor  = color.New(color.FgYellow)  // 黄色
-	errorColor = color.New(color.FgRed)     // 赤色
-)
+var levelColorMap = map[slog.Level]*color.Color{
+	slog.LevelDebug: color.New(color.FgHiBlack), // 灰色
+	slog.LevelInfo:  color.New(color.FgGreen),   // 緑色
+	slog.LevelWarn:  color.New(color.FgYellow),  // 黄色
+	slog.LevelError: color.New(color.FgRed),     // 赤色
+}
 
 // SimpleHandler は時刻 ログレベル ログメッセージの形式で出力するカスタムハンドラー
 type SimpleHandler struct {
@@ -53,16 +53,9 @@ func (h *SimpleHandler) Handle(_ context.Context, r slog.Record) error {
 
 	// ログレベルを取得し、色を適用
 	levelStr := r.Level.String()
-	switch r.Level {
-	case slog.LevelDebug:
-		level = debugColor.Sprint(levelStr)
-	case slog.LevelInfo:
-		level = infoColor.Sprint(levelStr)
-	case slog.LevelWarn:
-		level = warnColor.Sprint(levelStr)
-	case slog.LevelError:
-		level = errorColor.Sprint(levelStr)
-	default:
+	if c, ok := levelColorMap[r.Level]; ok {
+		level = c.Sprint(levelStr)
+	} else {
 		level = levelStr
 	}
 
