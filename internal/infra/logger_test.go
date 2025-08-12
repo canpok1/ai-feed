@@ -15,6 +15,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// setupColor は色設定のセットアップ・クリーンアップを行うテストヘルパー関数
+func setupColor(t *testing.T, enabled bool) {
+	t.Helper()
+
+	originalEnv := os.Getenv("NO_COLOR")
+	originalNoColor := color.NoColor
+	t.Cleanup(func() {
+		if originalEnv != "" {
+			os.Setenv("NO_COLOR", originalEnv)
+		} else {
+			os.Unsetenv("NO_COLOR")
+		}
+		color.NoColor = originalNoColor
+	})
+
+	if enabled {
+		os.Unsetenv("NO_COLOR")
+		color.NoColor = false
+	} else {
+		os.Setenv("NO_COLOR", "1")
+		color.NoColor = true
+	}
+}
+
 func TestInitLogger(t *testing.T) {
 	// 色を無効化してテスト環境をシンプルに保つ
 	originalNoColor := color.NoColor
@@ -172,20 +196,7 @@ func TestSimpleHandler(t *testing.T) {
 }
 
 func TestSimpleHandler_Handle_WithColors(t *testing.T) {
-	// NO_COLOR環境変数を一時的に無効化し、color.NoColorを無効化
-	originalEnv := os.Getenv("NO_COLOR")
-	originalNoColor := color.NoColor
-	defer func() {
-		if originalEnv != "" {
-			os.Setenv("NO_COLOR", originalEnv)
-		} else {
-			os.Unsetenv("NO_COLOR")
-		}
-		color.NoColor = originalNoColor
-	}()
-
-	os.Unsetenv("NO_COLOR")
-	color.NoColor = false
+	setupColor(t, true)
 
 	tests := []struct {
 		name      string
@@ -226,20 +237,7 @@ func TestSimpleHandler_Handle_WithColors(t *testing.T) {
 }
 
 func TestSimpleHandler_Handle_NoColor(t *testing.T) {
-	// NO_COLOR環境変数を設定し、color.NoColorを有効化
-	originalEnv := os.Getenv("NO_COLOR")
-	originalNoColor := color.NoColor
-	defer func() {
-		if originalEnv != "" {
-			os.Setenv("NO_COLOR", originalEnv)
-		} else {
-			os.Unsetenv("NO_COLOR")
-		}
-		color.NoColor = originalNoColor
-	}()
-
-	os.Setenv("NO_COLOR", "1")
-	color.NoColor = true
+	setupColor(t, false)
 
 	var buf bytes.Buffer
 	handler := NewSimpleHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})
