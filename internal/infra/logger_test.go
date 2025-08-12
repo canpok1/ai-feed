@@ -16,6 +16,11 @@ import (
 )
 
 func TestInitLogger(t *testing.T) {
+	// 色を無効化してテスト環境をシンプルに保つ
+	originalNoColor := color.NoColor
+	defer func() { color.NoColor = originalNoColor }()
+	color.NoColor = true
+
 	// 元のos.Stdoutとslogのデフォルトを保存
 	originalStdout := os.Stdout
 	originalLogger := slog.Default()
@@ -90,6 +95,11 @@ func TestInitLogger(t *testing.T) {
 }
 
 func TestSimpleHandler(t *testing.T) {
+	// 色を無効化してテスト環境をシンプルに保つ
+	originalNoColor := color.NoColor
+	defer func() { color.NoColor = originalNoColor }()
+	color.NoColor = true
+
 	tests := []struct {
 		name          string
 		level         slog.Level
@@ -162,10 +172,19 @@ func TestSimpleHandler(t *testing.T) {
 }
 
 func TestSimpleHandler_Handle_WithColors(t *testing.T) {
-	// color.NoColorを一時的に無効化
+	// NO_COLOR環境変数を一時的に無効化し、color.NoColorを無効化
+	originalEnv := os.Getenv("NO_COLOR")
 	originalNoColor := color.NoColor
-	defer func() { color.NoColor = originalNoColor }()
+	defer func() {
+		if originalEnv != "" {
+			os.Setenv("NO_COLOR", originalEnv)
+		} else {
+			os.Unsetenv("NO_COLOR")
+		}
+		color.NoColor = originalNoColor
+	}()
 
+	os.Unsetenv("NO_COLOR")
 	color.NoColor = false
 
 	tests := []struct {
@@ -207,10 +226,19 @@ func TestSimpleHandler_Handle_WithColors(t *testing.T) {
 }
 
 func TestSimpleHandler_Handle_NoColor(t *testing.T) {
-	// color.NoColorを一時的に有効化
+	// NO_COLOR環境変数を設定し、color.NoColorを有効化
+	originalEnv := os.Getenv("NO_COLOR")
 	originalNoColor := color.NoColor
-	defer func() { color.NoColor = originalNoColor }()
+	defer func() {
+		if originalEnv != "" {
+			os.Setenv("NO_COLOR", originalEnv)
+		} else {
+			os.Unsetenv("NO_COLOR")
+		}
+		color.NoColor = originalNoColor
+	}()
 
+	os.Setenv("NO_COLOR", "1")
 	color.NoColor = true
 
 	var buf bytes.Buffer
