@@ -150,56 +150,6 @@ output:
 	assert.Contains(t, output, "プロファイルの検証が完了しました", "Should show success message")
 }
 
-// TestProfileCheckCommand_WithValidConfig はconfig.ymlが存在する場合のテストを実行する
-func TestProfileCheckCommand_WithValidConfig(t *testing.T) {
-	// 作業ディレクトリを一時的に変更
-	originalWd, _ := os.Getwd()
-	tempDir, _ := os.MkdirTemp("", "profile_test")
-	os.Chdir(tempDir)
-	defer func() {
-		os.Chdir(originalWd)
-		os.RemoveAll(tempDir)
-	}()
-
-	// 有効なconfig.ymlファイルを作成
-	configContent := `default_profile:
-  ai:
-    gemini:
-      type: "gemini-1.5-flash"
-      api_key: "test-api-key-valid"
-  system_prompt: "テスト用システムプロンプト"
-  comment_prompt_template: "テスト用テンプレート {{TITLE}}"
-  output:
-    slack_api:
-      api_token: "xoxb-test-slack-token"
-      channel: "#test"
-      message_template: "{{COMMENT}} {{URL}}"
-`
-	err := os.WriteFile("./config.yml", []byte(configContent), 0644)
-	assert.NoError(t, err)
-
-	cmd := makeProfileCheckCmd()
-
-	// 標準出力と標準エラーをキャプチャ
-	stdout := bytes.NewBufferString("")
-	stderr := bytes.NewBufferString("")
-	cmd.SetOut(stdout)
-	cmd.SetErr(stderr)
-
-	// コマンドライン引数を設定（引数なし）
-	cmd.SetArgs([]string{})
-
-	// コマンドを実行
-	_, err = cmd.ExecuteC()
-
-	// 成功することを確認
-	assert.NoError(t, err, "Command should succeed with valid default profile")
-
-	// 成功メッセージが出力されることを確認
-	output := stdout.String()
-	assert.Contains(t, output, "プロファイルの検証が完了しました", "Should show success message")
-}
-
 // TestProfileCheckCommand_WithProfileMerge はプロファイルマージのテストを実行する
 func TestProfileCheckCommand_WithProfileMerge(t *testing.T) {
 	// 作業ディレクトリを一時的に変更
