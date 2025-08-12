@@ -201,7 +201,7 @@ func TestProfileCheckCommand_AcceptsOptionalArgs(t *testing.T) {
 	cmd.SetArgs([]string{"nonexistent.yml"})
 	_, err = cmd.ExecuteC()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "no such file or directory")
+	assert.Contains(t, err.Error(), "プロファイルファイルが見つかりません")
 }
 
 // TestProfileCheckCommand_ConfigLoadingBehavior はconfig.yml読み込み動作をテストする
