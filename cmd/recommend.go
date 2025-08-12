@@ -96,6 +96,7 @@ recommends one random article from the fetched list.`,
 	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
 	cmd.Flags().StringP("profile", "p", "", "Path to a profile YAML file")
 
+	cmd.SilenceUsage = true
 	return cmd
 }
 
