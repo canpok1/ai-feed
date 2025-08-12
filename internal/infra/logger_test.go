@@ -192,10 +192,10 @@ func TestSimpleHandler_Handle_WithColors(t *testing.T) {
 		level     slog.Level
 		colorCode string
 	}{
-		{"DEBUG with gray", slog.LevelDebug, "\\033\\[90m"},
-		{"INFO with green", slog.LevelInfo, "\\033\\[32m"},
-		{"WARN with yellow", slog.LevelWarn, "\\033\\[33m"},
-		{"ERROR with red", slog.LevelError, "\\033\\[31m"},
+		{"DEBUG with gray", slog.LevelDebug, `\033\[90m`},
+		{"INFO with green", slog.LevelInfo, `\033\[32m`},
+		{"WARN with yellow", slog.LevelWarn, `\033\[33m`},
+		{"ERROR with red", slog.LevelError, `\033\[31m`},
 	}
 
 	for _, tt := range tests {
@@ -218,7 +218,7 @@ func TestSimpleHandler_Handle_WithColors(t *testing.T) {
 			assert.True(t, matched, "Expected color code %s not found in output: %s", tt.colorCode, output)
 
 			// リセットコード（\033[0m）も確認
-			resetMatched, err := regexp.MatchString("\\033\\[0m", output)
+			resetMatched, err := regexp.MatchString(`\033\[0m`, output)
 			assert.NoError(t, err)
 			assert.True(t, resetMatched, "Expected reset code \\033[0m not found in output: %s", output)
 		})
@@ -254,7 +254,7 @@ func TestSimpleHandler_Handle_NoColor(t *testing.T) {
 	assert.NoError(t, err)
 
 	output := buf.String()
-	matched, err := regexp.MatchString("\\033\\[", output)
+	matched, err := regexp.MatchString(`\033\[`, output)
 	assert.NoError(t, err)
 	assert.False(t, matched, "ANSI escape codes should not be present when NO_COLOR is set: %s", output)
 
