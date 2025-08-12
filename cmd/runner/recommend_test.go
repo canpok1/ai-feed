@@ -3,6 +3,7 @@ package runner
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	"github.com/canpok1/ai-feed/internal/infra"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -330,9 +332,26 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 
 	// Verify log output
 	logOutput := logBuffer.String()
-	assert.Contains(t, logOutput, "推薦記事を選択しました")
-	assert.Contains(t, logOutput, "\"title\":\"Test Article\"")
-	assert.Contains(t, logOutput, "\"link\":\"https://example.com/test\"")
-	assert.Contains(t, logOutput, "\"comment\":\"This is a test comment\"")
-	assert.Contains(t, logOutput, "\"fixed_message\":\"Test Fixed Message\"")
+	// ログ出力をデバッグのために表示
+	t.Logf("Log output: %s", logOutput)
+
+	// 複数行のJSONログから推薦記事選択のログエントリを取得
+	lines := bytes.Split(logBuffer.Bytes(), []byte("\n"))
+	var recommendLogLine []byte
+	for _, line := range lines {
+		if len(line) > 0 && bytes.Contains(line, []byte("推薦記事を選択しました")) {
+			recommendLogLine = line
+			break
+		}
+	}
+
+	var logEntry map[string]any
+	require.NoError(t, json.Unmarshal(recommendLogLine, &logEntry))
+
+	assert.Equal(t, "INFO", logEntry["level"])
+	assert.Equal(t, "推薦記事を選択しました", logEntry["msg"])
+	assert.Equal(t, "Test Article", logEntry["title"])
+	assert.Equal(t, "https://example.com/test", logEntry["link"])
+	assert.Equal(t, "This is a test comment", logEntry["comment"])
+	assert.Equal(t, "Test Fixed Message", logEntry["fixed_message"])
 }
