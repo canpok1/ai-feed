@@ -14,6 +14,7 @@ func makeProfileCmd() *cobra.Command {
 		Use:   "profile",
 		Short: "Manage user profiles.",
 	}
+	cmd.SilenceUsage = true
 	profileInitCmd := makeProfileInitCmd()
 	profileCheckCmd := makeProfileCheckCmd()
 	cmd.AddCommand(profileInitCmd)
@@ -26,29 +27,28 @@ func makeProfileInitCmd() *cobra.Command {
 		Use:   "init [file path]",
 		Short: "Initialize a new profile file.",
 		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
 
 			// Check if file already exists to avoid accidental overwrites.
 			if _, err := os.Stat(filePath); !os.IsNotExist(err) {
 				if err == nil {
-					cmd.PrintErrf("Error: file already exists at %s. Please specify a new file path.\n", filePath)
-				} else {
-					cmd.PrintErrf("Error checking file path: %v\n", err)
+					return fmt.Errorf("file already exists at %s. Please specify a new file path", filePath)
 				}
-				return
+				return fmt.Errorf("error checking file path: %w", err)
 			}
 
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			// テンプレートを使用してコメント付きprofile.ymlを生成
 			err := profileRepo.SaveProfileWithTemplate()
 			if err != nil {
-				cmd.PrintErrf("Failed to create profile file: %v\n", err)
-				return
+				return fmt.Errorf("failed to create profile file: %w", err)
 			}
 			cmd.Printf("Profile file created successfully at %s\n", filePath)
+			return nil
 		},
 	}
+	cmd.SilenceUsage = true
 	return cmd
 }
 
@@ -135,7 +135,8 @@ func makeProfileCheckCmd() *cobra.Command {
 			}
 
 			return nil
-		},
+			},
 	}
+	cmd.SilenceUsage = true
 	return cmd
 }
