@@ -13,6 +13,7 @@ func makeRootCmd() *cobra.Command {
 		Short: "An AI-powered CLI RSS reader that summarizes articles and posts comments to various platforms.",
 	}
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yml)")
+	cmd.SilenceUsage = true
 	return cmd
 }
 
