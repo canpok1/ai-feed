@@ -99,10 +99,14 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	}
 
 	// 推薦記事の詳細情報をログ出力
+	var commentValue string
+	if recommend.Comment != nil {
+		commentValue = *recommend.Comment
+	}
 	slog.Info("推薦記事を選択しました",
 		"title", recommend.Article.Title,
 		"link", recommend.Article.Link,
-		"comment", recommend.Comment,
+		"comment", commentValue,
 		"fixed_message", fixedMessage,
 	)
 
