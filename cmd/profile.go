@@ -135,7 +135,7 @@ func makeProfileCheckCmd() *cobra.Command {
 			}
 
 			return nil
-			},
+		},
 	}
 	cmd.SilenceUsage = true
 	return cmd
