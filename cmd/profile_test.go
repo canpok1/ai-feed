@@ -150,8 +150,6 @@ output:
 	assert.Contains(t, output, "プロファイルの検証が完了しました", "Should show success message")
 }
 
-
-
 // TestProfileCheckCommand_WithProfileMerge はプロファイルマージのテストを実行する
 func TestProfileCheckCommand_WithProfileMerge(t *testing.T) {
 	// 作業ディレクトリを一時的に変更
