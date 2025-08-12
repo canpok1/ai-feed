@@ -36,7 +36,7 @@ func makeProfileInitCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to create profile file: %w", err)
 			}
-			cmd.Printf("Profile file created successfully at %s\n", filePath)
+			cmd.Printf("プロファイルファイルが正常に作成されました: %s\n", filePath)
 			return nil
 		},
 	}
@@ -60,7 +60,7 @@ func makeProfileCheckCmd() *cobra.Command {
 					// ファイルが存在しない場合は何もしない
 				} else {
 					// ファイルが存在するが読み込み・パースに失敗した場合は警告を表示
-					cmd.PrintErrf("Warning: failed to load or parse %s, proceeding with empty default profile. Error: %v\n", configPath, err)
+					cmd.PrintErrf("警告: %s の読み込みまたは解析に失敗しました。空のデフォルトプロファイルで続行します。エラー: %v\n", configPath, err)
 				}
 			}
 
@@ -77,17 +77,17 @@ func makeProfileCheckCmd() *cobra.Command {
 
 				// ファイルの存在確認
 				if _, err := os.Stat(filePath); os.IsNotExist(err) {
-					cmd.PrintErrf("Error: profile file not found at %s\n", filePath)
+					cmd.PrintErrf("エラー: プロファイルファイルが見つかりません: %s\n", filePath)
 					return err
 				} else if err != nil {
-					cmd.PrintErrf("Error: failed to access file: %v\n", err)
+					cmd.PrintErrf("エラー: ファイルへのアクセスに失敗しました: %v\n", err)
 					return err
 				}
 
 				// 指定されたプロファイルファイルの読み込み
 				loadedInfraProfile, err := profile.NewYamlProfileRepositoryImpl(filePath).LoadInfraProfile()
 				if err != nil {
-					cmd.PrintErrf("Error: failed to load profile: %v\n", err)
+					cmd.PrintErrf("エラー: プロファイルの読み込みに失敗しました: %v\n", err)
 					return err
 				}
 
@@ -110,7 +110,7 @@ func makeProfileCheckCmd() *cobra.Command {
 
 			// 結果の表示
 			if !result.IsValid {
-				cmd.PrintErrln("Profile validation failed:")
+				cmd.PrintErrln("プロファイルの検証に失敗しました:")
 				for _, err := range result.Errors {
 					cmd.PrintErrf("  ERROR: %s\n", err)
 				}
@@ -118,12 +118,12 @@ func makeProfileCheckCmd() *cobra.Command {
 			}
 
 			if len(result.Warnings) > 0 {
-				cmd.PrintErrln("Profile validation completed with warnings:")
+				cmd.PrintErrln("プロファイルの検証が警告付きで完了しました:")
 				for _, warning := range result.Warnings {
 					cmd.PrintErrf("  WARNING: %s\n", warning)
 				}
 			} else {
-				cmd.Println("Profile validation successful")
+				cmd.Println("プロファイルの検証が完了しました")
 			}
 
 			return nil
