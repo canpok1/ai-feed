@@ -194,7 +194,7 @@ func TestProfileCheckCommand_AcceptsOptionalArgs(t *testing.T) {
 	cmd.SetArgs([]string{})
 	_, err := cmd.ExecuteC()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "profile validation failed")
+	assert.Contains(t, err.Error(), "プロファイルの検証に失敗しました")
 
 	// 引数ありの場合（存在しないファイル）
 	cmd = makeProfileCheckCmd() // 新しいインスタンスを作成
@@ -221,7 +221,7 @@ func TestProfileCheckCommand_ConfigLoadingBehavior(t *testing.T) {
 	// config.ymlが存在しない場合でもパニックしない
 	_, err := cmd.ExecuteC()
 	assert.Error(t, err) // バリデーションエラーは発生する
-	assert.Contains(t, err.Error(), "profile validation failed")
+	assert.Contains(t, err.Error(), "プロファイルの検証に失敗しました")
 }
 
 // osExit は os.Exit をモック可能にするための変数

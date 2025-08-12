@@ -112,15 +112,15 @@ func makeProfileCheckCmd() *cobra.Command {
 			if !result.IsValid {
 				cmd.PrintErrln("プロファイルの検証に失敗しました:")
 				for _, err := range result.Errors {
-					cmd.PrintErrf("  ERROR: %s\n", err)
+					cmd.PrintErrf("  エラー: %s\n", err)
 				}
-				return fmt.Errorf("profile validation failed")
+				return fmt.Errorf("プロファイルの検証に失敗しました")
 			}
 
 			if len(result.Warnings) > 0 {
 				cmd.PrintErrln("プロファイルの検証が警告付きで完了しました:")
 				for _, warning := range result.Warnings {
-					cmd.PrintErrf("  WARNING: %s\n", warning)
+					cmd.PrintErrf("  警告: %s\n", warning)
 				}
 			} else {
 				cmd.Println("プロファイルの検証が完了しました")
