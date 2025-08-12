@@ -105,7 +105,6 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
 	for _, viewer := range r.viewers {
 		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
-			slog.Error("Failed to send recommendation to viewer", "error", viewErr)
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
 		}
 	}
