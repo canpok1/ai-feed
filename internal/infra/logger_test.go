@@ -2,13 +2,16 @@ package infra
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"log/slog"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -156,4 +159,77 @@ func TestSimpleHandler(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSimpleHandler_Handle_WithColors(t *testing.T) {
+	// color.NoColorを一時的に無効化
+	originalNoColor := color.NoColor
+	defer func() { color.NoColor = originalNoColor }()
+
+	color.NoColor = false
+
+	tests := []struct {
+		name      string
+		level     slog.Level
+		colorCode string
+	}{
+		{"DEBUG with gray", slog.LevelDebug, "\\033\\[90m"},
+		{"INFO with green", slog.LevelInfo, "\\033\\[32m"},
+		{"WARN with yellow", slog.LevelWarn, "\\033\\[33m"},
+		{"ERROR with red", slog.LevelError, "\\033\\[31m"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			handler := NewSimpleHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})
+
+			record := slog.Record{
+				Level:   tt.level,
+				Message: "test message",
+				Time:    time.Now(),
+			}
+
+			err := handler.Handle(context.Background(), record)
+			assert.NoError(t, err)
+
+			output := buf.String()
+			matched, err := regexp.MatchString(tt.colorCode, output)
+			assert.NoError(t, err)
+			assert.True(t, matched, "Expected color code %s not found in output: %s", tt.colorCode, output)
+
+			// リセットコード（\033[0m）も確認
+			resetMatched, err := regexp.MatchString("\\033\\[0m", output)
+			assert.NoError(t, err)
+			assert.True(t, resetMatched, "Expected reset code \\033[0m not found in output: %s", output)
+		})
+	}
+}
+
+func TestSimpleHandler_Handle_NoColor(t *testing.T) {
+	// color.NoColorを一時的に有効化
+	originalNoColor := color.NoColor
+	defer func() { color.NoColor = originalNoColor }()
+
+	color.NoColor = true
+
+	var buf bytes.Buffer
+	handler := NewSimpleHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})
+
+	record := slog.Record{
+		Level:   slog.LevelError,
+		Message: "test message",
+		Time:    time.Now(),
+	}
+
+	err := handler.Handle(context.Background(), record)
+	assert.NoError(t, err)
+
+	output := buf.String()
+	matched, err := regexp.MatchString("\\033\\[", output)
+	assert.NoError(t, err)
+	assert.False(t, matched, "ANSI escape codes should not be present when NO_COLOR is set: %s", output)
+
+	// プレーンテキストのログレベルが含まれることを確認
+	assert.Contains(t, output, "ERROR test message")
 }
