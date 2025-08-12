@@ -36,6 +36,40 @@ AI Feedは指定RSSフィードからランダム選択した記事をAIの感�
     ./ai-feed recommend --url {任意のRSSフィードのURL}
     ```
 
+## ログの色付け
+
+ai-feedはログレベルごとに色を付けて視認性を向上させます：
+
+- **DEBUG**: 灰色
+- **INFO**: 緑色  
+- **WARN**: 黄色
+- **ERROR**: 赤色
+
+### 色の無効化
+
+以下の場合、色付けは自動的に無効化されます：
+- パイプやファイルリダイレクト時
+- CI環境での実行時
+- `NO_COLOR` 環境変数が設定されている時
+
+手動で色を無効化する場合：
+```bash
+# 色なしでアプリケーションを実行
+NO_COLOR=1 ./ai-feed recommend --url {RSS URL}
+
+# 環境変数として設定
+export NO_COLOR=1
+./ai-feed recommend --url {RSS URL}
+```
+
+### サポート環境
+
+ログの色付け機能は以下の環境でサポートされます：
+- Unix/Linux
+- macOS
+
+Windows環境では色付けされません。
+
 ## 開発環境
 
 ### 必要条件
