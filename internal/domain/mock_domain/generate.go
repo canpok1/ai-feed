@@ -4,3 +4,4 @@ package mock_domain
 //go:generate mockgen -source=../fetch.go -destination=./fetch.go
 //go:generate mockgen -source=../message.go -destination=./message.go
 //go:generate mockgen -source=../recommend.go -destination=./recommend.go
+//go:generate mockgen -source=../profile.go -destination=./profile.go

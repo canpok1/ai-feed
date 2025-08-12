@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/cmd/runner"
+	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
 )
@@ -31,10 +31,10 @@ func makeProfileInitCmd() *cobra.Command {
 			filePath := args[0]
 
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			// テンプレートを使用してコメント付きprofile.ymlを生成
-			err := profileRepo.SaveProfileWithTemplate()
+			r := runner.NewProfileInitRunner(profileRepo)
+			err := r.Run()
 			if err != nil {
-				return fmt.Errorf("failed to create profile file: %w", err)
+				return err
 			}
 			cmd.Printf("プロファイルファイルが正常に作成されました: %s\n", filePath)
 			return nil
@@ -51,68 +51,31 @@ func makeProfileCheckCmd() *cobra.Command {
 		Short: "プロファイルファイルの設定を検証します",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// config.ymlの読み込み
+			// config.ymlのパスを取得
 			configPath := "./config.yml"
-			config, err := infra.NewYamlConfigRepository(configPath).Load()
-			if err != nil {
-				// ファイルが存在しない場合は警告を表示しない
-				if _, statErr := os.Stat(configPath); os.IsNotExist(statErr) {
-					// ファイルが存在しない場合は何もしない
-				} else {
-					// ファイルが存在するが読み込み・パースに失敗した場合は警告を表示
-					cmd.PrintErrf("警告: %s の読み込みまたは解析に失敗しました。空のデフォルトプロファイルで続行します。エラー: %v\n", configPath, err)
-				}
-			}
 
-			// デフォルトプロファイルの取得
-			var currentProfile infra.Profile
-			if config != nil && config.DefaultProfile != nil {
-				currentProfile = *config.DefaultProfile
-			}
-			// 存在しない場合は空のプロファイルを使用（ゼロ値）
-
-			// 引数が指定されている場合は指定ファイルとマージ
+			// 引数からプロファイルファイルのパスを取得
+			profilePath := ""
 			if len(args) > 0 {
-				filePath := args[0]
-
-				// ファイルの存在確認
-				if _, err := os.Stat(filePath); os.IsNotExist(err) {
-					cmd.PrintErrf("エラー: プロファイルファイルが見つかりません: %s\n", filePath)
-					return err
-				} else if err != nil {
-					cmd.PrintErrf("エラー: ファイルへのアクセスに失敗しました: %v\n", err)
-					return err
-				}
-
-				// 指定されたプロファイルファイルの読み込み
-				loadedInfraProfile, err := profile.NewYamlProfileRepositoryImpl(filePath).LoadInfraProfile()
-				if err != nil {
-					cmd.PrintErrf("エラー: プロファイルの読み込みに失敗しました: %v\n", err)
-					return err
-				}
-
-				// config.ymlが存在する場合はマージ、存在しない場合はloadedInfraProfileをそのまま使用
-				if config != nil && config.DefaultProfile != nil {
-					// デフォルトプロファイルとマージ
-					currentProfile.Merge(loadedInfraProfile)
-				} else {
-					// config.ymlが存在しない場合は、読み込んだプロファイルをそのまま使用
-					currentProfile = *loadedInfraProfile
-				}
+				profilePath = args[0]
 			}
 
-			// マージ後のプロファイルをentity.Profileに変換してバリデーション
-			entityProfile, err := currentProfile.ToEntity()
+			// ProfileCheckRunnerを使用して検証を実行
+			profileRepoFn := func(path string) domain.ProfileRepository {
+				return profile.NewYamlProfileRepositoryImpl(path)
+			}
+			r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
+			result, err := r.Run(profilePath)
 			if err != nil {
-				return fmt.Errorf("failed to process profile: %w", err)
+				cmd.PrintErrf("エラー: %v\n", err)
+				return err
 			}
-			result := entityProfile.Validate()
 
 			// 結果の表示
 			if !result.IsValid {
 				cmd.PrintErrln("プロファイルの検証に失敗しました:")
-				for _, err := range result.Errors {
-					cmd.PrintErrf("  エラー: %s\n", err)
+				for _, errMsg := range result.Errors {
+					cmd.PrintErrf("  エラー: %s\n", errMsg)
 				}
 				return fmt.Errorf("プロファイルの検証に失敗しました")
 			}

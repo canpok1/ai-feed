@@ -10,12 +10,75 @@ import (
 
 // TestProfileCheckCommand_Success は正常系のテストを実行する
 func TestProfileCheckCommand_Success(t *testing.T) {
-	t.Skip("Skipping complex test for now - will be re-enabled after debugging")
+	// 作業ディレクトリを一時的に変更
+	originalWd, _ := os.Getwd()
+	tempDir, _ := os.MkdirTemp("", "profile_test")
+	os.Chdir(tempDir)
+	defer func() {
+		os.Chdir(originalWd)
+		os.RemoveAll(tempDir)
+	}()
+
+	// 有効なconfig.ymlを作成
+	configContent := `default_profile:
+  ai:
+    gemini:
+      type: "gemini-1.5-flash"
+      api_key: "test-api-key"
+  system_prompt: "テスト用システムプロンプト"
+  comment_prompt_template: "テスト用テンプレート {{TITLE}}"
+  output:
+    slack_api:
+      api_token: "xoxb-test-token"
+      channel: "#test"
+      message_template: "{{COMMENT}} {{URL}}"
+`
+	err := os.WriteFile("./config.yml", []byte(configContent), 0644)
+	assert.NoError(t, err)
+
+	cmd := makeProfileCheckCmd()
+
+	// 標準出力と標準エラーをキャプチャ
+	stdout := bytes.NewBufferString("")
+	stderr := bytes.NewBufferString("")
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+
+	// コマンドライン引数を設定（引数なし）
+	cmd.SetArgs([]string{})
+
+	// コマンドを実行
+	_, err = cmd.ExecuteC()
+
+	// 成功することを確認
+	assert.NoError(t, err, "Command should succeed with valid default profile")
+
+	// 成功メッセージが出力されることを確認
+	output := stdout.String()
+	assert.Contains(t, output, "プロファイルの検証が完了しました", "Should show success message")
 }
 
 // TestProfileCheckCommand_FileAccessError はファイルアクセスエラーのテストを実行する
 func TestProfileCheckCommand_FileAccessError(t *testing.T) {
-	t.Skip("Skipping for now - will be re-enabled after debugging")
+	cmd := makeProfileCheckCmd()
+
+	// 標準出力と標準エラーをキャプチャ
+	stdout := bytes.NewBufferString("")
+	stderr := bytes.NewBufferString("")
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+
+	// 存在しないプロファイルファイルを指定
+	cmd.SetArgs([]string{"nonexistent_profile.yml"})
+
+	// コマンドを実行
+	_, err := cmd.ExecuteC()
+
+	// エラーが返されることを確認
+	assert.Error(t, err, "Command should return error for non-existent file")
+
+	// 日本語のエラーメッセージが含まれることを確認
+	assert.Contains(t, err.Error(), "プロファイルファイルが見つかりません", "Error message should be in Japanese")
 }
 
 // TestProfileCheckCommand_NoArguments は引数なしでのコマンド実行をテストする
@@ -44,48 +107,76 @@ func TestProfileCheckCommand_NoArguments(t *testing.T) {
 
 // TestProfileCheckCommand_PathResolution はパス解決のテストを実行する
 func TestProfileCheckCommand_PathResolution(t *testing.T) {
-	t.Skip("Skipping for now - will be re-enabled after debugging")
+	// テスト用の一時ディレクトリを作成
+	tempDir, _ := os.MkdirTemp("", "profile_test")
+	defer os.RemoveAll(tempDir)
+
+	// 有効なプロファイルファイルを作成
+	profilePath := tempDir + "/test_profile.yml"
+	profileContent := `ai:
+  gemini:
+    type: "gemini-1.5-flash"
+    api_key: "test-api-key"
+system_prompt: "テスト用システムプロンプト"
+comment_prompt_template: "テスト用テンプレート {{TITLE}}"
+output:
+  slack_api:
+    api_token: "xoxb-test-token"
+    channel: "#test"
+    message_template: "{{COMMENT}} {{URL}}"
+`
+	err := os.WriteFile(profilePath, []byte(profileContent), 0644)
+	assert.NoError(t, err)
+
+	cmd := makeProfileCheckCmd()
+
+	// 標準出力と標準エラーをキャプチャ
+	stdout := bytes.NewBufferString("")
+	stderr := bytes.NewBufferString("")
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+
+	// 絶対パスでプロファイルファイルを指定
+	cmd.SetArgs([]string{profilePath})
+
+	// コマンドを実行
+	_, err = cmd.ExecuteC()
+
+	// 成功することを確認
+	assert.NoError(t, err, "Command should succeed with valid profile file path")
+
+	// 成功メッセージが出力されることを確認
+	output := stdout.String()
+	assert.Contains(t, output, "プロファイルの検証が完了しました", "Should show success message")
 }
 
 // TestProfileCheckCommand_WithValidConfig はconfig.ymlが存在する場合のテストを実行する
 func TestProfileCheckCommand_WithValidConfig(t *testing.T) {
-	t.Skip("Complex config test skipped - will be re-enabled after debugging")
-	// 一時的なconfig.ymlファイルを作成
+	// 作業ディレクトリを一時的に変更
+	originalWd, _ := os.Getwd()
+	tempDir, _ := os.MkdirTemp("", "profile_test")
+	os.Chdir(tempDir)
+	defer func() {
+		os.Chdir(originalWd)
+		os.RemoveAll(tempDir)
+	}()
+
+	// 有効なconfig.ymlファイルを作成
 	configContent := `default_profile:
   ai:
     gemini:
       type: "gemini-1.5-flash"
       api_key: "test-api-key-valid"
-  prompt:
-    system_prompt: "テスト用システムプロンプト"
-    comment_prompt_template: "テスト用テンプレート"
+  system_prompt: "テスト用システムプロンプト"
+  comment_prompt_template: "テスト用テンプレート {{TITLE}}"
   output:
     slack_api:
-      api_token: "test-slack-token"
+      api_token: "xoxb-test-slack-token"
       channel: "#test"
-    misskey:
-      api_token: "test-misskey-token"
-      api_url: "https://test.misskey.social/api"
+      message_template: "{{COMMENT}} {{URL}}"
 `
-
-	configFile, err := os.CreateTemp("", "config_*.yml")
+	err := os.WriteFile("./config.yml", []byte(configContent), 0644)
 	assert.NoError(t, err)
-	defer os.Remove(configFile.Name())
-
-	_, err = configFile.WriteString(configContent)
-	assert.NoError(t, err)
-	configFile.Close()
-
-	// 作業ディレクトリを一時的に変更
-	originalWd, _ := os.Getwd()
-	tempDir := os.TempDir()
-	os.Chdir(tempDir)
-	defer os.Chdir(originalWd)
-
-	// config.ymlを作業ディレクトリにコピー
-	err = os.Rename(configFile.Name(), "./config.yml")
-	assert.NoError(t, err)
-	defer os.Remove("./config.yml")
 
 	cmd := makeProfileCheckCmd()
 
@@ -106,63 +197,48 @@ func TestProfileCheckCommand_WithValidConfig(t *testing.T) {
 
 	// 成功メッセージが出力されることを確認
 	output := stdout.String()
-	assert.Contains(t, output, "Profile validation successful", "Should show success message")
+	assert.Contains(t, output, "プロファイルの検証が完了しました", "Should show success message")
 }
 
 // TestProfileCheckCommand_WithProfileMerge はプロファイルマージのテストを実行する
 func TestProfileCheckCommand_WithProfileMerge(t *testing.T) {
-	t.Skip("Complex merge test skipped - will be re-enabled after debugging")
-	// 一時的なconfig.ymlファイルを作成（部分的なdefault_profile）
+	// 作業ディレクトリを一時的に変更
+	originalWd, _ := os.Getwd()
+	tempDir, _ := os.MkdirTemp("", "profile_test")
+	os.Chdir(tempDir)
+	defer func() {
+		os.Chdir(originalWd)
+		os.RemoveAll(tempDir)
+	}()
+
+	// 部分的なconfig.ymlファイルを作成
 	configContent := `default_profile:
   ai:
     gemini:
       type: "gemini-1.5-flash"
-      api_key: "default-api-key-valid"
-  prompt:
-    system_prompt: "デフォルトシステムプロンプト"
-    comment_prompt_template: "デフォルトテンプレート"
+      api_key: "default-api-key"
+  system_prompt: "デフォルトシステムプロンプト"
   output:
     slack_api:
-      api_token: "default-slack-token"
+      api_token: "xoxb-default-token"
       channel: "#default"
+      message_template: "{{COMMENT}} {{URL}}"
 `
-
-	configFile, err := os.CreateTemp("", "config_*.yml")
+	err := os.WriteFile("./config.yml", []byte(configContent), 0644)
 	assert.NoError(t, err)
-	defer os.Remove(configFile.Name())
 
-	_, err = configFile.WriteString(configContent)
-	assert.NoError(t, err)
-	configFile.Close()
-
-	// 一時的なプロファイルファイルを作成（プロンプトをオーバーライド、Misskeyを追加）
-	profileContent := `prompt:
-  system_prompt: "カスタムシステムプロンプト"
-  comment_prompt_template: "カスタムテンプレート"
+	// プロファイルファイルを作成（プロンプトをオーバーライド、Misskeyを追加）
+	profileContent := `system_prompt: "カスタムシステムプロンプト"
+comment_prompt_template: "カスタムテンプレート {{TITLE}}"
 output:
   misskey:
     api_token: "custom-misskey-token"
     api_url: "https://custom.misskey.social/api"
+    message_template: "{{COMMENT}} {{URL}}"
 `
-
-	profileFile, err := os.CreateTemp("", "profile_*.yml")
+	profilePath := "./test_profile.yml"
+	err = os.WriteFile(profilePath, []byte(profileContent), 0644)
 	assert.NoError(t, err)
-	defer os.Remove(profileFile.Name())
-
-	_, err = profileFile.WriteString(profileContent)
-	assert.NoError(t, err)
-	profileFile.Close()
-
-	// 作業ディレクトリを一時的に変更
-	originalWd, _ := os.Getwd()
-	tempDir := os.TempDir()
-	os.Chdir(tempDir)
-	defer os.Chdir(originalWd)
-
-	// config.ymlを作業ディレクトリにコピー
-	err = os.Rename(configFile.Name(), "./config.yml")
-	assert.NoError(t, err)
-	defer os.Remove("./config.yml")
 
 	cmd := makeProfileCheckCmd()
 
@@ -173,7 +249,7 @@ output:
 	cmd.SetErr(stderr)
 
 	// コマンドライン引数を設定（プロファイルファイルを指定）
-	cmd.SetArgs([]string{profileFile.Name()})
+	cmd.SetArgs([]string{profilePath})
 
 	// コマンドを実行
 	_, err = cmd.ExecuteC()
@@ -183,7 +259,7 @@ output:
 
 	// 成功メッセージが出力されることを確認
 	output := stdout.String()
-	assert.Contains(t, output, "Profile validation successful", "Should show success message for merged profile")
+	assert.Contains(t, output, "プロファイルの検証が完了しました", "Should show success message for merged profile")
 }
 
 // TestProfileCheckCommand_AcceptsOptionalArgs は引数がオプショナルになったことをテストする
@@ -201,7 +277,7 @@ func TestProfileCheckCommand_AcceptsOptionalArgs(t *testing.T) {
 	cmd.SetArgs([]string{"nonexistent.yml"})
 	_, err = cmd.ExecuteC()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "no such file or directory")
+	assert.Contains(t, err.Error(), "プロファイルファイルが見つかりません")
 }
 
 // TestProfileCheckCommand_ConfigLoadingBehavior はconfig.yml読み込み動作をテストする
