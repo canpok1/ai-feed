@@ -1,0 +1,159 @@
+package infra
+
+import (
+	"bytes"
+	"io"
+	"log/slog"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestInitLogger(t *testing.T) {
+	// 元のos.Stdoutとslogのデフォルトを保存
+	originalStdout := os.Stdout
+	originalLogger := slog.Default()
+	defer func() {
+		os.Stdout = originalStdout
+		slog.SetDefault(originalLogger)
+	}()
+
+	tests := []struct {
+		name        string
+		verbose     bool
+		expectDebug bool
+	}{
+		{
+			name:        "verbose false should set INFO level",
+			verbose:     false,
+			expectDebug: false,
+		},
+		{
+			name:        "verbose true should set DEBUG level",
+			verbose:     true,
+			expectDebug: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w, err := os.Pipe()
+			assert.NoError(t, err)
+			os.Stdout = w
+
+			InitLogger(tt.verbose)
+
+			slog.Debug("debug message")
+			slog.Info("info message")
+
+			w.Close()
+			var buf bytes.Buffer
+			_, err = io.Copy(&buf, r)
+			assert.NoError(t, err)
+
+			output := buf.String()
+
+			if tt.expectDebug {
+				assert.Contains(t, output, "DEBUG debug message")
+			} else {
+				assert.NotContains(t, output, "DEBUG debug message")
+			}
+			assert.Contains(t, output, "INFO info message")
+
+			// Test log format and timestamp (RFC3339)
+			if len(output) > 0 {
+				lines := strings.Split(strings.TrimSpace(output), "\n")
+				for _, line := range lines {
+					if line == "" {
+						continue
+					}
+					// ログ形式: 時刻 ログレベル ログメッセージ
+					parts := strings.SplitN(line, " ", 3)
+					assert.GreaterOrEqual(t, len(parts), 3, "Log line should have at least 3 parts: timestamp, level, message")
+					if len(parts) >= 3 {
+						// タイムスタンプの検証
+						_, err := time.Parse(time.RFC3339, parts[0])
+						assert.NoError(t, err, "Timestamp should be in RFC3339 format")
+						// ログレベルの検証
+						assert.Contains(t, []string{"DEBUG", "INFO", "WARN", "ERROR"}, parts[1], "Log level should be valid")
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestSimpleHandler(t *testing.T) {
+	tests := []struct {
+		name          string
+		level         slog.Level
+		logLevel      slog.Level
+		message       string
+		expectOutput  bool
+		expectPattern string
+	}{
+		{
+			name:          "INFO level message at INFO threshold",
+			level:         slog.LevelInfo,
+			logLevel:      slog.LevelInfo,
+			message:       "test info message",
+			expectOutput:  true,
+			expectPattern: "INFO test info message",
+		},
+		{
+			name:          "DEBUG level message at INFO threshold",
+			level:         slog.LevelInfo,
+			logLevel:      slog.LevelDebug,
+			message:       "test debug message",
+			expectOutput:  false,
+			expectPattern: "",
+		},
+		{
+			name:          "ERROR level message at INFO threshold",
+			level:         slog.LevelInfo,
+			logLevel:      slog.LevelError,
+			message:       "test error message",
+			expectOutput:  true,
+			expectPattern: "ERROR test error message",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			opts := &slog.HandlerOptions{
+				Level: tt.level,
+			}
+			handler := NewSimpleHandler(&buf, opts)
+			logger := slog.New(handler)
+
+			// ログメッセージを出力
+			switch tt.logLevel {
+			case slog.LevelDebug:
+				logger.Debug(tt.message)
+			case slog.LevelInfo:
+				logger.Info(tt.message)
+			case slog.LevelWarn:
+				logger.Warn(tt.message)
+			case slog.LevelError:
+				logger.Error(tt.message)
+			}
+
+			output := buf.String()
+			if tt.expectOutput {
+				assert.Contains(t, output, tt.expectPattern)
+				// 形式の確認: 時刻 ログレベル メッセージ
+				parts := strings.SplitN(strings.TrimSpace(output), " ", 3)
+				assert.Len(t, parts, 3)
+				// タイムスタンプの検証
+				_, err := time.Parse(time.RFC3339, parts[0])
+				assert.NoError(t, err)
+			} else {
+				assert.Empty(t, output)
+			}
+		})
+	}
+}

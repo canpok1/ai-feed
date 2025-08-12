@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/canpok1/ai-feed/cmd/runner"
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -21,12 +22,15 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 		Long: `指定されたURLから記事を取得し、その中からランダムに選択した
 記事を推薦します。`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			slog.Debug("Starting recommend command")
 			configPath := cfgFile
 			if configPath == "" {
 				configPath = "./config.yml"
 			}
+			slog.Debug("Loading config", "config_path", configPath)
 			config, loadErr := infra.NewYamlConfigRepository(configPath).Load()
 			if loadErr != nil {
+				slog.Error("Failed to load config", "error", loadErr)
 				return fmt.Errorf("failed to load config: %w", loadErr)
 			}
 
@@ -41,8 +45,10 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 			}
 
 			if profilePath != "" {
+				slog.Debug("Loading profile", "profile_path", profilePath)
 				loadedInfraProfile, loadProfileErr := profile.NewYamlProfileRepositoryImpl(profilePath).LoadInfraProfile()
 				if loadProfileErr != nil {
+					slog.Error("Failed to load profile", "profile_path", profilePath, "error", loadProfileErr)
 					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
 				}
 				currentProfile.Merge(loadedInfraProfile)
@@ -86,8 +92,10 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 					fmt.Fprintln(cmd.OutOrStdout(), "記事が見つかりませんでした。")
 					return nil
 				}
+				slog.Error("Command execution failed", "error", err)
 				return err
 			}
+			slog.Debug("Recommend command completed successfully")
 			return nil
 		},
 	}
