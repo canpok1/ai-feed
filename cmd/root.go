@@ -10,9 +10,9 @@ var cfgFile string
 func makeRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ai-feed",
-		Short: "An AI-powered CLI RSS reader that summarizes articles and posts comments to various platforms.",
+		Short: "RSSフィードから記事を取得し、AIによる要約とコメント投稿を行うCLIツールです",
 	}
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yml)")
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "設定ファイル (デフォルトは ./config.yml)")
 	cmd.SilenceUsage = true
 	return cmd
 }
