@@ -67,7 +67,6 @@ func makeProfileCheckCmd() *cobra.Command {
 			r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
 			result, err := r.Run(profilePath)
 			if err != nil {
-				cmd.PrintErrf("エラー: %v\n", err)
 				return err
 			}
 
