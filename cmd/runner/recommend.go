@@ -36,11 +36,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			return err
 		},
 	)
-	viewer, err := message.NewStdSender(stdout)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create viewer: %w", err)
-	}
-	viewers := []domain.MessageSender{viewer}
+	var viewers []domain.MessageSender
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
