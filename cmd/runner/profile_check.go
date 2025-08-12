@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
-	"github.com/canpok1/ai-feed/internal/infra/profile"
 )
 
 // ProfileCheckResult はプロファイル検証の結果を表す構造体
@@ -18,15 +18,17 @@ type ProfileCheckResult struct {
 
 // ProfileCheckRunner はprofile checkコマンドのビジネスロジックを実行する構造体
 type ProfileCheckRunner struct {
-	configPath string
-	stderr     io.Writer
+	configPath    string
+	stderr        io.Writer
+	profileRepoFn func(string) domain.ProfileRepository
 }
 
 // NewProfileCheckRunner はProfileCheckRunnerの新しいインスタンスを作成する
-func NewProfileCheckRunner(configPath string, stderr io.Writer) *ProfileCheckRunner {
+func NewProfileCheckRunner(configPath string, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ProfileCheckRunner {
 	return &ProfileCheckRunner{
-		configPath: configPath,
-		stderr:     stderr,
+		configPath:    configPath,
+		stderr:        stderr,
+		profileRepoFn: profileRepoFn,
 	}
 }
 
@@ -66,7 +68,8 @@ func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error
 		}
 
 		// 指定されたプロファイルファイルの読み込み
-		loadedInfraProfile, err := profile.NewYamlProfileRepositoryImpl(profilePath).LoadInfraProfile()
+		profileRepo := r.profileRepoFn(profilePath)
+		loadedInfraProfile, err := profileRepo.LoadInfraProfile()
 		if err != nil {
 			return nil, fmt.Errorf("プロファイルの読み込みに失敗しました: %w", err)
 		}

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -68,7 +69,8 @@ func TestProfileInitRunner_Run(t *testing.T) {
 			filePath := tt.setup(t, tmpDir)
 
 			// ProfileInitRunnerを作成して実行
-			runner := NewProfileInitRunner(filePath)
+			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
+			runner := NewProfileInitRunner(profileRepo)
 			err := runner.Run()
 
 			// エラーの確認

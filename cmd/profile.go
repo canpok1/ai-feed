@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/canpok1/ai-feed/cmd/runner"
+	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +30,8 @@ func makeProfileInitCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
 
-			r := runner.NewProfileInitRunner(filePath)
+			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
+			r := runner.NewProfileInitRunner(profileRepo)
 			err := r.Run()
 			if err != nil {
 				return err
@@ -58,7 +61,10 @@ func makeProfileCheckCmd() *cobra.Command {
 			}
 
 			// ProfileCheckRunnerを使用して検証を実行
-			r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr())
+			profileRepoFn := func(path string) domain.ProfileRepository {
+				return profile.NewYamlProfileRepositoryImpl(path)
+			}
+			r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
 			result, err := r.Run(profilePath)
 			if err != nil {
 				cmd.PrintErrf("エラー: %v\n", err)

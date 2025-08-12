@@ -3,18 +3,18 @@ package runner
 import (
 	"fmt"
 
-	"github.com/canpok1/ai-feed/internal/infra/profile"
+	"github.com/canpok1/ai-feed/internal/domain"
 )
 
 // ProfileInitRunner はprofile initコマンドのビジネスロジックを実行する構造体
 type ProfileInitRunner struct {
-	profileRepo *profile.YamlProfileRepository
+	profileRepo domain.ProfileRepository
 }
 
 // NewProfileInitRunner はProfileInitRunnerの新しいインスタンスを作成する
-func NewProfileInitRunner(filePath string) *ProfileInitRunner {
+func NewProfileInitRunner(profileRepo domain.ProfileRepository) *ProfileInitRunner {
 	return &ProfileInitRunner{
-		profileRepo: profile.NewYamlProfileRepositoryImpl(filePath),
+		profileRepo: profileRepo,
 	}
 }
 
