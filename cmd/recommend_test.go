@@ -35,14 +35,14 @@ func TestNewRecommendParams(t *testing.T) {
 			urlFlag:      "http://example.com/feed.xml",
 			sourceFlag:   "tmp_source.txt",
 			expectedURLs: nil,
-			expectedErr:  "cannot use --url and --source options together",
+			expectedErr:  "--url と --source オプションは同時に使用できません",
 		},
 		{
 			name:         "Neither URL nor source flags",
 			urlFlag:      "",
 			sourceFlag:   "",
 			expectedURLs: nil,
-			expectedErr:  "either --url or --source must be specified",
+			expectedErr:  "--url または --source のいずれかを指定してください",
 		},
 		{
 			name:         "Source file not found",
@@ -56,7 +56,7 @@ func TestNewRecommendParams(t *testing.T) {
 			urlFlag:      "",
 			sourceFlag:   "empty_source.txt",
 			expectedURLs: nil,
-			expectedErr:  "source file contains no URLs",
+			expectedErr:  "ソースファイルにURLが含まれていません",
 		},
 	}
 

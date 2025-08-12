@@ -111,7 +111,7 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 	}
 
 	if url != "" && sourcePath != "" {
-		return nil, fmt.Errorf("cannot use --url and --source options together")
+		return nil, fmt.Errorf("--url と --source オプションは同時に使用できません")
 	}
 
 	var urls []string
@@ -121,12 +121,12 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 			return nil, fmt.Errorf("failed to read URLs from file: %w", err)
 		}
 		if len(urls) == 0 {
-			return nil, fmt.Errorf("source file contains no URLs")
+			return nil, fmt.Errorf("ソースファイルにURLが含まれていません")
 		}
 	} else if url != "" {
 		urls = []string{url}
 	} else {
-		return nil, fmt.Errorf("either --url or --source must be specified")
+		return nil, fmt.Errorf("--url または --source のいずれかを指定してください")
 	}
 
 	return &runner.RecommendParams{
