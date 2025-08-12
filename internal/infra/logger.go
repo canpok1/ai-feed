@@ -8,6 +8,15 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/fatih/color"
+)
+
+var (
+	debugColor = color.New(color.FgHiBlack) // 灰色
+	infoColor  = color.New(color.FgGreen)   // 緑色
+	warnColor  = color.New(color.FgYellow)  // 黄色
+	errorColor = color.New(color.FgRed)     // 赤色
 )
 
 // SimpleHandler は時刻 ログレベル ログメッセージの形式で出力するカスタムハンドラー
@@ -42,8 +51,20 @@ func (h *SimpleHandler) Handle(_ context.Context, r slog.Record) error {
 	// タイムスタンプを取得
 	timestamp = r.Time.Format(time.RFC3339)
 
-	// ログレベルを取得
-	level = r.Level.String()
+	// ログレベルを取得し、色を適用
+	levelStr := r.Level.String()
+	switch r.Level {
+	case slog.LevelDebug:
+		level = debugColor.Sprint(levelStr)
+	case slog.LevelInfo:
+		level = infoColor.Sprint(levelStr)
+	case slog.LevelWarn:
+		level = warnColor.Sprint(levelStr)
+	case slog.LevelError:
+		level = errorColor.Sprint(levelStr)
+	default:
+		level = levelStr
+	}
 
 	// メッセージを取得
 	msg = r.Message
