@@ -60,6 +60,8 @@ go test -v ./...
 
 4. **外部連携**: SlackとMisskeyプラットフォームへの投稿をサポート。各連携はinternal/infra/内の個別のviewerとして実装されています。
 
+5. **ログシステム**: Go標準ライブラリのlog/slogパッケージを使用。verboseフラグ（-v, --verbose）でDEBUG/INFOレベルを切り替え可能です。
+
 ## コーディングルール
 
 詳細なコーディングルールは [docs/01_coding_rules.md](docs/01_coding_rules.md) を参照してください。

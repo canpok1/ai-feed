@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
@@ -72,19 +73,29 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 // Run はrecommendコマンドのビジネスロジックを実行する
 func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile infra.Profile) error {
+	slog.Info("Starting recommend command execution")
+	slog.Debug("Fetching articles from URLs", "url_count", len(params.URLs))
+
 	allArticles, err := r.fetcher.Fetch(params.URLs, 0)
 	if err != nil {
 		return fmt.Errorf("failed to fetch articles: %w", err)
 	}
 
 	if len(allArticles) == 0 {
+		slog.Warn("No articles found in feeds")
 		return ErrNoArticlesFound
 	}
 
+	slog.Debug("Articles fetched successfully", "article_count", len(allArticles))
+
+	slog.Debug("Generating recommendation from articles")
 	recommend, err := r.recommender.Recommend(ctx, allArticles)
 	if err != nil {
+		slog.Error("Failed to generate recommendation", "error", err)
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
+
+	slog.Debug("Recommendation generated successfully", "article_title", recommend.Article.Title)
 
 	var errs []error
 	fixedMessage := ""
@@ -92,15 +103,19 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		fixedMessage = profile.Prompt.FixedMessage
 	}
 
+	slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
 	for _, viewer := range r.viewers {
 		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
+			slog.Error("Failed to send recommendation to viewer", "error", viewErr)
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
 		}
 	}
 
 	if len(errs) > 0 {
+		slog.Error("Some viewers failed to send recommendation", "error_count", len(errs))
 		return fmt.Errorf("failed to view all recommends: %v", errs)
 	}
 
+	slog.Info("Recommendation sent successfully to all viewers")
 	return nil
 }
