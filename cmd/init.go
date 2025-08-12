@@ -12,7 +12,7 @@ const DefaultConfigFilePath = "./config.yml"
 func makeInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "Generates a boilerplate config.yml file. It will not overwrite an existing file.",
+		Short: "設定ファイル（config.yml）のテンプレートを生成します（既存ファイルは上書きしません）",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := DefaultConfigFilePath
 
