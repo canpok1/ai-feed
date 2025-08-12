@@ -53,10 +53,8 @@ func TestVerboseFlag(t *testing.T) {
 			err := rootCmd.Execute()
 
 			// The help command returns an error for exit, which is expected
-			if tt.name != "no verbose flag" {
-				// For verbose flag tests, we expect the verbose variable to be set correctly
-				assert.Equal(t, tt.expectVerbose, verbose)
-			}
+			// For all cases, we expect the verbose variable to be set correctly
+			assert.Equal(t, tt.expectVerbose, verbose)
 
 			// For help commands, we don't care about the error as it's expected
 			_ = err
