@@ -17,9 +17,9 @@ import (
 func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "recommend",
-		Short: "Recommend a random article from a given URL instantly.",
-		Long: `This command fetches articles from the specified URL and
-recommends one random article from the fetched list.`,
+		Short: "指定されたURLからランダムな記事を推薦します",
+		Long: `指定されたURLから記事を取得し、その中からランダムに選択した
+記事を推薦します。`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configPath := cfgFile
 			if configPath == "" {
@@ -92,9 +92,9 @@ recommends one random article from the fetched list.`,
 		},
 	}
 
-	cmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
-	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
-	cmd.Flags().StringP("profile", "p", "", "Path to a profile YAML file")
+	cmd.Flags().StringP("url", "u", "", "推薦元となるフィードのURL")
+	cmd.Flags().StringP("source", "s", "", "URLリストを含むファイルのパス")
+	cmd.Flags().StringP("profile", "p", "", "プロファイルYAMLファイルのパス")
 
 	cmd.SilenceUsage = true
 	return cmd
