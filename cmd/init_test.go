@@ -83,6 +83,6 @@ func TestInitCommand_NoArguments(t *testing.T) {
 
 	// コマンドの設定を確認
 	assert.Equal(t, "init", cmd.Use, "Command Use should be 'init'")
-	assert.Contains(t, cmd.Short, "Generates a boilerplate config.yml file", "Short description should mention config.yml generation")
-	assert.Contains(t, cmd.Short, "It will not overwrite an existing file", "Short description should mention file protection")
+	assert.Contains(t, cmd.Short, "設定ファイル（config.yml）のテンプレートを生成します", "Short description should mention config.yml generation")
+	assert.Contains(t, cmd.Short, "既存ファイルは上書きしません", "Short description should mention file protection")
 }

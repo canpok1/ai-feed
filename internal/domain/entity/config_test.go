@@ -37,7 +37,7 @@ func TestGeminiConfig_Validate(t *testing.T) {
 				APIKey: "",
 			},
 			wantErr: true,
-			errors:  []string{"Gemini API keyが設定されていません"},
+			errors:  []string{"Gemini APIキーが設定されていません"},
 		},
 	}
 

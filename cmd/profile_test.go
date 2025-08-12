@@ -39,7 +39,7 @@ func TestProfileCheckCommand_NoArguments(t *testing.T) {
 
 	// バリデーションエラーメッセージが含まれることを確認
 	output := stderr.String()
-	assert.Contains(t, output, "Profile validation failed", "Error message should indicate validation failure")
+	assert.Contains(t, output, "プロファイルの検証に失敗しました", "Error message should indicate validation failure")
 }
 
 // TestProfileCheckCommand_PathResolution はパス解決のテストを実行する
