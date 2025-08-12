@@ -91,7 +91,6 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	slog.Debug("Generating recommendation from articles")
 	recommend, err := r.recommender.Recommend(ctx, allArticles)
 	if err != nil {
-		slog.Error("Failed to generate recommendation", "error", err)
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
 
@@ -112,7 +111,6 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	}
 
 	if len(errs) > 0 {
-		slog.Error("Some viewers failed to send recommendation", "error_count", len(errs))
 		return fmt.Errorf("failed to view all recommends: %v", errs)
 	}
 
