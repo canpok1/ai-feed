@@ -28,7 +28,7 @@ type RecommendRunner struct {
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
-func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*RecommendRunner, error) {
+func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*RecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -36,11 +36,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			return err
 		},
 	)
-	viewer, err := message.NewStdSender(stdout)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create viewer: %w", err)
-	}
-	viewers := []domain.MessageSender{viewer}
+	var viewers []domain.MessageSender
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
@@ -101,6 +97,18 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	if profile.Prompt != nil {
 		fixedMessage = profile.Prompt.FixedMessage
 	}
+
+	// 推薦記事の詳細情報をログ出力
+	var commentValue string
+	if recommend.Comment != nil {
+		commentValue = *recommend.Comment
+	}
+	slog.Info("推薦記事を選択しました",
+		"title", recommend.Article.Title,
+		"link", recommend.Article.Link,
+		"comment", commentValue,
+		"fixed_message", fixedMessage,
+	)
 
 	slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
 	for _, viewer := range r.viewers {
