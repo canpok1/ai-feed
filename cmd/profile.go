@@ -12,7 +12,7 @@ import (
 func makeProfileCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "profile",
-		Short: "Manage user profiles.",
+		Short: "ユーザープロファイルを管理します",
 	}
 	cmd.SilenceUsage = true
 	profileInitCmd := makeProfileInitCmd()
@@ -25,7 +25,7 @@ func makeProfileCmd() *cobra.Command {
 func makeProfileInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init [file path]",
-		Short: "Initialize a new profile file.",
+		Short: "新しいプロファイルファイルを初期化します",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
@@ -48,7 +48,7 @@ func makeProfileInitCmd() *cobra.Command {
 func makeProfileCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "check [file path]",
-		Short: "Validate profile file configuration.",
+		Short: "プロファイルファイルの設定を検証します",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// config.ymlの読み込み
