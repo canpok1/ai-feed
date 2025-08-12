@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
@@ -27,7 +28,7 @@ type RecommendRunner struct {
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
-func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stdout io.Writer, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*RecommendRunner, error) {
+func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*RecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -35,11 +36,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			return err
 		},
 	)
-	viewer, err := message.NewStdSender(stdout)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create viewer: %w", err)
-	}
-	viewers := []domain.MessageSender{viewer}
+	var viewers []domain.MessageSender
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
@@ -72,19 +69,28 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 // Run はrecommendコマンドのビジネスロジックを実行する
 func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile infra.Profile) error {
+	slog.Info("Starting recommend command execution")
+	slog.Debug("Fetching articles from URLs", "url_count", len(params.URLs))
+
 	allArticles, err := r.fetcher.Fetch(params.URLs, 0)
 	if err != nil {
 		return fmt.Errorf("failed to fetch articles: %w", err)
 	}
 
 	if len(allArticles) == 0 {
+		slog.Warn("No articles found in feeds")
 		return ErrNoArticlesFound
 	}
 
+	slog.Debug("Articles fetched successfully", "article_count", len(allArticles))
+
+	slog.Debug("Generating recommendation from articles")
 	recommend, err := r.recommender.Recommend(ctx, allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
+
+	slog.Debug("Recommendation generated successfully", "article_title", recommend.Article.Title)
 
 	var errs []error
 	fixedMessage := ""
@@ -92,6 +98,19 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		fixedMessage = profile.Prompt.FixedMessage
 	}
 
+	// 推薦記事の詳細情報をログ出力
+	var commentValue string
+	if recommend.Comment != nil {
+		commentValue = *recommend.Comment
+	}
+	slog.Info("推薦記事を選択しました",
+		"title", recommend.Article.Title,
+		"link", recommend.Article.Link,
+		"comment", commentValue,
+		"fixed_message", fixedMessage,
+	)
+
+	slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
 	for _, viewer := range r.viewers {
 		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
@@ -102,5 +121,6 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		return fmt.Errorf("failed to view all recommends: %v", errs)
 	}
 
+	slog.Info("Recommendation sent successfully to all viewers")
 	return nil
 }

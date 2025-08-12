@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/canpok1/ai-feed/cmd/runner"
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -17,16 +18,19 @@ import (
 func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "recommend",
-		Short: "Recommend a random article from a given URL instantly.",
-		Long: `This command fetches articles from the specified URL and
-recommends one random article from the fetched list.`,
+		Short: "指定されたURLからランダムな記事を推薦します",
+		Long: `指定されたURLから記事を取得し、その中からランダムに選択した
+記事を推薦します。`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			slog.Debug("Starting recommend command")
 			configPath := cfgFile
 			if configPath == "" {
 				configPath = "./config.yml"
 			}
+			slog.Debug("Loading config", "config_path", configPath)
 			config, loadErr := infra.NewYamlConfigRepository(configPath).Load()
 			if loadErr != nil {
+				slog.Error("Failed to load config", "error", loadErr)
 				return fmt.Errorf("failed to load config: %w", loadErr)
 			}
 
@@ -41,8 +45,10 @@ recommends one random article from the fetched list.`,
 			}
 
 			if profilePath != "" {
+				slog.Debug("Loading profile", "profile_path", profilePath)
 				loadedInfraProfile, loadProfileErr := profile.NewYamlProfileRepositoryImpl(profilePath).LoadInfraProfile()
 				if loadProfileErr != nil {
+					slog.Error("Failed to load profile", "profile_path", profilePath, "error", loadProfileErr)
 					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
 				}
 				currentProfile.Merge(loadedInfraProfile)
@@ -70,7 +76,7 @@ recommends one random article from the fetched list.`,
 				promptConfigEntity,
 			)
 
-			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.OutOrStdout(), cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
+			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -86,15 +92,17 @@ recommends one random article from the fetched list.`,
 					fmt.Fprintln(cmd.OutOrStdout(), "記事が見つかりませんでした。")
 					return nil
 				}
+				slog.Error("Command execution failed", "error", err)
 				return err
 			}
+			slog.Debug("Recommend command completed successfully")
 			return nil
 		},
 	}
 
-	cmd.Flags().StringP("url", "u", "", "URL of the feed to recommend from")
-	cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
-	cmd.Flags().StringP("profile", "p", "", "Path to a profile YAML file")
+	cmd.Flags().StringP("url", "u", "", "推薦元となるフィードのURL")
+	cmd.Flags().StringP("source", "s", "", "URLリストを含むファイルのパス")
+	cmd.Flags().StringP("profile", "p", "", "プロファイルYAMLファイルのパス")
 
 	cmd.SilenceUsage = true
 	return cmd
@@ -111,7 +119,7 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 	}
 
 	if url != "" && sourcePath != "" {
-		return nil, fmt.Errorf("cannot use --url and --source options together")
+		return nil, fmt.Errorf("--url と --source オプションは同時に使用できません")
 	}
 
 	var urls []string
@@ -121,12 +129,12 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 			return nil, fmt.Errorf("failed to read URLs from file: %w", err)
 		}
 		if len(urls) == 0 {
-			return nil, fmt.Errorf("source file contains no URLs")
+			return nil, fmt.Errorf("ソースファイルにURLが含まれていません")
 		}
 	} else if url != "" {
 		urls = []string{url}
 	} else {
-		return nil, fmt.Errorf("either --url or --source must be specified")
+		return nil, fmt.Errorf("--url または --source のいずれかを指定してください")
 	}
 
 	return &runner.RecommendParams{

@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/cmd/runner"
+	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +12,7 @@ import (
 func makeProfileCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "profile",
-		Short: "Manage user profiles.",
+		Short: "ユーザープロファイルを管理します",
 	}
 	cmd.SilenceUsage = true
 	profileInitCmd := makeProfileInitCmd()
@@ -25,18 +25,18 @@ func makeProfileCmd() *cobra.Command {
 func makeProfileInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init [file path]",
-		Short: "Initialize a new profile file.",
+		Short: "新しいプロファイルファイルを初期化します",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
 
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			// テンプレートを使用してコメント付きprofile.ymlを生成
-			err := profileRepo.SaveProfileWithTemplate()
+			r := runner.NewProfileInitRunner(profileRepo)
+			err := r.Run()
 			if err != nil {
-				return fmt.Errorf("failed to create profile file: %w", err)
+				return err
 			}
-			cmd.Printf("Profile file created successfully at %s\n", filePath)
+			cmd.Printf("プロファイルファイルが正常に作成されました: %s\n", filePath)
 			return nil
 		},
 	}
@@ -48,82 +48,45 @@ func makeProfileInitCmd() *cobra.Command {
 func makeProfileCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "check [file path]",
-		Short: "Validate profile file configuration.",
+		Short: "プロファイルファイルの設定を検証します",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// config.ymlの読み込み
+			// config.ymlのパスを取得
 			configPath := "./config.yml"
-			config, err := infra.NewYamlConfigRepository(configPath).Load()
-			if err != nil {
-				// ファイルが存在しない場合は警告を表示しない
-				if _, statErr := os.Stat(configPath); os.IsNotExist(statErr) {
-					// ファイルが存在しない場合は何もしない
-				} else {
-					// ファイルが存在するが読み込み・パースに失敗した場合は警告を表示
-					cmd.PrintErrf("Warning: failed to load or parse %s, proceeding with empty default profile. Error: %v\n", configPath, err)
-				}
-			}
 
-			// デフォルトプロファイルの取得
-			var currentProfile infra.Profile
-			if config != nil && config.DefaultProfile != nil {
-				currentProfile = *config.DefaultProfile
-			}
-			// 存在しない場合は空のプロファイルを使用（ゼロ値）
-
-			// 引数が指定されている場合は指定ファイルとマージ
+			// 引数からプロファイルファイルのパスを取得
+			profilePath := ""
 			if len(args) > 0 {
-				filePath := args[0]
-
-				// ファイルの存在確認
-				if _, err := os.Stat(filePath); os.IsNotExist(err) {
-					cmd.PrintErrf("Error: profile file not found at %s\n", filePath)
-					return err
-				} else if err != nil {
-					cmd.PrintErrf("Error: failed to access file: %v\n", err)
-					return err
-				}
-
-				// 指定されたプロファイルファイルの読み込み
-				loadedInfraProfile, err := profile.NewYamlProfileRepositoryImpl(filePath).LoadInfraProfile()
-				if err != nil {
-					cmd.PrintErrf("Error: failed to load profile: %v\n", err)
-					return err
-				}
-
-				// config.ymlが存在する場合はマージ、存在しない場合はloadedInfraProfileをそのまま使用
-				if config != nil && config.DefaultProfile != nil {
-					// デフォルトプロファイルとマージ
-					currentProfile.Merge(loadedInfraProfile)
-				} else {
-					// config.ymlが存在しない場合は、読み込んだプロファイルをそのまま使用
-					currentProfile = *loadedInfraProfile
-				}
+				profilePath = args[0]
 			}
 
-			// マージ後のプロファイルをentity.Profileに変換してバリデーション
-			entityProfile, err := currentProfile.ToEntity()
+			// ProfileCheckRunnerを使用して検証を実行
+			profileRepoFn := func(path string) domain.ProfileRepository {
+				return profile.NewYamlProfileRepositoryImpl(path)
+			}
+			r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
+			result, err := r.Run(profilePath)
 			if err != nil {
-				return fmt.Errorf("failed to process profile: %w", err)
+				cmd.PrintErrf("エラー: %v\n", err)
+				return err
 			}
-			result := entityProfile.Validate()
 
 			// 結果の表示
 			if !result.IsValid {
-				cmd.PrintErrln("Profile validation failed:")
-				for _, err := range result.Errors {
-					cmd.PrintErrf("  ERROR: %s\n", err)
+				cmd.PrintErrln("プロファイルの検証に失敗しました:")
+				for _, errMsg := range result.Errors {
+					cmd.PrintErrf("  エラー: %s\n", errMsg)
 				}
-				return fmt.Errorf("profile validation failed")
+				return fmt.Errorf("プロファイルの検証に失敗しました")
 			}
 
 			if len(result.Warnings) > 0 {
-				cmd.PrintErrln("Profile validation completed with warnings:")
+				cmd.PrintErrln("プロファイルの検証が警告付きで完了しました:")
 				for _, warning := range result.Warnings {
-					cmd.PrintErrf("  WARNING: %s\n", warning)
+					cmd.PrintErrf("  警告: %s\n", warning)
 				}
 			} else {
-				cmd.Println("Profile validation successful")
+				cmd.Println("プロファイルの検証が完了しました")
 			}
 
 			return nil

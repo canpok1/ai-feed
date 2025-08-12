@@ -21,6 +21,14 @@ clean:
 test:
 	go test ./...
 
+test-integration:
+	go test -tags=integration -v ./cmd/...
+
+test-performance:
+	go test -tags=integration -v -run="Performance" ./cmd/...
+
+test-all: test test-integration
+
 lint:
 	go vet ./...
 

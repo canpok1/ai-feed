@@ -47,7 +47,7 @@ func (g *GeminiConfig) Validate() *ValidationResult {
 	}
 
 	// APIKey: 必須項目（空文字列でない）
-	if err := ValidateRequired(g.APIKey, "Gemini API key"); err != nil {
+	if err := ValidateRequired(g.APIKey, "Gemini APIキー"); err != nil {
 		builder.AddError(err.Error())
 	}
 

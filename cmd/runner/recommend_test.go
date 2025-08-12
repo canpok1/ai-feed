@@ -3,7 +3,9 @@ package runner
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -11,6 +13,7 @@ import (
 	"github.com/canpok1/ai-feed/internal/infra"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -40,7 +43,7 @@ func TestNewRecommendRunner(t *testing.T) {
 		expectedErrorMsg string
 	}{
 		{
-			name:         "Successful creation with standard viewer only",
+			name:         "Successful creation with no viewers",
 			outputConfig: &infra.OutputConfig{},
 			promptConfig: &infra.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:  false,
@@ -91,13 +94,11 @@ func TestNewRecommendRunner(t *testing.T) {
 			mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
 			mockRecommender := mock_domain.NewMockRecommender(ctrl)
 
-			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)
 
 			runner, err := NewRecommendRunner(
 				mockFetchClient,
 				mockRecommender,
-				stdoutBuffer,
 				stderrBuffer,
 				tt.outputConfig,
 				tt.promptConfig,
@@ -114,7 +115,12 @@ func TestNewRecommendRunner(t *testing.T) {
 				assert.NotNil(t, runner)
 				assert.NotNil(t, runner.fetcher)
 				assert.NotNil(t, runner.recommender)
-				assert.NotEmpty(t, runner.viewers)
+				// viewersスライスはStdSender削除により初期状態では空だが、外部連携設定により追加される
+				if tt.outputConfig.SlackAPI != nil || tt.outputConfig.Misskey != nil {
+					assert.Greater(t, len(runner.viewers), 0)
+				} else {
+					assert.Equal(t, 0, len(runner.viewers))
+				}
 			}
 		})
 	}
@@ -234,7 +240,6 @@ func TestRecommendRunner_Run(t *testing.T) {
 			mockRecommender := mock_domain.NewMockRecommender(ctrl)
 			tt.mockRecommenderExpectations(mockRecommender)
 
-			stdoutBuffer := new(bytes.Buffer)
 			stderrBuffer := new(bytes.Buffer)
 
 			var runner *RecommendRunner
@@ -245,17 +250,17 @@ func TestRecommendRunner_Run(t *testing.T) {
 
 			switch tt.name {
 			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, mockConfig.DefaultProfile.Output, mockConfig.DefaultProfile.Prompt)
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, mockConfig.DefaultProfile.Output, mockConfig.DefaultProfile.Prompt)
 				profile = *mockConfig.DefaultProfile
 			case "AI model not configured":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{}, &infra.PromptConfig{})
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, &infra.OutputConfig{}, &infra.PromptConfig{})
 				profile = infra.Profile{
 					AI:     nil,
 					Prompt: mockConfig.DefaultProfile.Prompt,
 					Output: &infra.OutputConfig{},
 				}
 			case "Prompt not configured":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stdoutBuffer, stderrBuffer, &infra.OutputConfig{}, &infra.PromptConfig{})
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, &infra.OutputConfig{}, &infra.PromptConfig{})
 				profile = infra.Profile{
 					AI:     mockConfig.DefaultProfile.AI,
 					Prompt: nil,
@@ -280,4 +285,73 @@ func TestRecommendRunner_Run(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestRecommendRunner_Run_LogOutput tests slog output when recommendation is successful
+func TestRecommendRunner_Run_LogOutput(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Set up a test slog handler to capture log output
+	var logBuffer bytes.Buffer
+	handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelInfo})
+	logger := slog.New(handler)
+	originalLogger := slog.Default()
+	slog.SetDefault(logger)
+	defer slog.SetDefault(originalLogger) // Restore original logger after test
+
+	mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
+	mockRecommender := mock_domain.NewMockRecommender(ctrl)
+
+	stderrBuffer := new(bytes.Buffer)
+	mockConfig := createMockConfig(&infra.PromptConfig{CommentPromptTemplate: "test-prompt-template", FixedMessage: "Test Fixed Message"}, &infra.OutputConfig{})
+
+	runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, mockConfig.DefaultProfile.Output, mockConfig.DefaultProfile.Prompt)
+	assert.NoError(t, runErr)
+
+	// Set up test data
+	testArticles := []entity.Article{
+		{Title: "Test Article", Link: "https://example.com/test"},
+	}
+	testComment := "This is a test comment"
+	testRecommend := &entity.Recommend{
+		Article: testArticles[0],
+		Comment: &testComment,
+	}
+
+	// Set up mock expectations
+	mockFetchClient.EXPECT().Fetch(gomock.Any()).Return(testArticles, nil)
+	mockRecommender.EXPECT().Recommend(gomock.Any(), testArticles).Return(testRecommend, nil)
+
+	// Execute the test
+	params := &RecommendParams{URLs: []string{"https://example.com/feed"}}
+	profile := *mockConfig.DefaultProfile
+	err := runner.Run(context.Background(), params, profile)
+
+	assert.NoError(t, err)
+
+	// Verify log output
+	logOutput := logBuffer.String()
+	// ログ出力をデバッグのために表示
+	t.Logf("Log output: %s", logOutput)
+
+	// 複数行のJSONログから推薦記事選択のログエントリを取得
+	lines := bytes.Split(logBuffer.Bytes(), []byte("\n"))
+	var recommendLogLine []byte
+	for _, line := range lines {
+		if len(line) > 0 && bytes.Contains(line, []byte("推薦記事を選択しました")) {
+			recommendLogLine = line
+			break
+		}
+	}
+
+	var logEntry map[string]any
+	require.NoError(t, json.Unmarshal(recommendLogLine, &logEntry))
+
+	assert.Equal(t, "INFO", logEntry["level"])
+	assert.Equal(t, "推薦記事を選択しました", logEntry["msg"])
+	assert.Equal(t, "Test Article", logEntry["title"])
+	assert.Equal(t, "https://example.com/test", logEntry["link"])
+	assert.Equal(t, "This is a test comment", logEntry["comment"])
+	assert.Equal(t, "Test Fixed Message", logEntry["fixed_message"])
 }
