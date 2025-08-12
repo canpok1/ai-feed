@@ -30,14 +30,6 @@ func makeProfileInitCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
 
-			// Check if file already exists to avoid accidental overwrites.
-			if _, err := os.Stat(filePath); !os.IsNotExist(err) {
-				if err == nil {
-					return fmt.Errorf("file already exists at %s. Please specify a new file path", filePath)
-				}
-				return fmt.Errorf("error checking file path: %w", err)
-			}
-
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			// テンプレートを使用してコメント付きprofile.ymlを生成
 			err := profileRepo.SaveProfileWithTemplate()
