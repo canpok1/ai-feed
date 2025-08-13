@@ -363,11 +363,9 @@ func boolPtr(b bool) *bool {
 
 func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 	tests := []struct {
-		name              string
-		outputConfig      *infra.OutputConfig
-		expectedViewers   int
-		expectSlackSkip   bool
-		expectMisskeySkip bool
+		name            string
+		outputConfig    *infra.OutputConfig
+		expectedViewers int
 	}{
 		{
 			name: "SlackAPI有効、Misskey有効（default）",
@@ -383,9 +381,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedViewers:   2,
-			expectSlackSkip:   false,
-			expectMisskeySkip: false,
+			expectedViewers: 2,
 		},
 		{
 			name: "SlackAPI有効、Misskey無効",
@@ -402,9 +398,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedViewers:   1,
-			expectSlackSkip:   false,
-			expectMisskeySkip: true,
+			expectedViewers: 1,
 		},
 		{
 			name: "SlackAPI無効、Misskey有効",
@@ -421,9 +415,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedViewers:   1,
-			expectSlackSkip:   true,
-			expectMisskeySkip: false,
+			expectedViewers: 1,
 		},
 		{
 			name: "両方無効",
@@ -441,9 +433,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedViewers:   0,
-			expectSlackSkip:   true,
-			expectMisskeySkip: true,
+			expectedViewers: 0,
 		},
 	}
 
