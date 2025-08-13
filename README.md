@@ -37,14 +37,16 @@ AI Feedは、RSSフィードから記事を自動収集し、AIが生成した�
 
 ```bash
 # Intel Mac
-wget https://github.com/canpok1/ai-feed/releases/latest/download/ai-feed_darwin_amd64.tar.gz
+curl -sLO https://github.com/canpok1/ai-feed/releases/latest/download/ai-feed_darwin_amd64.tar.gz
 tar -xzf ai-feed_darwin_amd64.tar.gz
 sudo mv ai-feed /usr/local/bin/
+rm ai-feed_darwin_amd64.tar.gz
 
 # Apple Silicon Mac
-wget https://github.com/canpok1/ai-feed/releases/latest/download/ai-feed_darwin_arm64.tar.gz
+curl -sLO https://github.com/canpok1/ai-feed/releases/latest/download/ai-feed_darwin_arm64.tar.gz
 tar -xzf ai-feed_darwin_arm64.tar.gz
 sudo mv ai-feed /usr/local/bin/
+rm ai-feed_darwin_arm64.tar.gz
 
 # Homebrewでのインストール（将来予定）
 # brew install canpok1/tap/ai-feed
@@ -57,11 +59,13 @@ sudo mv ai-feed /usr/local/bin/
 wget https://github.com/canpok1/ai-feed/releases/latest/download/ai-feed_linux_amd64.tar.gz
 tar -xzf ai-feed_linux_amd64.tar.gz
 sudo mv ai-feed /usr/local/bin/
+rm ai-feed_linux_amd64.tar.gz
 
 # ARM64
 wget https://github.com/canpok1/ai-feed/releases/latest/download/ai-feed_linux_arm64.tar.gz
 tar -xzf ai-feed_linux_arm64.tar.gz
 sudo mv ai-feed /usr/local/bin/
+rm ai-feed_linux_arm64.tar.gz
 ```
 
 #### Windows
