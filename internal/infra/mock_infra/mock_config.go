@@ -68,39 +68,3 @@ func (mr *MockConfigRepositoryMockRecorder) Save(config any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConfigRepository)(nil).Save), config)
 }
-
-// Mockmerger is a mock of merger interface.
-type Mockmerger[T any] struct {
-	ctrl     *gomock.Controller
-	recorder *MockmergerMockRecorder[T]
-	isgomock struct{}
-}
-
-// MockmergerMockRecorder is the mock recorder for Mockmerger.
-type MockmergerMockRecorder[T any] struct {
-	mock *Mockmerger[T]
-}
-
-// NewMockmerger creates a new mock instance.
-func NewMockmerger[T any](ctrl *gomock.Controller) *Mockmerger[T] {
-	mock := &Mockmerger[T]{ctrl: ctrl}
-	mock.recorder = &MockmergerMockRecorder[T]{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *Mockmerger[T]) EXPECT() *MockmergerMockRecorder[T] {
-	return m.recorder
-}
-
-// Merge mocks base method.
-func (m *Mockmerger[T]) Merge(arg0 T) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Merge", arg0)
-}
-
-// Merge indicates an expected call of Merge.
-func (mr *MockmergerMockRecorder[T]) Merge(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Merge", reflect.TypeOf((*Mockmerger[T])(nil).Merge), arg0)
-}

@@ -31,7 +31,6 @@ func toStringP(value string) *string {
 	return &value
 }
 
-
 func TestNewRecommendRunner(t *testing.T) {
 	tests := []struct {
 		name             string
