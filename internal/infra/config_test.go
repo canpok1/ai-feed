@@ -10,6 +10,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// boolPtr returns a pointer to the given bool value
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 func TestNewYamlConfigRepository(t *testing.T) {
 	repo := NewYamlConfigRepository("test_path.yaml")
 	assert.NotNil(t, repo)
@@ -142,6 +147,74 @@ slack_api:
 			},
 			expectedErr: "",
 		},
+		{
+			name: "slack-api with enabled: true",
+			yamlInput: `
+slack_api:
+  enabled: true
+  api_token: test_slack_token
+  channel: "#general"
+`,
+			expected: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:  boolPtr(true),
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name: "slack-api with enabled: false",
+			yamlInput: `
+slack_api:
+  enabled: false
+  api_token: test_slack_token
+  channel: "#general"
+`,
+			expected: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:  boolPtr(false),
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name: "misskey with enabled: true",
+			yamlInput: `
+misskey:
+  enabled: true
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
+`,
+			expected: OutputConfig{
+				Misskey: &MisskeyConfig{
+					Enabled:  boolPtr(true),
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name: "misskey with enabled: false",
+			yamlInput: `
+misskey:
+  enabled: false
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
+`,
+			expected: OutputConfig{
+				Misskey: &MisskeyConfig{
+					Enabled:  boolPtr(false),
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
+			expectedErr: "",
+		},
 	}
 
 	for _, tt := range tests {
@@ -194,6 +267,50 @@ func TestOutputConfig_MarshalYAML(t *testing.T) {
   api_token: test_slack_token
   channel: "#general"
 `,
+			expectedErr: "",
+		},
+		{
+			name: "slack-api with enabled: true",
+			input: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:  boolPtr(true),
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name: "slack-api with enabled: false",
+			input: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:  boolPtr(false),
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name: "misskey with enabled: true",
+			input: OutputConfig{
+				Misskey: &MisskeyConfig{
+					Enabled:  boolPtr(true),
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name: "misskey with enabled: false",
+			input: OutputConfig{
+				Misskey: &MisskeyConfig{
+					Enabled:  boolPtr(false),
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
 			expectedErr: "",
 		},
 	}
@@ -376,6 +493,9 @@ func TestSlackAPIConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 				assert.Equal(t, tt.config.Channel, entity.Channel)
 				assert.Equal(t, tt.config.MessageTemplate, entity.MessageTemplate)
 
+				// Enabledフィールドの後方互換性チェック（省略時=true）
+				assert.True(t, entity.Enabled, "Enabled should default to true for backward compatibility")
+
 				if tt.config.APIToken != "" {
 					// 直接指定が優先される
 					assert.Equal(t, tt.config.APIToken, entity.APIToken)
@@ -459,6 +579,9 @@ func TestMisskeyConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 				assert.NotNil(t, entity)
 				assert.Equal(t, tt.config.APIURL, entity.APIURL)
 
+				// Enabledフィールドの後方互換性チェック（省略時=true）
+				assert.True(t, entity.Enabled, "Enabled should default to true for backward compatibility")
+
 				if tt.config.APIToken != "" {
 					// 直接指定が優先される
 					assert.Equal(t, tt.config.APIToken, entity.APIToken)
@@ -466,6 +589,389 @@ func TestMisskeyConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 					// 環境変数から取得
 					assert.Equal(t, tt.envValue, entity.APIToken)
 				}
+			}
+		})
+	}
+}
+
+func TestSlackAPIConfig_ToEntity_WithEnabledFlag(t *testing.T) {
+	tests := []struct {
+		name          string
+		config        SlackAPIConfig
+		expectEnabled bool
+	}{
+		{
+			name: "enabled省略時（後方互換性）",
+			config: SlackAPIConfig{
+				APIToken: "test_token",
+				Channel:  "#test",
+			},
+			expectEnabled: true,
+		},
+		{
+			name: "enabled: true",
+			config: SlackAPIConfig{
+				Enabled:  boolPtr(true),
+				APIToken: "test_token",
+				Channel:  "#test",
+			},
+			expectEnabled: true,
+		},
+		{
+			name: "enabled: false",
+			config: SlackAPIConfig{
+				Enabled:  boolPtr(false),
+				APIToken: "test_token",
+				Channel:  "#test",
+			},
+			expectEnabled: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			entity, err := tt.config.ToEntity()
+
+			assert.NoError(t, err)
+			assert.NotNil(t, entity)
+			assert.Equal(t, tt.expectEnabled, entity.Enabled)
+		})
+	}
+}
+
+func TestMisskeyConfig_ToEntity_WithEnabledFlag(t *testing.T) {
+	tests := []struct {
+		name          string
+		config        MisskeyConfig
+		expectEnabled bool
+	}{
+		{
+			name: "enabled省略時（後方互換性）",
+			config: MisskeyConfig{
+				APIToken: "test_token",
+				APIURL:   "https://test.misskey.io",
+			},
+			expectEnabled: true,
+		},
+		{
+			name: "enabled: true",
+			config: MisskeyConfig{
+				Enabled:  boolPtr(true),
+				APIToken: "test_token",
+				APIURL:   "https://test.misskey.io",
+			},
+			expectEnabled: true,
+		},
+		{
+			name: "enabled: false",
+			config: MisskeyConfig{
+				Enabled:  boolPtr(false),
+				APIToken: "test_token",
+				APIURL:   "https://test.misskey.io",
+			},
+			expectEnabled: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			entity, err := tt.config.ToEntity()
+
+			assert.NoError(t, err)
+			assert.NotNil(t, entity)
+			assert.Equal(t, tt.expectEnabled, entity.Enabled)
+		})
+	}
+}
+
+// 組み合わせパターンテスト
+
+func TestOutputConfig_EnabledCombinationPatterns(t *testing.T) {
+	tests := []struct {
+		name                   string
+		yamlInput              string
+		expectedSlackEnabled   *bool
+		expectedMisskeyEnabled *bool
+		expectedErr            string
+	}{
+		{
+			name: "両方省略（後方互換性）",
+			yamlInput: `
+slack_api:
+  api_token: test_slack_token
+  channel: "#general"
+misskey:
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
+`,
+			expectedSlackEnabled:   nil,
+			expectedMisskeyEnabled: nil,
+			expectedErr:            "",
+		},
+		{
+			name: "両方有効（explicit true）",
+			yamlInput: `
+slack_api:
+  enabled: true
+  api_token: test_slack_token
+  channel: "#general"
+misskey:
+  enabled: true
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
+`,
+			expectedSlackEnabled:   boolPtr(true),
+			expectedMisskeyEnabled: boolPtr(true),
+			expectedErr:            "",
+		},
+		{
+			name: "SlackAPI有効、Misskey無効",
+			yamlInput: `
+slack_api:
+  enabled: true
+  api_token: test_slack_token
+  channel: "#general"
+misskey:
+  enabled: false
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
+`,
+			expectedSlackEnabled:   boolPtr(true),
+			expectedMisskeyEnabled: boolPtr(false),
+			expectedErr:            "",
+		},
+		{
+			name: "SlackAPI無効、Misskey有効",
+			yamlInput: `
+slack_api:
+  enabled: false
+  api_token: test_slack_token
+  channel: "#general"
+misskey:
+  enabled: true
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
+`,
+			expectedSlackEnabled:   boolPtr(false),
+			expectedMisskeyEnabled: boolPtr(true),
+			expectedErr:            "",
+		},
+		{
+			name: "両方無効",
+			yamlInput: `
+slack_api:
+  enabled: false
+  api_token: test_slack_token
+  channel: "#general"
+misskey:
+  enabled: false
+  api_token: test_misskey_token
+  api_url: https://misskey.example.com
+`,
+			expectedSlackEnabled:   boolPtr(false),
+			expectedMisskeyEnabled: boolPtr(false),
+			expectedErr:            "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var actual OutputConfig
+			err := yaml.Unmarshal([]byte(tt.yamlInput), &actual)
+
+			if tt.expectedErr != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
+			} else {
+				assert.NoError(t, err)
+
+				// SlackAPIのEnabledフィールドチェック
+				if tt.expectedSlackEnabled == nil {
+					assert.Nil(t, actual.SlackAPI.Enabled)
+				} else {
+					assert.NotNil(t, actual.SlackAPI.Enabled)
+					assert.Equal(t, *tt.expectedSlackEnabled, *actual.SlackAPI.Enabled)
+				}
+
+				// MisskeyのEnabledフィールドチェック
+				if tt.expectedMisskeyEnabled == nil {
+					assert.Nil(t, actual.Misskey.Enabled)
+				} else {
+					assert.NotNil(t, actual.Misskey.Enabled)
+					assert.Equal(t, *tt.expectedMisskeyEnabled, *actual.Misskey.Enabled)
+				}
+			}
+		})
+	}
+}
+
+func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
+	tests := []struct {
+		name                   string
+		config                 OutputConfig
+		expectedSlackEnabled   bool
+		expectedMisskeyEnabled bool
+		expectedErr            string
+	}{
+		{
+			name: "両方省略（後方互換性）",
+			config: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+				Misskey: &MisskeyConfig{
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
+			expectedSlackEnabled:   true,
+			expectedMisskeyEnabled: true,
+			expectedErr:            "",
+		},
+		{
+			name: "両方有効",
+			config: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:  boolPtr(true),
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+				Misskey: &MisskeyConfig{
+					Enabled:  boolPtr(true),
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
+			expectedSlackEnabled:   true,
+			expectedMisskeyEnabled: true,
+			expectedErr:            "",
+		},
+		{
+			name: "SlackAPI有効、Misskey無効",
+			config: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:  boolPtr(true),
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+				Misskey: &MisskeyConfig{
+					Enabled:  boolPtr(false),
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
+			expectedSlackEnabled:   true,
+			expectedMisskeyEnabled: false,
+			expectedErr:            "",
+		},
+		{
+			name: "SlackAPI無効、Misskey有効",
+			config: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:  boolPtr(false),
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+				Misskey: &MisskeyConfig{
+					Enabled:  boolPtr(true),
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
+			expectedSlackEnabled:   false,
+			expectedMisskeyEnabled: true,
+			expectedErr:            "",
+		},
+		{
+			name: "両方無効",
+			config: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:  boolPtr(false),
+					APIToken: "test_slack_token",
+					Channel:  "#general",
+				},
+				Misskey: &MisskeyConfig{
+					Enabled:  boolPtr(false),
+					APIToken: "test_misskey_token",
+					APIURL:   "https://misskey.example.com",
+				},
+			},
+			expectedSlackEnabled:   false,
+			expectedMisskeyEnabled: false,
+			expectedErr:            "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			entity, err := tt.config.ToEntity()
+
+			if tt.expectedErr != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
+				assert.Nil(t, entity)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, entity)
+
+				// SlackAPIのEnabledフィールドチェック
+				if entity.SlackAPI != nil {
+					assert.Equal(t, tt.expectedSlackEnabled, entity.SlackAPI.Enabled)
+				}
+
+				// MisskeyのEnabledフィールドチェック
+				if entity.Misskey != nil {
+					assert.Equal(t, tt.expectedMisskeyEnabled, entity.Misskey.Enabled)
+				}
+			}
+		})
+	}
+}
+
+func TestOutputConfig_EnabledFalseWithValidationErrors(t *testing.T) {
+	tests := []struct {
+		name        string
+		config      OutputConfig
+		expectedErr string
+	}{
+		{
+			name: "SlackAPI無効でもAPIトークンが空の場合はエラー",
+			config: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:     boolPtr(false),
+					APIToken:    "", // 空
+					APITokenEnv: "NON_EXISTENT_TOKEN",
+					Channel:     "#general",
+				},
+			},
+			expectedErr: "環境変数",
+		},
+		{
+			name: "Misskey無効でもAPIトークンが空の場合はエラー",
+			config: OutputConfig{
+				Misskey: &MisskeyConfig{
+					Enabled:     boolPtr(false),
+					APIToken:    "", // 空
+					APITokenEnv: "NON_EXISTENT_TOKEN",
+					APIURL:      "https://misskey.example.com",
+				},
+			},
+			expectedErr: "環境変数",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			entity, err := tt.config.ToEntity()
+
+			if tt.expectedErr != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
+				assert.Nil(t, entity)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, entity)
 			}
 		})
 	}
