@@ -211,7 +211,7 @@ func convertMessageTemplate(template *string, converter *entity.TemplateAliasCon
 }
 
 type SlackAPIConfig struct {
-	Enabled         bool    `yaml:"enabled"`
+	Enabled         *bool   `yaml:"enabled,omitempty"`
 	APIToken        string  `yaml:"api_token"`
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	Channel         string  `yaml:"channel"`
@@ -223,8 +223,10 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 		return
 	}
 
-	// Enabledフィールドのマージ（bool値は常にマージする）
-	c.Enabled = other.Enabled
+	// Enabledフィールドのマージ（*boolポインタのマージ）
+	if other.Enabled != nil {
+		c.Enabled = other.Enabled
+	}
 
 	// プロファイルファイルでapi_token_envが指定されている場合、
 	// デフォルトのapi_tokenを無効にして環境変数を優先する
@@ -256,8 +258,14 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 		return nil, err
 	}
 
+	// Enabledフィールドの後方互換性処理（省略時=true）
+	enabled := true // デフォルトはtrue
+	if c.Enabled != nil {
+		enabled = *c.Enabled
+	}
+
 	return &entity.SlackAPIConfig{
-		Enabled:         c.Enabled, // enabledフィールドの値をそのまま使用（後方互換性はRecommendRunnerで処理）
+		Enabled:         enabled,
 		APIToken:        apiToken,
 		Channel:         c.Channel,
 		MessageTemplate: convertedTemplate,
@@ -265,7 +273,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 }
 
 type MisskeyConfig struct {
-	Enabled         bool    `yaml:"enabled"`
+	Enabled         *bool   `yaml:"enabled,omitempty"`
 	APIToken        string  `yaml:"api_token"`
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	APIURL          string  `yaml:"api_url"`
@@ -277,8 +285,10 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 		return
 	}
 
-	// Enabledフィールドのマージ（bool値は常にマージする）
-	c.Enabled = other.Enabled
+	// Enabledフィールドのマージ（*boolポインタのマージ）
+	if other.Enabled != nil {
+		c.Enabled = other.Enabled
+	}
 
 	// プロファイルファイルでapi_token_envが指定されている場合、
 	// デフォルトのapi_tokenを無効にして環境変数を優先する
@@ -310,8 +320,14 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 		return nil, err
 	}
 
+	// Enabledフィールドの後方互換性処理（省略時=true）
+	enabled := true // デフォルトはtrue
+	if c.Enabled != nil {
+		enabled = *c.Enabled
+	}
+
 	return &entity.MisskeyConfig{
-		Enabled:         c.Enabled, // enabledフィールドの値をそのまま使用（後方互換性はRecommendRunnerで処理）
+		Enabled:         enabled,
 		APIToken:        apiToken,
 		APIURL:          c.APIURL,
 		MessageTemplate: convertedTemplate,

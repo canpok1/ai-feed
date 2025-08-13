@@ -44,19 +44,29 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			if err != nil {
 				return nil, fmt.Errorf("failed to process Slack API config: %w", err)
 			}
-			slackViewer := message.NewSlackSender(slackConfig)
-			viewers = append(viewers, slackViewer)
+			// enabledフラグのチェック（ToEntity()で後方互換性処理済み）
+			if !slackConfig.Enabled {
+				slog.Info("Slack API出力が無効化されています (enabled: false)")
+			} else {
+				slackViewer := message.NewSlackSender(slackConfig)
+				viewers = append(viewers, slackViewer)
+			}
 		}
 		if outputConfig.Misskey != nil {
 			misskeyConfig, err := outputConfig.Misskey.ToEntity()
 			if err != nil {
 				return nil, fmt.Errorf("failed to process Misskey config: %w", err)
 			}
-			misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken, misskeyConfig.MessageTemplate)
-			if err != nil {
-				return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
+			// enabledフラグのチェック（ToEntity()で後方互換性処理済み）
+			if !misskeyConfig.Enabled {
+				slog.Info("Misskey出力が無効化されています (enabled: false)")
+			} else {
+				misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken, misskeyConfig.MessageTemplate)
+				if err != nil {
+					return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
+				}
+				viewers = append(viewers, misskeyViewer)
 			}
-			viewers = append(viewers, misskeyViewer)
 		}
 	}
 
