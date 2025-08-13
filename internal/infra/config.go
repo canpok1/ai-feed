@@ -124,6 +124,14 @@ func resolveSecret(value, envVar, configPath string) (string, error) {
 	return "", nil
 }
 
+// resolveEnabled は、Enabledフィールドのデフォルト値処理を行う
+func resolveEnabled(e *bool) bool {
+	if e == nil {
+		return true
+	}
+	return *e
+}
+
 func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
 	apiKey, err := resolveSecret(c.APIKey, c.APIKeyEnv, "ai.gemini.api_key_env")
 	if err != nil {
@@ -259,10 +267,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	}
 
 	// Enabledフィールドの後方互換性処理（省略時=true）
-	enabled := true // デフォルトはtrue
-	if c.Enabled != nil {
-		enabled = *c.Enabled
-	}
+	enabled := resolveEnabled(c.Enabled)
 
 	return &entity.SlackAPIConfig{
 		Enabled:         enabled,
@@ -321,10 +326,7 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	}
 
 	// Enabledフィールドの後方互換性処理（省略時=true）
-	enabled := true // デフォルトはtrue
-	if c.Enabled != nil {
-		enabled = *c.Enabled
-	}
+	enabled := resolveEnabled(c.Enabled)
 
 	return &entity.MisskeyConfig{
 		Enabled:         enabled,
