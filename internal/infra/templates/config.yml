@@ -12,7 +12,7 @@ default_profile:
       # Gemini APIキー
       # キーを直接指定する場合は api_key 環境変数から読み込む場合は api_key_env
       # api_keyとapi_key_envの両方が指定された場合、api_keyが優先されます
-      api_key: xxxxxx
+      # api_key: xxxxxx
       api_key_env: GEMINI_API_KEY
 
   # システムプロンプト
