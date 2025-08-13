@@ -113,7 +113,7 @@ echo 'export GEMINI_API_KEY="your-api-key-here"' >> ~/.bashrc
 default_profile:
   ai:
     gemini:
-      type: "gemini-1.5-flash"
+      type: "gemini-2.5-flash"
       api_key_env: "GEMINI_API_KEY"  # 環境変数名を指定
       # または直接記載（非推奨）
       # api_key: "your-api-key-here"
@@ -195,6 +195,7 @@ export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
 output:
   slack_api:
     webhook_url_env: "SLACK_WEBHOOK_URL"
+    channel: "#general"
     message_template: |
       :newspaper: *{{.Article.Title}}*
       {{.Article.Link}}
@@ -212,7 +213,7 @@ export MISSKEY_API_TOKEN="your-token-here"
 ```yaml
 output:
   misskey:
-    api_url: "https://misskey.io/api"
+    api_url: "https://misskey.io"
     api_token_env: "MISSKEY_API_TOKEN"
     message_template: |
       【おすすめ記事】
