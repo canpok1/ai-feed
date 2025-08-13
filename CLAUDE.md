@@ -80,6 +80,8 @@ echo "GH_TOKEN=your_token_here" > .env
 
 ## その他
 - リポジトリ情報は `git remote -v` で取得する
+- シェルスクリプトでは効率的なパラメータ展開を推奨
+  - 例: `OWNER=${OWNER_REPO%/*}; REPO=${OWNER_REPO#*/}` （cutコマンドより効率的）
 - 常に日本語で回答すること
 - ファイル編集時には必ずファイル末尾が改行となるようにすること
 - 対応の元になった github issue がある場合、プルリクエストの説明文には `fixed <issue番号>` を記載すること
