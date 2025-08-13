@@ -28,7 +28,7 @@ func TestProfileCheckRunner_Run(t *testing.T) {
 default_profile:
   ai:
     gemini:
-      type: "gemini-1.5-flash"
+      type: "gemini-2.5-flash"
       api_key: "test-key"
   system_prompt: "test system prompt"
   comment_prompt_template: "test template {{TITLE}}"
@@ -57,7 +57,7 @@ default_profile:
 default_profile:
   ai:
     gemini:
-      type: "gemini-1.5-flash"
+      type: "gemini-2.5-flash"
       api_key: "config-key"
 `
 				err := os.WriteFile(configPath, []byte(configContent), 0644)
@@ -136,7 +136,7 @@ default_profile:
 				profileContent := `
 ai:
   gemini:
-    type: "gemini-1.5-flash"
+    type: "gemini-2.5-flash"
     api_key: "test-key"
 system_prompt: "test system prompt"
 comment_prompt_template: "test template {{TITLE}}"

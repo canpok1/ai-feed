@@ -74,7 +74,7 @@ func TestProfileCommandIntegration(t *testing.T) {
 		configContent := `default_profile:
   ai:
     gemini:
-      type: "gemini-1.5-flash"
+      type: "gemini-2.5-flash"
       api_key: "config-api-key"
   system_prompt: "デフォルトシステムプロンプト"
   output:
@@ -175,7 +175,7 @@ func updateProfileContent(templateContent string) string {
 			// 有効な設定を追加
 			result = append(result, "ai:")
 			result = append(result, "  gemini:")
-			result = append(result, "    type: \"gemini-1.5-flash\"")
+			result = append(result, "    type: \"gemini-2.5-flash\"")
 			result = append(result, "    api_key: \"test-api-key\"")
 			result = append(result, "system_prompt: \"テスト用システムプロンプト\"")
 			result = append(result, "comment_prompt_template: \"テスト用テンプレート {{TITLE}}\"")

@@ -42,25 +42,7 @@ go test -v ./...
 
 ## アーキテクチャ概要
 
-このプロジェクトはCobraフレームワークを使用したGo CLIアプリケーションで、クリーンアーキテクチャパターンを採用しています：
-
-- **cmd/**: Cobraを使用したCLIコマンドの実装。各コマンド（recommend、init、profile）は個別のファイルに分かれています。
-- **internal/domain/**: インターフェースとエンティティを含むコアビジネスロジック。アプリケーションのメインロジックが存在します。
-- **internal/infra/**: 外部サービス（RSSフェッチ、AI連携、Slack/Misskey投稿）のインフラストラクチャ実装。
-
-依存性注入パターンに従い、コマンドはコンストラクタを通じて依存関係を受け取るため、モックを使用したテストが可能です。
-
-## 主要なアーキテクチャ上の決定事項
-
-1. **設定システム**: YAMLファイル（config.ymlとprofile.yml）を使用。initコマンドでconfig.ymlを生成し、profileコマンドでprofile.ymlを管理します。
-
-2. **AI連携**: 現在はGoogle Gemini APIを使用して記事の推薦文を生成。AIのプロンプトと動作はprofile.ymlでカスタマイズ可能です。
-
-3. **テスト戦略**: testifyフレームワークを使用したテーブル駆動テスト。モックはgo.uber.org/mockで生成されます。
-
-4. **外部連携**: SlackとMisskeyプラットフォームへの投稿をサポート。各連携はinternal/infra/内の個別のviewerとして実装されています。
-
-5. **ログシステム**: Go標準ライブラリのlog/slogパッケージを使用。verboseフラグ（-v, --verbose）でDEBUG/INFOレベルを切り替え可能です。
+アプリケーションの詳細なアーキテクチャについては [docs/02_architecture.md](docs/02_architecture.md) を参照してください。
 
 ## コーディングルール
 
@@ -98,7 +80,10 @@ echo "GH_TOKEN=your_token_here" > .env
 
 ## その他
 - リポジトリ情報は `git remote -v` で取得する
+- シェルスクリプトでは効率的なパラメータ展開を推奨
+  - 例: `OWNER=${OWNER_REPO%/*}; REPO=${OWNER_REPO#*/}` （cutコマンドより効率的）
 - 常に日本語で回答すること
 - ファイル編集時には必ずファイル末尾が改行となるようにすること
 - 対応の元になった github issue がある場合、プルリクエストの説明文には `fixed <issue番号>` を記載すること
     - (例) github issue #1 がある場合、 `fixed #1` を記載する
+- プルリクエストのタイトルに、対応元の github issue 番号を含めないこと

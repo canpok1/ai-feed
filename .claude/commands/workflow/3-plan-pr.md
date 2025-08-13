@@ -9,10 +9,10 @@ PR $ARGUMENTS にレビューコメントが投稿されました。
 ## コメントの確認手順
 
 ```
-OWNER_REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner')
-OWNER=$(echo $OWNER_REPO | cut -d'/' -f1)
-REPO=$(echo $OWNER_REPO | cut -d'/' -f2)
-PR_NUMBER=$(gh pr view --json number --jq '.number')
+OWNER_REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner');
+OWNER=$(echo $OWNER_REPO | cut -d'/' -f1);
+REPO=$(echo $OWNER_REPO | cut -d'/' -f2);
+PR_NUMBER=$(gh pr view --json number --jq '.number');
 
 gh api graphql -f query="
 {

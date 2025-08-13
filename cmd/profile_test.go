@@ -23,7 +23,7 @@ func TestProfileCheckCommand_Success(t *testing.T) {
 	configContent := `default_profile:
   ai:
     gemini:
-      type: "gemini-1.5-flash"
+      type: "gemini-2.5-flash"
       api_key: "test-api-key"
   system_prompt: "テスト用システムプロンプト"
   comment_prompt_template: "テスト用テンプレート {{TITLE}}"
@@ -115,7 +115,7 @@ func TestProfileCheckCommand_PathResolution(t *testing.T) {
 	profilePath := tempDir + "/test_profile.yml"
 	profileContent := `ai:
   gemini:
-    type: "gemini-1.5-flash"
+    type: "gemini-2.5-flash"
     api_key: "test-api-key"
 system_prompt: "テスト用システムプロンプト"
 comment_prompt_template: "テスト用テンプレート {{TITLE}}"
@@ -165,7 +165,7 @@ func TestProfileCheckCommand_WithProfileMerge(t *testing.T) {
 	configContent := `default_profile:
   ai:
     gemini:
-      type: "gemini-1.5-flash"
+      type: "gemini-2.5-flash"
       api_key: "default-api-key"
   system_prompt: "デフォルトシステムプロンプト"
   output:
