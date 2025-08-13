@@ -11,6 +11,7 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/testutil"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -356,10 +357,7 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	assert.Equal(t, "Test Fixed Message", logEntry["fixed_message"])
 }
 
-// boolPtr returns a pointer to the given bool value
-func boolPtr(b bool) *bool {
-	return &b
-}
+
 
 func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 	tests := []struct {
@@ -392,7 +390,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 				Misskey: &infra.MisskeyConfig{
-					Enabled:         boolPtr(false),
+					Enabled:         testutil.BoolPtr(false),
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -404,7 +402,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 			name: "SlackAPI無効、Misskey有効",
 			outputConfig: &infra.OutputConfig{
 				SlackAPI: &infra.SlackAPIConfig{
-					Enabled:         boolPtr(false),
+					Enabled:         testutil.BoolPtr(false),
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -421,13 +419,13 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 			name: "両方無効",
 			outputConfig: &infra.OutputConfig{
 				SlackAPI: &infra.SlackAPIConfig{
-					Enabled:         boolPtr(false),
+					Enabled:         testutil.BoolPtr(false),
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 				Misskey: &infra.MisskeyConfig{
-					Enabled:         boolPtr(false),
+					Enabled:         testutil.BoolPtr(false),
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -472,7 +470,7 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 			name: "Slack無効ログ確認",
 			outputConfig: &infra.OutputConfig{
 				SlackAPI: &infra.SlackAPIConfig{
-					Enabled:         boolPtr(false),
+					Enabled:         testutil.BoolPtr(false),
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -484,7 +482,7 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 			name: "Misskey無効ログ確認",
 			outputConfig: &infra.OutputConfig{
 				Misskey: &infra.MisskeyConfig{
-					Enabled:         boolPtr(false),
+					Enabled:         testutil.BoolPtr(false),
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -496,13 +494,13 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 			name: "両方無効ログ確認",
 			outputConfig: &infra.OutputConfig{
 				SlackAPI: &infra.SlackAPIConfig{
-					Enabled:         boolPtr(false),
+					Enabled:         testutil.BoolPtr(false),
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 				Misskey: &infra.MisskeyConfig{
-					Enabled:         boolPtr(false),
+					Enabled:         testutil.BoolPtr(false),
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -566,13 +564,13 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 	// 両方無効の設定
 	outputConfig := &infra.OutputConfig{
 		SlackAPI: &infra.SlackAPIConfig{
-			Enabled:         boolPtr(false),
+			Enabled:         testutil.BoolPtr(false),
 			APIToken:        "test-token",
 			Channel:         "#test",
 			MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 		},
 		Misskey: &infra.MisskeyConfig{
-			Enabled:         boolPtr(false),
+			Enabled:         testutil.BoolPtr(false),
 			APIToken:        "test-token",
 			APIURL:          "https://test.misskey.io",
 			MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
