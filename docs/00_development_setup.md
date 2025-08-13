@@ -58,21 +58,6 @@
   # https://git-scm.com/ からインストーラをダウンロード
   ```
 
-### 推奨ツール
-
-#### GitHub CLI (gh)
-プルリクエストやIssueの管理に便利です。
-
-```bash
-# macOS
-brew install gh
-
-# Linux
-# https://github.com/cli/cli/blob/trunk/docs/install_linux.md を参照
-
-# Windows
-winget install --id GitHub.cli
-```
 
 ## プロジェクトのセットアップ
 
@@ -165,99 +150,6 @@ go mod tidy
 # 依存関係の確認
 go mod graph
 ```
-
-## IDE/エディタの設定
-
-### Visual Studio Code
-
-推奨拡張機能：
-- [Go](https://marketplace.visualstudio.com/items?itemName=golang.Go)
-- [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
-- [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
-
-`.vscode/settings.json`の推奨設定：
-```json
-{
-  "go.lintTool": "golangci-lint",
-  "go.lintOnSave": "workspace",
-  "go.formatTool": "goimports",
-  "go.testOnSave": true,
-  "[go]": {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": true
-    }
-  }
-}
-```
-
-### GoLand/IntelliJ IDEA
-
-1. File → Settings → Go → Go Modules で「Enable Go modules integration」を有効化
-2. File → Settings → Tools → File Watchers で以下を設定：
-   - goimports（保存時の自動フォーマット）
-   - golangci-lint（保存時の静的解析）
-
-### Vim/Neovim
-
-推奨プラグイン：
-- [vim-go](https://github.com/fatih/vim-go)
-- [coc.nvim](https://github.com/neoclide/coc.nvim) with coc-go
-
-`.vimrc`または`init.vim`の設定例：
-```vim
-let g:go_fmt_command = "goimports"
-let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
-let g:go_metalinter_autosave = 1
-```
-
-## トラブルシューティング
-
-### `make setup`が失敗する場合
-
-1. Go のバージョンを確認
-   ```bash
-   go version
-   ```
-
-2. GOPATHとGO111MODULEの設定を確認
-   ```bash
-   go env GOPATH
-   go env GO111MODULE
-   ```
-
-3. プロキシ環境下の場合
-   ```bash
-   export GOPROXY=https://proxy.golang.org,direct
-   export GOSUMDB=sum.golang.org
-   ```
-
-### テストが失敗する場合
-
-1. 依存関係を最新にする
-   ```bash
-   go mod download
-   go mod tidy
-   ```
-
-2. モックを再生成する
-   ```bash
-   make generate
-   ```
-
-3. キャッシュをクリアする
-   ```bash
-   go clean -testcache
-   ```
-
-### `make lint`でエラーが出る場合
-
-1. golangci-lintを最新バージョンに更新
-   ```bash
-   curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
-   ```
-
-2. 特定のルールを無効化したい場合は`.golangci.yml`を編集
 
 ## 次のステップ
 

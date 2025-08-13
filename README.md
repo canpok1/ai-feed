@@ -93,7 +93,6 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 ### インストール確認
 
 ```bash
-ai-feed --version
 ai-feed --help
 ```
 
@@ -199,8 +198,8 @@ ai-feed recommend --profile my-profile.yml --url https://example.com/feed
 ### Slack連携
 
 ```bash
-# Slack Webhook URLを環境変数に設定
-export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
+# Slack API トークンを環境変数に設定
+export SLACK_TOKEN="your-token-here"
 
 # config.ymlまたはプロファイルに設定を追加
 ```
@@ -208,7 +207,7 @@ export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
 ```yaml
 output:
   slack_api:
-    webhook_url_env: "SLACK_WEBHOOK_URL"
+    api_token_env: "SLACK_TOKEN"
     channel: "#general"
     message_template: |
       :newspaper: *{{.Article.Title}}*
@@ -221,14 +220,14 @@ output:
 
 ```bash
 # Misskey APIトークンを環境変数に設定
-export MISSKEY_API_TOKEN="your-token-here"
+export MISSKEY_TOKEN="your-token-here"
 ```
 
 ```yaml
 output:
   misskey:
     api_url: "https://misskey.io"
-    api_token_env: "MISSKEY_API_TOKEN"
+    api_token_env: "MISSKEY_TOKEN"
     message_template: |
       【おすすめ記事】
       {{.Article.Title}}

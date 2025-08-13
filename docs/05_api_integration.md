@@ -158,12 +158,6 @@ message_template: |
   <{{URL}}|{{TITLE}}>  # リンク付きテキスト
 ```
 
-### レート制限
-
-Slack Web APIの制限：
-- Tier 1メソッド（chat.postMessage）: 1+/秒
-- バースト送信に対して短期制限あり
-- 制限超過時は429レスポンスで自動的に待機
 
 ## Misskey API
 
@@ -186,7 +180,7 @@ Misskey APIを使用して、推薦記事をMisskeyインスタンスに投稿�
 default_profile:
   output:
     misskey:
-      api_url: "https://misskey.io/api"  # インスタンスのAPI URL
+      api_url: "https://misskey.io"  # インスタンスのAPI URL
       api_token: "your-token-here"  # 直接記載（非推奨）
       # または
       api_token_env: "MISSKEY_API_TOKEN"  # 環境変数名を指定（推奨）
@@ -199,29 +193,6 @@ default_profile:
         
         #ai_feed #tech
 ```
-
-### 対応インスタンス
-
-- misskey.io
-- misskey.dev
-- その他のMisskeyインスタンス
-- Firefish（Misskey派生）
-- Foundkey（Misskey派生）
-
-### 投稿オプション
-
-```yaml
-misskey:
-  visibility: "public"  # public, home, followers, specified
-  local_only: false  # ローカルタイムラインのみ
-  cw: "長文注意"  # Content Warning
-```
-
-### レート制限
-
-インスタンスごとに異なりますが、一般的な制限：
-- 300ノート/時間
-- 連続投稿は避ける（1秒以上の間隔推奨）
 
 ## 複数の出力先設定
 
@@ -237,7 +208,7 @@ output:
   
   misskey:
     enabled: true
-    api_url: "https://misskey.io/api"
+    api_url: "https://misskey.io"
     api_token_env: "MISSKEY_API_TOKEN"
     message_template: "{{COMMENT}}\n{{TITLE}}\n{{URL}}"
 ```
@@ -258,24 +229,6 @@ output:
 
 ## エラーハンドリングとリトライ
 
-### 自動リトライ
-
-ai-feedは以下の場合に自動リトライを実行：
-- ネットワークエラー
-- 一時的なサーバーエラー（5xx）
-- レート制限（適切な待機時間後）
-
-### リトライ設定
-
-```yaml
-# 将来的な設定例（現在は固定値）
-retry:
-  max_attempts: 3
-  initial_delay: 1s
-  max_delay: 30s
-  exponential_backoff: true
-```
-
 ### エラー時の動作
 
 - 1つの出力先でエラーが発生しても、他の出力先への投稿は継続
@@ -291,82 +244,21 @@ retry:
 ./ai-feed recommend -v --url https://example.com/feed
 ```
 
-### 一般的な問題と解決方法
-
-#### Gemini API
-
-**問題**: "API key not valid"
-```bash
-# APIキーの確認
-echo $GEMINI_API_KEY
-
-# 正しいAPIキーを設定
-export GEMINI_API_KEY="correct-api-key"
-```
-
-**問題**: レート制限エラー
-```yaml
-# より低速なモデルに変更
-ai:
-  gemini:
-    type: "gemini-2.5-flash-8b"  # 高速モデル
-```
-
-#### Slack
-
-**問題**: "invalid_auth" / "not_authed"
-```bash
-# Bot TokenのフォーマットとPermissionを確認
-# 正しい形式: xoxb-XXXXXXXXXXXX-XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX
-# 必要権限: chat:write
-```
-
-**問題**: "channel_not_found"
-```yaml
-# チャンネル名のフォーマットを確認
-channel: "#general"  # 正しい（#付き）
-# channel: "general"  # 不正（#なし）
-```
-
-**問題**: メッセージが表示されない
-```yaml
-# テンプレートの構文を確認
-message_template: |
-  {{TITLE}}  # 正しい（エイリアス）
-  {{.Article.Title}}  # 正しい（フル記法）
-  {{ .Article.Title }}  # スペースがあっても動作
-```
-
-#### Misskey
-
-**問題**: "PERMISSION_DENIED"
-```bash
-# トークンの権限を確認
-# write:notes 権限が必要
-```
-
-**問題**: APIエンドポイントエラー
-```yaml
-# URLの末尾を確認
-api_url: "https://misskey.io/api"  # 正しい
-# api_url: "https://misskey.io/api/"  # 末尾のスラッシュは不要
-```
-
 ## ベストプラクティス
 
 ### 1. 環境変数の使用
 
 ```bash
-# .env.exampleを作成
-cat << EOF > .env.example
-GEMINI_API_KEY=your-gemini-api-key
-SLACK_API_TOKEN=xoxb-your-slack-bot-token
-MISSKEY_API_TOKEN=your-misskey-token
-EOF
+# 環境変数の設定例
+export GEMINI_API_KEY="your-gemini-api-key"
+export SLACK_API_TOKEN="xoxb-your-slack-bot-token"
+export MISSKEY_API_TOKEN="your-misskey-token"
 
-# 実際の.envファイルは.gitignoreに追加
-echo ".env" >> .gitignore
+# または、起動時に環境変数を指定
+GEMINI_API_KEY="your-key" ./ai-feed recommend --url https://example.com/feed
 ```
+
+**注意**: ai-feedは.envファイルの自動読み込みには対応していません。環境変数は手動で設定する必要があります。
 
 ### 2. プロファイルの分離
 
