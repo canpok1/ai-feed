@@ -54,17 +54,3 @@ func (mr *MockProfileRepositoryMockRecorder) LoadProfile() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadProfile", reflect.TypeOf((*MockProfileRepository)(nil).LoadProfile))
 }
-
-// SaveProfileWithTemplate mocks base method.
-func (m *MockProfileRepository) SaveProfileWithTemplate() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveProfileWithTemplate")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SaveProfileWithTemplate indicates an expected call of SaveProfileWithTemplate.
-func (mr *MockProfileRepositoryMockRecorder) SaveProfileWithTemplate() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveProfileWithTemplate", reflect.TypeOf((*MockProfileRepository)(nil).SaveProfileWithTemplate))
-}
