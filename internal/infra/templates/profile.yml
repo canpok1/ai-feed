@@ -40,8 +40,12 @@ fixed_message: ※固定の文言です。
 # 出力先設定
 output:
   # Slack投稿設定
-  # 投稿しない場合は削除してください。
+  # 投稿しない場合は削除するか、enabled: false を設定してください。
   slack_api:
+    # 有効/無効フラグ（省略時はtrue）
+    # false に設定すると一時的に無効化できます
+    enabled: false
+    
     # Slack のトークン
     # 直接指定する場合は api_token 環境変数から読み込む場合は api_token_env
     # api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
@@ -64,8 +68,12 @@ output:
       {{FIXED_MESSAGE}}
   
   # Misskey投稿設定
-  # 投稿しない場合は削除してください。
+  # 投稿しない場合は削除するか、enabled: false を設定してください。
   misskey:
+    # 有効/無効フラグ（省略時はtrue）
+    # false に設定すると一時的に無効化できます
+    enabled: false
+    
     # Misskey のアクセストークン
     # 直接指定する場合は api_token 環境変数から読み込む場合は api_token_env
     # api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
