@@ -223,6 +223,9 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 		return
 	}
 
+	// Enabledフィールドのマージ（bool値は常にマージする）
+	c.Enabled = other.Enabled
+
 	// プロファイルファイルでapi_token_envが指定されている場合、
 	// デフォルトのapi_tokenを無効にして環境変数を優先する
 	if other.APITokenEnv != "" && other.APIToken == "" {
@@ -254,6 +257,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	}
 
 	return &entity.SlackAPIConfig{
+		Enabled:         c.Enabled, // enabledフィールドの値をそのまま使用（後方互換性はRecommendRunnerで処理）
 		APIToken:        apiToken,
 		Channel:         c.Channel,
 		MessageTemplate: convertedTemplate,
@@ -272,6 +276,9 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	if other == nil {
 		return
 	}
+
+	// Enabledフィールドのマージ（bool値は常にマージする）
+	c.Enabled = other.Enabled
 
 	// プロファイルファイルでapi_token_envが指定されている場合、
 	// デフォルトのapi_tokenを無効にして環境変数を優先する
@@ -304,6 +311,7 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	}
 
 	return &entity.MisskeyConfig{
+		Enabled:         c.Enabled, // enabledフィールドの値をそのまま使用（後方互換性はRecommendRunnerで処理）
 		APIToken:        apiToken,
 		APIURL:          c.APIURL,
 		MessageTemplate: convertedTemplate,
