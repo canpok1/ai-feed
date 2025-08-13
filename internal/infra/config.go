@@ -124,6 +124,14 @@ func resolveSecret(value, envVar, configPath string) (string, error) {
 	return "", nil
 }
 
+// resolveEnabled は、Enabledフィールドのデフォルト値処理を行う
+func resolveEnabled(e *bool) bool {
+	if e == nil {
+		return true
+	}
+	return *e
+}
+
 func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
 	apiKey, err := resolveSecret(c.APIKey, c.APIKeyEnv, "ai.gemini.api_key_env")
 	if err != nil {
@@ -211,6 +219,7 @@ func convertMessageTemplate(template *string, converter *entity.TemplateAliasCon
 }
 
 type SlackAPIConfig struct {
+	Enabled         *bool   `yaml:"enabled,omitempty"`
 	APIToken        string  `yaml:"api_token"`
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	Channel         string  `yaml:"channel"`
@@ -220,6 +229,11 @@ type SlackAPIConfig struct {
 func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	if other == nil {
 		return
+	}
+
+	// Enabledフィールドのマージ（*boolポインタのマージ）
+	if other.Enabled != nil {
+		c.Enabled = other.Enabled
 	}
 
 	// プロファイルファイルでapi_token_envが指定されている場合、
@@ -240,9 +254,17 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 }
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
-	apiToken, err := resolveSecret(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
-	if err != nil {
-		return nil, err
+	// Enabledフィールドの後方互換性処理（省略時=true）
+	enabled := resolveEnabled(c.Enabled)
+
+	// 無効化されている場合は、APIトークンのバリデーションをスキップ
+	var apiToken string
+	if enabled {
+		var err error
+		apiToken, err = resolveSecret(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// MessageTemplateの別名変換処理
@@ -253,6 +275,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	}
 
 	return &entity.SlackAPIConfig{
+		Enabled:         enabled,
 		APIToken:        apiToken,
 		Channel:         c.Channel,
 		MessageTemplate: convertedTemplate,
@@ -260,6 +283,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 }
 
 type MisskeyConfig struct {
+	Enabled         *bool   `yaml:"enabled,omitempty"`
 	APIToken        string  `yaml:"api_token"`
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	APIURL          string  `yaml:"api_url"`
@@ -269,6 +293,11 @@ type MisskeyConfig struct {
 func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 	if other == nil {
 		return
+	}
+
+	// Enabledフィールドのマージ（*boolポインタのマージ）
+	if other.Enabled != nil {
+		c.Enabled = other.Enabled
 	}
 
 	// プロファイルファイルでapi_token_envが指定されている場合、
@@ -289,9 +318,17 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 }
 
 func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
-	apiToken, err := resolveSecret(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
-	if err != nil {
-		return nil, err
+	// Enabledフィールドの後方互換性処理（省略時=true）
+	enabled := resolveEnabled(c.Enabled)
+
+	// 無効化されている場合は、APIトークンのバリデーションをスキップ
+	var apiToken string
+	if enabled {
+		var err error
+		apiToken, err = resolveSecret(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// MessageTemplateの別名変換処理
@@ -302,6 +339,7 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	}
 
 	return &entity.MisskeyConfig{
+		Enabled:         enabled,
 		APIToken:        apiToken,
 		APIURL:          c.APIURL,
 		MessageTemplate: convertedTemplate,

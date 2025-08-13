@@ -11,6 +11,7 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/testutil"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -354,4 +355,254 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	assert.Equal(t, "https://example.com/test", logEntry["link"])
 	assert.Equal(t, "This is a test comment", logEntry["comment"])
 	assert.Equal(t, "Test Fixed Message", logEntry["fixed_message"])
+}
+
+func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
+	tests := []struct {
+		name            string
+		outputConfig    *infra.OutputConfig
+		expectedViewers int
+	}{
+		{
+			name: "SlackAPI有効、Misskey有効（default）",
+			outputConfig: &infra.OutputConfig{
+				SlackAPI: &infra.SlackAPIConfig{
+					APIToken:        "test-token",
+					Channel:         "#test",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+				Misskey: &infra.MisskeyConfig{
+					APIToken:        "test-token",
+					APIURL:          "https://test.misskey.io",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+			},
+			expectedViewers: 2,
+		},
+		{
+			name: "SlackAPI有効、Misskey無効",
+			outputConfig: &infra.OutputConfig{
+				SlackAPI: &infra.SlackAPIConfig{
+					APIToken:        "test-token",
+					Channel:         "#test",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+				Misskey: &infra.MisskeyConfig{
+					Enabled:         testutil.BoolPtr(false),
+					APIToken:        "test-token",
+					APIURL:          "https://test.misskey.io",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+			},
+			expectedViewers: 1,
+		},
+		{
+			name: "SlackAPI無効、Misskey有効",
+			outputConfig: &infra.OutputConfig{
+				SlackAPI: &infra.SlackAPIConfig{
+					Enabled:         testutil.BoolPtr(false),
+					APIToken:        "test-token",
+					Channel:         "#test",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+				Misskey: &infra.MisskeyConfig{
+					APIToken:        "test-token",
+					APIURL:          "https://test.misskey.io",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+			},
+			expectedViewers: 1,
+		},
+		{
+			name: "両方無効",
+			outputConfig: &infra.OutputConfig{
+				SlackAPI: &infra.SlackAPIConfig{
+					Enabled:         testutil.BoolPtr(false),
+					APIToken:        "test-token",
+					Channel:         "#test",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+				Misskey: &infra.MisskeyConfig{
+					Enabled:         testutil.BoolPtr(false),
+					APIToken:        "test-token",
+					APIURL:          "https://test.misskey.io",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+			},
+			expectedViewers: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
+			mockRecommender := mock_domain.NewMockRecommender(ctrl)
+
+			stderrBuffer := new(bytes.Buffer)
+
+			runner, err := NewRecommendRunner(
+				mockFetchClient,
+				mockRecommender,
+				stderrBuffer,
+				tt.outputConfig,
+				&infra.PromptConfig{},
+			)
+
+			assert.NoError(t, err)
+			assert.NotNil(t, runner)
+			assert.Equal(t, tt.expectedViewers, len(runner.viewers))
+		})
+	}
+}
+
+func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
+	tests := []struct {
+		name         string
+		outputConfig *infra.OutputConfig
+		expectedLogs []string
+	}{
+		{
+			name: "Slack無効ログ確認",
+			outputConfig: &infra.OutputConfig{
+				SlackAPI: &infra.SlackAPIConfig{
+					Enabled:         testutil.BoolPtr(false),
+					APIToken:        "test-token",
+					Channel:         "#test",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+			},
+			expectedLogs: []string{"Slack API出力が無効化されています (enabled: false)"},
+		},
+		{
+			name: "Misskey無効ログ確認",
+			outputConfig: &infra.OutputConfig{
+				Misskey: &infra.MisskeyConfig{
+					Enabled:         testutil.BoolPtr(false),
+					APIToken:        "test-token",
+					APIURL:          "https://test.misskey.io",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+			},
+			expectedLogs: []string{"Misskey出力が無効化されています (enabled: false)"},
+		},
+		{
+			name: "両方無効ログ確認",
+			outputConfig: &infra.OutputConfig{
+				SlackAPI: &infra.SlackAPIConfig{
+					Enabled:         testutil.BoolPtr(false),
+					APIToken:        "test-token",
+					Channel:         "#test",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+				Misskey: &infra.MisskeyConfig{
+					Enabled:         testutil.BoolPtr(false),
+					APIToken:        "test-token",
+					APIURL:          "https://test.misskey.io",
+					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+				},
+			},
+			expectedLogs: []string{
+				"Slack API出力が無効化されています (enabled: false)",
+				"Misskey出力が無効化されています (enabled: false)",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			// Set up a test slog handler to capture log output
+			var logBuffer bytes.Buffer
+			handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelInfo})
+			logger := slog.New(handler)
+			originalLogger := slog.Default()
+			slog.SetDefault(logger)
+			defer slog.SetDefault(originalLogger)
+
+			mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
+			mockRecommender := mock_domain.NewMockRecommender(ctrl)
+
+			stderrBuffer := new(bytes.Buffer)
+
+			// Runner作成時にログが出力される
+			runner, err := NewRecommendRunner(
+				mockFetchClient,
+				mockRecommender,
+				stderrBuffer,
+				tt.outputConfig,
+				&infra.PromptConfig{},
+			)
+
+			assert.NoError(t, err)
+			assert.NotNil(t, runner)
+
+			// ログ出力を確認
+			logOutput := logBuffer.String()
+			for _, expectedLog := range tt.expectedLogs {
+				assert.Contains(t, logOutput, expectedLog)
+			}
+		})
+	}
+}
+
+func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
+	mockRecommender := mock_domain.NewMockRecommender(ctrl)
+
+	stderrBuffer := new(bytes.Buffer)
+
+	// 両方無効の設定
+	outputConfig := &infra.OutputConfig{
+		SlackAPI: &infra.SlackAPIConfig{
+			Enabled:         testutil.BoolPtr(false),
+			APIToken:        "test-token",
+			Channel:         "#test",
+			MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+		},
+		Misskey: &infra.MisskeyConfig{
+			Enabled:         testutil.BoolPtr(false),
+			APIToken:        "test-token",
+			APIURL:          "https://test.misskey.io",
+			MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+		},
+	}
+
+	runner, err := NewRecommendRunner(
+		mockFetchClient,
+		mockRecommender,
+		stderrBuffer,
+		outputConfig,
+		&infra.PromptConfig{},
+	)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, runner)
+	assert.Equal(t, 0, len(runner.viewers)) // viewer数は0
+
+	// Set up test data
+	testArticles := []entity.Article{
+		{Title: "Test Article", Link: "https://example.com/test"},
+	}
+	testRecommend := &entity.Recommend{
+		Article: testArticles[0],
+	}
+
+	// Set up mock expectations
+	mockFetchClient.EXPECT().Fetch(gomock.Any()).Return(testArticles, nil)
+	mockRecommender.EXPECT().Recommend(gomock.Any(), testArticles).Return(testRecommend, nil)
+
+	// Execute the test - エラーにならないことを確認
+	params := &RecommendParams{URLs: []string{"https://example.com/feed"}}
+	profile := infra.Profile{}
+	err = runner.Run(context.Background(), params, profile)
+
+	assert.NoError(t, err) // 全出力先無効でもエラーにならない
 }

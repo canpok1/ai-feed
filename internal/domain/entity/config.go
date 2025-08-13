@@ -123,6 +123,7 @@ func (c *PromptConfig) BuildCommentPrompt(article *Article) (string, error) {
 }
 
 type MisskeyConfig struct {
+	Enabled         bool
 	APIToken        string
 	APIURL          string
 	MessageTemplate *string
@@ -166,6 +167,7 @@ func (m *MisskeyConfig) validateMisskeyMessageTemplate(templateStr string) error
 }
 
 type SlackAPIConfig struct {
+	Enabled         bool
 	APIToken        string
 	Channel         string
 	MessageTemplate *string

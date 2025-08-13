@@ -12,7 +12,7 @@ default_profile:
       # Gemini APIキー
       # キーを直接指定する場合は api_key 環境変数から読み込む場合は api_key_env
       # api_keyとapi_key_envの両方が指定された場合、api_keyが優先されます
-      api_key: xxxxxx
+      # api_key: xxxxxx
       api_key_env: GEMINI_API_KEY
 
   # システムプロンプト
@@ -40,12 +40,16 @@ default_profile:
   # 出力先設定
   output:
     # Slack投稿設定
-    # 投稿しない場合は削除してください。
+    # 投稿しない場合は削除するか、enabled: false を設定してください。
     slack_api:
+      # 有効/無効フラグ（省略時はtrue）
+      # false に設定すると一時的に無効化できます
+      enabled: false
+      
       # Slack のトークン
       # 直接指定する場合は api_token 環境変数から読み込む場合は api_token_env
       # api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
-      api_token: xxxxxx
+      # api_token: xxxxxx
       api_token_env: SLACK_TOKEN
       
       # 投稿先チャンネル(#付き)
@@ -64,12 +68,16 @@ default_profile:
         {{FIXED_MESSAGE}}
     
     # Misskey投稿設定
-    # 投稿しない場合は削除してください。
+    # 投稿しない場合は削除するか、enabled: false を設定してください。
     misskey:
+      # 有効/無効フラグ（省略時はtrue）
+      # false に設定すると一時的に無効化できます
+      enabled: false
+      
       # Misskey のアクセストークン
       # 直接指定する場合は api_token 環境変数から読み込む場合は api_token_env
       # api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
-      api_token: xxxxxx
+      # api_token: xxxxxx
       api_token_env: MISSKEY_TOKEN
 
       # Misskey のサーバーのURL
