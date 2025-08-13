@@ -357,8 +357,6 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	assert.Equal(t, "Test Fixed Message", logEntry["fixed_message"])
 }
 
-
-
 func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 	tests := []struct {
 		name            string

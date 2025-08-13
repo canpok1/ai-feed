@@ -11,8 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-
-
 func TestNewYamlConfigRepository(t *testing.T) {
 	repo := NewYamlConfigRepository("test_path.yaml")
 	assert.NotNil(t, repo)
