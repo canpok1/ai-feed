@@ -45,15 +45,22 @@ ai:
   gemini:
     type: "gemini-2.5-pro"  # より高性能なモデルを使用
     api_key_env: "GEMINI_API_KEY"
+
+# 出力先の個別制御
+output:
+  slack_api:
+    enabled: true  # Slackへの投稿を有効化
+    api_token_env: "SLACK_API_TOKEN"
+    channel: "#tech-news"
+  
+  misskey:
+    enabled: false  # Misskeyへの投稿を無効化（APIトークン不要）
 ```
 
 #### 環境変数での設定（推奨）
 
 ```bash
-# .envファイルを作成
-echo "GEMINI_API_KEY=your-actual-api-key" >> .env
-
-# またはシェルで設定
+# シェルで設定
 export GEMINI_API_KEY="your-actual-api-key"
 ```
 
@@ -76,9 +83,9 @@ prompt:
   comment_prompt_template: |
     以下の記事について、技術的な観点から200文字程度でコメントしてください。
     
-    タイトル: {{.Title}}
-    概要: {{.Description}}
-    URL: {{.Link}}
+    タイトル: {{TITLE}}
+    URL: {{URL}}
+    内容: {{CONTENT}}
 ```
 
 ### エラーハンドリング
@@ -88,18 +95,23 @@ Gemini APIのエラーコード：
 - `401`: 認証エラー → APIキーを確認
 - `500`: サーバーエラー → 自動リトライ
 
-## Slack Webhook
+## Slack API
 
 ### 概要
-Slack Webhookを使用して、推薦記事をSlackチャンネルに投稿します。
+Slack APIを使用して、推薦記事をSlackチャンネルに投稿します。Bot TokenとWeb APIを使用してメッセージを送信します。
 
-### Webhook URLの取得
+### APIトークンの取得
 
-1. [Slack App Directory](https://slack.com/apps)にアクセス
-2. 「Incoming Webhooks」を検索して選択
-3. 「Add to Slack」をクリック
-4. 投稿先のチャンネルを選択
-5. Webhook URLをコピー
+1. [Slack Apps](https://api.slack.com/apps)にアクセス
+2. 「Create New App」をクリック
+3. 「From scratch」を選択
+4. アプリ名とワークスペースを選択
+5. 「OAuth & Permissions」セクションに移動
+6. Bot Token Scopesで以下の権限を追加：
+   - `chat:write` - メッセージの投稿（必須）
+   - `chat:write.public` - 参加していないチャンネルへの投稿
+7. 「Install to Workspace」をクリック
+8. Bot User OAuth Tokenをコピー（xoxb-で始まるトークン）
 
 ### 設定方法
 
@@ -109,16 +121,15 @@ Slack Webhookを使用して、推薦記事をSlackチャンネルに投稿し�
 default_profile:
   output:
     slack_api:
-      webhook_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
+      enabled: true  # 有効/無効フラグ（省略時はtrue）
+      api_token: "xoxb-your-bot-token-here"  # 直接記載（非推奨）
       # または
-      webhook_url_env: "SLACK_WEBHOOK_URL"  # 環境変数名を指定（推奨）
+      api_token_env: "SLACK_API_TOKEN"  # 環境変数名を指定（推奨）
+      channel: "#general"  # 投稿先チャンネル
       message_template: |
-        :newspaper: *{{.Article.Title}}*
-        {{.Article.Link}}
-        
         {{.Comment}}
-        
-        {{if .FixedMessage}}{{.FixedMessage}}{{end}}
+        <{{.Article.Link}}|{{.Article.Title}}>
+        {{.FixedMessage}}
 ```
 
 ### メッセージテンプレート
@@ -126,26 +137,27 @@ default_profile:
 利用可能な変数：
 - `{{.Article.Title}}`: 記事タイトル
 - `{{.Article.Link}}`: 記事URL
-- `{{.Article.Description}}`: 記事概要
 - `{{.Comment}}`: AIによるコメント
 - `{{.FixedMessage}}`: 固定メッセージ
 
-### Slackフォーマット
+テンプレートエイリアス（簡単記法）：
+- `{{TITLE}}`: `{{.Article.Title}}`の短縮形
+- `{{URL}}`: `{{.Article.Link}}`の短縮形
+- `{{COMMENT}}`: `{{.Comment}}`の短縮形
+- `{{FIXED_MESSAGE}}`: `{{.FixedMessage}}`の短縮形
+
+### Slackマークアップ
 
 ```yaml
 message_template: |
-  *{{.Article.Title}}*  # 太字
-  _{{.Comment}}_  # イタリック
+  *{{TITLE}}*  # 太字
+  _{{COMMENT}}_  # イタリック
   `code`  # コード
   >引用  # 引用
   :emoji:  # 絵文字
+  <{{URL}}|{{TITLE}}>  # リンク付きテキスト
 ```
 
-### レート制限
-
-- 1メッセージ/秒が推奨
-- バースト時は短期間に複数送信可能
-- 制限超過時は自動的に待機
 
 ## Misskey API
 
@@ -168,10 +180,10 @@ Misskey APIを使用して、推薦記事をMisskeyインスタンスに投稿�
 default_profile:
   output:
     misskey:
-      api_url: "https://misskey.io/api"  # インスタンスのAPI URL
+      api_url: "https://misskey.io"  # インスタンスのAPI URL
       api_token: "your-token-here"  # 直接記載（非推奨）
       # または
-      api_token_env: "MISSKEY_API_TOKEN"  # 環境変数名を指定（推奨）
+      api_token_env: "MISSKEY_TOKEN"  # 環境変数名を指定（推奨）
       message_template: |
         【おすすめ記事】
         {{.Article.Title}}
@@ -182,29 +194,6 @@ default_profile:
         #ai_feed #tech
 ```
 
-### 対応インスタンス
-
-- misskey.io
-- misskey.dev
-- その他のMisskeyインスタンス
-- Firefish（Misskey派生）
-- Foundkey（Misskey派生）
-
-### 投稿オプション
-
-```yaml
-misskey:
-  visibility: "public"  # public, home, followers, specified
-  local_only: false  # ローカルタイムラインのみ
-  cw: "長文注意"  # Content Warning
-```
-
-### レート制限
-
-インスタンスごとに異なりますが、一般的な制限：
-- 300ノート/時間
-- 連続投稿は避ける（1秒以上の間隔推奨）
-
 ## 複数の出力先設定
 
 ### 同時投稿
@@ -212,13 +201,16 @@ misskey:
 ```yaml
 output:
   slack_api:
-    webhook_url_env: "SLACK_WEBHOOK_URL"
-    message_template: "{{.Article.Title}}\n{{.Article.Link}}"
+    enabled: true
+    api_token_env: "SLACK_API_TOKEN"
+    channel: "#general"
+    message_template: "{{COMMENT}}\n<{{URL}}|{{TITLE}}>"
   
   misskey:
-    api_url: "https://misskey.io/api"
-    api_token_env: "MISSKEY_API_TOKEN"
-    message_template: "{{.Article.Title}}\n{{.Article.Link}}"
+    enabled: true
+    api_url: "https://misskey.io"
+    api_token_env: "MISSKEY_TOKEN"
+    message_template: "{{COMMENT}}\n{{TITLE}}\n{{URL}}"
 ```
 
 両方の出力先に同時に投稿されます。
@@ -237,24 +229,6 @@ output:
 
 ## エラーハンドリングとリトライ
 
-### 自動リトライ
-
-ai-feedは以下の場合に自動リトライを実行：
-- ネットワークエラー
-- 一時的なサーバーエラー（5xx）
-- レート制限（適切な待機時間後）
-
-### リトライ設定
-
-```yaml
-# 将来的な設定例（現在は固定値）
-retry:
-  max_attempts: 3
-  initial_delay: 1s
-  max_delay: 30s
-  exponential_backoff: true
-```
-
 ### エラー時の動作
 
 - 1つの出力先でエラーが発生しても、他の出力先への投稿は継続
@@ -270,73 +244,21 @@ retry:
 ./ai-feed recommend -v --url https://example.com/feed
 ```
 
-### 一般的な問題と解決方法
-
-#### Gemini API
-
-**問題**: "API key not valid"
-```bash
-# APIキーの確認
-echo $GEMINI_API_KEY
-
-# 正しいAPIキーを設定
-export GEMINI_API_KEY="correct-api-key"
-```
-
-**問題**: レート制限エラー
-```yaml
-# より低速なモデルに変更
-ai:
-  gemini:
-    type: "gemini-2.5-flash-8b"  # 高速モデル
-```
-
-#### Slack
-
-**問題**: "invalid_webhook_url"
-```bash
-# URLフォーマットを確認
-# 正しい形式: https://hooks.slack.com/services/T.../B.../...
-```
-
-**問題**: メッセージが表示されない
-```yaml
-# テンプレートの構文を確認
-message_template: |
-  {{.Article.Title}}  # 正しい
-  {{ .Article.Title }}  # スペースがあっても動作
-```
-
-#### Misskey
-
-**問題**: "PERMISSION_DENIED"
-```bash
-# トークンの権限を確認
-# write:notes 権限が必要
-```
-
-**問題**: APIエンドポイントエラー
-```yaml
-# URLの末尾を確認
-api_url: "https://misskey.io/api"  # 正しい
-# api_url: "https://misskey.io/api/"  # 末尾のスラッシュは不要
-```
-
 ## ベストプラクティス
 
 ### 1. 環境変数の使用
 
 ```bash
-# .env.exampleを作成
-cat << EOF > .env.example
-GEMINI_API_KEY=your-gemini-api-key
-SLACK_WEBHOOK_URL=your-slack-webhook-url
-MISSKEY_API_TOKEN=your-misskey-token
-EOF
+# 環境変数の設定例
+export GEMINI_API_KEY="your-gemini-api-key"
+export SLACK_API_TOKEN="xoxb-your-slack-bot-token"
+export MISSKEY_TOKEN="your-misskey-token"
 
-# 実際の.envファイルは.gitignoreに追加
-echo ".env" >> .gitignore
+# または、起動時に環境変数を指定
+GEMINI_API_KEY="your-key" ./ai-feed recommend --url https://example.com/feed
 ```
+
+**注意**: ai-feedは.envファイルの自動読み込みには対応していません。環境変数は手動で設定する必要があります。
 
 ### 2. プロファイルの分離
 

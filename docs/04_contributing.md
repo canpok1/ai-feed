@@ -51,18 +51,9 @@ make setup
 git checkout main
 git pull upstream main
 
-# 機能ブランチを作成
-git checkout -b feature/your-feature-name
-
-# またはバグ修正ブランチ
-git checkout -b fix/bug-description
+# ブランチを作成
+git checkout -b your-branch-name
 ```
-
-ブランチ名の規約：
-- 機能追加: `feature/機能名`
-- バグ修正: `fix/バグの説明`
-- ドキュメント: `docs/ドキュメント名`
-- リファクタリング: `refactor/対象`
 
 ### 4. コードの変更
 
@@ -98,56 +89,9 @@ git checkout -b fix/bug-description
 
 ### 5. コミット
 
-#### コミットメッセージの規約
-
-```
-<type>: <subject>
-
-<body>
-
-<footer>
-```
-
-**type（必須）**:
-- `feat`: 新機能
-- `fix`: バグ修正
-- `docs`: ドキュメントのみの変更
-- `style`: コードの意味に影響しない変更（フォーマット等）
-- `refactor`: バグ修正や機能追加を含まないコード変更
-- `test`: テストの追加や修正
-- `chore`: ビルドプロセスやツールの変更
-
-**subject（必須）**:
-- 変更内容の簡潔な説明
-- 日本語で記述
-- 50文字以内
-
-**body（任意）**:
-- 詳細な説明が必要な場合に記載
-- 何を、なぜ変更したかを説明
-
-**footer（任意）**:
-- Issue番号の参照: `fixed #123`
-- Breaking changeの記載
-
-#### コミット例
-
 ```bash
-# 新機能
-git commit -m "feat: RSS取得のタイムアウト設定を追加
-
-長時間応答のないフィードに対してタイムアウトを設定できるようにしました。
-デフォルトは30秒で、config.ymlで変更可能です。
-
-fixed #42"
-
-# バグ修正
-git commit -m "fix: Slack投稿時のエスケープ処理を修正
-
-特殊文字を含むメッセージが正しく投稿されない問題を修正しました。"
-
-# ドキュメント
-git commit -m "docs: READMEにトラブルシューティング項目を追加"
+# 変更をコミット
+git commit -m "変更内容の説明"
 ```
 
 ### 6. プルリクエストの作成
@@ -156,54 +100,13 @@ git commit -m "docs: READMEにトラブルシューティング項目を追加"
 
 ```bash
 # 変更をプッシュ
-git push origin feature/your-feature-name
+git push origin your-branch-name
 
 # 上流の変更を取り込む（必要な場合）
 git fetch upstream
 git rebase upstream/main
 ```
 
-#### プルリクエストテンプレート
-
-```markdown
-## 概要
-変更内容の概要を記載してください。
-
-## 変更の種類
-- [ ] バグ修正
-- [ ] 新機能
-- [ ] 破壊的変更
-- [ ] ドキュメント更新
-
-## 関連Issue
-fixed #(issue番号)
-
-## 変更内容
-- 変更点1
-- 変更点2
-- 変更点3
-
-## テスト
-- [ ] 既存のテストが全てパス
-- [ ] 新しいテストを追加（必要な場合）
-- [ ] make lintが成功
-- [ ] make fmtを実行済み
-
-## スクリーンショット（UIの変更がある場合）
-該当なし
-
-## チェックリスト
-- [ ] コーディングルールに従っている
-- [ ] コメントは日本語で記載
-- [ ] 適切なコミットメッセージ
-- [ ] ドキュメントを更新（必要な場合）
-```
-
-#### プルリクエストのタイトル
-
-- 変更内容を簡潔に表現
-- Issue番号は含めない（説明文に記載）
-- 例: `プロファイル検証機能の追加`
 
 ### 7. コードレビュー
 
@@ -232,7 +135,6 @@ fixed #(issue番号)
 
 2. **日本語の使用**
    - コメントは全て日本語
-   - コミットメッセージのsubjectとbodyは日本語
    - Issueやプルリクエストの記載も日本語
 
 3. **テストの追加**
