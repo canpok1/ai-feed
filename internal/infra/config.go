@@ -211,6 +211,7 @@ func convertMessageTemplate(template *string, converter *entity.TemplateAliasCon
 }
 
 type SlackAPIConfig struct {
+	Enabled         bool    `yaml:"enabled"`
 	APIToken        string  `yaml:"api_token"`
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	Channel         string  `yaml:"channel"`
@@ -260,6 +261,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 }
 
 type MisskeyConfig struct {
+	Enabled         bool    `yaml:"enabled"`
 	APIToken        string  `yaml:"api_token"`
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	APIURL          string  `yaml:"api_url"`
