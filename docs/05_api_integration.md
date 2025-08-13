@@ -32,7 +32,7 @@ Google Gemini APIは、記事に対するAIコメントを生成するために�
 default_profile:
   ai:
     gemini:
-      type: "gemini-1.5-flash"  # モデルタイプ
+      type: "gemini-2.5-flash"  # モデルタイプ
       api_key: "your-api-key-here"  # 直接記載（非推奨）
       # または
       api_key_env: "GEMINI_API_KEY"  # 環境変数名を指定（推奨）
@@ -43,7 +43,7 @@ default_profile:
 ```yaml
 ai:
   gemini:
-    type: "gemini-1.5-pro"  # より高性能なモデルを使用
+    type: "gemini-2.5-pro"  # より高性能なモデルを使用
     api_key_env: "GEMINI_API_KEY"
 ```
 
@@ -61,9 +61,9 @@ export GEMINI_API_KEY="your-actual-api-key"
 
 | モデル名 | 特徴 | レート制限 |
 |---------|------|-----------|
-| gemini-1.5-flash | 高速・低コスト | 15 RPM (無料版) |
-| gemini-1.5-flash-8b | より高速 | 15 RPM (無料版) |
-| gemini-1.5-pro | 高精度 | 2 RPM (無料版) |
+| gemini-2.5-flash | 高速・低コスト | 15 RPM (無料版) |
+| gemini-2.5-flash-8b | より高速 | 15 RPM (無料版) |
+| gemini-2.5-pro | 高精度 | 2 RPM (無料版) |
 
 ### プロンプトのカスタマイズ
 
@@ -288,7 +288,7 @@ export GEMINI_API_KEY="correct-api-key"
 # より低速なモデルに変更
 ai:
   gemini:
-    type: "gemini-1.5-flash-8b"  # 高速モデル
+    type: "gemini-2.5-flash-8b"  # 高速モデル
 ```
 
 #### Slack
