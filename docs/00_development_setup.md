@@ -267,3 +267,4 @@ let g:go_metalinter_autosave = 1
 - [アーキテクチャ概要](./02_architecture.md) - プロジェクトの構造と設計
 - [テストガイド](./03_testing.md) - テストの書き方と実行方法
 - [コントリビューションガイド](./04_contributing.md) - 貢献方法とプルリクエストの作成
+- [API連携ガイド](./05_api_integration.md) - 外部API設定の詳細
