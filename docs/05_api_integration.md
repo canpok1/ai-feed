@@ -45,15 +45,22 @@ ai:
   gemini:
     type: "gemini-2.5-pro"  # より高性能なモデルを使用
     api_key_env: "GEMINI_API_KEY"
+
+# 出力先の個別制御
+output:
+  slack_api:
+    enabled: true  # Slackへの投稿を有効化
+    api_token_env: "SLACK_API_TOKEN"
+    channel: "#tech-news"
+  
+  misskey:
+    enabled: false  # Misskeyへの投稿を無効化（APIトークン不要）
 ```
 
 #### 環境変数での設定（推奨）
 
 ```bash
-# .envファイルを作成
-echo "GEMINI_API_KEY=your-actual-api-key" >> .env
-
-# またはシェルで設定
+# シェルで設定
 export GEMINI_API_KEY="your-actual-api-key"
 ```
 
@@ -76,9 +83,9 @@ prompt:
   comment_prompt_template: |
     以下の記事について、技術的な観点から200文字程度でコメントしてください。
     
-    タイトル: {{.Title}}
-    概要: {{.Description}}
-    URL: {{.Link}}
+    タイトル: {{TITLE}}
+    URL: {{URL}}
+    内容: {{CONTENT}}
 ```
 
 ### エラーハンドリング
@@ -88,18 +95,23 @@ Gemini APIのエラーコード：
 - `401`: 認証エラー → APIキーを確認
 - `500`: サーバーエラー → 自動リトライ
 
-## Slack Webhook
+## Slack API
 
 ### 概要
-Slack Webhookを使用して、推薦記事をSlackチャンネルに投稿します。
+Slack APIを使用して、推薦記事をSlackチャンネルに投稿します。Bot TokenとWeb APIを使用してメッセージを送信します。
 
-### Webhook URLの取得
+### APIトークンの取得
 
-1. [Slack App Directory](https://slack.com/apps)にアクセス
-2. 「Incoming Webhooks」を検索して選択
-3. 「Add to Slack」をクリック
-4. 投稿先のチャンネルを選択
-5. Webhook URLをコピー
+1. [Slack Apps](https://api.slack.com/apps)にアクセス
+2. 「Create New App」をクリック
+3. 「From scratch」を選択
+4. アプリ名とワークスペースを選択
+5. 「OAuth & Permissions」セクションに移動
+6. Bot Token Scopesで以下の権限を追加：
+   - `chat:write` - メッセージの投稿（必須）
+   - `chat:write.public` - 参加していないチャンネルへの投稿
+7. 「Install to Workspace」をクリック
+8. Bot User OAuth Tokenをコピー（xoxb-で始まるトークン）
 
 ### 設定方法
 
@@ -109,16 +121,15 @@ Slack Webhookを使用して、推薦記事をSlackチャンネルに投稿し�
 default_profile:
   output:
     slack_api:
-      webhook_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
+      enabled: true  # 有効/無効フラグ（省略時はtrue）
+      api_token: "xoxb-your-bot-token-here"  # 直接記載（非推奨）
       # または
-      webhook_url_env: "SLACK_WEBHOOK_URL"  # 環境変数名を指定（推奨）
+      api_token_env: "SLACK_API_TOKEN"  # 環境変数名を指定（推奨）
+      channel: "#general"  # 投稿先チャンネル
       message_template: |
-        :newspaper: *{{.Article.Title}}*
-        {{.Article.Link}}
-        
         {{.Comment}}
-        
-        {{if .FixedMessage}}{{.FixedMessage}}{{end}}
+        <{{.Article.Link}}|{{.Article.Title}}>
+        {{.FixedMessage}}
 ```
 
 ### メッセージテンプレート
@@ -126,26 +137,33 @@ default_profile:
 利用可能な変数：
 - `{{.Article.Title}}`: 記事タイトル
 - `{{.Article.Link}}`: 記事URL
-- `{{.Article.Description}}`: 記事概要
 - `{{.Comment}}`: AIによるコメント
 - `{{.FixedMessage}}`: 固定メッセージ
 
-### Slackフォーマット
+テンプレートエイリアス（簡単記法）：
+- `{{TITLE}}`: `{{.Article.Title}}`の短縮形
+- `{{URL}}`: `{{.Article.Link}}`の短縮形
+- `{{COMMENT}}`: `{{.Comment}}`の短縮形
+- `{{FIXED_MESSAGE}}`: `{{.FixedMessage}}`の短縮形
+
+### Slackマークアップ
 
 ```yaml
 message_template: |
-  *{{.Article.Title}}*  # 太字
-  _{{.Comment}}_  # イタリック
+  *{{TITLE}}*  # 太字
+  _{{COMMENT}}_  # イタリック
   `code`  # コード
   >引用  # 引用
   :emoji:  # 絵文字
+  <{{URL}}|{{TITLE}}>  # リンク付きテキスト
 ```
 
 ### レート制限
 
-- 1メッセージ/秒が推奨
-- バースト時は短期間に複数送信可能
-- 制限超過時は自動的に待機
+Slack Web APIの制限：
+- Tier 1メソッド（chat.postMessage）: 1+/秒
+- バースト送信に対して短期制限あり
+- 制限超過時は429レスポンスで自動的に待機
 
 ## Misskey API
 
@@ -212,13 +230,16 @@ misskey:
 ```yaml
 output:
   slack_api:
-    webhook_url_env: "SLACK_WEBHOOK_URL"
-    message_template: "{{.Article.Title}}\n{{.Article.Link}}"
+    enabled: true
+    api_token_env: "SLACK_API_TOKEN"
+    channel: "#general"
+    message_template: "{{COMMENT}}\n<{{URL}}|{{TITLE}}>"
   
   misskey:
+    enabled: true
     api_url: "https://misskey.io/api"
     api_token_env: "MISSKEY_API_TOKEN"
-    message_template: "{{.Article.Title}}\n{{.Article.Link}}"
+    message_template: "{{COMMENT}}\n{{TITLE}}\n{{URL}}"
 ```
 
 両方の出力先に同時に投稿されます。
@@ -293,17 +314,26 @@ ai:
 
 #### Slack
 
-**問題**: "invalid_webhook_url"
+**問題**: "invalid_auth" / "not_authed"
 ```bash
-# URLフォーマットを確認
-# 正しい形式: https://hooks.slack.com/services/T.../B.../...
+# Bot TokenのフォーマットとPermissionを確認
+# 正しい形式: xoxb-XXXXXXXXXXXX-XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX
+# 必要権限: chat:write
+```
+
+**問題**: "channel_not_found"
+```yaml
+# チャンネル名のフォーマットを確認
+channel: "#general"  # 正しい（#付き）
+# channel: "general"  # 不正（#なし）
 ```
 
 **問題**: メッセージが表示されない
 ```yaml
 # テンプレートの構文を確認
 message_template: |
-  {{.Article.Title}}  # 正しい
+  {{TITLE}}  # 正しい（エイリアス）
+  {{.Article.Title}}  # 正しい（フル記法）
   {{ .Article.Title }}  # スペースがあっても動作
 ```
 
@@ -330,7 +360,7 @@ api_url: "https://misskey.io/api"  # 正しい
 # .env.exampleを作成
 cat << EOF > .env.example
 GEMINI_API_KEY=your-gemini-api-key
-SLACK_WEBHOOK_URL=your-slack-webhook-url
+SLACK_API_TOKEN=xoxb-your-slack-bot-token
 MISSKEY_API_TOKEN=your-misskey-token
 EOF
 
