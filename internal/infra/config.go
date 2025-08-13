@@ -254,9 +254,17 @@ func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 }
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
-	apiToken, err := resolveSecret(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
-	if err != nil {
-		return nil, err
+	// Enabledフィールドの後方互換性処理（省略時=true）
+	enabled := resolveEnabled(c.Enabled)
+
+	// 無効化されている場合は、APIトークンのバリデーションをスキップ
+	var apiToken string
+	if enabled {
+		var err error
+		apiToken, err = resolveSecret(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// MessageTemplateの別名変換処理
@@ -265,9 +273,6 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Enabledフィールドの後方互換性処理（省略時=true）
-	enabled := resolveEnabled(c.Enabled)
 
 	return &entity.SlackAPIConfig{
 		Enabled:         enabled,
@@ -313,9 +318,17 @@ func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
 }
 
 func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
-	apiToken, err := resolveSecret(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
-	if err != nil {
-		return nil, err
+	// Enabledフィールドの後方互換性処理（省略時=true）
+	enabled := resolveEnabled(c.Enabled)
+
+	// 無効化されている場合は、APIトークンのバリデーションをスキップ
+	var apiToken string
+	if enabled {
+		var err error
+		apiToken, err = resolveSecret(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// MessageTemplateの別名変換処理
@@ -324,9 +337,6 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Enabledフィールドの後方互換性処理（省略時=true）
-	enabled := resolveEnabled(c.Enabled)
 
 	return &entity.MisskeyConfig{
 		Enabled:         enabled,

@@ -932,10 +932,34 @@ func TestOutputConfig_EnabledFalseWithValidationErrors(t *testing.T) {
 		expectedErr string
 	}{
 		{
-			name: "SlackAPI無効でもAPIトークンが空の場合はエラー",
+			name: "SlackAPI無効の場合はAPIトークンのバリデーションをスキップ",
 			config: OutputConfig{
 				SlackAPI: &SlackAPIConfig{
 					Enabled:     testutil.BoolPtr(false),
+					APIToken:    "", // 空でもエラーにならない
+					APITokenEnv: "NON_EXISTENT_TOKEN",
+					Channel:     "#general",
+				},
+			},
+			expectedErr: "", // エラーなし
+		},
+		{
+			name: "Misskey無効の場合はAPIトークンのバリデーションをスキップ",
+			config: OutputConfig{
+				Misskey: &MisskeyConfig{
+					Enabled:     testutil.BoolPtr(false),
+					APIToken:    "", // 空でもエラーにならない
+					APITokenEnv: "NON_EXISTENT_TOKEN",
+					APIURL:      "https://misskey.example.com",
+				},
+			},
+			expectedErr: "", // エラーなし
+		},
+		{
+			name: "SlackAPI有効の場合はAPIトークンが必要",
+			config: OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:     testutil.BoolPtr(true),
 					APIToken:    "", // 空
 					APITokenEnv: "NON_EXISTENT_TOKEN",
 					Channel:     "#general",
@@ -944,10 +968,10 @@ func TestOutputConfig_EnabledFalseWithValidationErrors(t *testing.T) {
 			expectedErr: "環境変数",
 		},
 		{
-			name: "Misskey無効でもAPIトークンが空の場合はエラー",
+			name: "Misskey有効の場合はAPIトークンが必要",
 			config: OutputConfig{
 				Misskey: &MisskeyConfig{
-					Enabled:     testutil.BoolPtr(false),
+					Enabled:     testutil.BoolPtr(true),
 					APIToken:    "", // 空
 					APITokenEnv: "NON_EXISTENT_TOKEN",
 					APIURL:      "https://misskey.example.com",
