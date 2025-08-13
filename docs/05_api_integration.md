@@ -183,7 +183,7 @@ default_profile:
       api_url: "https://misskey.io"  # インスタンスのAPI URL
       api_token: "your-token-here"  # 直接記載（非推奨）
       # または
-      api_token_env: "MISSKEY_API_TOKEN"  # 環境変数名を指定（推奨）
+      api_token_env: "MISSKEY_TOKEN"  # 環境変数名を指定（推奨）
       message_template: |
         【おすすめ記事】
         {{.Article.Title}}
@@ -209,7 +209,7 @@ output:
   misskey:
     enabled: true
     api_url: "https://misskey.io"
-    api_token_env: "MISSKEY_API_TOKEN"
+    api_token_env: "MISSKEY_TOKEN"
     message_template: "{{COMMENT}}\n{{TITLE}}\n{{URL}}"
 ```
 
@@ -252,7 +252,7 @@ output:
 # 環境変数の設定例
 export GEMINI_API_KEY="your-gemini-api-key"
 export SLACK_API_TOKEN="xoxb-your-slack-bot-token"
-export MISSKEY_API_TOKEN="your-misskey-token"
+export MISSKEY_TOKEN="your-misskey-token"
 
 # または、起動時に環境変数を指定
 GEMINI_API_KEY="your-key" ./ai-feed recommend --url https://example.com/feed
