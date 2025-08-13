@@ -76,6 +76,16 @@ sudo mv ai-feed /usr/local/bin/
 go install github.com/canpok1/ai-feed@latest
 ```
 
+**注意**: `go install` でインストールされたバイナリは `$GOPATH/bin` または `$HOME/go/bin` に配置されます。このディレクトリが PATH に含まれていない場合は、以下のコマンドで PATH を設定してください：
+
+```bash
+# 現在のセッションのみ有効
+export PATH=$PATH:$(go env GOPATH)/bin
+
+# 永続化する場合（.bashrc, .zshrc等に追記）
+echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
+```
+
 ### インストール確認
 
 ```bash
