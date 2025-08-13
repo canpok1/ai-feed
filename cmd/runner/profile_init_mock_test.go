@@ -3,6 +3,8 @@ package runner
 import (
 	"os"
 	"path/filepath"
+	"strconv"
+	"sync/atomic"
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal/infra/profile"
@@ -128,7 +130,7 @@ func BenchmarkProfileInitRunner_Run(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		filePath := filepath.Join(tempDir, "bench_profile_"+string(rune(i))+".yml")
+		filePath := filepath.Join(tempDir, "bench_profile_"+strconv.Itoa(i)+".yml")
 		yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 		runner := NewProfileInitRunner(yamlRepo)
 		b.StartTimer()
@@ -140,16 +142,16 @@ func BenchmarkProfileInitRunner_Run(b *testing.B) {
 // BenchmarkProfileInitRunner_ConcurrentRun 並行実行ベンチマークテスト
 func BenchmarkProfileInitRunner_ConcurrentRun(b *testing.B) {
 	tempDir := b.TempDir()
+	var counter atomic.Int64
 
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
-		i := 0
 		for pb.Next() {
-			filePath := filepath.Join(tempDir, "concurrent_bench_"+string(rune(i))+".yml")
+			id := counter.Add(1)
+			filePath := filepath.Join(tempDir, "concurrent_bench_"+strconv.FormatInt(id, 10)+".yml")
 			yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			runner := NewProfileInitRunner(yamlRepo)
 			_ = runner.Run()
-			i++
 		}
 	})
 }
