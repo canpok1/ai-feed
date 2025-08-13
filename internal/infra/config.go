@@ -18,16 +18,6 @@ type Profile struct {
 	Output *OutputConfig `yaml:"output,omitempty"`
 }
 
-// Merge merges the non-nil fields from the other profile into the current profile.
-func (p *Profile) Merge(other *Profile) {
-	if other == nil {
-		return
-	}
-	mergePtr(&p.AI, other.AI)
-	mergePtr(&p.Prompt, other.Prompt)
-	mergePtr(&p.Output, other.Output)
-}
-
 // ToEntity converts infra.Profile to entity.Profile
 func (p *Profile) ToEntity() (*entity.Profile, error) {
 	var aiEntity *entity.AIConfig
@@ -64,13 +54,6 @@ type AIConfig struct {
 	Gemini *GeminiConfig `yaml:"gemini,omitempty"`
 }
 
-func (c *AIConfig) Merge(other *AIConfig) {
-	if other == nil {
-		return
-	}
-	mergePtr(&c.Gemini, other.Gemini)
-}
-
 func (c *AIConfig) ToEntity() (*entity.AIConfig, error) {
 	var geminiEntity *entity.GeminiConfig
 	if c.Gemini != nil {
@@ -89,24 +72,6 @@ type GeminiConfig struct {
 	Type      string `yaml:"type"`
 	APIKey    string `yaml:"api_key"`
 	APIKeyEnv string `yaml:"api_key_env,omitempty"`
-}
-
-func (c *GeminiConfig) Merge(other *GeminiConfig) {
-	if other == nil {
-		return
-	}
-	mergeString(&c.Type, other.Type)
-
-	// プロファイルファイルでapi_key_envが指定されている場合、
-	// デフォルトのapi_keyを無効にして環境変数を優先する
-	if other.APIKeyEnv != "" && other.APIKey == "" {
-		c.APIKey = ""
-		c.APIKeyEnv = other.APIKeyEnv
-	} else {
-		// 通常のマージ処理
-		mergeString(&c.APIKey, other.APIKey)
-		mergeString(&c.APIKeyEnv, other.APIKeyEnv)
-	}
 }
 
 // resolveSecret は、直接指定された値または環境変数から値を解決する
@@ -150,15 +115,6 @@ type PromptConfig struct {
 	FixedMessage          string `yaml:"fixed_message,omitempty"`
 }
 
-func (c *PromptConfig) Merge(other *PromptConfig) {
-	if other == nil {
-		return
-	}
-	mergeString(&c.SystemPrompt, other.SystemPrompt)
-	mergeString(&c.CommentPromptTemplate, other.CommentPromptTemplate)
-	mergeString(&c.FixedMessage, other.FixedMessage)
-}
-
 func (c *PromptConfig) ToEntity() *entity.PromptConfig {
 	return &entity.PromptConfig{
 		SystemPrompt:          c.SystemPrompt,
@@ -170,14 +126,6 @@ func (c *PromptConfig) ToEntity() *entity.PromptConfig {
 type OutputConfig struct {
 	SlackAPI *SlackAPIConfig `yaml:"slack_api,omitempty"`
 	Misskey  *MisskeyConfig  `yaml:"misskey,omitempty"`
-}
-
-func (c *OutputConfig) Merge(other *OutputConfig) {
-	if other == nil {
-		return
-	}
-	mergePtr(&c.SlackAPI, other.SlackAPI)
-	mergePtr(&c.Misskey, other.Misskey)
 }
 
 func (c *OutputConfig) ToEntity() (*entity.OutputConfig, error) {
@@ -226,33 +174,6 @@ type SlackAPIConfig struct {
 	MessageTemplate *string `yaml:"message_template,omitempty"`
 }
 
-func (c *SlackAPIConfig) Merge(other *SlackAPIConfig) {
-	if other == nil {
-		return
-	}
-
-	// Enabledフィールドのマージ（*boolポインタのマージ）
-	if other.Enabled != nil {
-		c.Enabled = other.Enabled
-	}
-
-	// プロファイルファイルでapi_token_envが指定されている場合、
-	// デフォルトのapi_tokenを無効にして環境変数を優先する
-	if other.APITokenEnv != "" && other.APIToken == "" {
-		c.APIToken = ""
-		c.APITokenEnv = other.APITokenEnv
-	} else {
-		// 通常のマージ処理
-		mergeString(&c.APIToken, other.APIToken)
-		mergeString(&c.APITokenEnv, other.APITokenEnv)
-	}
-
-	mergeString(&c.Channel, other.Channel)
-	if other.MessageTemplate != nil {
-		c.MessageTemplate = other.MessageTemplate
-	}
-}
-
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	// Enabledフィールドの後方互換性処理（省略時=true）
 	enabled := resolveEnabled(c.Enabled)
@@ -288,33 +209,6 @@ type MisskeyConfig struct {
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	APIURL          string  `yaml:"api_url"`
 	MessageTemplate *string `yaml:"message_template,omitempty"`
-}
-
-func (c *MisskeyConfig) Merge(other *MisskeyConfig) {
-	if other == nil {
-		return
-	}
-
-	// Enabledフィールドのマージ（*boolポインタのマージ）
-	if other.Enabled != nil {
-		c.Enabled = other.Enabled
-	}
-
-	// プロファイルファイルでapi_token_envが指定されている場合、
-	// デフォルトのapi_tokenを無効にして環境変数を優先する
-	if other.APITokenEnv != "" && other.APIToken == "" {
-		c.APIToken = ""
-		c.APITokenEnv = other.APITokenEnv
-	} else {
-		// 通常のマージ処理
-		mergeString(&c.APIToken, other.APIToken)
-		mergeString(&c.APITokenEnv, other.APITokenEnv)
-	}
-
-	mergeString(&c.APIURL, other.APIURL)
-	if other.MessageTemplate != nil {
-		c.MessageTemplate = other.MessageTemplate
-	}
 }
 
 func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
@@ -418,21 +312,5 @@ func (r *YamlConfigRepository) Load() (*Config, error) {
 func mergeString(target *string, source string) {
 	if source != "" {
 		*target = source
-	}
-}
-
-type merger[T any] interface {
-	Merge(T)
-}
-
-func mergePtr[T any, P interface {
-	*T
-	merger[P]
-}](target *P, source P) {
-	if source != nil {
-		if *target == nil {
-			*target = new(T)
-		}
-		(*target).Merge(source)
 	}
 }

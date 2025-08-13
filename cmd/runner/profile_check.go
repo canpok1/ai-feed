@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 )
 
@@ -38,7 +39,7 @@ func NewProfileCheckRunner(configPath string, stderr io.Writer, profileRepoFn fu
 func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error) {
 	// config.ymlの読み込み
 	var config *infra.Config
-	var currentProfile infra.Profile
+	var currentProfile *entity.Profile
 
 	configRepo := infra.NewYamlConfigRepository(r.configPath)
 	loadedConfig, err := configRepo.Load()
@@ -52,11 +53,17 @@ func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error
 		config = loadedConfig
 	}
 
-	// デフォルトプロファイルの取得
+	// デフォルトプロファイルの初期化
 	if config != nil && config.DefaultProfile != nil {
-		currentProfile = *config.DefaultProfile
+		var err error
+		currentProfile, err = config.DefaultProfile.ToEntity()
+		if err != nil {
+			return nil, fmt.Errorf("failed to process default profile: %w", err)
+		}
+	} else {
+		// 存在しない場合は空のプロファイルを使用
+		currentProfile = &entity.Profile{}
 	}
-	// 存在しない場合は空のプロファイルを使用（ゼロ値）
 
 	// 引数が指定されている場合は指定ファイルとマージ
 	if profilePath != "" {
@@ -69,27 +76,17 @@ func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error
 
 		// 指定されたプロファイルファイルの読み込み
 		profileRepo := r.profileRepoFn(profilePath)
-		loadedInfraProfile, err := profileRepo.LoadInfraProfile()
+		loadedProfile, err := profileRepo.LoadProfile()
 		if err != nil {
 			return nil, fmt.Errorf("プロファイルの読み込みに失敗しました: %w", err)
 		}
 
-		// config.ymlが存在する場合はマージ、存在しない場合はloadedInfraProfileをそのまま使用
-		if config != nil && config.DefaultProfile != nil {
-			// デフォルトプロファイルとマージ
-			currentProfile.Merge(loadedInfraProfile)
-		} else {
-			// config.ymlが存在しない場合は、読み込んだプロファイルをそのまま使用
-			currentProfile = *loadedInfraProfile
-		}
+		// デフォルトプロファイルとマージ
+		currentProfile.Merge(loadedProfile)
 	}
 
-	// マージ後のプロファイルをentity.Profileに変換してバリデーション
-	entityProfile, err := currentProfile.ToEntity()
-	if err != nil {
-		return nil, fmt.Errorf("failed to process profile: %w", err)
-	}
-	validationResult := entityProfile.Validate()
+	// バリデーション実行
+	validationResult := currentProfile.Validate()
 
 	// 結果を返す
 	return &ProfileCheckResult{

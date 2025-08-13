@@ -7,7 +7,6 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
-	"gopkg.in/yaml.v3"
 )
 
 // YamlProfileRepository はYAML形式でプロファイルを永続化する実装
@@ -31,20 +30,17 @@ func NewYamlProfileRepositoryImpl(filePath string) *YamlProfileRepository {
 
 // LoadProfile はプロファイルをファイルから読み込み、entity.Profileを返す（domain.ProfileRepositoryインターフェース用）
 func (r *YamlProfileRepository) LoadProfile() (*entity.Profile, error) {
-	infraProfile, err := r.LoadInfraProfile()
+	// YAMLファイルから直接infra.Profileを読み込み
+	infraProfile, err := infra.LoadYAML[infra.Profile](r.filePath)
 	if err != nil {
 		return nil, err
 	}
+	// entity.Profileに変換
 	return infraProfile.ToEntity()
 }
 
-// LoadInfraProfile はプロファイルをファイルから読み込み、infra.Profileを返す（内部実装用）
-func (r *YamlProfileRepository) LoadInfraProfile() (*infra.Profile, error) {
-	return infra.LoadYAML[infra.Profile](r.filePath)
-}
-
-// SaveProfileWithTemplate はテンプレートを使用してコメント付きprofile.ymlファイルを生成する
-func (r *YamlProfileRepository) SaveProfileWithTemplate() error {
+// SaveProfileTemplate はテンプレートを使用してコメント付きprofile.ymlファイルを生成する
+func (r *YamlProfileRepository) SaveProfileTemplate() error {
 	// Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
 	file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
 	if err != nil {
@@ -66,18 +62,5 @@ func (r *YamlProfileRepository) SaveProfileWithTemplate() error {
 		return fmt.Errorf("failed to write profile template: %w", err)
 	}
 
-	return nil
-}
-
-// SaveProfile はプロファイルをファイルに保存する
-func (r *YamlProfileRepository) SaveProfile(profile *infra.Profile) error {
-	data, err := yaml.Marshal(profile)
-	if err != nil {
-		return fmt.Errorf("failed to marshal profile to YAML: %w", err)
-	}
-
-	if err := os.WriteFile(r.filePath, data, 0644); err != nil {
-		return fmt.Errorf("failed to write profile to file %q: %w", r.filePath, err)
-	}
 	return nil
 }

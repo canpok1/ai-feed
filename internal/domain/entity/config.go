@@ -32,6 +32,14 @@ func (a *AIConfig) Validate() *ValidationResult {
 	return builder.Build()
 }
 
+// Merge は他のAIConfigの非nil フィールドで現在のAIConfigをマージする
+func (a *AIConfig) Merge(other *AIConfig) {
+	if other == nil {
+		return
+	}
+	mergePtr(&a.Gemini, other.Gemini)
+}
+
 type GeminiConfig struct {
 	Type   string
 	APIKey string
@@ -52,6 +60,15 @@ func (g *GeminiConfig) Validate() *ValidationResult {
 	}
 
 	return builder.Build()
+}
+
+// Merge は他のGeminiConfigの非空フィールドで現在のGeminiConfigをマージする
+func (g *GeminiConfig) Merge(other *GeminiConfig) {
+	if other == nil {
+		return
+	}
+	mergeString(&g.Type, other.Type)
+	mergeString(&g.APIKey, other.APIKey)
 }
 
 type PromptConfig struct {
@@ -122,6 +139,16 @@ func (c *PromptConfig) BuildCommentPrompt(article *Article) (string, error) {
 	return buf.String(), nil
 }
 
+// Merge は他のPromptConfigの非空フィールドで現在のPromptConfigをマージする
+func (p *PromptConfig) Merge(other *PromptConfig) {
+	if other == nil {
+		return
+	}
+	mergeString(&p.SystemPrompt, other.SystemPrompt)
+	mergeString(&p.CommentPromptTemplate, other.CommentPromptTemplate)
+	mergeString(&p.FixedMessage, other.FixedMessage)
+}
+
 type MisskeyConfig struct {
 	Enabled         bool
 	APIToken        string
@@ -164,6 +191,20 @@ func (m *MisskeyConfig) validateMisskeyMessageTemplate(templateStr string) error
 	}
 
 	return nil
+}
+
+// Merge は他のMisskeyConfigの非空フィールドで現在のMisskeyConfigをマージする
+func (m *MisskeyConfig) Merge(other *MisskeyConfig) {
+	if other == nil {
+		return
+	}
+	// bool フィールドはゼロ値チェックが困難なため、常に上書き
+	m.Enabled = other.Enabled
+	mergeString(&m.APIToken, other.APIToken)
+	mergeString(&m.APIURL, other.APIURL)
+	if other.MessageTemplate != nil {
+		m.MessageTemplate = other.MessageTemplate
+	}
 }
 
 type SlackAPIConfig struct {
@@ -210,6 +251,20 @@ func (s *SlackAPIConfig) validateSlackMessageTemplate(templateStr string) error 
 	return nil
 }
 
+// Merge は他のSlackAPIConfigの非空フィールドで現在のSlackAPIConfigをマージする
+func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
+	if other == nil {
+		return
+	}
+	// bool フィールドはゼロ値チェックが困難なため、常に上書き
+	s.Enabled = other.Enabled
+	mergeString(&s.APIToken, other.APIToken)
+	mergeString(&s.Channel, other.Channel)
+	if other.MessageTemplate != nil {
+		s.MessageTemplate = other.MessageTemplate
+	}
+}
+
 type Profile struct {
 	AI     *AIConfig
 	Prompt *PromptConfig
@@ -244,9 +299,44 @@ func (p *Profile) Validate() *ValidationResult {
 	return builder.Build()
 }
 
+// Merge は他のProfileの非nil フィールドで現在のProfileをマージする
+func (p *Profile) Merge(other *Profile) {
+	if other == nil {
+		return
+	}
+	mergePtr(&p.AI, other.AI)
+	mergePtr(&p.Prompt, other.Prompt)
+	mergePtr(&p.Output, other.Output)
+}
+
 type OutputConfig struct {
 	SlackAPI *SlackAPIConfig
 	Misskey  *MisskeyConfig
+}
+
+// merger はMergeメソッドを持つ型の制約
+type merger[T any] interface {
+	Merge(T)
+}
+
+// mergePtr はポインタフィールドのマージを行うヘルパー関数
+func mergePtr[T any, P interface {
+	*T
+	merger[P]
+}](target *P, source P) {
+	if source != nil {
+		if *target == nil {
+			*target = new(T)
+		}
+		(*target).Merge(source)
+	}
+}
+
+// mergeString は文字列フィールドのマージを行うヘルパー関数
+func mergeString(target *string, source string) {
+	if source != "" {
+		*target = source
+	}
 }
 
 // Validate はOutputConfigの内容をバリデーションする
@@ -268,6 +358,15 @@ func (o *OutputConfig) Validate() *ValidationResult {
 	}
 
 	return builder.Build()
+}
+
+// Merge は他のOutputConfigの非nil フィールドで現在のOutputConfigをマージする
+func (o *OutputConfig) Merge(other *OutputConfig) {
+	if other == nil {
+		return
+	}
+	mergePtr(&o.SlackAPI, other.SlackAPI)
+	mergePtr(&o.Misskey, other.Misskey)
 }
 
 // ValidationResult はバリデーション結果を表現する

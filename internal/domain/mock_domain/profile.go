@@ -13,7 +13,6 @@ import (
 	reflect "reflect"
 
 	entity "github.com/canpok1/ai-feed/internal/domain/entity"
-	infra "github.com/canpok1/ai-feed/internal/infra"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,21 +40,6 @@ func (m *MockProfileRepository) EXPECT() *MockProfileRepositoryMockRecorder {
 	return m.recorder
 }
 
-// LoadInfraProfile mocks base method.
-func (m *MockProfileRepository) LoadInfraProfile() (*infra.Profile, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LoadInfraProfile")
-	ret0, _ := ret[0].(*infra.Profile)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// LoadInfraProfile indicates an expected call of LoadInfraProfile.
-func (mr *MockProfileRepositoryMockRecorder) LoadInfraProfile() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadInfraProfile", reflect.TypeOf((*MockProfileRepository)(nil).LoadInfraProfile))
-}
-
 // LoadProfile mocks base method.
 func (m *MockProfileRepository) LoadProfile() (*entity.Profile, error) {
 	m.ctrl.T.Helper()
@@ -69,18 +53,4 @@ func (m *MockProfileRepository) LoadProfile() (*entity.Profile, error) {
 func (mr *MockProfileRepositoryMockRecorder) LoadProfile() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadProfile", reflect.TypeOf((*MockProfileRepository)(nil).LoadProfile))
-}
-
-// SaveProfileWithTemplate mocks base method.
-func (m *MockProfileRepository) SaveProfileWithTemplate() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveProfileWithTemplate")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SaveProfileWithTemplate indicates an expected call of SaveProfileWithTemplate.
-func (mr *MockProfileRepositoryMockRecorder) SaveProfileWithTemplate() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveProfileWithTemplate", reflect.TypeOf((*MockProfileRepository)(nil).SaveProfileWithTemplate))
 }
