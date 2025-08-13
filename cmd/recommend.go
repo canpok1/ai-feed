@@ -69,12 +69,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				currentProfile.Prompt,
 			)
 
-			// entity.ProfileからinfraのProfileを構築する必要がある（一時的な処理）
-			infraProfile := &infra.Profile{}
-			if currentProfile.Output != nil {
-				// entity.OutputConfig -> infra.OutputConfigの変換は複雑なため、一時的にnilを渡す
-			}
-			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), nil, nil)
+			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -83,7 +78,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-			err = recommendRunner.Run(cmd.Context(), params, *infraProfile)
+			err = recommendRunner.Run(cmd.Context(), params, currentProfile)
 			if err != nil {
 				// 記事が見つからない場合は友好的なメッセージを表示してエラーではない扱いにする
 				if errors.Is(err, runner.ErrNoArticlesFound) {

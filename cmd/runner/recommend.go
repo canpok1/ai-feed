@@ -8,7 +8,7 @@ import (
 	"log/slog"
 
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra/message"
 )
 
@@ -28,7 +28,7 @@ type RecommendRunner struct {
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
-func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, outputConfig *infra.OutputConfig, promptConfig *infra.PromptConfig) (*RecommendRunner, error) {
+func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, outputConfig *entity.OutputConfig, promptConfig *entity.PromptConfig) (*RecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -40,11 +40,9 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
-			slackConfig, err := outputConfig.SlackAPI.ToEntity()
-			if err != nil {
-				return nil, fmt.Errorf("failed to process Slack API config: %w", err)
-			}
-			// enabledフラグのチェック（ToEntity()で後方互換性処理済み）
+			// entity.SlackAPIConfigは既にToEntity()変換済みなので直接使用
+			slackConfig := outputConfig.SlackAPI
+			// enabledフラグのチェック
 			if !slackConfig.Enabled {
 				slog.Info("Slack API出力が無効化されています (enabled: false)")
 			} else {
@@ -53,11 +51,9 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			}
 		}
 		if outputConfig.Misskey != nil {
-			misskeyConfig, err := outputConfig.Misskey.ToEntity()
-			if err != nil {
-				return nil, fmt.Errorf("failed to process Misskey config: %w", err)
-			}
-			// enabledフラグのチェック（ToEntity()で後方互換性処理済み）
+			// entity.MisskeyConfigは既にToEntity()変換済みなので直接使用
+			misskeyConfig := outputConfig.Misskey
+			// enabledフラグのチェック
 			if !misskeyConfig.Enabled {
 				slog.Info("Misskey出力が無効化されています (enabled: false)")
 			} else {
@@ -78,7 +74,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 }
 
 // Run はrecommendコマンドのビジネスロジックを実行する
-func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile infra.Profile) error {
+func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile *entity.Profile) error {
 	slog.Info("Starting recommend command execution")
 	slog.Debug("Fetching articles from URLs", "url_count", len(params.URLs))
 

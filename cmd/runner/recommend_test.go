@@ -10,8 +10,6 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
-	"github.com/canpok1/ai-feed/internal/infra"
-	"github.com/canpok1/ai-feed/internal/testutil"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,15 +17,13 @@ import (
 )
 
 // createMockConfig creates a mock entity.Config for testing purposes.
-func createMockConfig(promptConfig *infra.PromptConfig, outputConfig *infra.OutputConfig) *infra.Config {
-	return &infra.Config{
-		DefaultProfile: &infra.Profile{
-			AI: &infra.AIConfig{
-				Gemini: &infra.GeminiConfig{Type: "test-type", APIKey: "test-key"},
-			},
-			Prompt: promptConfig,
-			Output: outputConfig,
+func createMockConfig(promptConfig *entity.PromptConfig, outputConfig *entity.OutputConfig) *entity.Profile {
+	return &entity.Profile{
+		AI: &entity.AIConfig{
+			Gemini: &entity.GeminiConfig{Type: "test-type", APIKey: "test-key"},
 		},
+		Prompt: promptConfig,
+		Output: outputConfig,
 	}
 }
 
@@ -35,53 +31,57 @@ func toStringP(value string) *string {
 	return &value
 }
 
+
 func TestNewRecommendRunner(t *testing.T) {
 	tests := []struct {
 		name             string
-		outputConfig     *infra.OutputConfig
-		promptConfig     *infra.PromptConfig
+		outputConfig     *entity.OutputConfig
+		promptConfig     *entity.PromptConfig
 		expectError      bool
 		expectedErrorMsg string
 	}{
 		{
 			name:         "Successful creation with no viewers",
-			outputConfig: &infra.OutputConfig{},
-			promptConfig: &infra.PromptConfig{CommentPromptTemplate: "test-template"},
+			outputConfig: &entity.OutputConfig{},
+			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:  false,
 		},
 		{
 			name: "Successful creation with SlackAPI viewer",
-			outputConfig: &infra.OutputConfig{
-				SlackAPI: &infra.SlackAPIConfig{
+			outputConfig: &entity.OutputConfig{
+				SlackAPI: &entity.SlackAPIConfig{
+					Enabled:         true,
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			promptConfig: &infra.PromptConfig{CommentPromptTemplate: "test-template"},
+			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:  false,
 		},
 		{
 			name: "Successful creation with Misskey viewer",
-			outputConfig: &infra.OutputConfig{
-				Misskey: &infra.MisskeyConfig{
+			outputConfig: &entity.OutputConfig{
+				Misskey: &entity.MisskeyConfig{
+					Enabled:         true,
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io/api",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			promptConfig: &infra.PromptConfig{CommentPromptTemplate: "test-template"},
+			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:  false,
 		},
 		{
 			name: "Error creating Misskey viewer with invalid URL",
-			outputConfig: &infra.OutputConfig{
-				Misskey: &infra.MisskeyConfig{
+			outputConfig: &entity.OutputConfig{
+				Misskey: &entity.MisskeyConfig{
+					Enabled:  true,
 					APIToken: "test-token",
 					APIURL:   "invalid-url",
 				},
 			},
-			promptConfig:     &infra.PromptConfig{CommentPromptTemplate: "test-template"},
+			promptConfig:     &entity.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:      true,
 			expectedErrorMsg: "failed to create Misskey viewer",
 		},
@@ -246,26 +246,26 @@ func TestRecommendRunner_Run(t *testing.T) {
 			var runner *RecommendRunner
 			var runErr error
 
-			var profile infra.Profile
-			mockConfig := createMockConfig(&infra.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, &infra.OutputConfig{})
+			var profile *entity.Profile
+			mockProfile := createMockConfig(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, &entity.OutputConfig{})
 
 			switch tt.name {
 			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, mockConfig.DefaultProfile.Output, mockConfig.DefaultProfile.Prompt)
-				profile = *mockConfig.DefaultProfile
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, mockProfile.Output, mockProfile.Prompt)
+				profile = mockProfile
 			case "AI model not configured":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, &infra.OutputConfig{}, &infra.PromptConfig{})
-				profile = infra.Profile{
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, &entity.OutputConfig{}, &entity.PromptConfig{})
+				profile = &entity.Profile{
 					AI:     nil,
-					Prompt: mockConfig.DefaultProfile.Prompt,
-					Output: &infra.OutputConfig{},
+					Prompt: mockProfile.Prompt,
+					Output: &entity.OutputConfig{},
 				}
 			case "Prompt not configured":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, &infra.OutputConfig{}, &infra.PromptConfig{})
-				profile = infra.Profile{
-					AI:     mockConfig.DefaultProfile.AI,
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, &entity.OutputConfig{}, &entity.PromptConfig{})
+				profile = &entity.Profile{
+					AI:     mockProfile.AI,
 					Prompt: nil,
-					Output: &infra.OutputConfig{},
+					Output: &entity.OutputConfig{},
 				}
 			}
 
@@ -305,9 +305,9 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	mockRecommender := mock_domain.NewMockRecommender(ctrl)
 
 	stderrBuffer := new(bytes.Buffer)
-	mockConfig := createMockConfig(&infra.PromptConfig{CommentPromptTemplate: "test-prompt-template", FixedMessage: "Test Fixed Message"}, &infra.OutputConfig{})
+	mockProfile := createMockConfig(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template", FixedMessage: "Test Fixed Message"}, &entity.OutputConfig{})
 
-	runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, mockConfig.DefaultProfile.Output, mockConfig.DefaultProfile.Prompt)
+	runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, mockProfile.Output, mockProfile.Prompt)
 	assert.NoError(t, runErr)
 
 	// Set up test data
@@ -326,7 +326,7 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 
 	// Execute the test
 	params := &RecommendParams{URLs: []string{"https://example.com/feed"}}
-	profile := *mockConfig.DefaultProfile
+	profile := mockProfile
 	err := runner.Run(context.Background(), params, profile)
 
 	assert.NoError(t, err)
@@ -360,18 +360,20 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 	tests := []struct {
 		name            string
-		outputConfig    *infra.OutputConfig
+		outputConfig    *entity.OutputConfig
 		expectedViewers int
 	}{
 		{
 			name: "SlackAPI有効、Misskey有効（default）",
-			outputConfig: &infra.OutputConfig{
-				SlackAPI: &infra.SlackAPIConfig{
+			outputConfig: &entity.OutputConfig{
+				SlackAPI: &entity.SlackAPIConfig{
+					Enabled:         true,
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
-				Misskey: &infra.MisskeyConfig{
+				Misskey: &entity.MisskeyConfig{
+					Enabled:         true,
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -381,14 +383,15 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 		},
 		{
 			name: "SlackAPI有効、Misskey無効",
-			outputConfig: &infra.OutputConfig{
-				SlackAPI: &infra.SlackAPIConfig{
+			outputConfig: &entity.OutputConfig{
+				SlackAPI: &entity.SlackAPIConfig{
+					Enabled:         true,
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
-				Misskey: &infra.MisskeyConfig{
-					Enabled:         testutil.BoolPtr(false),
+				Misskey: &entity.MisskeyConfig{
+					Enabled:         false,
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -398,14 +401,15 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 		},
 		{
 			name: "SlackAPI無効、Misskey有効",
-			outputConfig: &infra.OutputConfig{
-				SlackAPI: &infra.SlackAPIConfig{
-					Enabled:         testutil.BoolPtr(false),
+			outputConfig: &entity.OutputConfig{
+				SlackAPI: &entity.SlackAPIConfig{
+					Enabled:         false,
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
-				Misskey: &infra.MisskeyConfig{
+				Misskey: &entity.MisskeyConfig{
+					Enabled:         true,
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -415,15 +419,15 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 		},
 		{
 			name: "両方無効",
-			outputConfig: &infra.OutputConfig{
-				SlackAPI: &infra.SlackAPIConfig{
-					Enabled:         testutil.BoolPtr(false),
+			outputConfig: &entity.OutputConfig{
+				SlackAPI: &entity.SlackAPIConfig{
+					Enabled:         false,
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
-				Misskey: &infra.MisskeyConfig{
-					Enabled:         testutil.BoolPtr(false),
+				Misskey: &entity.MisskeyConfig{
+					Enabled:         false,
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -448,7 +452,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 				mockRecommender,
 				stderrBuffer,
 				tt.outputConfig,
-				&infra.PromptConfig{},
+				&entity.PromptConfig{},
 			)
 
 			assert.NoError(t, err)
@@ -461,14 +465,14 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 	tests := []struct {
 		name         string
-		outputConfig *infra.OutputConfig
+		outputConfig *entity.OutputConfig
 		expectedLogs []string
 	}{
 		{
 			name: "Slack無効ログ確認",
-			outputConfig: &infra.OutputConfig{
-				SlackAPI: &infra.SlackAPIConfig{
-					Enabled:         testutil.BoolPtr(false),
+			outputConfig: &entity.OutputConfig{
+				SlackAPI: &entity.SlackAPIConfig{
+					Enabled:         false,
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -478,9 +482,9 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 		},
 		{
 			name: "Misskey無効ログ確認",
-			outputConfig: &infra.OutputConfig{
-				Misskey: &infra.MisskeyConfig{
-					Enabled:         testutil.BoolPtr(false),
+			outputConfig: &entity.OutputConfig{
+				Misskey: &entity.MisskeyConfig{
+					Enabled:         false,
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -490,15 +494,15 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 		},
 		{
 			name: "両方無効ログ確認",
-			outputConfig: &infra.OutputConfig{
-				SlackAPI: &infra.SlackAPIConfig{
-					Enabled:         testutil.BoolPtr(false),
+			outputConfig: &entity.OutputConfig{
+				SlackAPI: &entity.SlackAPIConfig{
+					Enabled:         false,
 					APIToken:        "test-token",
 					Channel:         "#test",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
-				Misskey: &infra.MisskeyConfig{
-					Enabled:         testutil.BoolPtr(false),
+				Misskey: &entity.MisskeyConfig{
+					Enabled:         false,
 					APIToken:        "test-token",
 					APIURL:          "https://test.misskey.io",
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -535,7 +539,7 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 				mockRecommender,
 				stderrBuffer,
 				tt.outputConfig,
-				&infra.PromptConfig{},
+				&entity.PromptConfig{},
 			)
 
 			assert.NoError(t, err)
@@ -560,15 +564,15 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 	stderrBuffer := new(bytes.Buffer)
 
 	// 両方無効の設定
-	outputConfig := &infra.OutputConfig{
-		SlackAPI: &infra.SlackAPIConfig{
-			Enabled:         testutil.BoolPtr(false),
+	outputConfig := &entity.OutputConfig{
+		SlackAPI: &entity.SlackAPIConfig{
+			Enabled:         false,
 			APIToken:        "test-token",
 			Channel:         "#test",
 			MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 		},
-		Misskey: &infra.MisskeyConfig{
-			Enabled:         testutil.BoolPtr(false),
+		Misskey: &entity.MisskeyConfig{
+			Enabled:         false,
 			APIToken:        "test-token",
 			APIURL:          "https://test.misskey.io",
 			MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -580,7 +584,7 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 		mockRecommender,
 		stderrBuffer,
 		outputConfig,
-		&infra.PromptConfig{},
+		&entity.PromptConfig{},
 	)
 
 	assert.NoError(t, err)
@@ -601,7 +605,7 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 
 	// Execute the test - エラーにならないことを確認
 	params := &RecommendParams{URLs: []string{"https://example.com/feed"}}
-	profile := infra.Profile{}
+	profile := &entity.Profile{}
 	err = runner.Run(context.Background(), params, profile)
 
 	assert.NoError(t, err) // 全出力先無効でもエラーにならない
