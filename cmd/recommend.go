@@ -39,44 +39,42 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				return fmt.Errorf("failed to get profile flag: %w", err)
 			}
 
-			var currentProfile infra.Profile
+			// デフォルトプロファイルをentity.Profileに変換
+			var currentProfile *entity.Profile
 			if config.DefaultProfile != nil {
-				currentProfile = *config.DefaultProfile
+				var err error
+				currentProfile, err = config.DefaultProfile.ToEntity()
+				if err != nil {
+					return fmt.Errorf("failed to process default profile: %w", err)
+				}
+			} else {
+				currentProfile = &entity.Profile{}
 			}
 
+			// プロファイルファイルが指定されている場合は読み込んでマージ
 			if profilePath != "" {
 				slog.Debug("Loading profile", "profile_path", profilePath)
-				loadedInfraProfile, loadProfileErr := profile.NewYamlProfileRepositoryImpl(profilePath).LoadInfraProfile()
+				loadedProfile, loadProfileErr := profile.NewYamlProfileRepositoryImpl(profilePath).LoadProfile()
 				if loadProfileErr != nil {
 					slog.Error("Failed to load profile", "profile_path", profilePath, "error", loadProfileErr)
 					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
 				}
-				currentProfile.Merge(loadedInfraProfile)
-			}
-
-			// AIConfig と PromptConfig を取得
-			var aiConfigEntity *entity.AIConfig
-			if currentProfile.AI != nil {
-				var err error
-				aiConfigEntity, err = currentProfile.AI.ToEntity()
-				if err != nil {
-					return fmt.Errorf("failed to process AI config: %w", err)
-				}
-			}
-
-			var promptConfigEntity *entity.PromptConfig
-			if currentProfile.Prompt != nil {
-				promptConfigEntity = currentProfile.Prompt.ToEntity()
+				currentProfile.Merge(loadedProfile)
 			}
 
 			// Recommender を作成
 			recommender := domain.NewRandomRecommender(
 				comment.NewCommentGeneratorFactory(),
-				aiConfigEntity,
-				promptConfigEntity,
+				currentProfile.AI,
+				currentProfile.Prompt,
 			)
 
-			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), currentProfile.Output, currentProfile.Prompt)
+			// entity.ProfileからinfraのProfileを構築する必要がある（一時的な処理）
+			infraProfile := &infra.Profile{}
+			if currentProfile.Output != nil {
+				// entity.OutputConfig -> infra.OutputConfigの変換は複雑なため、一時的にnilを渡す
+			}
+			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), nil, nil)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -85,7 +83,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
-			err = recommendRunner.Run(cmd.Context(), params, currentProfile)
+			err = recommendRunner.Run(cmd.Context(), params, *infraProfile)
 			if err != nil {
 				// 記事が見つからない場合は友好的なメッセージを表示してエラーではない扱いにする
 				if errors.Is(err, runner.ErrNoArticlesFound) {

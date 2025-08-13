@@ -31,16 +31,13 @@ func NewYamlProfileRepositoryImpl(filePath string) *YamlProfileRepository {
 
 // LoadProfile はプロファイルをファイルから読み込み、entity.Profileを返す（domain.ProfileRepositoryインターフェース用）
 func (r *YamlProfileRepository) LoadProfile() (*entity.Profile, error) {
-	infraProfile, err := r.LoadInfraProfile()
+	// YAMLファイルから直接infra.Profileを読み込み
+	infraProfile, err := infra.LoadYAML[infra.Profile](r.filePath)
 	if err != nil {
 		return nil, err
 	}
+	// entity.Profileに変換
 	return infraProfile.ToEntity()
-}
-
-// LoadInfraProfile はプロファイルをファイルから読み込み、infra.Profileを返す（内部実装用）
-func (r *YamlProfileRepository) LoadInfraProfile() (*infra.Profile, error) {
-	return infra.LoadYAML[infra.Profile](r.filePath)
 }
 
 // SaveProfileWithTemplate はテンプレートを使用してコメント付きprofile.ymlファイルを生成する
