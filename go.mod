@@ -11,10 +11,11 @@ require (
 )
 
 require (
+	github.com/fatih/color v1.18.0
 	github.com/go-test/deep v1.1.1
 	github.com/slack-go/slack v0.17.3
 	github.com/yitsushi/go-misskey v1.1.6
-	google.golang.org/genai v1.19.0
+	google.golang.org/genai v1.20.0
 )
 
 require (
@@ -24,7 +25,6 @@ require (
 	github.com/PuerkitoBio/goquery v1.10.3 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fatih/color v1.18.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
