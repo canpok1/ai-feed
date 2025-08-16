@@ -8,47 +8,42 @@ import (
 
 // TestVersionCommand はversionコマンドの動作を確認する
 func TestVersionCommand(t *testing.T) {
-	// 出力をキャプチャするバッファを作成
-	var buf bytes.Buffer
-	cmd := makeVersionCmd()
-	cmd.SetOut(&buf)
-
-	// コマンドを実行
-	err := cmd.Execute()
-	if err != nil {
-		t.Fatalf("versionコマンドの実行に失敗: %v", err)
+	testCases := []struct {
+		name    string
+		version string
+		want    string
+	}{
+		{
+			name:    "default version",
+			version: "dev",
+			want:    "dev",
+		},
+		{
+			name:    "custom version",
+			version: "v1.2.3",
+			want:    "v1.2.3",
+		},
 	}
 
-	// 出力の検証
-	output := buf.String()
-	if !strings.Contains(output, "dev") {
-		t.Errorf("期待される出力 'dev' が含まれていません。実際の出力: %s", output)
-	}
-}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			originalVersion := version
+			version = tc.version
+			defer func() { version = originalVersion }()
 
-// TestVersionCommandWithCustomVersion はカスタムバージョンでの動作を確認する
-func TestVersionCommandWithCustomVersion(t *testing.T) {
-	// バージョンを一時的に変更
-	originalVersion := version
-	version = "v1.2.3"
-	defer func() {
-		version = originalVersion
-	}()
+			var buf bytes.Buffer
+			cmd := makeVersionCmd()
+			cmd.SetOut(&buf)
 
-	// 出力をキャプチャするバッファを作成
-	var buf bytes.Buffer
-	cmd := makeVersionCmd()
-	cmd.SetOut(&buf)
+			err := cmd.Execute()
+			if err != nil {
+				t.Fatalf("versionコマンドの実行に失敗: %v", err)
+			}
 
-	// コマンドを実行
-	err := cmd.Execute()
-	if err != nil {
-		t.Fatalf("versionコマンドの実行に失敗: %v", err)
-	}
-
-	// 出力の検証
-	output := buf.String()
-	if !strings.Contains(output, "v1.2.3") {
-		t.Errorf("期待される出力 'v1.2.3' が含まれていません。実際の出力: %s", output)
+			got := strings.TrimSpace(buf.String())
+			if got != tc.want {
+				t.Errorf("期待される出力は %q ですが、実際は %q でした", tc.want, got)
+			}
+		})
 	}
 }
