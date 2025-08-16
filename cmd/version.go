@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +13,7 @@ func makeVersionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "バージョン情報を表示",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println(version)
+			cmd.Println(version)
 			return nil
 		},
 	}
