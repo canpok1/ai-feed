@@ -9,6 +9,9 @@ import (
 // version はビルド時にldflags で埋め込まれるバージョン情報
 var version = "dev"
 
+// readBuildInfo はdebug.ReadBuildInfoを保持する変数（テスト時にモック可能）
+var readBuildInfo = debug.ReadBuildInfo
+
 // getVersion はバージョン情報を取得する
 // ビルド時に設定されたバージョンを優先し、"dev"の場合はビルド情報から取得する
 func getVersion() string {
@@ -17,7 +20,7 @@ func getVersion() string {
 	}
 
 	// go installでビルドされた場合、ビルド情報からバージョンを取得
-	if info, ok := debug.ReadBuildInfo(); ok {
+	if info, ok := readBuildInfo(); ok {
 		if info.Main.Version != "(devel)" && info.Main.Version != "" {
 			return info.Main.Version
 		}

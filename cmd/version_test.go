@@ -62,29 +62,65 @@ func TestGetVersion(t *testing.T) {
 		}
 	})
 
-	t.Run("ビルド時バージョンがdevの場合", func(t *testing.T) {
+	t.Run("ビルド時バージョンがdevかつビルド情報にバージョンがある場合", func(t *testing.T) {
 		originalVersion := version
+		originalReadBuildInfo := readBuildInfo
 		version = "dev"
-		defer func() { version = originalVersion }()
+		readBuildInfo = func() (*debug.BuildInfo, bool) {
+			return &debug.BuildInfo{
+				Main: debug.Module{
+					Version: "v1.0.0",
+				},
+			}, true
+		}
+		defer func() {
+			version = originalVersion
+			readBuildInfo = originalReadBuildInfo
+		}()
 
-		// ビルド情報がない場合は"dev"が返される
 		got := getVersion()
-		// この環境ではビルド情報が取得できない可能性があるため、
-		// "dev"または実際のバージョンのどちらかが返されることを許容
-		if got != "dev" && !strings.HasPrefix(got, "v") {
-			t.Errorf("期待される結果は dev またはバージョン文字列ですが、実際は %s でした", got)
+		if got != "v1.0.0" {
+			t.Errorf("期待される結果は v1.0.0 ですが、実際は %s でした", got)
 		}
 	})
-}
 
-// TestGetVersionWithMockBuildInfo はgo:embedなどでビルド情報が取得できる場合のテスト
-func TestGetVersionWithMockBuildInfo(t *testing.T) {
-	// このテストは実際のビルド情報に依存するため、
-	// ビルド環境での動作を確認するためのもの
-	if info, ok := debug.ReadBuildInfo(); ok {
-		t.Logf("BuildInfo.Main.Version: %s", info.Main.Version)
-		t.Logf("BuildInfo.Main.Path: %s", info.Main.Path)
-	} else {
-		t.Log("BuildInfoが取得できません")
-	}
+	t.Run("ビルド時バージョンがdevかつビルド情報が(devel)の場合", func(t *testing.T) {
+		originalVersion := version
+		originalReadBuildInfo := readBuildInfo
+		version = "dev"
+		readBuildInfo = func() (*debug.BuildInfo, bool) {
+			return &debug.BuildInfo{
+				Main: debug.Module{
+					Version: "(devel)",
+				},
+			}, true
+		}
+		defer func() {
+			version = originalVersion
+			readBuildInfo = originalReadBuildInfo
+		}()
+
+		got := getVersion()
+		if got != "dev" {
+			t.Errorf("期待される結果は dev ですが、実際は %s でした", got)
+		}
+	})
+
+	t.Run("ビルド時バージョンがdevかつビルド情報が取得できない場合", func(t *testing.T) {
+		originalVersion := version
+		originalReadBuildInfo := readBuildInfo
+		version = "dev"
+		readBuildInfo = func() (*debug.BuildInfo, bool) {
+			return nil, false
+		}
+		defer func() {
+			version = originalVersion
+			readBuildInfo = originalReadBuildInfo
+		}()
+
+		got := getVersion()
+		if got != "dev" {
+			t.Errorf("期待される結果は dev ですが、実際は %s でした", got)
+		}
+	})
 }
