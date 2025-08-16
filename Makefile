@@ -1,4 +1,5 @@
 BINARY_NAME=ai-feed
+VERSION?=dev
 
 setup:
 	go install go.uber.org/mock/mockgen@latest
@@ -8,7 +9,7 @@ run:
 	@go run main.go ${option}
 
 build:
-	go build -o ${BINARY_NAME} main.go
+	go build -ldflags "-X github.com/canpok1/ai-feed/cmd.version=${VERSION}" -o ${BINARY_NAME} main.go
 
 build-release:
 	goreleaser build --snapshot --clean
