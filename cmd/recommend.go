@@ -112,7 +112,7 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 	}
 
 	var urls []string
-	
+
 	// --source オプションが指定されている場合、ファイルからURLを読み込む
 	if sourcePath != "" {
 		sourceURLs, err := infra.ReadURLsFromFile(sourcePath)
@@ -124,12 +124,12 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 		}
 		urls = append(urls, sourceURLs...)
 	}
-	
+
 	// -u オプションで指定されたURLを追加
 	if len(urlList) > 0 {
 		urls = append(urls, urlList...)
 	}
-	
+
 	// いずれのオプションも指定されていない場合はエラー
 	if len(urls) == 0 {
 		return nil, fmt.Errorf("--url または --source のいずれかを指定してください")
