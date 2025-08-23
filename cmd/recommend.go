@@ -93,7 +93,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("url", "u", "", "推薦元となるフィードのURL")
+	cmd.Flags().StringSliceP("url", "u", []string{}, "推薦元となるフィードのURL（複数指定可）")
 	cmd.Flags().StringP("source", "s", "", "URLリストを含むファイルのパス")
 	cmd.Flags().StringP("profile", "p", "", "プロファイルYAMLファイルのパス")
 
