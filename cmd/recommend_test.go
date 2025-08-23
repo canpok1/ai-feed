@@ -190,4 +190,3 @@ func TestNewRecommendParams(t *testing.T) {
 		assert.Equal(t, []string{"https://example.com/feed.xml"}, params.URLs)
 	})
 }
-
