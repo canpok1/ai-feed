@@ -102,7 +102,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 }
 
 func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
-	url, err := cmd.Flags().GetString("url")
+	urlList, err := cmd.Flags().GetStringSlice("url")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get url flag: %w", err)
 	}
@@ -111,22 +111,27 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 		return nil, fmt.Errorf("failed to get source flag: %w", err)
 	}
 
-	if url != "" && sourcePath != "" {
-		return nil, fmt.Errorf("--url と --source オプションは同時に使用できません")
-	}
-
 	var urls []string
+	
+	// --source オプションが指定されている場合、ファイルからURLを読み込む
 	if sourcePath != "" {
-		urls, err = infra.ReadURLsFromFile(sourcePath)
+		sourceURLs, err := infra.ReadURLsFromFile(sourcePath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read URLs from file: %w", err)
 		}
-		if len(urls) == 0 {
+		if len(sourceURLs) == 0 {
 			return nil, fmt.Errorf("ソースファイルにURLが含まれていません")
 		}
-	} else if url != "" {
-		urls = []string{url}
-	} else {
+		urls = append(urls, sourceURLs...)
+	}
+	
+	// -u オプションで指定されたURLを追加
+	if len(urlList) > 0 {
+		urls = append(urls, urlList...)
+	}
+	
+	// いずれのオプションも指定されていない場合はエラー
+	if len(urls) == 0 {
 		return nil, fmt.Errorf("--url または --source のいずれかを指定してください")
 	}
 
