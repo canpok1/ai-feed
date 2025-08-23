@@ -119,9 +119,6 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to read URLs from file: %w", err)
 		}
-		if len(sourceURLs) == 0 {
-			return nil, fmt.Errorf("ソースファイルにURLが含まれていません")
-		}
 		urls = append(urls, sourceURLs...)
 	}
 

@@ -63,14 +63,14 @@ func TestNewRecommendParams(t *testing.T) {
 			urlFlags:     []string{},
 			sourceFlag:   "empty_source.txt",
 			expectedURLs: nil,
-			expectedErr:  "ソースファイルにURLが含まれていません",
+			expectedErr:  "--url または --source のいずれかを指定してください",
 		},
 		{
 			name:         "Empty source file but URLs provided",
 			urlFlags:     []string{"http://example.com/feed.xml"},
 			sourceFlag:   "empty_source.txt",
-			expectedURLs: nil,
-			expectedErr:  "ソースファイルにURLが含まれていません",
+			expectedURLs: []string{"http://example.com/feed.xml"},
+			expectedErr:  "",
 		},
 	}
 
@@ -349,9 +349,9 @@ func TestRecommendCommandPartialFailure(t *testing.T) {
 		cmd.Flags().Set("source", sourceFile)
 
 		params, err := newRecommendParams(cmd)
-		// 空のソースファイルの場合、エラーになる仕様
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "ソースファイルにURLが含まれていません")
-		assert.Nil(t, params)
+		// 空のソースファイルでもURLが指定されていれば成功する仕様
+		assert.NoError(t, err)
+		assert.NotNil(t, params)
+		assert.Equal(t, []string{"https://fallback1.com/feed.xml", "https://fallback2.com/feed.xml"}, params.URLs)
 	})
 }
