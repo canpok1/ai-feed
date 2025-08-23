@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"log/slog"
 	"sort"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -35,6 +36,7 @@ func (f *Fetcher) Fetch(urls []string, limit int) ([]entity.Article, error) {
 			continue
 		}
 
+		slog.Debug("記事を取得しました", "feed_url", url, "article_count", len(articles))
 		allArticles = append(allArticles, articles...)
 	}
 
