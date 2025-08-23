@@ -81,11 +81,8 @@ func TestNewRecommendParams(t *testing.T) {
 			cmd.Flags().StringSliceP("url", "u", []string{}, "URL of the feed to recommend from")
 			cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
 
-			if len(tt.urlFlags) > 0 {
-				cmd.Flags().Set("url", tt.urlFlags[0])
-				for i := 1; i < len(tt.urlFlags); i++ {
-					cmd.Flags().Set("url", tt.urlFlags[i])
-				}
+			for _, url := range tt.urlFlags {
+				cmd.Flags().Set("url", url)
 			}
 			if tt.sourceFlag != "" {
 				// Create temporary source file if sourceFlag is used
