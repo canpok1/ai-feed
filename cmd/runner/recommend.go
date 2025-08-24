@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math/rand/v2"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -73,22 +74,85 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	}, nil
 }
 
+// selectRandomFeed は利用可能なfeed URLからランダムに1つを選択する
+func selectRandomFeed(urls []string, excludedURLs map[string]bool) (string, error) {
+	var availableURLs []string
+	for _, url := range urls {
+		if !excludedURLs[url] {
+			availableURLs = append(availableURLs, url)
+		}
+	}
+
+	if len(availableURLs) == 0 {
+		return "", errors.New("no available feeds")
+	}
+
+	return availableURLs[rand.IntN(len(availableURLs))], nil
+}
+
 // Run はrecommendコマンドのビジネスロジックを実行する
 func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile *entity.Profile) error {
 	slog.Info("Starting recommend command execution")
-	slog.Debug("Fetching articles from URLs", "url_count", len(params.URLs))
+	slog.Debug("Selecting feed from URLs", "url_count", len(params.URLs))
 
-	allArticles, err := r.fetcher.Fetch(params.URLs, 0)
-	if err != nil {
-		return fmt.Errorf("failed to fetch articles: %w", err)
+	// 複数feedからの2段階ランダム選択とリトライロジック
+	excludedURLs := make(map[string]bool)
+	var allArticles []entity.Article
+	var selectedURL string
+
+	for attempt := 1; attempt <= len(params.URLs); attempt++ {
+		// Step 1: ランダムに1つのfeedを選択
+		var err error
+		selectedURL, err = selectRandomFeed(params.URLs, excludedURLs)
+		if err != nil {
+			slog.Error("Failed to select feed", "error", err, "attempt", attempt, "total_feeds", len(params.URLs))
+			break
+		}
+
+		slog.Debug("Selected feed for articles fetch", "url", selectedURL, "attempt", attempt)
+
+		// Step 2: 選択されたfeedから記事を取得
+		allArticles, err = r.fetcher.Fetch([]string{selectedURL}, 0)
+
+		// エラーまたは記事0件の場合は失敗として次のフィードを試す
+		var shouldRetry bool
+		var logMessage string
+		if err != nil {
+			shouldRetry = true
+			logMessage = "Failed to fetch from feed, retrying with another feed"
+			slog.Warn(logMessage,
+				"url", selectedURL,
+				"error", err.Error(),
+				"attempt", attempt,
+				"total_feeds", len(params.URLs))
+		} else if len(allArticles) == 0 {
+			shouldRetry = true
+			logMessage = "No articles found in feed, retrying with another feed"
+			slog.Warn(logMessage,
+				"url", selectedURL,
+				"attempt", attempt,
+				"total_feeds", len(params.URLs))
+		}
+
+		if shouldRetry {
+			excludedURLs[selectedURL] = true
+			continue
+		}
+
+		// 成功した場合
+		slog.Info("Successfully fetched articles from feed", "url", selectedURL, "article_count", len(allArticles))
+		break
 	}
 
+	// 全feedが失敗した場合
 	if len(allArticles) == 0 {
-		slog.Warn("No articles found in feeds")
+		var triedURLs []string
+		for url := range excludedURLs {
+			triedURLs = append(triedURLs, url)
+		}
+		slog.Error("Failed to fetch from all feeds", "tried_urls", triedURLs)
 		return ErrNoArticlesFound
 	}
-
-	slog.Debug("Articles fetched successfully", "article_count", len(allArticles))
 
 	slog.Debug("Generating recommendation from articles")
 	recommend, err := r.recommender.Recommend(ctx, allArticles)
