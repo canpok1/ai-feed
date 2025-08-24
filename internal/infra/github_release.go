@@ -36,11 +36,6 @@ func (g *GitHubReleaseClient) GetLatestRelease() (*domain.ReleaseInfo, error) {
 		return nil, fmt.Errorf("最新リリースの取得に失敗しました: %w", err)
 	}
 
-	// プレリリース版の場合はスキップ
-	if release.GetPrerelease() {
-		return nil, fmt.Errorf("最新リリースがプレリリース版です")
-	}
-
 	// OS/アーキテクチャに応じたアセットを選択
 	assetURL := g.selectAsset(release.Assets)
 	if assetURL == "" {
