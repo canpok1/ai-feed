@@ -64,6 +64,13 @@ func makeProfileCheckCmd() *cobra.Command {
 				profilePath = args[0]
 			}
 
+			// 進行状況メッセージ: 検証開始
+			if profilePath != "" {
+				fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています... (%s)\n", profilePath)
+			} else {
+				fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています...\n")
+			}
+
 			// ProfileCheckRunnerを使用して検証を実行
 			profileRepoFn := func(path string) domain.ProfileRepository {
 				return profile.NewYamlProfileRepositoryImpl(path)
@@ -89,7 +96,7 @@ func makeProfileCheckCmd() *cobra.Command {
 					cmd.PrintErrf("  警告: %s\n", warning)
 				}
 			} else {
-				cmd.Println("プロファイルの検証が完了しました")
+				fmt.Fprintln(cmd.OutOrStdout(), "プロファイルの検証が完了しました")
 			}
 
 			return nil

@@ -87,6 +87,9 @@ func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error
 		currentProfile.Merge(loadedProfile)
 	}
 
+	// 進行状況メッセージ: AI設定確認
+	fmt.Fprintln(r.stderr, "AI設定を確認しています...")
+
 	// バリデーション実行
 	validationResult := currentProfile.Validate()
 
