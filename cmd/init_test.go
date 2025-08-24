@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bytes"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -85,4 +87,45 @@ func TestInitCommand_NoArguments(t *testing.T) {
 	assert.Equal(t, "init", cmd.Use, "Command Use should be 'init'")
 	assert.Contains(t, cmd.Short, "設定ファイル（config.yml）のテンプレートを生成します", "Short description should mention config.yml generation")
 	assert.Contains(t, cmd.Short, "既存ファイルは上書きしません", "Short description should mention file protection")
+}
+
+// TestInitCommand_ProgressMessages は進行状況メッセージの出力をテストする
+func TestInitCommand_ProgressMessages(t *testing.T) {
+	tempDir := t.TempDir()
+
+	originalWd, err := os.Getwd()
+	require.NoError(t, err)
+
+	err = os.Chdir(tempDir)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		assert.NoError(t, os.Chdir(originalWd))
+	})
+
+	cmd := makeInitCmd()
+
+	// stderr と stdout をキャプチャ
+	stderrBuf := &bytes.Buffer{}
+	stdoutBuf := &bytes.Buffer{}
+	cmd.SetErr(stderrBuf)
+	cmd.SetOut(stdoutBuf)
+
+	// コマンドを実行
+	err = cmd.Execute()
+	assert.NoError(t, err)
+
+	// stderr に進行状況メッセージが出力されていることを確認
+	stderrOutput := stderrBuf.String()
+	assert.Contains(t, stderrOutput, "設定ファイルを初期化しています...", "Progress message should be output to stderr")
+	assert.Contains(t, stderrOutput, "設定テンプレートを生成しています...", "Template generation message should be output to stderr")
+
+	// stdout に完了メッセージが出力されていることを確認
+	stdoutOutput := stdoutBuf.String()
+	assert.Contains(t, stdoutOutput, "./config.yml を生成しました", "Completion message should be output to stdout")
+
+	// メッセージの順序を確認
+	stderrLines := strings.Split(strings.TrimSpace(stderrOutput), "\n")
+	assert.Equal(t, "設定ファイルを初期化しています...", stderrLines[0], "First progress message should be initialization")
+	assert.Equal(t, "設定テンプレートを生成しています...", stderrLines[1], "Second progress message should be template generation")
 }

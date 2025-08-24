@@ -25,7 +25,7 @@ func makeInitCmd() *cobra.Command {
 			if err := configRepo.SaveWithTemplate(); err != nil {
 				return err
 			}
-			fmt.Printf("%s を生成しました\n", filePath)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s を生成しました\n", filePath)
 			return nil
 		},
 	}
