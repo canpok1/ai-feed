@@ -3,13 +3,16 @@ package infra
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	DefaultProfile *Profile `yaml:"default_profile,omitempty"`
+	DefaultProfile *Profile     `yaml:"default_profile,omitempty"`
+	Cache          *CacheConfig `yaml:"cache,omitempty"`
 }
 
 type Profile struct {
@@ -307,6 +310,85 @@ func (r *YamlConfigRepository) Save(config *Config) error {
 
 func (r *YamlConfigRepository) Load() (*Config, error) {
 	return LoadYAML[Config](r.filePath)
+}
+
+type CacheConfig struct {
+	Enabled       *bool  `yaml:"enabled,omitempty"`
+	FilePath      string `yaml:"file_path,omitempty"`
+	MaxEntries    int    `yaml:"max_entries,omitempty"`
+	RetentionDays int    `yaml:"retention_days,omitempty"`
+}
+
+// resolveCacheEnabled は、Enabledフィールドのデフォルト値処理を行う（キャッシュのデフォルトはfalse）
+func resolveCacheEnabled(e *bool) bool {
+	if e == nil {
+		return false
+	}
+	return *e
+}
+
+// expandPath は、パス中のチルダをホームディレクトリに展開し、相対パスを絶対パスに変換する
+func expandPath(path string) (string, error) {
+	if path == "" {
+		return path, nil
+	}
+
+	// チルダ展開
+	if strings.HasPrefix(path, "~/") {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("failed to get user home directory: %w", err)
+		}
+		path = filepath.Join(homeDir, path[2:])
+	}
+
+	// 相対パスを絶対パスに変換
+	if !filepath.IsAbs(path) {
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			return "", fmt.Errorf("failed to convert to absolute path: %w", err)
+		}
+		path = absPath
+	}
+
+	return path, nil
+}
+
+func (c *CacheConfig) ToEntity() (*entity.CacheConfig, error) {
+	if c == nil {
+		return nil, nil
+	}
+
+	// デフォルト値の設定
+	enabled := resolveCacheEnabled(c.Enabled)
+
+	filePath := c.FilePath
+	if filePath == "" {
+		filePath = "~/.ai-feed/recommend_history.jsonl"
+	}
+
+	// パス展開処理
+	expandedPath, err := expandPath(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to expand cache file path: %w", err)
+	}
+
+	maxEntries := c.MaxEntries
+	if maxEntries <= 0 {
+		maxEntries = 1000
+	}
+
+	retentionDays := c.RetentionDays
+	if retentionDays <= 0 {
+		retentionDays = 30
+	}
+
+	return &entity.CacheConfig{
+		Enabled:       enabled,
+		FilePath:      expandedPath,
+		MaxEntries:    maxEntries,
+		RetentionDays: retentionDays,
+	}, nil
 }
 
 func mergeString(target *string, source string) {
