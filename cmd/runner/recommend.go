@@ -27,10 +27,11 @@ type RecommendRunner struct {
 	recommender domain.Recommender
 	viewers     []domain.MessageSender
 	stderr      io.Writer
+	stdout      io.Writer
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
-func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, outputConfig *entity.OutputConfig, promptConfig *entity.PromptConfig) (*RecommendRunner, error) {
+func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, stdout io.Writer, outputConfig *entity.OutputConfig, promptConfig *entity.PromptConfig) (*RecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -74,6 +75,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 		recommender: recommender,
 		viewers:     viewers,
 		stderr:      stderr,
+		stdout:      stdout,
 	}, nil
 }
 
@@ -169,11 +171,17 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		return ErrNoArticlesFound
 	}
 
+	// 進行状況メッセージ: AI推薦生成
+	fmt.Fprintln(r.stderr, "推薦記事を生成しています...")
+
 	slog.Debug("Generating recommendation from articles")
 	recommend, err := r.recommender.Recommend(ctx, allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
+
+	// 完了メッセージ: 推薦完了（stdout）
+	fmt.Fprintf(r.stdout, "推薦記事を生成しました: %s\n", recommend.Article.Title)
 
 	slog.Debug("Recommendation generated successfully", "article_title", recommend.Article.Title)
 

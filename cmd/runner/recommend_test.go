@@ -96,10 +96,12 @@ func TestNewRecommendRunner(t *testing.T) {
 
 			stderrBuffer := new(bytes.Buffer)
 
+			stdoutBuffer := new(bytes.Buffer)
 			runner, err := NewRecommendRunner(
 				mockFetchClient,
 				mockRecommender,
 				stderrBuffer,
+				stdoutBuffer,
 				tt.outputConfig,
 				tt.promptConfig,
 			)
@@ -250,17 +252,20 @@ func TestRecommendRunner_Run(t *testing.T) {
 
 			switch tt.name {
 			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, mockProfile.Output, mockProfile.Prompt)
+				stdoutBuffer := new(bytes.Buffer)
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, mockProfile.Output, mockProfile.Prompt)
 				profile = mockProfile
 			case "AI model not configured":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, &entity.OutputConfig{}, &entity.PromptConfig{})
+				stdoutBuffer := new(bytes.Buffer)
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, &entity.OutputConfig{}, &entity.PromptConfig{})
 				profile = &entity.Profile{
 					AI:     nil,
 					Prompt: mockProfile.Prompt,
 					Output: &entity.OutputConfig{},
 				}
 			case "Prompt not configured":
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, &entity.OutputConfig{}, &entity.PromptConfig{})
+				stdoutBuffer := new(bytes.Buffer)
+				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, &entity.OutputConfig{}, &entity.PromptConfig{})
 				profile = &entity.Profile{
 					AI:     mockProfile.AI,
 					Prompt: nil,
@@ -306,7 +311,8 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	stderrBuffer := new(bytes.Buffer)
 	mockProfile := createMockConfig(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template", FixedMessage: "Test Fixed Message"}, &entity.OutputConfig{})
 
-	runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, mockProfile.Output, mockProfile.Prompt)
+	stdoutBuffer := new(bytes.Buffer)
+	runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, mockProfile.Output, mockProfile.Prompt)
 	assert.NoError(t, runErr)
 
 	// Set up test data
@@ -446,10 +452,12 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 
 			stderrBuffer := new(bytes.Buffer)
 
+			stdoutBuffer := new(bytes.Buffer)
 			runner, err := NewRecommendRunner(
 				mockFetchClient,
 				mockRecommender,
 				stderrBuffer,
+				stdoutBuffer,
 				tt.outputConfig,
 				&entity.PromptConfig{},
 			)
@@ -533,10 +541,12 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 			stderrBuffer := new(bytes.Buffer)
 
 			// Runner作成時にログが出力される
+			stdoutBuffer := new(bytes.Buffer)
 			runner, err := NewRecommendRunner(
 				mockFetchClient,
 				mockRecommender,
 				stderrBuffer,
+				stdoutBuffer,
 				tt.outputConfig,
 				&entity.PromptConfig{},
 			)
@@ -582,6 +592,7 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 		mockFetchClient,
 		mockRecommender,
 		stderrBuffer,
+		new(bytes.Buffer), // stdout buffer
 		outputConfig,
 		&entity.PromptConfig{},
 	)
