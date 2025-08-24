@@ -222,32 +222,31 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	}
 
 	for _, viewer := range r.viewers {
-		// 投稿先サービスを特定してメッセージを表示
+		var serviceName string
+		isKnownService := true
 		switch viewer.(type) {
 		case *message.SlackSender:
-			fmt.Fprintln(r.stdout, "Slackに投稿中...")
+			serviceName = "Slack"
 		case *message.MisskeySender:
-			fmt.Fprintln(r.stdout, "Misskeyに投稿中...")
+			serviceName = "Misskey"
+		default:
+			isKnownService = false
+		}
+
+		if isKnownService {
+			fmt.Fprintf(r.stdout, "%sに投稿中...\n", serviceName)
 		}
 
 		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
-			// エラー時も具体的なサービス名を表示
-			switch viewer.(type) {
-			case *message.SlackSender:
-				fmt.Fprintf(r.stdout, "Slack投稿でエラーが発生しました: %v\n", viewErr)
-			case *message.MisskeySender:
-				fmt.Fprintf(r.stdout, "Misskey投稿でエラーが発生しました: %v\n", viewErr)
-			default:
+			if isKnownService {
+				fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, viewErr)
+			} else {
 				fmt.Fprintf(r.stdout, "投稿でエラーが発生しました: %v\n", viewErr)
 			}
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
 		} else {
-			// 成功時もサービス名を表示
-			switch viewer.(type) {
-			case *message.SlackSender:
-				fmt.Fprintln(r.stdout, "Slackに投稿しました")
-			case *message.MisskeySender:
-				fmt.Fprintln(r.stdout, "Misskeyに投稿しました")
+			if isKnownService {
+				fmt.Fprintf(r.stdout, "%sに投稿しました\n", serviceName)
 			}
 		}
 	}
