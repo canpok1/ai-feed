@@ -30,7 +30,8 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 			slog.Debug("Loading config", "config_path", configPath)
 			config, loadErr := infra.NewYamlConfigRepository(configPath).Load()
 			if loadErr != nil {
-				slog.Error("Failed to load config", "error", loadErr)
+				fmt.Fprintf(cmd.ErrOrStderr(), "エラー: 設定ファイルの読み込みに失敗しました: %s\n", configPath)
+				slog.Error("Failed to load config", "config_path", configPath, "error", loadErr)
 				return fmt.Errorf("failed to load config: %w", loadErr)
 			}
 
@@ -56,6 +57,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				slog.Debug("Loading profile", "profile_path", profilePath)
 				loadedProfile, loadProfileErr := profile.NewYamlProfileRepositoryImpl(profilePath).LoadProfile()
 				if loadProfileErr != nil {
+					fmt.Fprintf(cmd.ErrOrStderr(), "エラー: プロファイルファイルの読み込みに失敗しました: %s\n", profilePath)
 					slog.Error("Failed to load profile", "profile_path", profilePath, "error", loadProfileErr)
 					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
 				}
