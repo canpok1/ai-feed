@@ -3,6 +3,7 @@ package cmd
 import (
 	"runtime/debug"
 
+	versionpkg "github.com/canpok1/ai-feed/internal/version"
 	"github.com/spf13/cobra"
 )
 
@@ -15,18 +16,7 @@ var readBuildInfo = debug.ReadBuildInfo
 // getVersion はバージョン情報を取得する
 // ビルド時に設定されたバージョンを優先し、"dev"の場合はビルド情報から取得する
 func getVersion() string {
-	if version != "dev" {
-		return version
-	}
-
-	// go installでビルドされた場合、ビルド情報からバージョンを取得
-	if info, ok := readBuildInfo(); ok {
-		if info.Main.Version != "(devel)" && info.Main.Version != "" {
-			return info.Main.Version
-		}
-	}
-
-	return "dev"
+	return versionpkg.GetVersionWithReadBuildInfo(version, readBuildInfo)
 }
 
 // makeVersionCmd はversionコマンドを生成する

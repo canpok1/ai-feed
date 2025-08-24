@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"runtime/debug"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	versionpkg "github.com/canpok1/ai-feed/internal/version"
 	"github.com/creativeprojects/go-selfupdate"
 )
 
@@ -28,18 +28,8 @@ func NewSelfUpdater(owner, repo string) *SelfUpdater {
 
 // GetCurrentVersion は現在のバージョンを取得する
 func (s *SelfUpdater) GetCurrentVersion() (string, error) {
-	// cmd/version.goと同じロジックを使用してバージョンを取得
-	// 循環インポートを避けるため、同じ実装を再現する
-
-	// ビルド情報からバージョンを取得
-	if info, ok := debug.ReadBuildInfo(); ok {
-		if info.Main.Version != "(devel)" && info.Main.Version != "" {
-			return info.Main.Version, nil
-		}
-	}
-
-	// デフォルトは"dev"を返す
-	return "dev", nil
+	// 共通のバージョン取得ロジックを使用
+	return versionpkg.GetVersion("dev"), nil
 }
 
 // GetLatestVersion は最新のリリース情報を取得する
