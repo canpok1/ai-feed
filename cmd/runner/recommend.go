@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"math/rand"
+	"math/rand/v2"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -87,7 +87,7 @@ func selectRandomFeed(urls []string, excludedURLs map[string]bool) (string, erro
 		return "", errors.New("no available feeds")
 	}
 
-	return availableURLs[rand.Intn(len(availableURLs))], nil
+	return availableURLs[rand.IntN(len(availableURLs))], nil
 }
 
 // Run はrecommendコマンドのビジネスロジックを実行する
