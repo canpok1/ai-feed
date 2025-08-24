@@ -102,18 +102,20 @@ func (h *SimpleHandler) WithGroup(name string) slog.Handler {
 }
 
 // InitLogger はslogを使用したロガーを初期化する
-// verboseがtrueの場合はDEBUGレベル、falseの場合はINFOレベルで設定する
+// verboseがtrueの場合はDEBUGレベルをstderrに出力、falseの場合はログを出力しない
 func InitLogger(verbose bool) {
-	level := slog.LevelInfo
-	if verbose {
-		level = slog.LevelDebug
+	var handler slog.Handler
+	if !verbose {
+		// -vなしの場合はログを出力しない
+		handler = slog.NewTextHandler(io.Discard, nil)
+	} else {
+		// -vありの場合はDEBUGレベル以上をstderrに出力
+		opts := &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}
+		handler = NewSimpleHandler(os.Stderr, opts)
 	}
 
-	opts := &slog.HandlerOptions{
-		Level: level,
-	}
-
-	handler := NewSimpleHandler(os.Stdout, opts)
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
 }

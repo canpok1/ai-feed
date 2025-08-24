@@ -3,6 +3,7 @@ package runner
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -47,7 +48,8 @@ func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error
 		// ファイルが存在しない場合は警告を表示しない
 		if _, statErr := os.Stat(r.configPath); !os.IsNotExist(statErr) {
 			// ファイルが存在するが読み込み・パースに失敗した場合は警告を表示
-			fmt.Fprintf(r.stderr, "警告: %s の読み込みまたは解析に失敗しました。空のデフォルトプロファイルで続行します。エラー: %v\n", r.configPath, err)
+			fmt.Fprintf(r.stderr, "警告: %s の読み込みまたは解析に失敗しました。空のデフォルトプロファイルで継続します。\n", r.configPath)
+			slog.Warn("Failed to load or parse config file, continuing with empty default profile", "config_path", r.configPath, "error", err)
 		}
 	} else {
 		config = loadedConfig

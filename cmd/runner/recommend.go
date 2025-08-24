@@ -33,7 +33,8 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
-			fmt.Fprintf(stderr, "Error fetching feed from %s: %v\n", url, err)
+			fmt.Fprintf(stderr, "エラー: フィードの取得に失敗しました: %s\n", url)
+			slog.Error("Failed to fetch feed", "url", url, "error", err)
 			return err
 		},
 	)
@@ -45,7 +46,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			slackConfig := outputConfig.SlackAPI
 			// enabledフラグのチェック
 			if !slackConfig.Enabled {
-				slog.Info("Slack API出力が無効化されています (enabled: false)")
+				slog.Info("Slack API output is disabled (enabled: false)")
 			} else {
 				slackViewer := message.NewSlackSender(slackConfig)
 				viewers = append(viewers, slackViewer)
@@ -56,7 +57,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			misskeyConfig := outputConfig.Misskey
 			// enabledフラグのチェック
 			if !misskeyConfig.Enabled {
-				slog.Info("Misskey出力が無効化されています (enabled: false)")
+				slog.Info("Misskey output is disabled (enabled: false)")
 			} else {
 				misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken, misskeyConfig.MessageTemplate)
 				if err != nil {
@@ -173,7 +174,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	if recommend.Comment != nil {
 		commentValue = *recommend.Comment
 	}
-	slog.Info("推薦記事を選択しました",
+	slog.Info("Recommendation article selected",
 		"title", recommend.Article.Title,
 		"link", recommend.Article.Link,
 		"comment", commentValue,
