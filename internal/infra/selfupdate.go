@@ -1,10 +1,13 @@
 package infra
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"runtime/debug"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/creativeprojects/go-selfupdate"
 )
 
 // SelfUpdater はバイナリの自動更新を行う実装
@@ -46,7 +49,40 @@ func (s *SelfUpdater) GetLatestVersion() (*domain.ReleaseInfo, error) {
 
 // UpdateBinary は指定されたバージョンにバイナリを更新する
 func (s *SelfUpdater) UpdateBinary(version string) error {
-	// 簡単な実装として、現在は未実装のメッセージを返す
-	// go-selfupdateライブラリのAPIが複雑なため、基本構造のみ実装
-	return fmt.Errorf("バイナリ更新機能は実装中です。手動で更新してください")
+	ctx := context.Background()
+
+	// リポジトリを設定
+	repo := selfupdate.ParseSlug(s.owner + "/" + s.repo)
+
+	// 最新リリース情報を取得
+	latest, found, err := selfupdate.DetectLatest(ctx, repo)
+	if err != nil {
+		return fmt.Errorf("最新リリース情報の取得に失敗しました: %w", err)
+	}
+	if !found {
+		return fmt.Errorf("利用可能なリリースが見つかりません")
+	}
+
+	// 指定されたバージョンと最新バージョンを比較
+	if latest.Version() != version {
+		return fmt.Errorf("指定されたバージョン %s は利用できません。最新は %s です", version, latest.Version())
+	}
+
+	// 実行ファイルのパスを取得
+	executable, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("実行ファイルのパスを取得できません: %w", err)
+	}
+
+	// 現在の実行ファイルを更新
+	err = selfupdate.UpdateTo(ctx, latest.AssetURL, executable, "ai-feed")
+	if err != nil {
+		// 権限エラーやファイルシステムエラーの処理
+		if os.IsPermission(err) {
+			return fmt.Errorf("更新に必要な権限がありません。管理者権限で実行してください: %w", err)
+		}
+		return fmt.Errorf("バイナリの更新に失敗しました: %w", err)
+	}
+
+	return nil
 }
