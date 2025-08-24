@@ -33,7 +33,8 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
-			fmt.Fprintf(stderr, "Error fetching feed from %s: %v\n", url, err)
+			fmt.Fprintf(stderr, "エラー: フィードの取得に失敗しました: %s\n", url)
+			slog.Error("Failed to fetch feed", "url", url, "error", err)
 			return err
 		},
 	)
