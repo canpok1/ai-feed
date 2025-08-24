@@ -2,6 +2,8 @@ package infra
 
 import (
 	"testing"
+
+	"github.com/canpok1/ai-feed/internal/domain"
 )
 
 // TestNewSelfUpdater はSelfUpdaterの作成を確認する
@@ -45,5 +47,30 @@ func TestGetCurrentVersion(t *testing.T) {
 	// "dev" または実際のバージョン文字列が返されることを期待
 	if version != "dev" && len(version) == 0 {
 		t.Errorf("予期しないバージョン文字列: %q", version)
+	}
+}
+
+// TestUpdateBinary はUpdateBinary関数の基本的な動作を確認する
+func TestUpdateBinary(t *testing.T) {
+	updater := NewSelfUpdater("owner", "repo")
+
+	// テスト用のリリース情報
+	releaseInfo := &domain.ReleaseInfo{
+		Version:      "v1.0.0",
+		AssetURL:     "https://example.com/invalid-url", // 実際にダウンロードは行われない想定
+		ReleaseNotes: "Test release",
+	}
+
+	// UpdateBinaryの呼び出し（実際のダウンロードはエラーになるが、シグネチャを確認）
+	err := updater.UpdateBinary(releaseInfo)
+
+	// 実際のダウンロードはエラーになることが期待される（テスト用URL）
+	if err == nil {
+		t.Error("無効なURLでも成功してしまいました")
+	}
+
+	// エラーメッセージが適切に設定されていることを確認
+	if err.Error() == "" {
+		t.Error("エラーメッセージが空です")
 	}
 }

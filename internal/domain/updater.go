@@ -16,6 +16,6 @@ type Updater interface {
 	GetCurrentVersion() (string, error)
 	// GetLatestVersion は最新のリリース情報を取得する
 	GetLatestVersion() (*ReleaseInfo, error)
-	// UpdateBinary は指定されたバージョンにバイナリを更新する
-	UpdateBinary(version string) error
+	// UpdateBinary はリリース情報を使用してバイナリを更新する
+	UpdateBinary(latest *ReleaseInfo) error
 }

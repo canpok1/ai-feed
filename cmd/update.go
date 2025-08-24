@@ -93,7 +93,7 @@ GitHubのリリースから最新の安定版を取得し、現在のバージ�
 
 			// 更新実行
 			fmt.Fprintln(cmd.OutOrStdout(), "更新を開始しています...")
-			err = updater.UpdateBinary(latest.Version)
+			err = updater.UpdateBinary(latest)
 			if err != nil {
 				fmt.Fprintf(cmd.ErrOrStderr(), "エラー: 更新に失敗しました: %v\n", err)
 				return fmt.Errorf("更新に失敗しました: %w", err)

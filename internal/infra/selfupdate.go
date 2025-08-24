@@ -47,37 +47,9 @@ func (s *SelfUpdater) GetLatestVersion() (*domain.ReleaseInfo, error) {
 	return s.releaseClient.GetLatestRelease()
 }
 
-// UpdateBinary は指定されたバージョンにバイナリを更新する
-func (s *SelfUpdater) UpdateBinary(version string) error {
+// UpdateBinary はリリース情報を使用してバイナリを更新する
+func (s *SelfUpdater) UpdateBinary(latest *domain.ReleaseInfo) error {
 	ctx := context.Background()
-
-	// リポジトリを設定
-	repo := selfupdate.ParseSlug(s.owner + "/" + s.repo)
-
-	// 最新リリース情報を取得
-	latest, found, err := selfupdate.DetectLatest(ctx, repo)
-	if err != nil {
-		return fmt.Errorf("最新リリース情報の取得に失敗しました: %w", err)
-	}
-	if !found {
-		return fmt.Errorf("利用可能なリリースが見つかりません")
-	}
-
-	// バージョン文字列を正規化して比較（vプレフィックスを統一）
-	normalizeVersion := func(v string) string {
-		if len(v) > 0 && v[0] == 'v' {
-			return v[1:]
-		}
-		return v
-	}
-
-	latestVersion := normalizeVersion(latest.Version())
-	requestedVersion := normalizeVersion(version)
-
-	// 指定されたバージョンと最新バージョンを比較
-	if latestVersion != requestedVersion {
-		return fmt.Errorf("指定されたバージョン %s は利用できません。最新は %s です", version, latest.Version())
-	}
 
 	// 実行ファイルのパスを取得
 	executable, err := os.Executable()
