@@ -15,6 +15,8 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/go-test/deep v1.1.1
 	github.com/google/go-github/v65 v65.0.0
+	github.com/google/go-github/v74 v74.0.0
+	github.com/hashicorp/go-version v1.7.0
 	github.com/slack-go/slack v0.17.3
 	github.com/yitsushi/go-misskey v1.1.6
 	google.golang.org/genai v1.21.0
@@ -44,7 +46,6 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
-	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
