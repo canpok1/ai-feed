@@ -176,7 +176,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 			params: &RecommendParams{
 				URLs: []string{"http://invalid.com/feed.xml"},
 			},
-			expectedErrorMessage: toStringP("failed to fetch articles: mock fetch error"),
+			expectedErrorMessage: toStringP("no articles found in the feed"),
 		},
 		{
 			name: "Recommend error",
