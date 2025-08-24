@@ -19,6 +19,7 @@ type Profile struct {
 	AI     *AIConfig     `yaml:"ai,omitempty"`
 	Prompt *PromptConfig `yaml:",inline,omitempty"`
 	Output *OutputConfig `yaml:"output,omitempty"`
+	Cache  *CacheConfig  `yaml:"cache,omitempty"`
 }
 
 // ToEntity converts infra.Profile to entity.Profile
@@ -46,10 +47,20 @@ func (p *Profile) ToEntity() (*entity.Profile, error) {
 		}
 	}
 
+	var cacheEntity *entity.CacheConfig
+	if p.Cache != nil {
+		var err error
+		cacheEntity, err = p.Cache.ToEntity()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &entity.Profile{
 		AI:     aiEntity,
 		Prompt: promptEntity,
 		Output: outputEntity,
+		Cache:  cacheEntity,
 	}, nil
 }
 
