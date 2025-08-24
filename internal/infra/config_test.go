@@ -1099,72 +1099,7 @@ func TestCacheConfig_ToEntity(t *testing.T) {
 	}
 }
 
-func TestProfile_ToEntity_WithCache(t *testing.T) {
-	tests := []struct {
-		name        string
-		profile     Profile
-		expectCache bool
-		expectedErr string
-	}{
-		{
-			name: "キャッシュ設定ありの場合",
-			profile: Profile{
-				AI: &AIConfig{
-					Gemini: &GeminiConfig{
-						Type:   "gemini-test",
-						APIKey: "test-key",
-					},
-				},
-				Cache: &CacheConfig{
-					Enabled:       testutil.BoolPtr(true),
-					FilePath:      "/tmp/test-cache.jsonl",
-					MaxEntries:    500,
-					RetentionDays: 15,
-				},
-			},
-			expectCache: true,
-			expectedErr: "",
-		},
-		{
-			name: "キャッシュ設定なしの場合",
-			profile: Profile{
-				AI: &AIConfig{
-					Gemini: &GeminiConfig{
-						Type:   "gemini-test",
-						APIKey: "test-key",
-					},
-				},
-				Cache: nil,
-			},
-			expectCache: false,
-			expectedErr: "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			entity, err := tt.profile.ToEntity()
-
-			if tt.expectedErr != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.expectedErr)
-				assert.Nil(t, entity)
-			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, entity)
-
-				if tt.expectCache {
-					assert.NotNil(t, entity.Cache)
-					assert.True(t, entity.Cache.Enabled)
-					assert.Equal(t, 500, entity.Cache.MaxEntries)
-					assert.Equal(t, 15, entity.Cache.RetentionDays)
-				} else {
-					assert.Nil(t, entity.Cache)
-				}
-			}
-		})
-	}
-}
+// TestProfile_ToEntity_WithCache は削除 - ProfileはキャッシュfieldBはなくなったため
 
 func TestCacheConfig_YamlMarshalUnmarshal(t *testing.T) {
 	tests := []struct {

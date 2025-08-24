@@ -314,7 +314,6 @@ type Profile struct {
 	AI     *AIConfig
 	Prompt *PromptConfig
 	Output *OutputConfig
-	Cache  *CacheConfig
 }
 
 // Validate はProfileの内容をバリデーションする
@@ -353,7 +352,6 @@ func (p *Profile) Merge(other *Profile) {
 	mergePtr(&p.AI, other.AI)
 	mergePtr(&p.Prompt, other.Prompt)
 	mergePtr(&p.Output, other.Output)
-	mergePtr(&p.Cache, other.Cache)
 }
 
 type OutputConfig struct {

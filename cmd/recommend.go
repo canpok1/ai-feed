@@ -73,7 +73,17 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				currentProfile.Prompt,
 			)
 
-			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), cmd.OutOrStdout(), currentProfile.Output, currentProfile.Prompt, currentProfile.Cache)
+			// キャッシュ設定の取得（Config.Cacheから）
+			var cacheEntity *entity.CacheConfig
+			if config.Cache != nil {
+				var err error
+				cacheEntity, err = config.Cache.ToEntity()
+				if err != nil {
+					return fmt.Errorf("failed to process cache config: %w", err)
+				}
+			}
+
+			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), cmd.OutOrStdout(), currentProfile.Output, currentProfile.Prompt, cacheEntity)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}

@@ -210,7 +210,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	fmt.Fprintln(r.stderr, "記事の重複をチェックしています...")
 	var uniqueArticles []entity.Article
 	duplicateCount := 0
-	
+
 	for _, article := range allArticles {
 		if r.cache.IsCached(article.Link) {
 			duplicateCount++
@@ -220,9 +220,9 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		}
 	}
 
-	slog.Info("Cache duplicate check completed", 
-		"total_articles", len(allArticles), 
-		"duplicate_articles", duplicateCount, 
+	slog.Info("Cache duplicate check completed",
+		"total_articles", len(allArticles),
+		"duplicate_articles", duplicateCount,
 		"unique_articles", len(uniqueArticles))
 
 	// 全ての記事が重複している場合

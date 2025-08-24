@@ -41,15 +41,14 @@ func (c *FileRecommendCache) Initialize() error {
 	slog.Debug("Initializing file recommend cache", "file_path", c.filePath)
 
 	if c.config.Enabled {
-		// Acquire lock first
-		if err := c.acquireLock(); err != nil {
-			return fmt.Errorf("failed to acquire lock: %w", err)
+		// Create directory first (needed for lock file)
+		if err := c.createDirectoryIfNotExists(); err != nil {
+			return fmt.Errorf("failed to create directory: %w", err)
 		}
 
-		// Create directory if it doesn't exist
-		if err := c.createDirectoryIfNotExists(); err != nil {
-			c.releaseLock() // Release lock on error
-			return fmt.Errorf("failed to create directory: %w", err)
+		// Acquire lock after directory creation
+		if err := c.acquireLock(); err != nil {
+			return fmt.Errorf("failed to acquire lock: %w", err)
 		}
 
 		// Load existing cache data
@@ -232,6 +231,15 @@ func (c *FileRecommendCache) saveToFile() error {
 
 // acquireLock acquires the cache file lock
 func (c *FileRecommendCache) acquireLock() error {
+	// Ensure lock file directory exists
+	lockDir := filepath.Dir(c.lockPath)
+	if _, err := os.Stat(lockDir); os.IsNotExist(err) {
+		slog.Debug("Creating lock file directory", "dir", lockDir)
+		if err := os.MkdirAll(lockDir, 0755); err != nil {
+			return fmt.Errorf("failed to create lock file directory: %w", err)
+		}
+	}
+
 	lockFile, err := os.OpenFile(c.lockPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 	if err != nil {
 		if os.IsExist(err) {
