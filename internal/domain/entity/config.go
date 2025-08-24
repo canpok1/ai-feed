@@ -281,15 +281,8 @@ func (c *CacheConfig) Validate() *ValidationResult {
 		builder.AddError(err.Error())
 	}
 
-	// MaxEntries: 正数であること
-	if c.MaxEntries <= 0 {
-		builder.AddError("キャッシュの最大エントリ数は正の値である必要があります")
-	}
-
-	// RetentionDays: 正数であること
-	if c.RetentionDays <= 0 {
-		builder.AddError("キャッシュの保持期間は正の値である必要があります")
-	}
+	// MaxEntries と RetentionDays は infra.CacheConfig.ToEntity() で
+	// デフォルト値が設定されるため、ここでの正数チェックは不要
 
 	return builder.Build()
 }
