@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -68,7 +69,8 @@ func TestProfileInitRunner_EdgeCases(t *testing.T) {
 			filePath := tt.setup(t, tmpDir)
 
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			runner := NewProfileInitRunner(profileRepo)
+			stderr := &bytes.Buffer{}
+			runner := NewProfileInitRunner(profileRepo, stderr)
 			err := runner.Run()
 
 			if tt.wantErr {
@@ -107,7 +109,8 @@ func TestProfileInitRunner_ConcurrentExecution(t *testing.T) {
 		go func(index int) {
 			filePath := filepath.Join(tmpDir, fmt.Sprintf("profile_%d.yml", index))
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			runner := NewProfileInitRunner(profileRepo)
+			stderr := &bytes.Buffer{}
+			runner := NewProfileInitRunner(profileRepo, stderr)
 			results <- runner.Run()
 		}(i)
 	}

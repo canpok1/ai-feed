@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
@@ -70,7 +71,8 @@ func TestProfileInitRunner_Run(t *testing.T) {
 
 			// ProfileInitRunnerを作成して実行
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			runner := NewProfileInitRunner(profileRepo)
+			stderr := &bytes.Buffer{}
+			runner := NewProfileInitRunner(profileRepo, stderr)
 			err := runner.Run()
 
 			// エラーの確認

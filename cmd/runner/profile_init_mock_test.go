@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -63,7 +64,8 @@ func TestProfileInitRunner_Run_Integration(t *testing.T) {
 
 			// ProfileInitRunnerを作成
 			yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			runner := NewProfileInitRunner(yamlRepo)
+			stderr := &bytes.Buffer{}
+			runner := NewProfileInitRunner(yamlRepo, stderr)
 
 			// 実行
 			err := runner.Run()
@@ -100,7 +102,8 @@ func TestProfileInitRunner_ConcurrentIntegration(t *testing.T) {
 		go func() {
 			filePath := filepath.Join(tempDir, "concurrent_profile.yml")
 			yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			runner := NewProfileInitRunner(yamlRepo)
+			stderr := &bytes.Buffer{}
+			runner := NewProfileInitRunner(yamlRepo, stderr)
 			results <- runner.Run()
 		}()
 	}
@@ -132,7 +135,8 @@ func BenchmarkProfileInitRunner_Run(b *testing.B) {
 		b.StopTimer()
 		filePath := filepath.Join(tempDir, "bench_profile_"+strconv.Itoa(i)+".yml")
 		yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-		runner := NewProfileInitRunner(yamlRepo)
+		stderr := &bytes.Buffer{}
+		runner := NewProfileInitRunner(yamlRepo, stderr)
 		b.StartTimer()
 
 		_ = runner.Run()
@@ -150,7 +154,8 @@ func BenchmarkProfileInitRunner_ConcurrentRun(b *testing.B) {
 			id := counter.Add(1)
 			filePath := filepath.Join(tempDir, "concurrent_bench_"+strconv.FormatInt(id, 10)+".yml")
 			yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			runner := NewProfileInitRunner(yamlRepo)
+			stderr := &bytes.Buffer{}
+			runner := NewProfileInitRunner(yamlRepo, stderr)
 			_ = runner.Run()
 		}
 	})
