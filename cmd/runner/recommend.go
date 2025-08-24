@@ -128,6 +128,13 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	slog.Info("Starting recommend command execution")
 	slog.Debug("Selecting feed from URLs", "url_count", len(params.URLs))
 
+	// キャッシュのリソース管理
+	defer func() {
+		if err := r.cache.Close(); err != nil {
+			slog.Error("Failed to close cache", "error", err)
+		}
+	}()
+
 	// 複数feedからの2段階ランダム選択とリトライロジック
 	excludedURLs := make(map[string]bool)
 	var allArticles []entity.Article
@@ -199,11 +206,40 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		return ErrNoArticlesFound
 	}
 
+	// 記事の重複チェックとフィルタリング
+	fmt.Fprintln(r.stderr, "記事の重複をチェックしています...")
+	var uniqueArticles []entity.Article
+	duplicateCount := 0
+	
+	for _, article := range allArticles {
+		if r.cache.IsCached(article.Link) {
+			duplicateCount++
+			slog.Debug("Article is already cached, skipping", "url", article.Link, "title", article.Title)
+		} else {
+			uniqueArticles = append(uniqueArticles, article)
+		}
+	}
+
+	slog.Info("Cache duplicate check completed", 
+		"total_articles", len(allArticles), 
+		"duplicate_articles", duplicateCount, 
+		"unique_articles", len(uniqueArticles))
+
+	// 全ての記事が重複している場合
+	if len(uniqueArticles) == 0 {
+		fmt.Fprintln(r.stderr, "すべての記事が既にキャッシュされています")
+		slog.Info("All articles are already cached")
+		fmt.Fprintln(r.stdout, "新しい記事が見つかりませんでした。すべて投稿済みの記事です。")
+		return nil
+	}
+
+	fmt.Fprintf(r.stderr, "%d件の新しい記事が見つかりました\n", len(uniqueArticles))
+
 	// 進行状況メッセージ: AI推薦生成
 	fmt.Fprintln(r.stderr, "推薦記事を生成しています...")
 
-	slog.Debug("Generating recommendation from articles")
-	recommend, err := r.recommender.Recommend(ctx, allArticles)
+	slog.Debug("Generating recommendation from unique articles", "unique_article_count", len(uniqueArticles))
+	recommend, err := r.recommender.Recommend(ctx, uniqueArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
@@ -278,8 +314,21 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		}
 	}
 
+	// 投稿エラーがある場合はキャッシュを更新せずに終了
 	if len(errs) > 0 {
+		slog.Warn("Some posts failed, not updating cache", "error_count", len(errs))
 		return fmt.Errorf("failed to view all recommends: %v", errs)
+	}
+
+	// 全ての投稿が成功した場合のみキャッシュを更新
+	fmt.Fprintln(r.stderr, "投稿履歴をキャッシュに保存しています...")
+	if err := r.cache.AddEntry(recommend.Article.Link, recommend.Article.Title); err != nil {
+		slog.Error("Failed to update cache", "url", recommend.Article.Link, "title", recommend.Article.Title, "error", err)
+		// キャッシュ更新の失敗は致命的エラーとしない（投稿は成功しているため）
+		fmt.Fprintf(r.stderr, "警告: キャッシュの更新に失敗しましたが、投稿は完了しました\n")
+	} else {
+		slog.Info("Cache updated successfully", "url", recommend.Article.Link, "title", recommend.Article.Title)
+		fmt.Fprintln(r.stderr, "キャッシュを更新しました")
 	}
 
 	slog.Info("Recommendation sent successfully to all viewers")
