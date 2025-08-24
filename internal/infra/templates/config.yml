@@ -95,21 +95,21 @@ default_profile:
         [{{TITLE}}]({{URL}})
         {{FIXED_MESSAGE}}
 
-  # キャッシュ設定
-  cache:
-    # 有効/無効フラグ（省略時はfalse）
-    # trueに設定すると投稿済み記事の重複を防ぐことができます
-    enabled: false
-    
-    # キャッシュファイルのパス
-    # 省略時はホームディレクトリの ~/.ai-feed/recommend_history.jsonl が使用されます
-    # file_path: ~/.ai-feed/recommend_history.jsonl
-    
-    # 最大エントリ数（FIFOで古いものから削除）
-    # 省略時は1000件
-    # max_entries: 1000
-    
-    # 保持期間（日数）
-    # 指定日数を過ぎた記事は自動的に削除されます
-    # 省略時は30日
-    # retention_days: 30
+# キャッシュ設定
+cache:
+  # 有効/無効フラグ（省略時はfalse）
+  # trueに設定すると投稿済み記事の重複を防ぐことができます
+  enabled: false
+  
+  # キャッシュファイルのパス
+  # 省略時はホームディレクトリの ~/.ai-feed/recommend_history.jsonl が使用されます
+  # file_path: ~/.ai-feed/recommend_history.jsonl
+  
+  # 最大エントリ数（FIFOで古いものから削除）
+  # 省略時は1000件
+  # max_entries: 1000
+  
+  # 保持期間（日数）
+  # 指定日数を過ぎた記事は自動的に削除されます
+  # 省略時は30日
+  # retention_days: 30
