@@ -26,14 +26,17 @@ type RecommendRunner struct {
 	fetcher     *domain.Fetcher
 	recommender domain.Recommender
 	viewers     []domain.MessageSender
+	stderr      io.Writer
+	stdout      io.Writer
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
-func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, outputConfig *entity.OutputConfig, promptConfig *entity.PromptConfig) (*RecommendRunner, error) {
+func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, stdout io.Writer, outputConfig *entity.OutputConfig, promptConfig *entity.PromptConfig) (*RecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
 			fmt.Fprintf(stderr, "エラー: フィードの取得に失敗しました: %s\n", url)
+			fmt.Fprintln(stderr, "フィードのURLが正しいか確認してください。サイトが一時的に利用できない可能性もあります。")
 			slog.Error("Failed to fetch feed", "url", url, "error", err)
 			return err
 		},
@@ -72,6 +75,8 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 		fetcher:     fetcher,
 		recommender: recommender,
 		viewers:     viewers,
+		stderr:      stderr,
+		stdout:      stdout,
 	}, nil
 }
 
@@ -102,6 +107,13 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	var selectedURL string
 
 	for attempt := 1; attempt <= len(params.URLs); attempt++ {
+		// 進行状況メッセージ: フィード選択
+		if attempt == 1 {
+			fmt.Fprintln(r.stderr, "フィードを選択しています...")
+		} else {
+			fmt.Fprintf(r.stderr, "別のフィードで再試行しています... (%d/%d)\n", attempt, len(params.URLs))
+		}
+
 		// Step 1: ランダムに1つのfeedを選択
 		var err error
 		selectedURL, err = selectRandomFeed(params.URLs, excludedURLs)
@@ -111,6 +123,9 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		}
 
 		slog.Debug("Selected feed for articles fetch", "url", selectedURL, "attempt", attempt)
+
+		// 進行状況メッセージ: フィード取得
+		fmt.Fprintf(r.stderr, "フィードを取得しています... (%sから)\n", selectedURL)
 
 		// Step 2: 選択されたfeedから記事を取得
 		allArticles, err = r.fetcher.Fetch([]string{selectedURL}, 0)
@@ -141,6 +156,8 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		}
 
 		// 成功した場合
+		// 進行状況メッセージ: 記事解析
+		fmt.Fprintf(r.stderr, "記事を解析しています... (%d件の記事を発見)\n", len(allArticles))
 		slog.Info("Successfully fetched articles from feed", "url", selectedURL, "article_count", len(allArticles))
 		break
 	}
@@ -155,11 +172,25 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		return ErrNoArticlesFound
 	}
 
+	// 進行状況メッセージ: AI推薦生成
+	fmt.Fprintln(r.stderr, "推薦記事を生成しています...")
+
 	slog.Debug("Generating recommendation from articles")
 	recommend, err := r.recommender.Recommend(ctx, allArticles)
 	if err != nil {
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
+
+	// 完了メッセージ: 推薦完了（stdout）
+	fmt.Fprintf(r.stdout, "推薦記事を生成しました: %s\n", recommend.Article.Title)
+
+	// AIが生成したコメントをユーザーに表示
+	if recommend.Comment != nil && *recommend.Comment != "" {
+		fmt.Fprintf(r.stdout, "\nAIコメント:\n%s\n", *recommend.Comment)
+	}
+
+	// 記事URLを表示
+	fmt.Fprintf(r.stdout, "\n記事URL: %s\n", recommend.Article.Link)
 
 	slog.Debug("Recommendation generated successfully", "article_title", recommend.Article.Title)
 
@@ -182,9 +213,41 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	)
 
 	slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
+
+	// 外部サービスへの投稿状況をメッセージ表示
+	if len(r.viewers) > 0 {
+		fmt.Fprintln(r.stdout, "\n外部サービスに投稿しています...")
+	} else {
+		fmt.Fprintln(r.stdout, "\n外部サービスへの投稿は設定されていません")
+	}
+
 	for _, viewer := range r.viewers {
+		var serviceName string
+		isKnownService := true
+		switch viewer.(type) {
+		case *message.SlackSender:
+			serviceName = "Slack"
+		case *message.MisskeySender:
+			serviceName = "Misskey"
+		default:
+			isKnownService = false
+		}
+
+		if isKnownService {
+			fmt.Fprintf(r.stdout, "%sに投稿中...\n", serviceName)
+		}
+
 		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
+			if isKnownService {
+				fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, viewErr)
+			} else {
+				fmt.Fprintf(r.stdout, "投稿でエラーが発生しました: %v\n", viewErr)
+			}
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
+		} else {
+			if isKnownService {
+				fmt.Fprintf(r.stdout, "%sに投稿しました\n", serviceName)
+			}
 		}
 	}
 

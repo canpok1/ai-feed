@@ -16,13 +16,16 @@ func makeInitCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := DefaultConfigFilePath
 
+			fmt.Fprintln(cmd.ErrOrStderr(), "設定ファイルを初期化しています...")
+
 			configRepo := infra.NewYamlConfigRepository(filePath)
 
+			fmt.Fprintln(cmd.ErrOrStderr(), "設定テンプレートを生成しています...")
 			// テンプレートを使用してコメント付きconfig.ymlを生成
 			if err := configRepo.SaveWithTemplate(); err != nil {
 				return err
 			}
-			fmt.Printf("%s を生成しました\n", filePath)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s を生成しました\n", filePath)
 			return nil
 		},
 	}

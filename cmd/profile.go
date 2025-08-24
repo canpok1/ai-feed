@@ -30,13 +30,17 @@ func makeProfileInitCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
 
+			// 進行状況メッセージ: 初期化開始
+			fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを初期化しています... (%s)\n", filePath)
+
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			r := runner.NewProfileInitRunner(profileRepo)
+			r := runner.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
 			err := r.Run()
 			if err != nil {
 				return err
 			}
-			cmd.Printf("プロファイルファイルが正常に作成されました: %s\n", filePath)
+			// 完了メッセージ（stdout）
+			cmd.Printf("プロファイルファイルを作成しました: %s\n", filePath)
 			return nil
 		},
 	}
@@ -58,6 +62,13 @@ func makeProfileCheckCmd() *cobra.Command {
 			profilePath := ""
 			if len(args) > 0 {
 				profilePath = args[0]
+			}
+
+			// 進行状況メッセージ: 検証開始
+			if profilePath != "" {
+				fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています... (%s)\n", profilePath)
+			} else {
+				fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています...\n")
 			}
 
 			// ProfileCheckRunnerを使用して検証を実行
@@ -85,7 +96,7 @@ func makeProfileCheckCmd() *cobra.Command {
 					cmd.PrintErrf("  警告: %s\n", warning)
 				}
 			} else {
-				cmd.Println("プロファイルの検証が完了しました")
+				fmt.Fprintln(cmd.OutOrStdout(), "プロファイルの検証が完了しました")
 			}
 
 			return nil
