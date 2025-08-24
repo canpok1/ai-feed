@@ -45,11 +45,13 @@ func TestInitLogger(t *testing.T) {
 	defer func() { color.NoColor = originalNoColor }()
 	color.NoColor = true
 
-	// 元のos.Stdoutとslogのデフォルトを保存
+	// 元のos.Stdoutとstderrとslogのデフォルトを保存
 	originalStdout := os.Stdout
+	originalStderr := os.Stderr
 	originalLogger := slog.Default()
 	defer func() {
 		os.Stdout = originalStdout
+		os.Stderr = originalStderr
 		slog.SetDefault(originalLogger)
 	}()
 
@@ -74,7 +76,14 @@ func TestInitLogger(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r, w, err := os.Pipe()
 			assert.NoError(t, err)
-			os.Stdout = w
+
+			// -vなしの場合、出力先はstderrではなくio.Discardになる
+			// -vありの場合、出力先はstderrになる
+			if tt.verbose {
+				os.Stderr = w
+			} else {
+				os.Stdout = w // テスト用にパイプを設定
+			}
 
 			InitLogger(tt.verbose)
 
@@ -88,15 +97,17 @@ func TestInitLogger(t *testing.T) {
 
 			output := buf.String()
 
-			if tt.expectDebug {
+			if tt.verbose {
+				// -vありの場合、DEBUGメッセージがstderrに出力される
 				assert.Contains(t, output, "DEBUG debug message")
+				assert.Contains(t, output, "INFO info message")
 			} else {
-				assert.NotContains(t, output, "DEBUG debug message")
+				// -vなしの場合、ログは一切出力されない
+				assert.Empty(t, output)
 			}
-			assert.Contains(t, output, "INFO info message")
 
-			// Test log format and timestamp (RFC3339)
-			if len(output) > 0 {
+			// Test log format and timestamp (RFC3339) - verboseの場合のみ
+			if tt.verbose && len(output) > 0 {
 				lines := strings.Split(strings.TrimSpace(output), "\n")
 				for _, line := range lines {
 					if line == "" {

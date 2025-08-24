@@ -339,7 +339,7 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	lines := bytes.Split(logBuffer.Bytes(), []byte("\n"))
 	var recommendLogLine []byte
 	for _, line := range lines {
-		if len(line) > 0 && bytes.Contains(line, []byte("推薦記事を選択しました")) {
+		if len(line) > 0 && bytes.Contains(line, []byte("Recommendation article selected")) {
 			recommendLogLine = line
 			break
 		}
@@ -349,7 +349,7 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	require.NoError(t, json.Unmarshal(recommendLogLine, &logEntry))
 
 	assert.Equal(t, "INFO", logEntry["level"])
-	assert.Equal(t, "推薦記事を選択しました", logEntry["msg"])
+	assert.Equal(t, "Recommendation article selected", logEntry["msg"])
 	assert.Equal(t, "Test Article", logEntry["title"])
 	assert.Equal(t, "https://example.com/test", logEntry["link"])
 	assert.Equal(t, "This is a test comment", logEntry["comment"])
@@ -477,7 +477,7 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedLogs: []string{"Slack API出力が無効化されています (enabled: false)"},
+			expectedLogs: []string{"Slack API output is disabled (enabled: false)"},
 		},
 		{
 			name: "Misskey無効ログ確認",
@@ -489,7 +489,7 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedLogs: []string{"Misskey出力が無効化されています (enabled: false)"},
+			expectedLogs: []string{"Misskey output is disabled (enabled: false)"},
 		},
 		{
 			name: "両方無効ログ確認",
@@ -508,8 +508,8 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 				},
 			},
 			expectedLogs: []string{
-				"Slack API出力が無効化されています (enabled: false)",
-				"Misskey出力が無効化されています (enabled: false)",
+				"Slack API output is disabled (enabled: false)",
+				"Misskey output is disabled (enabled: false)",
 			},
 		},
 	}
