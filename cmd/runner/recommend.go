@@ -95,13 +95,8 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 
 // createCache は設定に基づいてキャッシュインスタンスを作成する
 func createCache(config *entity.CacheConfig) (domain.RecommendCache, error) {
-	if config == nil {
-		return cache.NewFileRecommendCache(&entity.CacheConfig{
-			Enabled:       false,
-			FilePath:      "",
-			MaxEntries:    0,
-			RetentionDays: 0,
-		}), nil
+	if config == nil || !config.Enabled {
+		return cache.NewNopCache(), nil
 	}
 
 	return cache.NewFileRecommendCache(config), nil

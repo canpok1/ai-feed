@@ -40,52 +40,40 @@ func NewFileRecommendCache(config *entity.CacheConfig) *FileRecommendCache {
 func (c *FileRecommendCache) Initialize() error {
 	slog.Debug("Initializing file recommend cache", "file_path", c.filePath)
 
-	if c.config.Enabled {
-		// Create directory first (needed for lock file)
-		if err := c.createDirectoryIfNotExists(); err != nil {
-			return fmt.Errorf("failed to create directory: %w", err)
-		}
-
-		// Acquire lock after directory creation
-		if err := c.acquireLock(); err != nil {
-			return fmt.Errorf("failed to acquire lock: %w", err)
-		}
-
-		// Load existing cache data
-		if err := c.loadFromFile(); err != nil {
-			c.releaseLock() // Release lock on error
-			return fmt.Errorf("failed to load cache data: %w", err)
-		}
-
-		// Cleanup old entries
-		c.cleanup()
-
-		slog.Debug("File recommend cache initialized successfully",
-			"entries_count", len(c.entries),
-			"unique_urls", len(c.urlSet))
-	} else {
-		slog.Debug("Cache is disabled, skipping initialization")
+	// Create directory first (needed for lock file)
+	if err := c.createDirectoryIfNotExists(); err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
+
+	// Acquire lock after directory creation
+	if err := c.acquireLock(); err != nil {
+		return fmt.Errorf("failed to acquire lock: %w", err)
+	}
+
+	// Load existing cache data
+	if err := c.loadFromFile(); err != nil {
+		c.releaseLock() // Release lock on error
+		return fmt.Errorf("failed to load cache data: %w", err)
+	}
+
+	// Cleanup old entries
+	c.cleanup()
+
+	slog.Debug("File recommend cache initialized successfully",
+		"entries_count", len(c.entries),
+		"unique_urls", len(c.urlSet))
 
 	return nil
 }
 
 // IsCached checks if the given URL is already cached (duplicate check)
 func (c *FileRecommendCache) IsCached(url string) bool {
-	if !c.config.Enabled {
-		return false
-	}
-
 	normalizedURL := c.normalizeURL(url)
 	return c.urlSet[normalizedURL]
 }
 
 // AddEntry adds a new entry to the cache with the given URL and title
 func (c *FileRecommendCache) AddEntry(url, title string) error {
-	if !c.config.Enabled {
-		return nil
-	}
-
 	normalizedURL := c.normalizeURL(url)
 
 	// Check if already exists
@@ -119,7 +107,7 @@ func (c *FileRecommendCache) AddEntry(url, title string) error {
 
 // Close closes the cache, releases locks and performs cleanup
 func (c *FileRecommendCache) Close() error {
-	if c.config.Enabled && c.lockFile != nil {
+	if c.lockFile != nil {
 		if err := c.releaseLock(); err != nil {
 			return fmt.Errorf("failed to release lock: %w", err)
 		}
