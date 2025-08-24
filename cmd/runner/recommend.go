@@ -9,6 +9,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/cache"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra/message"
 )
@@ -26,12 +27,13 @@ type RecommendRunner struct {
 	fetcher     *domain.Fetcher
 	recommender domain.Recommender
 	viewers     []domain.MessageSender
+	cache       domain.RecommendCache
 	stderr      io.Writer
 	stdout      io.Writer
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
-func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, stdout io.Writer, outputConfig *entity.OutputConfig, promptConfig *entity.PromptConfig) (*RecommendRunner, error) {
+func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, stdout io.Writer, outputConfig *entity.OutputConfig, promptConfig *entity.PromptConfig, cacheConfig *entity.CacheConfig) (*RecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
 		func(url string, err error) error {
@@ -71,13 +73,38 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 		}
 	}
 
+	// キャッシュインスタンスの作成と初期化
+	cache, err := createCache(cacheConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cache: %w", err)
+	}
+
+	if err := cache.Initialize(); err != nil {
+		return nil, fmt.Errorf("failed to initialize cache: %w", err)
+	}
+
 	return &RecommendRunner{
 		fetcher:     fetcher,
 		recommender: recommender,
 		viewers:     viewers,
+		cache:       cache,
 		stderr:      stderr,
 		stdout:      stdout,
 	}, nil
+}
+
+// createCache は設定に基づいてキャッシュインスタンスを作成する
+func createCache(config *entity.CacheConfig) (domain.RecommendCache, error) {
+	if config == nil {
+		return cache.NewFileRecommendCache(&entity.CacheConfig{
+			Enabled:       false,
+			FilePath:      "",
+			MaxEntries:    0,
+			RetentionDays: 0,
+		}), nil
+	}
+
+	return cache.NewFileRecommendCache(config), nil
 }
 
 // selectRandomFeed は利用可能なfeed URLからランダムに1つを選択する
