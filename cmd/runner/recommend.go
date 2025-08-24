@@ -26,6 +26,7 @@ type RecommendRunner struct {
 	fetcher     *domain.Fetcher
 	recommender domain.Recommender
 	viewers     []domain.MessageSender
+	stderr      io.Writer
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
@@ -72,6 +73,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 		fetcher:     fetcher,
 		recommender: recommender,
 		viewers:     viewers,
+		stderr:      stderr,
 	}, nil
 }
 
@@ -102,6 +104,13 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	var selectedURL string
 
 	for attempt := 1; attempt <= len(params.URLs); attempt++ {
+		// 進行状況メッセージ: フィード選択
+		if attempt == 1 {
+			fmt.Fprintln(r.stderr, "フィードを選択しています...")
+		} else {
+			fmt.Fprintf(r.stderr, "別のフィードで再試行しています... (%d/%d)\n", attempt, len(params.URLs))
+		}
+
 		// Step 1: ランダムに1つのfeedを選択
 		var err error
 		selectedURL, err = selectRandomFeed(params.URLs, excludedURLs)
@@ -111,6 +120,9 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		}
 
 		slog.Debug("Selected feed for articles fetch", "url", selectedURL, "attempt", attempt)
+
+		// 進行状況メッセージ: フィード取得
+		fmt.Fprintf(r.stderr, "フィードを取得しています... (%sから)\n", selectedURL)
 
 		// Step 2: 選択されたfeedから記事を取得
 		allArticles, err = r.fetcher.Fetch([]string{selectedURL}, 0)
@@ -141,6 +153,8 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		}
 
 		// 成功した場合
+		// 進行状況メッセージ: 記事解析
+		fmt.Fprintf(r.stderr, "記事を解析しています... (%d件の記事を発見)\n", len(allArticles))
 		slog.Info("Successfully fetched articles from feed", "url", selectedURL, "article_count", len(allArticles))
 		break
 	}
