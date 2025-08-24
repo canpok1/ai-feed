@@ -184,6 +184,14 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	// 完了メッセージ: 推薦完了（stdout）
 	fmt.Fprintf(r.stdout, "推薦記事を生成しました: %s\n", recommend.Article.Title)
 
+	// AIが生成したコメントをユーザーに表示
+	if recommend.Comment != nil && *recommend.Comment != "" {
+		fmt.Fprintf(r.stdout, "\nAIコメント:\n%s\n", *recommend.Comment)
+	}
+
+	// 記事URLを表示
+	fmt.Fprintf(r.stdout, "\n記事URL: %s\n", recommend.Article.Link)
+
 	slog.Debug("Recommendation generated successfully", "article_title", recommend.Article.Title)
 
 	var errs []error
