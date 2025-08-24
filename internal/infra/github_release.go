@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/google/go-github/v30/github"
+	"github.com/google/go-github/v65/github"
 )
 
 // GitHubReleaseClient はGitHubのリリース情報を取得するクライアント
@@ -94,4 +94,3 @@ func (g *GitHubReleaseClient) selectAsset(assets []*github.ReleaseAsset) string 
 	// 見つからない場合は空文字を返す
 	return ""
 }
-
