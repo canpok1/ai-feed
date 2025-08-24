@@ -63,8 +63,19 @@ func (s *SelfUpdater) UpdateBinary(version string) error {
 		return fmt.Errorf("利用可能なリリースが見つかりません")
 	}
 
+	// バージョン文字列を正規化して比較（vプレフィックスを統一）
+	normalizeVersion := func(v string) string {
+		if len(v) > 0 && v[0] == 'v' {
+			return v[1:]
+		}
+		return v
+	}
+
+	latestVersion := normalizeVersion(latest.Version())
+	requestedVersion := normalizeVersion(version)
+
 	// 指定されたバージョンと最新バージョンを比較
-	if latest.Version() != version {
+	if latestVersion != requestedVersion {
 		return fmt.Errorf("指定されたバージョン %s は利用できません。最新は %s です", version, latest.Version())
 	}
 
