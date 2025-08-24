@@ -113,22 +113,28 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 
 		// Step 2: 選択されたfeedから記事を取得
 		allArticles, err = r.fetcher.Fetch([]string{selectedURL}, 0)
+
+		// エラーまたは記事0件の場合は失敗として次のフィードを試す
+		var shouldRetry bool
+		var logMessage string
 		if err != nil {
-			slog.Warn("Failed to fetch from feed, retrying with another feed",
+			shouldRetry = true
+			logMessage = "Failed to fetch from feed, retrying with another feed"
+			slog.Warn(logMessage,
 				"url", selectedURL,
 				"error", err.Error(),
 				"attempt", attempt,
 				"total_feeds", len(params.URLs))
-			excludedURLs[selectedURL] = true
-			continue
-		}
-
-		// 記事が0件の場合もエラーとして扱う
-		if len(allArticles) == 0 {
-			slog.Warn("No articles found in feed, retrying with another feed",
+		} else if len(allArticles) == 0 {
+			shouldRetry = true
+			logMessage = "No articles found in feed, retrying with another feed"
+			slog.Warn(logMessage,
 				"url", selectedURL,
 				"attempt", attempt,
 				"total_feeds", len(params.URLs))
+		}
+
+		if shouldRetry {
 			excludedURLs[selectedURL] = true
 			continue
 		}
