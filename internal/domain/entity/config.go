@@ -265,10 +265,56 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	}
 }
 
+type CacheConfig struct {
+	Enabled       bool
+	FilePath      string
+	MaxEntries    int
+	RetentionDays int
+}
+
+// Validate はCacheConfigの内容をバリデーションする
+func (c *CacheConfig) Validate() *ValidationResult {
+	builder := NewValidationBuilder()
+
+	// FilePath: 必須項目（空文字列でない）
+	if err := ValidateRequired(c.FilePath, "キャッシュファイルパス"); err != nil {
+		builder.AddError(err.Error())
+	}
+
+	// MaxEntries: 正数であること
+	if c.MaxEntries <= 0 {
+		builder.AddError("キャッシュの最大エントリ数は正の値である必要があります")
+	}
+
+	// RetentionDays: 正数であること
+	if c.RetentionDays <= 0 {
+		builder.AddError("キャッシュの保持期間は正の値である必要があります")
+	}
+
+	return builder.Build()
+}
+
+// Merge は他のCacheConfigの非ゼロ値フィールドで現在のCacheConfigをマージする
+func (c *CacheConfig) Merge(other *CacheConfig) {
+	if other == nil {
+		return
+	}
+	// bool フィールドはゼロ値チェックが困難なため、常に上書き
+	c.Enabled = other.Enabled
+	mergeString(&c.FilePath, other.FilePath)
+	if other.MaxEntries > 0 {
+		c.MaxEntries = other.MaxEntries
+	}
+	if other.RetentionDays > 0 {
+		c.RetentionDays = other.RetentionDays
+	}
+}
+
 type Profile struct {
 	AI     *AIConfig
 	Prompt *PromptConfig
 	Output *OutputConfig
+	Cache  *CacheConfig
 }
 
 // Validate はProfileの内容をバリデーションする
@@ -307,6 +353,7 @@ func (p *Profile) Merge(other *Profile) {
 	mergePtr(&p.AI, other.AI)
 	mergePtr(&p.Prompt, other.Prompt)
 	mergePtr(&p.Output, other.Output)
+	mergePtr(&p.Cache, other.Cache)
 }
 
 type OutputConfig struct {
