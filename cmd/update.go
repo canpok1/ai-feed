@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/canpok1/ai-feed/internal/infra"
+	goversion "github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 )
 
@@ -46,10 +47,26 @@ GitHubのリリースから最新の安定版を取得し、現在のバージ�
 			fmt.Fprintf(cmd.OutOrStdout(), "現在のバージョン: %s\n", currentVersion)
 			fmt.Fprintf(cmd.OutOrStdout(), "最新のバージョン: %s\n", latest.Version)
 
-			// バージョン比較（簡単な文字列比較）
-			if currentVersion == latest.Version {
-				fmt.Fprintln(cmd.OutOrStdout(), "既に最新バージョンです。")
-				return nil
+			// バージョン比較
+			currentV, err := goversion.NewVersion(currentVersion)
+			if err != nil {
+				// "dev"などの不正なバージョン文字列の場合は比較をスキップ
+				fmt.Fprintf(cmd.OutOrStdout(), "現在のバージョン '%s' は比較できません。更新を試みます。\n", currentVersion)
+			} else {
+				latestV, err := goversion.NewVersion(latest.Version)
+				if err != nil {
+					return fmt.Errorf("最新のバージョン文字列の解析に失敗しました: %w", err)
+				}
+
+				if currentV.Equal(latestV) {
+					fmt.Fprintln(cmd.OutOrStdout(), "既に最新バージョンです。")
+					return nil
+				}
+
+				if currentV.GreaterThan(latestV) {
+					fmt.Fprintf(cmd.OutOrStdout(), "現在のバージョン (%s) は最新バージョン (%s) よりも新しいです。\n", currentV, latestV)
+					return nil
+				}
 			}
 
 			// --checkオプションの場合はここで終了
