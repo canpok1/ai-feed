@@ -73,7 +73,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				currentProfile.Prompt,
 			)
 
-			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), cmd.OutOrStdout(), currentProfile.Output, currentProfile.Prompt)
+			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), cmd.OutOrStdout(), currentProfile.Output, currentProfile.Prompt, currentProfile.Cache)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
