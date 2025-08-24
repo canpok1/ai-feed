@@ -198,9 +198,15 @@ func (c *FileRecommendCache) saveToFile() error {
 		}
 		return fmt.Errorf("failed to create temporary cache file: %w", err)
 	}
+
+	var success bool
 	defer func() {
+		// On error, close the file (if not already closed) and remove the temp file.
+		// On success, the file is already closed and the temp file is renamed, so this is a no-op.
 		file.Close()
-		os.Remove(tempPath) // Clean up temp file on error
+		if !success {
+			os.Remove(tempPath)
+		}
 	}()
 
 	// Write entries as JSON Lines
@@ -218,13 +224,18 @@ func (c *FileRecommendCache) saveToFile() error {
 	if err := file.Sync(); err != nil {
 		return fmt.Errorf("failed to sync cache file: %w", err)
 	}
-	file.Close()
+
+	// Must close before rename.
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("failed to close temporary cache file: %w", err)
+	}
 
 	// Atomic replace
 	if err := os.Rename(tempPath, c.filePath); err != nil {
 		return fmt.Errorf("failed to replace cache file: %w", err)
 	}
 
+	success = true
 	slog.Debug("Saved cache entries to file", "count", len(c.entries))
 	return nil
 }
