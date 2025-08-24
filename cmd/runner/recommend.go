@@ -213,9 +213,42 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	)
 
 	slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
+
+	// 外部サービスへの投稿状況をメッセージ表示
+	if len(r.viewers) > 0 {
+		fmt.Fprintln(r.stdout, "\n外部サービスに投稿しています...")
+	} else {
+		fmt.Fprintln(r.stdout, "\n外部サービスへの投稿は設定されていません")
+	}
+
 	for _, viewer := range r.viewers {
+		// 投稿先サービスを特定してメッセージを表示
+		switch viewer.(type) {
+		case *message.SlackSender:
+			fmt.Fprintln(r.stdout, "Slackに投稿中...")
+		case *message.MisskeySender:
+			fmt.Fprintln(r.stdout, "Misskeyに投稿中...")
+		}
+
 		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
+			// エラー時も具体的なサービス名を表示
+			switch viewer.(type) {
+			case *message.SlackSender:
+				fmt.Fprintf(r.stdout, "Slack投稿でエラーが発生しました: %v\n", viewErr)
+			case *message.MisskeySender:
+				fmt.Fprintf(r.stdout, "Misskey投稿でエラーが発生しました: %v\n", viewErr)
+			default:
+				fmt.Fprintf(r.stdout, "投稿でエラーが発生しました: %v\n", viewErr)
+			}
 			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
+		} else {
+			// 成功時もサービス名を表示
+			switch viewer.(type) {
+			case *message.SlackSender:
+				fmt.Fprintln(r.stdout, "Slackに投稿しました")
+			case *message.MisskeySender:
+				fmt.Fprintln(r.stdout, "Misskeyに投稿しました")
+			}
 		}
 	}
 
