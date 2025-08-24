@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/go-test/deep"
 	"github.com/stretchr/testify/assert"
@@ -993,6 +994,197 @@ func TestOutputConfig_EnabledFalseWithValidationErrors(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, entity)
 			}
+		})
+	}
+}
+
+// キャッシュ設定テスト
+
+func TestCacheConfig_ToEntity(t *testing.T) {
+	homeDir, err := os.UserHomeDir()
+	assert.NoError(t, err)
+
+	tests := []struct {
+		name        string
+		config      CacheConfig
+		expected    *entity.CacheConfig
+		expectedErr string
+	}{
+		{
+			name: "正常な設定値での変換",
+			config: CacheConfig{
+				Enabled:       testutil.BoolPtr(true),
+				FilePath:      "/tmp/cache.jsonl",
+				MaxEntries:    1000,
+				RetentionDays: 30,
+			},
+			expected: &entity.CacheConfig{
+				Enabled:       true,
+				FilePath:      "/tmp/cache.jsonl",
+				MaxEntries:    1000,
+				RetentionDays: 30,
+			},
+			expectedErr: "",
+		},
+		{
+			name: "デフォルト値の適用",
+			config: CacheConfig{
+				Enabled:       nil,
+				FilePath:      "",
+				MaxEntries:    0,
+				RetentionDays: 0,
+			},
+			expected: &entity.CacheConfig{
+				Enabled:       false,
+				FilePath:      filepath.Join(homeDir, ".ai-feed", "recommend_history.jsonl"),
+				MaxEntries:    1000,
+				RetentionDays: 30,
+			},
+			expectedErr: "",
+		},
+		{
+			name: "チルダ展開テスト",
+			config: CacheConfig{
+				Enabled:       testutil.BoolPtr(true),
+				FilePath:      "~/.ai-feed/custom-cache.jsonl",
+				MaxEntries:    500,
+				RetentionDays: 15,
+			},
+			expected: &entity.CacheConfig{
+				Enabled:       true,
+				FilePath:      filepath.Join(homeDir, ".ai-feed", "custom-cache.jsonl"),
+				MaxEntries:    500,
+				RetentionDays: 15,
+			},
+			expectedErr: "",
+		},
+		{
+			name: "相対パス展開テスト",
+			config: CacheConfig{
+				Enabled:       testutil.BoolPtr(false),
+				FilePath:      "./cache/data.jsonl",
+				MaxEntries:    2000,
+				RetentionDays: 60,
+			},
+			expected: &entity.CacheConfig{
+				Enabled:       false,
+				FilePath:      filepath.Join(".", "cache", "data.jsonl"),
+				MaxEntries:    2000,
+				RetentionDays: 60,
+			},
+			expectedErr: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := tt.config.ToEntity()
+
+			if tt.expectedErr != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedErr)
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				assert.Equal(t, tt.expected.Enabled, result.Enabled)
+				// パスは絶対パスに展開されるため、期待値も絶対パスに変換して比較
+				expectedPath, _ := filepath.Abs(tt.expected.FilePath)
+				actualPath, _ := filepath.Abs(result.FilePath)
+				assert.Equal(t, expectedPath, actualPath)
+				assert.Equal(t, tt.expected.MaxEntries, result.MaxEntries)
+				assert.Equal(t, tt.expected.RetentionDays, result.RetentionDays)
+			}
+		})
+	}
+}
+
+// TestProfile_ToEntity_WithCache は削除 - ProfileはキャッシュfieldBはなくなったため
+
+func TestCacheConfig_YamlMarshalUnmarshal(t *testing.T) {
+	tests := []struct {
+		name      string
+		yamlInput string
+		expected  CacheConfig
+	}{
+		{
+			name: "完全な設定",
+			yamlInput: `
+cache:
+  enabled: true
+  file_path: /tmp/cache.jsonl
+  max_entries: 1000
+  retention_days: 30
+`,
+			expected: CacheConfig{
+				Enabled:       testutil.BoolPtr(true),
+				FilePath:      "/tmp/cache.jsonl",
+				MaxEntries:    1000,
+				RetentionDays: 30,
+			},
+		},
+		{
+			name: "enabled無効",
+			yamlInput: `
+cache:
+  enabled: false
+  file_path: ~/.ai-feed/disabled-cache.jsonl
+  max_entries: 0
+  retention_days: 0
+`,
+			expected: CacheConfig{
+				Enabled:       testutil.BoolPtr(false),
+				FilePath:      "~/.ai-feed/disabled-cache.jsonl",
+				MaxEntries:    0,
+				RetentionDays: 0,
+			},
+		},
+		{
+			name: "最小設定",
+			yamlInput: `
+cache:
+  enabled: true
+`,
+			expected: CacheConfig{
+				Enabled:       testutil.BoolPtr(true),
+				FilePath:      "",
+				MaxEntries:    0,
+				RetentionDays: 0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			type TestStruct struct {
+				Cache CacheConfig `yaml:"cache"`
+			}
+
+			var actual TestStruct
+			err := yaml.Unmarshal([]byte(tt.yamlInput), &actual)
+			assert.NoError(t, err)
+
+			if tt.expected.Enabled == nil {
+				assert.Nil(t, actual.Cache.Enabled)
+			} else {
+				assert.NotNil(t, actual.Cache.Enabled)
+				assert.Equal(t, *tt.expected.Enabled, *actual.Cache.Enabled)
+			}
+			assert.Equal(t, tt.expected.FilePath, actual.Cache.FilePath)
+			assert.Equal(t, tt.expected.MaxEntries, actual.Cache.MaxEntries)
+			assert.Equal(t, tt.expected.RetentionDays, actual.Cache.RetentionDays)
+
+			// Marshal テスト
+			marshaledYaml, err := yaml.Marshal(actual)
+			assert.NoError(t, err)
+
+			var remarshaledActual TestStruct
+			err = yaml.Unmarshal(marshaledYaml, &remarshaledActual)
+			assert.NoError(t, err)
+			assert.Equal(t, actual.Cache.Enabled, remarshaledActual.Cache.Enabled)
+			assert.Equal(t, actual.Cache.FilePath, remarshaledActual.Cache.FilePath)
+			assert.Equal(t, actual.Cache.MaxEntries, remarshaledActual.Cache.MaxEntries)
+			assert.Equal(t, actual.Cache.RetentionDays, remarshaledActual.Cache.RetentionDays)
 		})
 	}
 }
