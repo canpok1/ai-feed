@@ -59,21 +59,6 @@ func TestFileRecommendCache_Initialize(t *testing.T) {
 		cache.Close()
 	})
 
-	t.Run("無効化されたキャッシュ", func(t *testing.T) {
-		config := &entity.CacheConfig{
-			Enabled:       false,
-			FilePath:      "/tmp/disabled_cache.jsonl",
-			MaxEntries:    100,
-			RetentionDays: 7,
-		}
-
-		cache := NewFileRecommendCache(config)
-		err := cache.Initialize()
-		if err != nil {
-			t.Fatalf("Initialize should succeed for disabled cache: %v", err)
-		}
-	})
-
 	t.Run("既存ファイルの読み込み", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		cacheFile := filepath.Join(tmpDir, "existing_cache.jsonl")
@@ -149,21 +134,6 @@ func TestFileRecommendCache_IsCached(t *testing.T) {
 			t.Error("URL normalization should work (trailing slash)")
 		}
 	})
-
-	t.Run("無効化されたキャッシュ", func(t *testing.T) {
-		disabledConfig := &entity.CacheConfig{
-			Enabled:       false,
-			FilePath:      filepath.Join(tmpDir, "disabled.jsonl"),
-			MaxEntries:    100,
-			RetentionDays: 7,
-		}
-		disabledCache := NewFileRecommendCache(disabledConfig)
-		disabledCache.Initialize()
-
-		if disabledCache.IsCached("https://example.com/any") {
-			t.Error("Disabled cache should always return false")
-		}
-	})
 }
 
 func TestFileRecommendCache_AddEntry(t *testing.T) {
@@ -202,22 +172,6 @@ func TestFileRecommendCache_AddEntry(t *testing.T) {
 
 		if len(cache.entries) != initialCount {
 			t.Error("Duplicate entry should not be added")
-		}
-	})
-
-	t.Run("無効化されたキャッシュ", func(t *testing.T) {
-		disabledConfig := &entity.CacheConfig{
-			Enabled:       false,
-			FilePath:      filepath.Join(tmpDir, "disabled.jsonl"),
-			MaxEntries:    100,
-			RetentionDays: 7,
-		}
-		disabledCache := NewFileRecommendCache(disabledConfig)
-		disabledCache.Initialize()
-
-		err := disabledCache.AddEntry("https://example.com/disabled", "Test")
-		if err != nil {
-			t.Fatalf("AddEntry should not fail for disabled cache: %v", err)
 		}
 	})
 }

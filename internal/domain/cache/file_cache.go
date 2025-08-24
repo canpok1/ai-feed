@@ -276,15 +276,13 @@ func (c *FileRecommendCache) cleanup() {
 	validEntries := make([]domain.RecommendEntry, 0)
 	removedCount := 0
 
-	// Rebuild URL set with only valid entries
-	c.urlSet = make(map[string]bool)
-
 	for _, entry := range c.entries {
 		if entry.PostedAt.After(cutoffTime) {
 			validEntries = append(validEntries, entry)
-			normalizedURL := c.normalizeURL(entry.URL)
-			c.urlSet[normalizedURL] = true
 		} else {
+			// Remove expired entry from URL set
+			normalizedURL := c.normalizeURL(entry.URL)
+			delete(c.urlSet, normalizedURL)
 			removedCount++
 		}
 	}
@@ -304,16 +302,13 @@ func (c *FileRecommendCache) cleanupByMaxEntries() {
 	// Calculate how many entries to remove
 	excessCount := len(c.entries) - c.config.MaxEntries
 
-	// Remove oldest entries (FIFO)
+	// Remove oldest entries (FIFO) and their corresponding URLs from urlSet
 	removedEntries := c.entries[:excessCount]
-	c.entries = c.entries[excessCount:]
-
-	// Rebuild URL set
-	c.urlSet = make(map[string]bool)
-	for _, entry := range c.entries {
+	for _, entry := range removedEntries {
 		normalizedURL := c.normalizeURL(entry.URL)
-		c.urlSet[normalizedURL] = true
+		delete(c.urlSet, normalizedURL)
 	}
+	c.entries = c.entries[excessCount:]
 
 	slog.Debug("Cleaned up excess cache entries", "removed_count", len(removedEntries), "remaining_count", len(c.entries))
 }
