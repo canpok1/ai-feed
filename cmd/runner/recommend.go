@@ -147,12 +147,10 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	// 全feedが失敗した場合
 	if len(allArticles) == 0 {
 		var triedURLs []string
-		var errors []string
-		for _, url := range params.URLs {
+		for url := range excludedURLs {
 			triedURLs = append(triedURLs, url)
-			errors = append(errors, url+": failed")
 		}
-		slog.Error("Failed to fetch from all feeds", "tried_urls", triedURLs, "errors", errors)
+		slog.Error("Failed to fetch from all feeds", "tried_urls", triedURLs)
 		return ErrNoArticlesFound
 	}
 
