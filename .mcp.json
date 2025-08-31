@@ -11,7 +11,9 @@
         "--context",
         "ide-assistant",
         "--project",
-        "/workspaces/ai-feed"
+        "/workspaces/ai-feed",
+        "--enable-web-dashboard",
+        "false"
       ],
       "env": {}
     }

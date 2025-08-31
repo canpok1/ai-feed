@@ -1,14 +1,19 @@
 {
     "mcpServers": {
-        "github": {
-            "command": "docker",
+        "serena": {
+            "displayName": "Serena Coding Agent",
+            "command": "uvx",
             "args": [
-                "run",
-                "-i",
-                "--rm",
-                "-e",
-                "GITHUB_PERSONAL_ACCESS_TOKEN",
-                "ghcr.io/github/github-mcp-server"
+                "--from",
+                "git+https://github.com/oraios/serena",
+                "serena",
+                "start-mcp-server",
+                "--context",
+                "ide-assistant",
+                "--project",
+                "/workspaces/ai-feed",
+                "--enable-web-dashboard",
+                "false"
             ]
         }
     }
