@@ -14,8 +14,3 @@ RUN export VERSION=1.86.1 \
     && curl -o tbls.deb -L https://github.com/k1LoW/tbls/releases/download/v${VERSION}/tbls_${VERSION}-1_arm64.deb \
     && apt install ./tbls.deb \
     && rm tbls.deb
-
-RUN export VERSION=2.75.0 \
-    && curl -o gh.deb -L https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_arm64.deb \
-    && apt install ./gh.deb \
-    && rm gh.deb
