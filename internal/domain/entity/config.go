@@ -271,9 +271,15 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	if other.MessageTemplate != nil {
 		s.MessageTemplate = other.MessageTemplate
 	}
-	mergeString(&s.Username, other.Username)
-	mergeString(&s.IconURL, other.IconURL)
-	mergeString(&s.IconEmoji, other.IconEmoji)
+	if other.Username != nil {
+		s.Username = other.Username
+	}
+	if other.IconURL != nil {
+		s.IconURL = other.IconURL
+	}
+	if other.IconEmoji != nil {
+		s.IconEmoji = other.IconEmoji
+	}
 }
 
 type CacheConfig struct {
