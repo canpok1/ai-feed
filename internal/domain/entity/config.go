@@ -212,9 +212,9 @@ type SlackAPIConfig struct {
 	APIToken        string
 	Channel         string
 	MessageTemplate *string
-	Username        string
-	IconURL         string
-	IconEmoji       string
+	Username        *string
+	IconURL         *string
+	IconEmoji       *string
 }
 
 // Validate はSlackAPIConfigの内容をバリデーションする
