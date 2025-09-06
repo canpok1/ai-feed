@@ -212,6 +212,9 @@ type SlackAPIConfig struct {
 	APIToken        string
 	Channel         string
 	MessageTemplate *string
+	Username        string
+	IconURL         string
+	IconEmoji       string
 }
 
 // Validate はSlackAPIConfigの内容をバリデーションする
@@ -235,6 +238,11 @@ func (s *SlackAPIConfig) Validate() *ValidationResult {
 		if err := s.validateSlackMessageTemplate(*s.MessageTemplate); err != nil {
 			builder.AddError(fmt.Sprintf("Slackメッセージテンプレートが無効です: %v", err))
 		}
+	}
+
+	// IconURL and IconEmoji cannot be set at the same time
+	if s.IconURL != "" && s.IconEmoji != "" {
+		builder.AddError("Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。")
 	}
 
 	return builder.Build()
@@ -263,6 +271,9 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	if other.MessageTemplate != nil {
 		s.MessageTemplate = other.MessageTemplate
 	}
+	mergeString(&s.Username, other.Username)
+	mergeString(&s.IconURL, other.IconURL)
+	mergeString(&s.IconEmoji, other.IconEmoji)
 }
 
 type CacheConfig struct {
