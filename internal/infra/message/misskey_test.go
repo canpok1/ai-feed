@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,7 +26,7 @@ func TestNewMisskeySender(t *testing.T) {
 			name:             "カスタムテンプレート",
 			instanceURL:      "https://misskey.example.com",
 			accessToken:      "test-token",
-			messageTemplate:  stringPtr("タイトル: {{.Article.Title}}\nURL: {{.Article.Link}}"),
+			messageTemplate:  testutil.StringPtr("タイトル: {{.Article.Title}}\nURL: {{.Article.Link}}"),
 			expectedTemplate: "タイトル: {{.Article.Title}}\nURL: {{.Article.Link}}",
 			expectError:      false,
 		},
@@ -95,7 +96,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "記事の内容",
 				},
-				Comment:      stringPtr("これは推薦コメントです。"),
+				Comment:      testutil.StringPtr("これは推薦コメントです。"),
 				FixedMessage: "固定メッセージです。",
 			},
 			expectedMessage: "これは推薦コメントです。\nテスト記事\nhttps://example.com/article\n固定メッセージです。",
@@ -127,7 +128,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "記事の内容",
 				},
-				Comment:      stringPtr("これは推薦コメントです。"),
+				Comment:      testutil.StringPtr("これは推薦コメントです。"),
 				FixedMessage: "",
 			},
 			expectedMessage: "これは推薦コメントです。\nテスト記事\nhttps://example.com/article",
@@ -159,7 +160,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "カスタム内容",
 				},
-				Comment:      stringPtr("カスタムコメント"),
+				Comment:      testutil.StringPtr("カスタムコメント"),
 				FixedMessage: "カスタム固定メッセージ",
 			},
 			expectedMessage: "記事: カスタム記事 (https://example.com/custom)\nコメント: カスタムコメント\n補足: カスタム固定メッセージ",
@@ -175,7 +176,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "シンプル内容",
 				},
-				Comment:      stringPtr("シンプルコメント"),
+				Comment:      testutil.StringPtr("シンプルコメント"),
 				FixedMessage: "シンプル固定メッセージ",
 			},
 			expectedMessage: "シンプル記事 - https://example.com/simple",
@@ -191,7 +192,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "日本語記事内容",
 				},
-				Comment:      stringPtr("この記事は非常に有用です。"),
+				Comment:      testutil.StringPtr("この記事は非常に有用です。"),
 				FixedMessage: "",
 			},
 			expectedMessage: "タイトル: 日本語記事タイトル\nリンク: https://example.com/japanese-article\n推薦理由: この記事は非常に有用です。",
@@ -207,7 +208,7 @@ func TestMisskeyTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "エラー内容",
 				},
-				Comment:      stringPtr("エラーコメント"),
+				Comment:      testutil.StringPtr("エラーコメント"),
 				FixedMessage: "エラー固定メッセージ",
 			},
 			expectedMessage: "",

@@ -7,53 +7,105 @@ import (
 	"time"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/canpok1/ai-feed/internal/testutil"
+	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-// TestNewSlackSender はNewSlackSender関数をテストする
-func TestNewSlackSender(t *testing.T) {
+// MockSlackClient is a mock of the slackClient interface.
+type MockSlackClient struct {
+	mock.Mock
+}
+
+func (m *MockSlackClient) PostMessage(channelID string, options ...slack.MsgOption) (string, string, error) {
+	args := m.Called(channelID, options)
+	return args.String(0), args.String(1), args.Error(2)
+}
+
+func TestSendRecommend_PostMessageOptions(t *testing.T) {
 	tests := []struct {
-		name             string
-		config           *entity.SlackAPIConfig
-		expectedTemplate string
+		name      string
+		config    *entity.SlackAPIConfig
+		setupMock func(*MockSlackClient, *entity.SlackAPIConfig)
 	}{
 		{
-			name: "カスタムテンプレート",
+			name: "no extra options",
 			config: &entity.SlackAPIConfig{
 				APIToken:        "xoxb-test-token",
 				Channel:         "#test",
-				MessageTemplate: stringPtr("タイトル: {{.Article.Title}}\nURL: {{.Article.Link}}"),
+				MessageTemplate: testutil.StringPtr("test message"),
 			},
-			expectedTemplate: "タイトル: {{.Article.Title}}\nURL: {{.Article.Link}}",
+			setupMock: func(m *MockSlackClient, c *entity.SlackAPIConfig) {
+				m.On("PostMessage", c.Channel, mock.AnythingOfType("[]slack.MsgOption")).Return("", "", nil).Run(func(args mock.Arguments) {
+					opts := args.Get(1).([]slack.MsgOption)
+					assert.Len(t, opts, 1)
+				})
+			},
+		},
+		{
+			name: "with username",
+			config: &entity.SlackAPIConfig{
+				APIToken:        "xoxb-test-token",
+				Channel:         "#test",
+				MessageTemplate: testutil.StringPtr("test message"),
+				Username:        testutil.StringPtr("test-user"),
+			},
+			setupMock: func(m *MockSlackClient, c *entity.SlackAPIConfig) {
+				m.On("PostMessage", c.Channel, mock.AnythingOfType("[]slack.MsgOption")).Return("", "", nil).Run(func(args mock.Arguments) {
+					opts := args.Get(1).([]slack.MsgOption)
+					assert.Len(t, opts, 2)
+				})
+			},
+		},
+		{
+			name: "with icon url",
+			config: &entity.SlackAPIConfig{
+				APIToken:        "xoxb-test-token",
+				Channel:         "#test",
+				MessageTemplate: testutil.StringPtr("test message"),
+				IconURL:         testutil.StringPtr("http://example.com/icon.png"),
+			},
+			setupMock: func(m *MockSlackClient, c *entity.SlackAPIConfig) {
+				m.On("PostMessage", c.Channel, mock.AnythingOfType("[]slack.MsgOption")).Return("", "", nil).Run(func(args mock.Arguments) {
+					opts := args.Get(1).([]slack.MsgOption)
+					assert.Len(t, opts, 2)
+				})
+			},
+		},
+		{
+			name: "with icon emoji",
+			config: &entity.SlackAPIConfig{
+				APIToken:        "xoxb-test-token",
+				Channel:         "#test",
+				MessageTemplate: testutil.StringPtr("test message"),
+				IconEmoji:       testutil.StringPtr(":smile:"),
+			},
+			setupMock: func(m *MockSlackClient, c *entity.SlackAPIConfig) {
+				m.On("PostMessage", c.Channel, mock.AnythingOfType("[]slack.MsgOption")).Return("", "", nil).Run(func(args mock.Arguments) {
+					opts := args.Get(1).([]slack.MsgOption)
+					assert.Len(t, opts, 2)
+				})
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			viewer := NewSlackSender(tt.config)
-			require.NotNil(t, viewer)
+			mockClient := new(MockSlackClient)
+			currentTT := tt // capture range variable
+			currentTT.setupMock(mockClient, currentTT.config)
 
-			slackSender, ok := viewer.(*SlackSender)
-			require.True(t, ok, "Should be SlackSender type")
-
-			// テンプレートが正しくパースされていることを確認
-			require.NotNil(t, slackSender.tmpl, "Template should be parsed and stored")
-
-			// テンプレートの内容を確認するため、空のデータで実行してみる
-			var buf bytes.Buffer
-			testData := &SlackTemplateData{
-				Article: &entity.Article{
-					Title: "Test Title",
-					Link:  "https://test.com",
-				},
+			sender := NewSlackSender(tt.config, mockClient)
+			recommend := &entity.Recommend{
+				Article: entity.Article{Title: "Test", Link: "http://test.com"},
+				Comment: testutil.StringPtr("test comment"),
 			}
-			err := slackSender.tmpl.Execute(&buf, testData)
-			assert.NoError(t, err, "Template should be executable")
-			assert.NotEmpty(t, buf.String(), "Template execution should produce output")
 
-			assert.Equal(t, tt.config.Channel, slackSender.channelID)
-			assert.NotNil(t, slackSender.client)
+			err := sender.SendRecommend(recommend, "fixed message")
+			require.NoError(t, err)
+			mockClient.AssertExpectations(t)
 		})
 	}
 }
@@ -79,7 +131,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "記事の内容",
 				},
-				Comment:      stringPtr("これは推薦コメントです。"),
+				Comment:      testutil.StringPtr("これは推薦コメントです。"),
 				FixedMessage: "固定メッセージです。",
 			},
 			expectedMessage: "これは推薦コメントです。\nテスト記事\nhttps://example.com/article\n固定メッセージです。",
@@ -111,7 +163,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "記事の内容",
 				},
-				Comment:      stringPtr("これは推薦コメントです。"),
+				Comment:      testutil.StringPtr("これは推薦コメントです。"),
 				FixedMessage: "",
 			},
 			expectedMessage: "これは推薦コメントです。\nテスト記事\nhttps://example.com/article",
@@ -143,7 +195,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "カスタム内容",
 				},
-				Comment:      stringPtr("カスタムコメント"),
+				Comment:      testutil.StringPtr("カスタムコメント"),
 				FixedMessage: "カスタム固定メッセージ",
 			},
 			expectedMessage: "記事: カスタム記事 (https://example.com/custom)\nコメント: カスタムコメント\n補足: カスタム固定メッセージ",
@@ -159,7 +211,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "シンプル内容",
 				},
-				Comment:      stringPtr("シンプルコメント"),
+				Comment:      testutil.StringPtr("シンプルコメント"),
 				FixedMessage: "シンプル固定メッセージ",
 			},
 			expectedMessage: "シンプル記事 - https://example.com/simple",
@@ -175,7 +227,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "日本語記事内容",
 				},
-				Comment:      stringPtr("この記事は非常に有用です。"),
+				Comment:      testutil.StringPtr("この記事は非常に有用です。"),
 				FixedMessage: "",
 			},
 			expectedMessage: "タイトル: 日本語記事タイトル\nリンク: https://example.com/japanese-article\n推薦理由: この記事は非常に有用です。",
@@ -191,7 +243,7 @@ func TestSlackTemplateExecution(t *testing.T) {
 					Published: &publishedTime,
 					Content:   "エラー内容",
 				},
-				Comment:      stringPtr("エラーコメント"),
+				Comment:      testutil.StringPtr("エラーコメント"),
 				FixedMessage: "エラー固定メッセージ",
 			},
 			expectedMessage: "",

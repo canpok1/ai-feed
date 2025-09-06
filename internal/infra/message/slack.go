@@ -15,13 +15,17 @@ type SlackTemplateData struct {
 	FixedMessage string
 }
 
-type SlackSender struct {
-	client    *slack.Client
-	channelID string
-	tmpl      *template.Template
+type slackClient interface {
+	PostMessage(channelID string, options ...slack.MsgOption) (string, string, error)
 }
 
-func NewSlackSender(config *entity.SlackAPIConfig) domain.MessageSender {
+type SlackSender struct {
+	client slackClient
+	config *entity.SlackAPIConfig
+	tmpl   *template.Template
+}
+
+func NewSlackSender(config *entity.SlackAPIConfig, client slackClient) domain.MessageSender {
 	// 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
 	// ただし、テストやバリデーション前の呼び出しに対応するため念のためnilチェックを行う
 	if config.MessageTemplate == nil || *config.MessageTemplate == "" {
@@ -30,13 +34,13 @@ func NewSlackSender(config *entity.SlackAPIConfig) domain.MessageSender {
 	tmpl := template.Must(template.New("slack_message").Parse(*config.MessageTemplate))
 
 	return &SlackSender{
-		client:    slack.New(config.APIToken),
-		channelID: config.Channel,
-		tmpl:      tmpl,
+		client: client,
+		config: config,
+		tmpl:   tmpl,
 	}
 }
 
-func (v *SlackSender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
+func (s *SlackSender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error {
 	// テンプレートデータを作成
 	templateData := &SlackTemplateData{
 		Article:      &recommend.Article,
@@ -46,17 +50,30 @@ func (v *SlackSender) SendRecommend(recommend *entity.Recommend, fixedMessage st
 
 	// パース済みテンプレートを直接実行
 	var buf bytes.Buffer
-	if err := v.tmpl.Execute(&buf, templateData); err != nil {
+	if err := s.tmpl.Execute(&buf, templateData); err != nil {
 		return err
 	}
 
-	return v.postMessage(buf.String())
+	return s.postMessage(buf.String())
 }
 
-func (v *SlackSender) postMessage(msg string) error {
-	_, _, err := v.client.PostMessage(
-		v.channelID,
+func (s *SlackSender) postMessage(msg string) error {
+	options := []slack.MsgOption{
 		slack.MsgOptionText(msg, false),
+	}
+	if s.config.Username != nil && *s.config.Username != "" {
+		options = append(options, slack.MsgOptionUsername(*s.config.Username))
+	}
+	if s.config.IconURL != nil && *s.config.IconURL != "" {
+		options = append(options, slack.MsgOptionIconURL(*s.config.IconURL))
+	}
+	if s.config.IconEmoji != nil && *s.config.IconEmoji != "" {
+		options = append(options, slack.MsgOptionIconEmoji(*s.config.IconEmoji))
+	}
+
+	_, _, err := s.client.PostMessage(
+		s.config.Channel,
+		options...,
 	)
 	return err
 }

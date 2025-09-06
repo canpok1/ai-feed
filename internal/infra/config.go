@@ -175,6 +175,9 @@ type SlackAPIConfig struct {
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	Channel         string  `yaml:"channel"`
 	MessageTemplate *string `yaml:"message_template,omitempty"`
+	Username        *string `yaml:"username,omitempty"`
+	IconURL         *string `yaml:"icon_url,omitempty"`
+	IconEmoji       *string `yaml:"icon_emoji,omitempty"`
 }
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
@@ -203,6 +206,9 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 		APIToken:        apiToken,
 		Channel:         c.Channel,
 		MessageTemplate: convertedTemplate,
+		Username:        c.Username,
+		IconURL:         c.IconURL,
+		IconEmoji:       c.IconEmoji,
 	}, nil
 }
 
