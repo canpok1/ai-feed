@@ -12,6 +12,7 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/cache"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra/message"
+	"github.com/slack-go/slack"
 )
 
 // ErrNoArticlesFound は記事が見つからなかった場合のsentinel error
@@ -53,7 +54,8 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			if !slackConfig.Enabled {
 				slog.Info("Slack API output is disabled (enabled: false)")
 			} else {
-				slackViewer := message.NewSlackSender(slackConfig)
+				slackClient := slack.New(slackConfig.APIToken)
+				slackViewer := message.NewSlackSender(slackConfig, slackClient)
 				viewers = append(viewers, slackViewer)
 			}
 		}

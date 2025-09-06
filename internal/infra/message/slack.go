@@ -15,13 +15,17 @@ type SlackTemplateData struct {
 	FixedMessage string
 }
 
+type slackClient interface {
+	PostMessage(channelID string, options ...slack.MsgOption) (string, string, error)
+}
+
 type SlackSender struct {
-	client *slack.Client
+	client slackClient
 	config *entity.SlackAPIConfig
 	tmpl   *template.Template
 }
 
-func NewSlackSender(config *entity.SlackAPIConfig) domain.MessageSender {
+func NewSlackSender(config *entity.SlackAPIConfig, client slackClient) domain.MessageSender {
 	// 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
 	// ただし、テストやバリデーション前の呼び出しに対応するため念のためnilチェックを行う
 	if config.MessageTemplate == nil || *config.MessageTemplate == "" {
@@ -30,7 +34,7 @@ func NewSlackSender(config *entity.SlackAPIConfig) domain.MessageSender {
 	tmpl := template.Must(template.New("slack_message").Parse(*config.MessageTemplate))
 
 	return &SlackSender{
-		client: slack.New(config.APIToken),
+		client: client,
 		config: config,
 		tmpl:   tmpl,
 	}
