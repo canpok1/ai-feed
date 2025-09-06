@@ -241,7 +241,7 @@ func (s *SlackAPIConfig) Validate() *ValidationResult {
 	}
 
 	// IconURL and IconEmoji cannot be set at the same time
-	if s.IconURL != "" && s.IconEmoji != "" {
+	if s.IconURL != nil && *s.IconURL != "" && s.IconEmoji != nil && *s.IconEmoji != "" {
 		builder.AddError("Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。")
 	}
 
