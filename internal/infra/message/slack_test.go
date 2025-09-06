@@ -23,8 +23,6 @@ func (m *MockSlackClient) PostMessage(channelID string, options ...slack.MsgOpti
 	return args.String(0), args.String(1), args.Error(2)
 }
 
-
-
 func TestSendRecommend_PostMessageOptions(t *testing.T) {
 	tests := []struct {
 		name      string
