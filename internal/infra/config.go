@@ -175,6 +175,9 @@ type SlackAPIConfig struct {
 	APITokenEnv     string  `yaml:"api_token_env,omitempty"`
 	Channel         string  `yaml:"channel"`
 	MessageTemplate *string `yaml:"message_template,omitempty"`
+	Username        *string `yaml:"username,omitempty"`
+	IconURL         *string `yaml:"icon_url,omitempty"`
+	IconEmoji       *string `yaml:"icon_emoji,omitempty"`
 }
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
@@ -198,11 +201,22 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 		return nil, err
 	}
 
+	// Helper function to dereference string pointers, returning an empty string if nil.
+	derefString := func(s *string) string {
+		if s != nil {
+			return *s
+		}
+		return ""
+	}
+
 	return &entity.SlackAPIConfig{
 		Enabled:         enabled,
 		APIToken:        apiToken,
 		Channel:         c.Channel,
 		MessageTemplate: convertedTemplate,
+		Username:        derefString(c.Username),
+		IconURL:         derefString(c.IconURL),
+		IconEmoji:       derefString(c.IconEmoji),
 	}, nil
 }
 
