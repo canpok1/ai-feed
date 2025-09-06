@@ -61,14 +61,14 @@ func (s *SlackSender) postMessage(msg string) error {
 	options := []slack.MsgOption{
 		slack.MsgOptionText(msg, false),
 	}
-	if s.config.Username != "" {
-		options = append(options, slack.MsgOptionUsername(s.config.Username))
+	if s.config.Username != nil && *s.config.Username != "" {
+		options = append(options, slack.MsgOptionUsername(*s.config.Username))
 	}
-	if s.config.IconURL != "" {
-		options = append(options, slack.MsgOptionIconURL(s.config.IconURL))
+	if s.config.IconURL != nil && *s.config.IconURL != "" {
+		options = append(options, slack.MsgOptionIconURL(*s.config.IconURL))
 	}
-	if s.config.IconEmoji != "" {
-		options = append(options, slack.MsgOptionIconEmoji(s.config.IconEmoji))
+	if s.config.IconEmoji != nil && *s.config.IconEmoji != "" {
+		options = append(options, slack.MsgOptionIconEmoji(*s.config.IconEmoji))
 	}
 
 	_, _, err := s.client.PostMessage(
