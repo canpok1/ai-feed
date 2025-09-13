@@ -92,6 +92,13 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 			if paramsErr != nil {
 				return fmt.Errorf("failed to create params: %w", paramsErr)
 			}
+			// ログ出力
+			slog.Debug("RecommendRunner.Run parameters",
+				"outputConfig", currentProfile.Output,
+				"promptConfig", currentProfile.Prompt,
+				"cacheConfig", cacheEntity,
+				"profile", currentProfile,
+			)
 			err = recommendRunner.Run(cmd.Context(), params, currentProfile)
 			if err != nil {
 				// 記事が見つからない場合は友好的なメッセージを表示してエラーではない扱いにする
