@@ -624,3 +624,88 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 
 	assert.NoError(t, err) // 全出力先無効でもエラーにならない
 }
+
+func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Set up a test slog handler to capture log output
+	var logBuffer bytes.Buffer
+	// DEBUGレベルのログをキャプチャするためにLevelをDebugに設定
+	handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelDebug})
+	logger := slog.New(handler)
+	originalLogger := slog.Default()
+	slog.SetDefault(logger)
+	defer slog.SetDefault(originalLogger) // Restore original logger after test
+
+	mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
+	mockRecommender := mock_domain.NewMockRecommender(ctrl)
+
+	// モックの期待値を設定
+	mockFetchClient.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
+	mockRecommender.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(&entity.Recommend{Article: entity.Article{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
+
+	stderrBuffer := new(bytes.Buffer)
+	stdoutBuffer := new(bytes.Buffer)
+
+	// テスト用の設定値を作成
+	testOutputConfig := &entity.OutputConfig{SlackAPI: &entity.SlackAPIConfig{Enabled: true, APIToken: "slack-token", Channel: "#general"}},
+	testPromptConfig := &entity.PromptConfig{CommentPromptTemplate: "test-prompt", FixedMessage: "test-fixed-message"}
+	testCacheConfig := &entity.CacheConfig{Enabled: true, Path: "/tmp/test-cache"}
+	testProfile := &entity.Profile{
+		AI:     &entity.AIConfig{Gemini: &entity.GeminiConfig{Type: "gemini", APIKey: "gemini-key"}},
+		Prompt: testPromptConfig,
+		Output: testOutputConfig,
+	}
+
+	// NewRecommendRunner の引数として渡す
+	runner, err := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, testOutputConfig, testPromptConfig, testCacheConfig)
+	require.NoError(t, err)
+	require.NotNil(t, runner)
+
+	params := &RecommendParams{URLs: []string{"http://example.com/feed"}}
+	
+	// Run メソッドを実行
+	err = runner.Run(context.Background(), params, testProfile)
+	require.NoError(t, err)
+
+	// ログ出力を検証
+	logOutput := logBuffer.String()
+	t.Logf("Log output: %s", logOutput)
+
+	// "RecommendRunner.Run parameters" のログエントリを探す
+	lines := bytes.Split(logBuffer.Bytes(), []byte("\n"))
+	var configLogLine []byte
+	for _, line := range lines {
+		if len(line) > 0 && bytes.Contains(line, []byte("RecommendRunner.Run parameters")) {
+			configLogLine = line
+			break
+		}
+	}
+	require.NotNil(t, configLogLine, "Config logging line not found")
+
+	var logEntry map[string]any
+	require.NoError(t, json.Unmarshal(configLogLine, &logEntry))
+
+	assert.Equal(t, "DEBUG", logEntry["level"])
+	assert.Equal(t, "RecommendRunner.Run parameters", logEntry["msg"])
+
+	// ログに出力された設定値の検証
+	// slog.Any() を使って構造体をそのまま渡した場合、JSONハンドラーは構造体をJSONオブジェクトとしてシリアライズする
+	// そのため、ログエントリから取得した値は map[string]any となる
+	outputConfigLog, ok := logEntry["outputConfig"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, testOutputConfig.SlackAPI.APIToken, outputConfigLog["SlackAPI"].(map[string]any)["APIToken"])
+
+	promptConfigLog, ok := logEntry["promptConfig"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, testPromptConfig.CommentPromptTemplate, promptConfigLog["CommentPromptTemplate"])
+
+	cacheConfigLog, ok := logEntry["cacheConfig"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, testCacheConfig.Path, cacheConfigLog["Path"])
+
+	profileLog, ok := logEntry["profile"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, testProfile.AI.Gemini.APIKey, profileLog["AI"].(map[string]any)["Gemini"].(map[string]any)["APIKey"])
+}
