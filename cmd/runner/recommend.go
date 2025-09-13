@@ -122,6 +122,7 @@ func selectRandomFeed(urls []string, excludedURLs map[string]bool) (string, erro
 
 // Run はrecommendコマンドのビジネスロジックを実行する
 func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile *entity.Profile) error {
+	slog.Debug("RecommendRunner.Run parameters", slog.Any("profile", *profile))
 	slog.Info("Starting recommend command execution")
 	slog.Debug("Selecting feed from URLs", "url_count", len(params.URLs))
 
