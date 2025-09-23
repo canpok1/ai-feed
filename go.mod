@@ -15,7 +15,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/go-test/deep v1.1.1
 	github.com/google/go-github/v65 v65.0.0
-	github.com/google/go-github/v74 v74.0.0
+	github.com/google/go-github/v75 v75.0.0
 	github.com/google/go-github/v75 v75.0.0
 	github.com/hashicorp/go-version v1.7.0
 	github.com/slack-go/slack v0.17.3
