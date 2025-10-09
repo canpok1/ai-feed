@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/go-version v1.7.0
 	github.com/slack-go/slack v0.17.3
 	github.com/yitsushi/go-misskey v1.1.6
-	google.golang.org/genai v1.28.0
+	google.golang.org/genai v1.29.0
 )
 
 require (
