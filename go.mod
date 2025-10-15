@@ -15,11 +15,10 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/go-test/deep v1.1.1
 	github.com/google/go-github/v65 v65.0.0
-	github.com/google/go-github/v76 v76.0.0
 	github.com/hashicorp/go-version v1.7.0
 	github.com/slack-go/slack v0.17.3
 	github.com/yitsushi/go-misskey v1.1.6
-	google.golang.org/genai v1.30.0
+	google.golang.org/genai v1.31.0
 )
 
 require (
