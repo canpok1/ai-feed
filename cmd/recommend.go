@@ -94,10 +94,10 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 			}
 			// ログ出力
 			slog.Debug("RecommendRunner.Run parameters",
-				"outputConfig", currentProfile.Output,
-				"promptConfig", currentProfile.Prompt,
-				"cacheConfig", cacheEntity,
-				"profile", currentProfile,
+				"outputConfig", *currentProfile.Output,
+				"promptConfig", *currentProfile.Prompt,
+				"cacheConfig", *cacheEntity,
+				"profile", *currentProfile,
 			)
 			err = recommendRunner.Run(cmd.Context(), params, currentProfile)
 			if err != nil {
