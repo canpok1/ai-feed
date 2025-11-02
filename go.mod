@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/creativeprojects/go-selfupdate v1.5.0
+	github.com/creativeprojects/go-selfupdate v1.5.1
 	github.com/fatih/color v1.18.0
 	github.com/go-test/deep v1.1.1
 	github.com/google/go-github/v65 v65.0.0
