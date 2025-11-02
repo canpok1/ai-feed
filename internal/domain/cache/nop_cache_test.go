@@ -23,7 +23,6 @@ func TestNopCache_Initialize(t *testing.T) {
 		err := cache.Initialize()
 
 		assert.NoError(t, err)
-		assert.Nil(t, err)
 	})
 }
 
@@ -67,7 +66,6 @@ func TestNopCache_AddEntry(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				err := cache.AddEntry(tc.url, tc.title)
 				assert.NoError(t, err)
-				assert.Nil(t, err)
 			})
 		}
 	})
@@ -80,7 +78,6 @@ func TestNopCache_Close(t *testing.T) {
 		err := cache.Close()
 
 		assert.NoError(t, err)
-		assert.Nil(t, err)
 	})
 }
 
