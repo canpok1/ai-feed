@@ -102,7 +102,7 @@ ai-feed --help
 
 1. [GitHub Releases](https://github.com/canpok1/ai-feed/releases)にアクセス
 2. 最新版のバイナリをダウンロード
-3. 既存のバイナリを新しいバイナリで置き換え
+3. 既存のバイナリ（例: `/usr/local/bin/ai-feed`）を新しいバイナリで置き換え
 
 または、以下のコマンドでインストールし直すことも可能です：
 ```bash
