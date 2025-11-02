@@ -731,38 +731,40 @@ func TestLogValue_WithNilFields(t *testing.T) {
 	slog.SetDefault(logger)
 	defer slog.SetDefault(originalLogger)
 
-	// AI.Geminiがnilのケース
-	profileWithNilGemini := &entity.Profile{
-		AI:     &entity.AIConfig{Gemini: nil},
-		Prompt: &entity.PromptConfig{FixedMessage: "test"},
-		Output: &entity.OutputConfig{},
-	}
-	slog.Debug("test nil gemini", slog.Any("profile", *profileWithNilGemini))
+	t.Run("AI.Gemini is nil", func(t *testing.T) {
+		logBuffer.Reset()
+		profileWithNilGemini := &entity.Profile{
+			AI:     &entity.AIConfig{Gemini: nil},
+			Prompt: &entity.PromptConfig{FixedMessage: "test"},
+			Output: &entity.OutputConfig{},
+		}
+		slog.Debug("test nil gemini", slog.Any("profile", *profileWithNilGemini))
+		output := logBuffer.String()
+		assert.Contains(t, output, "test nil gemini")
+	})
 
-	logBuffer.Reset()
+	t.Run("AI is nil", func(t *testing.T) {
+		logBuffer.Reset()
+		profileWithNilAI := &entity.Profile{
+			AI:     nil,
+			Prompt: &entity.PromptConfig{FixedMessage: "test"},
+			Output: &entity.OutputConfig{},
+		}
+		slog.Debug("test nil ai", slog.Any("profile", *profileWithNilAI))
+		output := logBuffer.String()
+		// ログが正常に出力されることを確認（パニックしないことが重要）
+		assert.Contains(t, output, "test nil ai")
+	})
 
-	// AI自体がnilのケース
-	profileWithNilAI := &entity.Profile{
-		AI:     nil,
-		Prompt: &entity.PromptConfig{FixedMessage: "test"},
-		Output: &entity.OutputConfig{},
-	}
-	slog.Debug("test nil ai", slog.Any("profile", *profileWithNilAI))
-
-	output := logBuffer.String()
-	// ログが正常に出力されることを確認（パニックしないことが重要）
-	assert.Contains(t, output, "test nil ai")
-
-	logBuffer.Reset()
-
-	// Output.SlackAPIとMisskeyがnilのケース
-	profileWithNilOutput := &entity.Profile{
-		AI:     &entity.AIConfig{Gemini: &entity.GeminiConfig{Type: "test", APIKey: "key"}},
-		Prompt: &entity.PromptConfig{FixedMessage: "test"},
-		Output: &entity.OutputConfig{SlackAPI: nil, Misskey: nil},
-	}
-	slog.Debug("test nil output configs", slog.Any("profile", *profileWithNilOutput))
-
-	output = logBuffer.String()
-	assert.Contains(t, output, "test nil output configs")
+	t.Run("Output.SlackAPI and Misskey are nil", func(t *testing.T) {
+		logBuffer.Reset()
+		profileWithNilOutput := &entity.Profile{
+			AI:     &entity.AIConfig{Gemini: &entity.GeminiConfig{Type: "test", APIKey: "key"}},
+			Prompt: &entity.PromptConfig{FixedMessage: "test"},
+			Output: &entity.OutputConfig{SlackAPI: nil, Misskey: nil},
+		}
+		slog.Debug("test nil output configs", slog.Any("profile", *profileWithNilOutput))
+		output := logBuffer.String()
+		assert.Contains(t, output, "test nil output configs")
+	})
 }
