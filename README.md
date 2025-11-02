@@ -262,9 +262,6 @@ NO_COLOR=1 ai-feed recommend --url https://example.com/feed
 
 # 設定チェック
 ai-feed profile check config.yml
-
-# 最新バージョンのチェック
-ai-feed update --check
 ```
 
 ## 🔧 開発者向け情報
