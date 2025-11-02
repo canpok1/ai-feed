@@ -701,13 +701,68 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	profileLog, ok := logEntry["profile"].(map[string]any)
 	require.True(t, ok)
 
-	// APIKeyがマスクされていることを確認
+	// Gemini APIKeyがマスクされていることを確認
 	aiLog, ok := profileLog["AI"].(map[string]any)
 	require.True(t, ok)
 	geminiLog, ok := aiLog["Gemini"].(map[string]any)
 	require.True(t, ok)
-	assert.Equal(t, "[REDACTED]", geminiLog["APIKey"], "APIKey should be masked")
+	assert.Equal(t, "[REDACTED]", geminiLog["APIKey"], "Gemini APIKey should be masked")
 
 	// 非機密情報（Type）は正しく出力されることを確認
 	assert.Equal(t, testProfile.AI.Gemini.Type, geminiLog["Type"])
+
+	// SlackAPI APITokenがマスクされていることを確認
+	outputLog, ok := profileLog["Output"].(map[string]any)
+	require.True(t, ok)
+	slackLog, ok := outputLog["SlackAPI"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, "[REDACTED]", slackLog["APIToken"], "SlackAPI APIToken should be masked")
+
+	// SlackAPIの非機密情報（Channel）は正しく出力されることを確認
+	assert.Equal(t, testOutputConfig.SlackAPI.Channel, slackLog["Channel"])
+}
+
+func TestLogValue_WithNilFields(t *testing.T) {
+	// nilフィールドを含むProfileがログ出力時にエラーにならないことを確認
+	var logBuffer bytes.Buffer
+	handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelDebug})
+	logger := slog.New(handler)
+	originalLogger := slog.Default()
+	slog.SetDefault(logger)
+	defer slog.SetDefault(originalLogger)
+
+	// AI.Geminiがnilのケース
+	profileWithNilGemini := &entity.Profile{
+		AI:     &entity.AIConfig{Gemini: nil},
+		Prompt: &entity.PromptConfig{FixedMessage: "test"},
+		Output: &entity.OutputConfig{},
+	}
+	slog.Debug("test nil gemini", slog.Any("profile", *profileWithNilGemini))
+
+	logBuffer.Reset()
+
+	// AI自体がnilのケース
+	profileWithNilAI := &entity.Profile{
+		AI:     nil,
+		Prompt: &entity.PromptConfig{FixedMessage: "test"},
+		Output: &entity.OutputConfig{},
+	}
+	slog.Debug("test nil ai", slog.Any("profile", *profileWithNilAI))
+
+	output := logBuffer.String()
+	// ログが正常に出力されることを確認（パニックしないことが重要）
+	assert.Contains(t, output, "test nil ai")
+
+	logBuffer.Reset()
+
+	// Output.SlackAPIとMisskeyがnilのケース
+	profileWithNilOutput := &entity.Profile{
+		AI:     &entity.AIConfig{Gemini: &entity.GeminiConfig{Type: "test", APIKey: "key"}},
+		Prompt: &entity.PromptConfig{FixedMessage: "test"},
+		Output: &entity.OutputConfig{SlackAPI: nil, Misskey: nil},
+	}
+	slog.Debug("test nil output configs", slog.Any("profile", *profileWithNilOutput))
+
+	output = logBuffer.String()
+	assert.Contains(t, output, "test nil output configs")
 }
