@@ -98,7 +98,16 @@ ai-feed --help
 
 ### 更新方法
 
-最新版へ更新する場合は、[GitHub Releases](https://github.com/canpok1/ai-feed/releases)から最新のバイナリをダウンロードして、既存のバイナリを置き換えてください。
+最新版へ更新する場合は、以下の手順で行ってください：
+
+1. [GitHub Releases](https://github.com/canpok1/ai-feed/releases)にアクセス
+2. 最新版のバイナリをダウンロード
+3. 既存のバイナリを新しいバイナリで置き換え
+
+または、以下のコマンドでインストールし直すことも可能です：
+```bash
+go install github.com/canpok1/ai-feed@latest
+```
 
 ## 🛠️ 利用可能なコマンド
 
