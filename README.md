@@ -96,6 +96,10 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 ai-feed --help
 ```
 
+### 更新方法
+
+最新版へ更新する場合は、[GitHub Releases](https://github.com/canpok1/ai-feed/releases)から最新のバイナリをダウンロードして、既存のバイナリを置き換えてください。
+
 ## 🛠️ 利用可能なコマンド
 
 ### メインコマンド
