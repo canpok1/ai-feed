@@ -6,6 +6,7 @@ description: github issue 対応用の開発タスクを作成する
 github issue $ARGUMENTS の対応を行うための作業手順を考えて、
 1ファイル1タスクとして tmp/todo フォルダにファイルを作成してください。
 リポジトリ情報は `git remote -v` で確認すること。
+また作業はテスト駆動開発で行うこと。
 
 ## タスクファイルのフォーマット
 
