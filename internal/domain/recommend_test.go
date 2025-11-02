@@ -321,3 +321,126 @@ func TestFirstRecommender_Recommend(t *testing.T) {
 		assert.Equal(t, expectedErr, err)
 	})
 }
+
+func Test_generateComment(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("正常系_正しいパラメータでコメントが生成される", func(t *testing.T) {
+		expectedComment := "生成されたコメント"
+		factory := &mockCommentGeneratorFactory{
+			makeFunc: func(ai *entity.AIConfig, prompt *entity.PromptConfig) (CommentGenerator, error) {
+				return &mockCommentGenerator{
+					generateFunc: func(ctx context.Context, article *entity.Article) (string, error) {
+						return expectedComment, nil
+					},
+				}, nil
+			},
+		}
+
+		aiConfig := &entity.AIConfig{}
+		promptConfig := &entity.PromptConfig{}
+		article := &entity.Article{Title: "Test Article", Link: "https://example.com/test"}
+
+		comment, err := generateComment(factory, aiConfig, promptConfig, ctx, article)
+
+		require.NoError(t, err)
+		require.NotNil(t, comment)
+		assert.Equal(t, expectedComment, *comment)
+	})
+
+	t.Run("異常系_factoryがnil", func(t *testing.T) {
+		aiConfig := &entity.AIConfig{}
+		promptConfig := &entity.PromptConfig{}
+		article := &entity.Article{Title: "Test Article", Link: "https://example.com/test"}
+
+		comment, err := generateComment(nil, aiConfig, promptConfig, ctx, article)
+
+		assert.Error(t, err)
+		assert.Nil(t, comment)
+		assert.Contains(t, err.Error(), "factory, model, or prompt is nil")
+	})
+
+	t.Run("異常系_modelがnil", func(t *testing.T) {
+		factory := &mockCommentGeneratorFactory{}
+		promptConfig := &entity.PromptConfig{}
+		article := &entity.Article{Title: "Test Article", Link: "https://example.com/test"}
+
+		comment, err := generateComment(factory, nil, promptConfig, ctx, article)
+
+		assert.Error(t, err)
+		assert.Nil(t, comment)
+		assert.Contains(t, err.Error(), "factory, model, or prompt is nil")
+	})
+
+	t.Run("異常系_promptがnil", func(t *testing.T) {
+		factory := &mockCommentGeneratorFactory{}
+		aiConfig := &entity.AIConfig{}
+		article := &entity.Article{Title: "Test Article", Link: "https://example.com/test"}
+
+		comment, err := generateComment(factory, aiConfig, nil, ctx, article)
+
+		assert.Error(t, err)
+		assert.Nil(t, comment)
+		assert.Contains(t, err.Error(), "factory, model, or prompt is nil")
+	})
+
+	t.Run("異常系_CommentGenerator生成に失敗", func(t *testing.T) {
+		expectedErr := errors.New("generator生成エラー")
+		factory := &mockCommentGeneratorFactory{
+			makeFunc: func(ai *entity.AIConfig, prompt *entity.PromptConfig) (CommentGenerator, error) {
+				return nil, expectedErr
+			},
+		}
+
+		aiConfig := &entity.AIConfig{}
+		promptConfig := &entity.PromptConfig{}
+		article := &entity.Article{Title: "Test Article", Link: "https://example.com/test"}
+
+		comment, err := generateComment(factory, aiConfig, promptConfig, ctx, article)
+
+		assert.Error(t, err)
+		assert.Nil(t, comment)
+		assert.Equal(t, expectedErr, err)
+	})
+
+	t.Run("異常系_CommentGeneratorがnil", func(t *testing.T) {
+		factory := &mockCommentGeneratorFactory{
+			makeFunc: func(ai *entity.AIConfig, prompt *entity.PromptConfig) (CommentGenerator, error) {
+				return nil, nil
+			},
+		}
+
+		aiConfig := &entity.AIConfig{}
+		promptConfig := &entity.PromptConfig{}
+		article := &entity.Article{Title: "Test Article", Link: "https://example.com/test"}
+
+		comment, err := generateComment(factory, aiConfig, promptConfig, ctx, article)
+
+		assert.Error(t, err)
+		assert.Nil(t, comment)
+		assert.Contains(t, err.Error(), "comment generator is nil")
+	})
+
+	t.Run("異常系_コメント生成に失敗", func(t *testing.T) {
+		expectedErr := errors.New("コメント生成エラー")
+		factory := &mockCommentGeneratorFactory{
+			makeFunc: func(ai *entity.AIConfig, prompt *entity.PromptConfig) (CommentGenerator, error) {
+				return &mockCommentGenerator{
+					generateFunc: func(ctx context.Context, article *entity.Article) (string, error) {
+						return "", expectedErr
+					},
+				}, nil
+			},
+		}
+
+		aiConfig := &entity.AIConfig{}
+		promptConfig := &entity.PromptConfig{}
+		article := &entity.Article{Title: "Test Article", Link: "https://example.com/test"}
+
+		comment, err := generateComment(factory, aiConfig, promptConfig, ctx, article)
+
+		assert.Error(t, err)
+		assert.Nil(t, comment)
+		assert.Equal(t, expectedErr, err)
+	})
+}
