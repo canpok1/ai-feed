@@ -29,3 +29,7 @@ services:
       # GitHub Personal Access Token for GitHub CLI 
       # セキュリティ上の注意: .envファイルでトークンを管理し、リポジトリにコミットしないでください
       GH_TOKEN: ${GH_TOKEN}
+
+      # 動作確認用の Gemini の API キー
+      # セキュリティ上の注意: .envファイルでトークンを管理し、リポジトリにコミットしないでください
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
