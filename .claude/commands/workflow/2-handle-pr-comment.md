@@ -10,4 +10,4 @@ description: プルリクエストの対応を行う
     - .claude/commands/plan-pr.md の内容を実行すること。PR番号は $ARGUMENTS が指定されたものとする。
 2. 計画を実行する
     - .claude/commands/run.md の内容を実行すること。
-3. 対応したプルリクエストのURLをユーザーに通知する
+3. プルリクエストのコメント対応が完了したことをユーザーに通知し、確認を依頼する
