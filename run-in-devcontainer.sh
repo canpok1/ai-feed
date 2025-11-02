@@ -1,4 +1,6 @@
 #!/bin/bash
-cd $(dirname "$0")
+set -euo pipefail
+cd "$(dirname "$0")"
+
 devcontainer up
-devcontainer exec $*
+devcontainer exec -- "$@"
