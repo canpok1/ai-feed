@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,6 +25,26 @@ type SimpleHandler struct {
 	opts slog.HandlerOptions
 	mu   sync.Mutex
 	out  io.Writer
+}
+
+// formatAttr はslog.Valueを文字列にフォーマットする
+// GroupValueの場合は展開して表示する
+func formatAttr(key string, value slog.Value) string {
+	switch value.Kind() {
+	case slog.KindGroup:
+		// グループの場合は各属性を展開
+		attrs := value.Group()
+		if len(attrs) == 0 {
+			return fmt.Sprintf("%s={}", key)
+		}
+		parts := make([]string, 0, len(attrs))
+		for _, attr := range attrs {
+			parts = append(parts, formatAttr(attr.Key, attr.Value.Resolve()))
+		}
+		return fmt.Sprintf("%s={%s}", key, strings.Join(parts, " "))
+	default:
+		return fmt.Sprintf("%s=%v", key, value.Any())
+	}
 }
 
 // NewSimpleHandler は新しいSimpleHandlerを作成する
@@ -65,7 +86,9 @@ func (h *SimpleHandler) Handle(_ context.Context, r slog.Record) error {
 	// 属性を追加
 	attrs := make([]string, 0)
 	r.Attrs(func(a slog.Attr) bool {
-		attrs = append(attrs, fmt.Sprintf("%s=%v", a.Key, a.Value.Any()))
+		// Resolve()を使ってLogValue()メソッドを呼び出す
+		value := a.Value.Resolve()
+		attrs = append(attrs, formatAttr(a.Key, value))
 		return true
 	})
 

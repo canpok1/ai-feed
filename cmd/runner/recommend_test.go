@@ -650,7 +650,7 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	stdoutBuffer := new(bytes.Buffer)
 
 	// テスト用の設定値を作成
-	testOutputConfig := &entity.OutputConfig{SlackAPI: &entity.SlackAPIConfig{Enabled: true, APIToken: "slack-token", Channel: "#general", MessageTemplate: toStringP("test-template")}} 
+	testOutputConfig := &entity.OutputConfig{SlackAPI: &entity.SlackAPIConfig{Enabled: true, APIToken: "slack-token", Channel: "#general", MessageTemplate: toStringP("test-template")}}
 	testPromptConfig := &entity.PromptConfig{CommentPromptTemplate: "test-prompt", FixedMessage: "test-fixed-message"}
 	testCacheConfig := &entity.CacheConfig{Enabled: false, FilePath: "/tmp/test-cache"}
 	testProfile := &entity.Profile{
@@ -670,7 +670,7 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	runner.viewers = []domain.MessageSender{mockViewer}
 
 	params := &RecommendParams{URLs: []string{"http://example.com/feed"}}
-	
+
 	// Run メソッドを実行
 	err = runner.Run(context.Background(), params, testProfile)
 	require.NoError(t, err)
@@ -697,22 +697,17 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	assert.Equal(t, "RecommendRunner.Run parameters", logEntry["msg"])
 
 	// ログに出力された設定値の検証
-	// slog.Any() を使って構造体をそのまま渡した場合、JSONハンドラーは構造体をJSONオブジェクトとしてシリアライズする
-	// そのため、ログエントリから取得した値は map[string]any となる
-	// outputConfigLog, ok := logEntry["outputConfig"].(map[string]any)
-	// require.True(t, ok)
-	// assert.Equal(t, testOutputConfig.SlackAPI.APIToken, outputConfigLog["SlackAPI"].(map[string]any)["APIToken"])
-
-	// promptConfigLog, ok := logEntry["promptConfig"].(map[string]any)
-	// require.True(t, ok)
-	// assert.Equal(t, testPromptConfig.CommentPromptTemplate, promptConfigLog["CommentPromptTemplate"])
-
-	// cacheConfigLog, ok := logEntry["cacheConfig"].(map[string]any)
-	// require.True(t, ok)
-	// assert.Equal(t, testCacheConfig.FilePath, cacheConfigLog["FilePath"])
-
+	// LogValue()による機密情報のマスク処理が正しく動作することを確認
 	profileLog, ok := logEntry["profile"].(map[string]any)
 	require.True(t, ok)
-	assert.Equal(t, testProfile.AI.Gemini.APIKey, profileLog["AI"].(map[string]any)["Gemini"].(map[string]any)["APIKey"])
-}
 
+	// APIKeyがマスクされていることを確認
+	aiLog, ok := profileLog["AI"].(map[string]any)
+	require.True(t, ok)
+	geminiLog, ok := aiLog["Gemini"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, "[REDACTED]", geminiLog["APIKey"], "APIKey should be masked")
+
+	// 非機密情報（Type）は正しく出力されることを確認
+	assert.Equal(t, testProfile.AI.Gemini.Type, geminiLog["Type"])
+}

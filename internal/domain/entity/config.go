@@ -3,6 +3,7 @@ package entity
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"strings"
 	"sync"
 	"text/template"
@@ -40,6 +41,16 @@ func (a *AIConfig) Merge(other *AIConfig) {
 	mergePtr(&a.Gemini, other.Gemini)
 }
 
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (a AIConfig) LogValue() slog.Value {
+	if a.Gemini != nil {
+		return slog.GroupValue(
+			slog.Any("Gemini", *a.Gemini), // GeminiConfig.LogValue() が呼ばれる
+		)
+	}
+	return slog.GroupValue()
+}
+
 type GeminiConfig struct {
 	Type   string
 	APIKey string
@@ -69,6 +80,14 @@ func (g *GeminiConfig) Merge(other *GeminiConfig) {
 	}
 	mergeString(&g.Type, other.Type)
 	mergeString(&g.APIKey, other.APIKey)
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (g GeminiConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("Type", g.Type),
+		slog.String("APIKey", "[REDACTED]"),
+	)
 }
 
 type PromptConfig struct {
@@ -149,6 +168,15 @@ func (p *PromptConfig) Merge(other *PromptConfig) {
 	mergeString(&p.FixedMessage, other.FixedMessage)
 }
 
+// LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
+func (p PromptConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.Int("SystemPromptLength", len(p.SystemPrompt)),
+		slog.Int("CommentPromptTemplateLength", len(p.CommentPromptTemplate)),
+		slog.String("FixedMessage", p.FixedMessage),
+	)
+}
+
 type MisskeyConfig struct {
 	Enabled         bool
 	APIToken        string
@@ -205,6 +233,19 @@ func (m *MisskeyConfig) Merge(other *MisskeyConfig) {
 	if other.MessageTemplate != nil {
 		m.MessageTemplate = other.MessageTemplate
 	}
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (m MisskeyConfig) LogValue() slog.Value {
+	attrs := []slog.Attr{
+		slog.Bool("Enabled", m.Enabled),
+		slog.String("APIToken", "[REDACTED]"),
+		slog.String("APIURL", m.APIURL),
+	}
+	if m.MessageTemplate != nil {
+		attrs = append(attrs, slog.Int("MessageTemplateLength", len(*m.MessageTemplate)))
+	}
+	return slog.GroupValue(attrs...)
 }
 
 type SlackAPIConfig struct {
@@ -282,6 +323,28 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	}
 }
 
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (s SlackAPIConfig) LogValue() slog.Value {
+	attrs := []slog.Attr{
+		slog.Bool("Enabled", s.Enabled),
+		slog.String("APIToken", "[REDACTED]"),
+		slog.String("Channel", s.Channel),
+	}
+	if s.MessageTemplate != nil {
+		attrs = append(attrs, slog.Int("MessageTemplateLength", len(*s.MessageTemplate)))
+	}
+	if s.Username != nil {
+		attrs = append(attrs, slog.String("Username", *s.Username))
+	}
+	if s.IconURL != nil {
+		attrs = append(attrs, slog.String("IconURL", *s.IconURL))
+	}
+	if s.IconEmoji != nil {
+		attrs = append(attrs, slog.String("IconEmoji", *s.IconEmoji))
+	}
+	return slog.GroupValue(attrs...)
+}
+
 type CacheConfig struct {
 	Enabled       bool
 	FilePath      string
@@ -318,6 +381,16 @@ func (c *CacheConfig) Merge(other *CacheConfig) {
 	if other.RetentionDays > 0 {
 		c.RetentionDays = other.RetentionDays
 	}
+}
+
+// LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
+func (c CacheConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.Bool("Enabled", c.Enabled),
+		slog.String("FilePath", c.FilePath),
+		slog.Int("MaxEntries", c.MaxEntries),
+		slog.Int("RetentionDays", c.RetentionDays),
+	)
 }
 
 type Profile struct {
@@ -362,6 +435,21 @@ func (p *Profile) Merge(other *Profile) {
 	mergePtr(&p.AI, other.AI)
 	mergePtr(&p.Prompt, other.Prompt)
 	mergePtr(&p.Output, other.Output)
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (p Profile) LogValue() slog.Value {
+	attrs := []slog.Attr{}
+	if p.AI != nil {
+		attrs = append(attrs, slog.Any("AI", *p.AI)) // AIConfig.LogValue() が呼ばれる
+	}
+	if p.Prompt != nil {
+		attrs = append(attrs, slog.Any("Prompt", *p.Prompt))
+	}
+	if p.Output != nil {
+		attrs = append(attrs, slog.Any("Output", *p.Output)) // OutputConfig.LogValue() が呼ばれる
+	}
+	return slog.GroupValue(attrs...)
 }
 
 type OutputConfig struct {
@@ -422,6 +510,18 @@ func (o *OutputConfig) Merge(other *OutputConfig) {
 	}
 	mergePtr(&o.SlackAPI, other.SlackAPI)
 	mergePtr(&o.Misskey, other.Misskey)
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (o OutputConfig) LogValue() slog.Value {
+	attrs := []slog.Attr{}
+	if o.SlackAPI != nil {
+		attrs = append(attrs, slog.Any("SlackAPI", *o.SlackAPI)) // SlackAPIConfig.LogValue() が呼ばれる
+	}
+	if o.Misskey != nil {
+		attrs = append(attrs, slog.Any("Misskey", *o.Misskey)) // MisskeyConfig.LogValue() が呼ばれる
+	}
+	return slog.GroupValue(attrs...)
 }
 
 // ValidationResult はバリデーション結果を表現する
