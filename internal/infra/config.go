@@ -100,7 +100,7 @@ func resolveSecretString(value, envVar, configPath string) (entity.SecretString,
 	}
 	var secret entity.SecretString
 	if err := secret.UnmarshalText([]byte(str)); err != nil {
-		return entity.SecretString{}, fmt.Errorf("failed to unmarshal secret: %w", err)
+		return entity.SecretString{}, fmt.Errorf("シークレットのアンマーシャルに失敗しました: %w", err)
 	}
 	return secret, nil
 }
