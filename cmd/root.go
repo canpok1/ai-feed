@@ -39,7 +39,5 @@ func Execute() error {
 
 	rootCmd.AddCommand(makeVersionCmd())
 
-	rootCmd.AddCommand(makeUpdateCmd())
-
 	return rootCmd.Execute()
 }
