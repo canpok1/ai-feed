@@ -81,14 +81,7 @@ func TestRandomRecommender_Recommend(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, result)
 		// いずれかの記事が選択されることを確認
-		found := false
-		for _, article := range articles {
-			if result.Article.Link == article.Link {
-				found = true
-				break
-			}
-		}
-		assert.True(t, found, "選択された記事が入力記事のいずれかであること")
+		assert.Contains(t, articles, result.Article, "選択された記事が入力記事のいずれかであること")
 		assert.Nil(t, result.Comment)
 	})
 
