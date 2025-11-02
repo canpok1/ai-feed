@@ -251,18 +251,6 @@ output:
       #ai_feed #tech
 ```
 
-### アップデート
-
-ai-feedは簡単にアップデートできます：
-
-```bash
-# 最新バージョンに更新
-ai-feed update
-
-# 更新確認のみ（実際の更新は行わない）
-ai-feed update --check
-```
-
 ### よく使うオプション
 
 ```bash
