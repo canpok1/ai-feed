@@ -269,7 +269,6 @@ func TestFirstRecommender_Recommend(t *testing.T) {
 		assert.NotNil(t, result)
 		// 最初の記事が選択されることを確認
 		assert.Equal(t, articles[0], result.Article)
-		assert.Equal(t, "Article 1", result.Article.Title)
 		require.NotNil(t, result.Comment)
 		assert.Equal(t, expectedComment, *result.Comment)
 	})
