@@ -281,6 +281,19 @@ func TestFirstRecommender_Recommend(t *testing.T) {
 		assert.Equal(t, expectedComment, *result.Comment)
 	})
 
+	t.Run("記事が1つの場合_コメントなし", func(t *testing.T) {
+		articles := []entity.Article{
+			{Title: "Article 1", Link: "https://example.com/1"},
+		}
+
+		recommender := NewFirstRecommender(nil, nil, nil)
+		result, err := recommender.Recommend(ctx, articles)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "factory, model, or prompt is nil")
+	})
+
 	t.Run("記事配列が空の場合_nilを返す", func(t *testing.T) {
 		articles := []entity.Article{}
 
