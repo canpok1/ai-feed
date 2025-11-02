@@ -63,9 +63,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 func TestGeminiConfig_Validate(t *testing.T) {
 	// ヘルパー関数: SecretStringを作成
 	makeSecretString := func(value string) SecretString {
-		var s SecretString
-		s.UnmarshalText([]byte(value))
-		return s
+		return NewSecretString(value)
 	}
 
 	tests := []struct {
@@ -119,9 +117,7 @@ func TestGeminiConfig_Validate(t *testing.T) {
 func TestProfile_Validate(t *testing.T) {
 	// ヘルパー関数: SecretStringを作成
 	makeSecretString := func(value string) SecretString {
-		var s SecretString
-		s.UnmarshalText([]byte(value))
-		return s
+		return NewSecretString(value)
 	}
 
 	validAI := &AIConfig{
@@ -179,9 +175,7 @@ func TestProfile_Validate(t *testing.T) {
 func TestMisskeyConfig_Validate(t *testing.T) {
 	// ヘルパー関数: SecretStringを作成
 	makeSecretString := func(value string) SecretString {
-		var s SecretString
-		s.UnmarshalText([]byte(value))
-		return s
+		return NewSecretString(value)
 	}
 
 	validTemplate := "{{.Article.Title}} {{.Article.Link}}"

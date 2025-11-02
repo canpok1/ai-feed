@@ -19,9 +19,7 @@ import (
 
 // makeSecretString creates a SecretString for testing purposes.
 func makeSecretString(value string) entity.SecretString {
-	var s entity.SecretString
-	s.UnmarshalText([]byte(value))
-	return s
+	return entity.NewSecretString(value)
 }
 
 // createMockConfig creates a mock entity.Config for testing purposes.

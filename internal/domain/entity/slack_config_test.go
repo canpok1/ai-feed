@@ -10,9 +10,7 @@ import (
 func TestSlackAPIConfig_Validate(t *testing.T) {
 	// ヘルパー関数: SecretStringを作成
 	makeSecretString := func(value string) SecretString {
-		var s SecretString
-		s.UnmarshalText([]byte(value))
-		return s
+		return NewSecretString(value)
 	}
 
 	validTemplate := "{{.Article.Title}} {{.Article.Link}}"

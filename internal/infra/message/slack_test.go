@@ -27,9 +27,7 @@ func (m *MockSlackClient) PostMessage(channelID string, options ...slack.MsgOpti
 func TestSendRecommend_PostMessageOptions(t *testing.T) {
 	// ヘルパー関数: SecretStringを作成
 	makeSecretString := func(value string) entity.SecretString {
-		var s entity.SecretString
-		s.UnmarshalText([]byte(value))
-		return s
+		return entity.NewSecretString(value)
 	}
 
 	tests := []struct {

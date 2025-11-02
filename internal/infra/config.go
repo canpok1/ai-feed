@@ -98,11 +98,7 @@ func resolveSecretString(value, envVar, configPath string) (entity.SecretString,
 	if err != nil {
 		return entity.SecretString{}, err
 	}
-	var secret entity.SecretString
-	if err := secret.UnmarshalText([]byte(str)); err != nil {
-		return entity.SecretString{}, fmt.Errorf("シークレットのアンマーシャルに失敗しました: %w", err)
-	}
-	return secret, nil
+	return entity.NewSecretString(str), nil
 }
 
 // resolveEnabled は、Enabledフィールドのデフォルト値処理を行う

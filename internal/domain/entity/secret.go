@@ -8,6 +8,11 @@ type SecretString struct {
 	value string
 }
 
+// NewSecretString は新しいSecretStringを生成します
+func NewSecretString(value string) SecretString {
+	return SecretString{value: value}
+}
+
 // Value は元の値を返す
 func (s SecretString) Value() string {
 	return s.value
