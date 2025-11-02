@@ -105,7 +105,6 @@ ai-feed --help
 | `ai-feed init` | 設定ファイル（config.yml）を生成 |
 | `ai-feed recommend` | 記事の推薦とコメント投稿を実行 |
 | `ai-feed profile` | プロファイル設定の管理 |
-| `ai-feed update` | ai-feedを最新バージョンに更新 |
 | `ai-feed version` | バージョン情報を表示 |
 
 詳細なオプションについては `ai-feed [コマンド] --help` でご確認ください。
