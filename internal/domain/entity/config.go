@@ -53,7 +53,7 @@ func (a AIConfig) LogValue() slog.Value {
 
 type GeminiConfig struct {
 	Type   string
-	APIKey string
+	APIKey SecretString
 }
 
 // Validate はGeminiConfigの内容をバリデーションする
@@ -65,9 +65,9 @@ func (g *GeminiConfig) Validate() *ValidationResult {
 		builder.AddError(err.Error())
 	}
 
-	// APIKey: 必須項目（空文字列でない）
-	if err := ValidateRequired(g.APIKey, "Gemini APIキー"); err != nil {
-		builder.AddError(err.Error())
+	// APIKey: 必須項目（空でない）
+	if g.APIKey.IsEmpty() {
+		builder.AddError("Gemini APIキーが設定されていません")
 	}
 
 	return builder.Build()
@@ -79,14 +79,16 @@ func (g *GeminiConfig) Merge(other *GeminiConfig) {
 		return
 	}
 	mergeString(&g.Type, other.Type)
-	mergeString(&g.APIKey, other.APIKey)
+	if !other.APIKey.IsEmpty() {
+		g.APIKey = other.APIKey
+	}
 }
 
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
 func (g GeminiConfig) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.String("Type", g.Type),
-		slog.String("APIKey", "[REDACTED]"),
+		slog.Any("APIKey", g.APIKey),
 	)
 }
 
@@ -179,7 +181,7 @@ func (p PromptConfig) LogValue() slog.Value {
 
 type MisskeyConfig struct {
 	Enabled         bool
-	APIToken        string
+	APIToken        SecretString
 	APIURL          string
 	MessageTemplate *string
 }
@@ -188,9 +190,9 @@ type MisskeyConfig struct {
 func (m *MisskeyConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
-	// APIToken: 必須項目（空文字列でない）
-	if err := ValidateRequired(m.APIToken, "Misskey APIトークン"); err != nil {
-		builder.AddError(err.Error())
+	// APIToken: 必須項目（空でない）
+	if m.APIToken.IsEmpty() {
+		builder.AddError("Misskey APIトークンが設定されていません")
 	}
 
 	// APIURL: 必須項目（空文字列でない）、URL形式であること
@@ -228,7 +230,9 @@ func (m *MisskeyConfig) Merge(other *MisskeyConfig) {
 	}
 	// bool フィールドはゼロ値チェックが困難なため、常に上書き
 	m.Enabled = other.Enabled
-	mergeString(&m.APIToken, other.APIToken)
+	if !other.APIToken.IsEmpty() {
+		m.APIToken = other.APIToken
+	}
 	mergeString(&m.APIURL, other.APIURL)
 	if other.MessageTemplate != nil {
 		m.MessageTemplate = other.MessageTemplate
@@ -239,7 +243,7 @@ func (m *MisskeyConfig) Merge(other *MisskeyConfig) {
 func (m MisskeyConfig) LogValue() slog.Value {
 	attrs := []slog.Attr{
 		slog.Bool("Enabled", m.Enabled),
-		slog.String("APIToken", "[REDACTED]"),
+		slog.Any("APIToken", m.APIToken),
 		slog.String("APIURL", m.APIURL),
 	}
 	if m.MessageTemplate != nil {
@@ -250,7 +254,7 @@ func (m MisskeyConfig) LogValue() slog.Value {
 
 type SlackAPIConfig struct {
 	Enabled         bool
-	APIToken        string
+	APIToken        SecretString
 	Channel         string
 	MessageTemplate *string
 	Username        *string
@@ -262,9 +266,9 @@ type SlackAPIConfig struct {
 func (s *SlackAPIConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
-	// APIToken: 必須項目（空文字列でない）
-	if err := ValidateRequired(s.APIToken, "Slack APIトークン"); err != nil {
-		builder.AddError(err.Error())
+	// APIToken: 必須項目（空でない）
+	if s.APIToken.IsEmpty() {
+		builder.AddError("Slack APIトークンが設定されていません")
 	}
 
 	// Channel: 必須項目（空文字列でない）
@@ -307,7 +311,9 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	}
 	// bool フィールドはゼロ値チェックが困難なため、常に上書き
 	s.Enabled = other.Enabled
-	mergeString(&s.APIToken, other.APIToken)
+	if !other.APIToken.IsEmpty() {
+		s.APIToken = other.APIToken
+	}
 	mergeString(&s.Channel, other.Channel)
 	if other.MessageTemplate != nil {
 		s.MessageTemplate = other.MessageTemplate
@@ -327,7 +333,7 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 func (s SlackAPIConfig) LogValue() slog.Value {
 	attrs := []slog.Attr{
 		slog.Bool("Enabled", s.Enabled),
-		slog.String("APIToken", "[REDACTED]"),
+		slog.Any("APIToken", s.APIToken),
 		slog.String("Channel", s.Channel),
 	}
 	if s.MessageTemplate != nil {

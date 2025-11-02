@@ -19,7 +19,7 @@ type geminiCommentGenerator struct {
 func newGeminiCommentGenerator(model *entity.AIConfig, prompt *entity.PromptConfig, systemPrompt string) (domain.CommentGenerator, error) {
 	// クライアントの初期化はここで行い、構造体に保持する
 	client, err := genai.NewClient(context.Background(), &genai.ClientConfig{
-		APIKey:  model.Gemini.APIKey,
+		APIKey:  model.Gemini.APIKey.Value(),
 		Backend: genai.BackendGeminiAPI,
 	})
 	if err != nil {

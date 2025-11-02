@@ -25,6 +25,11 @@ func (m *MockSlackClient) PostMessage(channelID string, options ...slack.MsgOpti
 }
 
 func TestSendRecommend_PostMessageOptions(t *testing.T) {
+	// ヘルパー関数: SecretStringを作成
+	makeSecretString := func(value string) entity.SecretString {
+		return entity.NewSecretString(value)
+	}
+
 	tests := []struct {
 		name      string
 		config    *entity.SlackAPIConfig
@@ -33,7 +38,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 		{
 			name: "no extra options",
 			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
+				APIToken:        makeSecretString("xoxb-test-token"),
 				Channel:         "#test",
 				MessageTemplate: testutil.StringPtr("test message"),
 			},
@@ -47,7 +52,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 		{
 			name: "with username",
 			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
+				APIToken:        makeSecretString("xoxb-test-token"),
 				Channel:         "#test",
 				MessageTemplate: testutil.StringPtr("test message"),
 				Username:        testutil.StringPtr("test-user"),
@@ -62,7 +67,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 		{
 			name: "with icon url",
 			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
+				APIToken:        makeSecretString("xoxb-test-token"),
 				Channel:         "#test",
 				MessageTemplate: testutil.StringPtr("test message"),
 				IconURL:         testutil.StringPtr("http://example.com/icon.png"),
@@ -77,7 +82,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 		{
 			name: "with icon emoji",
 			config: &entity.SlackAPIConfig{
-				APIToken:        "xoxb-test-token",
+				APIToken:        makeSecretString("xoxb-test-token"),
 				Channel:         "#test",
 				MessageTemplate: testutil.StringPtr("test message"),
 				IconEmoji:       testutil.StringPtr(":smile:"),

@@ -92,6 +92,15 @@ func resolveSecret(value, envVar, configPath string) (string, error) {
 	return "", nil
 }
 
+// resolveSecretString は、値または環境変数から機密情報を解決し、SecretString型で返す
+func resolveSecretString(value, envVar, configPath string) (entity.SecretString, error) {
+	str, err := resolveSecret(value, envVar, configPath)
+	if err != nil {
+		return entity.SecretString{}, err
+	}
+	return entity.NewSecretString(str), nil
+}
+
 // resolveEnabled は、Enabledフィールドのデフォルト値処理を行う
 func resolveEnabled(e *bool) bool {
 	if e == nil {
@@ -101,7 +110,7 @@ func resolveEnabled(e *bool) bool {
 }
 
 func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
-	apiKey, err := resolveSecret(c.APIKey, c.APIKeyEnv, "ai.gemini.api_key_env")
+	apiKey, err := resolveSecretString(c.APIKey, c.APIKeyEnv, "ai.gemini.api_key_env")
 	if err != nil {
 		return nil, err
 	}
@@ -185,10 +194,10 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	enabled := resolveEnabled(c.Enabled)
 
 	// 無効化されている場合は、APIトークンのバリデーションをスキップ
-	var apiToken string
+	var apiToken entity.SecretString
 	if enabled {
 		var err error
-		apiToken, err = resolveSecret(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
+		apiToken, err = resolveSecretString(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
 		if err != nil {
 			return nil, err
 		}
@@ -225,10 +234,10 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	enabled := resolveEnabled(c.Enabled)
 
 	// 無効化されている場合は、APIトークンのバリデーションをスキップ
-	var apiToken string
+	var apiToken entity.SecretString
 	if enabled {
 		var err error
-		apiToken, err = resolveSecret(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
+		apiToken, err = resolveSecretString(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
 		if err != nil {
 			return nil, err
 		}

@@ -54,7 +54,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			if !slackConfig.Enabled {
 				slog.Info("Slack API output is disabled (enabled: false)")
 			} else {
-				slackClient := slack.New(slackConfig.APIToken)
+				slackClient := slack.New(slackConfig.APIToken.Value())
 				slackViewer := message.NewSlackSender(slackConfig, slackClient)
 				viewers = append(viewers, slackViewer)
 			}
@@ -66,7 +66,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			if !misskeyConfig.Enabled {
 				slog.Info("Misskey output is disabled (enabled: false)")
 			} else {
-				misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken, misskeyConfig.MessageTemplate)
+				misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken.Value(), misskeyConfig.MessageTemplate)
 				if err != nil {
 					return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
 				}

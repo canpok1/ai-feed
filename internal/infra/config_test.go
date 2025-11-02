@@ -408,10 +408,10 @@ func TestGeminiConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 
 				if tt.config.APIKey != "" {
 					// 直接指定が優先される
-					assert.Equal(t, tt.config.APIKey, entity.APIKey)
+					assert.Equal(t, tt.config.APIKey, entity.APIKey.Value())
 				} else {
 					// 環境変数から取得
-					assert.Equal(t, tt.envValue, entity.APIKey)
+					assert.Equal(t, tt.envValue, entity.APIKey.Value())
 				}
 			}
 		})
@@ -495,10 +495,10 @@ func TestSlackAPIConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 
 				if tt.config.APIToken != "" {
 					// 直接指定が優先される
-					assert.Equal(t, tt.config.APIToken, entity.APIToken)
+					assert.Equal(t, tt.config.APIToken, entity.APIToken.Value())
 				} else {
 					// 環境変数から取得
-					assert.Equal(t, tt.envValue, entity.APIToken)
+					assert.Equal(t, tt.envValue, entity.APIToken.Value())
 				}
 			}
 		})
@@ -581,10 +581,10 @@ func TestMisskeyConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 
 				if tt.config.APIToken != "" {
 					// 直接指定が優先される
-					assert.Equal(t, tt.config.APIToken, entity.APIToken)
+					assert.Equal(t, tt.config.APIToken, entity.APIToken.Value())
 				} else {
 					// 環境変数から取得
-					assert.Equal(t, tt.envValue, entity.APIToken)
+					assert.Equal(t, tt.envValue, entity.APIToken.Value())
 				}
 			}
 		})
