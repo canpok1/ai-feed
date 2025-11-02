@@ -1,10 +1,59 @@
 package entity
 
 import (
+	"bytes"
+	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestLogValue_WithNilFields(t *testing.T) {
+	// nilフィールドを含むProfileがログ出力時にエラーにならないことを確認
+	var logBuffer bytes.Buffer
+	handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelDebug})
+	logger := slog.New(handler)
+	originalLogger := slog.Default()
+	slog.SetDefault(logger)
+	defer slog.SetDefault(originalLogger)
+
+	t.Run("AI.Gemini is nil", func(t *testing.T) {
+		logBuffer.Reset()
+		profileWithNilGemini := &Profile{
+			AI:     &AIConfig{Gemini: nil},
+			Prompt: &PromptConfig{FixedMessage: "test"},
+			Output: &OutputConfig{},
+		}
+		slog.Debug("test nil gemini", slog.Any("profile", *profileWithNilGemini))
+		output := logBuffer.String()
+		assert.Contains(t, output, "test nil gemini")
+	})
+
+	t.Run("AI is nil", func(t *testing.T) {
+		logBuffer.Reset()
+		profileWithNilAI := &Profile{
+			AI:     nil,
+			Prompt: &PromptConfig{FixedMessage: "test"},
+			Output: &OutputConfig{},
+		}
+		slog.Debug("test nil ai", slog.Any("profile", *profileWithNilAI))
+		output := logBuffer.String()
+		// ログが正常に出力されることを確認（パニックしないことが重要）
+		assert.Contains(t, output, "test nil ai")
+	})
+
+	t.Run("Output.SlackAPI and Misskey are nil", func(t *testing.T) {
+		logBuffer.Reset()
+		profileWithNilOutput := &Profile{
+			AI:     &AIConfig{Gemini: &GeminiConfig{Type: "test", APIKey: "key"}},
+			Prompt: &PromptConfig{FixedMessage: "test"},
+			Output: &OutputConfig{SlackAPI: nil, Misskey: nil},
+		}
+		slog.Debug("test nil output configs", slog.Any("profile", *profileWithNilOutput))
+		output := logBuffer.String()
+		assert.Contains(t, output, "test nil output configs")
+	})
+}
 
 func TestGeminiConfig_Validate(t *testing.T) {
 	tests := []struct {
