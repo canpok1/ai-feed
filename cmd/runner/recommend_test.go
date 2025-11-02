@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
 
@@ -623,4 +624,100 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 	err = runner.Run(context.Background(), params, profile)
 
 	assert.NoError(t, err) // 全出力先無効でもエラーにならない
+}
+
+func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// テスト用のslogハンドラーをセットアップしてログ出力をキャプチャ
+	var logBuffer bytes.Buffer
+	// DEBUGレベルのログをキャプチャするためにLevelをDebugに設定
+	handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelDebug})
+	logger := slog.New(handler)
+	originalLogger := slog.Default()
+	slog.SetDefault(logger)
+	defer slog.SetDefault(originalLogger) // テスト後に元のロガーを復元
+
+	mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
+	mockRecommender := mock_domain.NewMockRecommender(ctrl)
+
+	// モックの期待値を設定
+	mockFetchClient.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
+	mockRecommender.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(&entity.Recommend{Article: entity.Article{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
+
+	stderrBuffer := new(bytes.Buffer)
+	stdoutBuffer := new(bytes.Buffer)
+
+	// テスト用の設定値を作成
+	testOutputConfig := &entity.OutputConfig{SlackAPI: &entity.SlackAPIConfig{Enabled: true, APIToken: "slack-token", Channel: "#general", MessageTemplate: toStringP("test-template")}}
+	testPromptConfig := &entity.PromptConfig{CommentPromptTemplate: "test-prompt", FixedMessage: "test-fixed-message"}
+	testCacheConfig := &entity.CacheConfig{Enabled: false, FilePath: "/tmp/test-cache"}
+	testProfile := &entity.Profile{
+		AI:     &entity.AIConfig{Gemini: &entity.GeminiConfig{Type: "gemini", APIKey: "gemini-key"}},
+		Prompt: testPromptConfig,
+		Output: testOutputConfig,
+	}
+
+	// NewRecommendRunner の引数として渡す
+	runner, err := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, testOutputConfig, testPromptConfig, testCacheConfig)
+	require.NoError(t, err)
+	require.NotNil(t, runner)
+
+	// runner.viewers をモックに差し替える
+	mockViewer := mock_domain.NewMockMessageSender(ctrl)
+	mockViewer.EXPECT().SendRecommend(gomock.Any(), gomock.Any()).Return(nil)
+	runner.viewers = []domain.MessageSender{mockViewer}
+
+	params := &RecommendParams{URLs: []string{"http://example.com/feed"}}
+
+	// Run メソッドを実行
+	err = runner.Run(context.Background(), params, testProfile)
+	require.NoError(t, err)
+
+	// ログ出力を検証
+	logOutput := logBuffer.String()
+	t.Logf("Log output: %s", logOutput)
+
+	// "RecommendRunner.Run parameters" のログエントリを探す
+	lines := bytes.Split(logBuffer.Bytes(), []byte("\n"))
+	var configLogLine []byte
+	for _, line := range lines {
+		if len(line) > 0 && bytes.Contains(line, []byte("RecommendRunner.Run parameters")) {
+			configLogLine = line
+			break
+		}
+	}
+	require.NotNil(t, configLogLine, "Config logging line not found")
+
+	var logEntry map[string]any
+	require.NoError(t, json.Unmarshal(configLogLine, &logEntry))
+
+	assert.Equal(t, "DEBUG", logEntry["level"])
+	assert.Equal(t, "RecommendRunner.Run parameters", logEntry["msg"])
+
+	// ログに出力された設定値の検証
+	// LogValue()による機密情報のマスク処理が正しく動作することを確認
+	profileLog, ok := logEntry["profile"].(map[string]any)
+	require.True(t, ok)
+
+	// Gemini APIKeyがマスクされていることを確認
+	aiLog, ok := profileLog["AI"].(map[string]any)
+	require.True(t, ok)
+	geminiLog, ok := aiLog["Gemini"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, "[REDACTED]", geminiLog["APIKey"], "Gemini APIKey should be masked")
+
+	// 非機密情報（Type）は正しく出力されることを確認
+	assert.Equal(t, testProfile.AI.Gemini.Type, geminiLog["Type"])
+
+	// SlackAPI APITokenがマスクされていることを確認
+	outputLog, ok := profileLog["Output"].(map[string]any)
+	require.True(t, ok)
+	slackLog, ok := outputLog["SlackAPI"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, "[REDACTED]", slackLog["APIToken"], "SlackAPI APIToken should be masked")
+
+	// SlackAPIの非機密情報（Channel）は正しく出力されることを確認
+	assert.Equal(t, testOutputConfig.SlackAPI.Channel, slackLog["Channel"])
 }
