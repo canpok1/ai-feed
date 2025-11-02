@@ -12,5 +12,22 @@
                 ]
             }
         ]
+    },
+    "permissions": {
+        "allow": [
+            "Bash(make build)",
+            "Bash(make build-release)",
+            "Bash(make clean)",
+            "Bash(make fmt)",
+            "Bash(make generate)",
+            "Bash(make lint)",
+            "Bash(make run)",
+            "Bash(make setup)",
+            "Bash(make test)",
+            "Bash(make test-all)",
+            "Bash(make test-integration)",
+            "Bash(make test-performance)",
+            "mcp__serena"
+        ]
     }
 }
