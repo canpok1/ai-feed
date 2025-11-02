@@ -92,6 +92,27 @@ func TestRandomRecommender_Recommend(t *testing.T) {
 		assert.Nil(t, result.Comment)
 	})
 
+	t.Run("記事が複数の場合_ランダム性の確認", func(t *testing.T) {
+		articles := []entity.Article{
+			{Title: "Article 1", Link: "https://example.com/1"},
+			{Title: "Article 2", Link: "https://example.com/2"},
+			{Title: "Article 3", Link: "https://example.com/3"},
+		}
+
+		recommender := NewRandomRecommender(nil, nil, nil)
+
+		// 統計的な検証: 十分な回数実行して各記事が少なくとも1回は選ばれることを確認
+		selected := make(map[string]bool)
+		for i := 0; i < 30; i++ {
+			result, err := recommender.Recommend(ctx, articles)
+			require.NoError(t, err)
+			selected[result.Article.Link] = true
+		}
+
+		// すべての記事が少なくとも一度は選択されたことを確認
+		assert.Len(t, selected, 3, "十分な回数実行すれば全記事が選ばれるはず")
+	})
+
 	t.Run("記事が1つの場合_コメントあり", func(t *testing.T) {
 		articles := []entity.Article{
 			{Title: "Article 1", Link: "https://example.com/1"},
