@@ -630,14 +630,14 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// Set up a test slog handler to capture log output
+	// テスト用のslogハンドラーをセットアップしてログ出力をキャプチャ
 	var logBuffer bytes.Buffer
 	// DEBUGレベルのログをキャプチャするためにLevelをDebugに設定
 	handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelDebug})
 	logger := slog.New(handler)
 	originalLogger := slog.Default()
 	slog.SetDefault(logger)
-	defer slog.SetDefault(originalLogger) // Restore original logger after test
+	defer slog.SetDefault(originalLogger) // テスト後に元のロガーを復元
 
 	mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
 	mockRecommender := mock_domain.NewMockRecommender(ctrl)
