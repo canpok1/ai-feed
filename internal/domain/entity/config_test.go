@@ -44,18 +44,30 @@ func TestLogValue_WithNilFields(t *testing.T) {
 
 	t.Run("Output.SlackAPI and Misskey are nil", func(t *testing.T) {
 		logBuffer.Reset()
+		var apiKey SecretString
+		apiKey.UnmarshalText([]byte("key"))
 		profileWithNilOutput := &Profile{
-			AI:     &AIConfig{Gemini: &GeminiConfig{Type: "test", APIKey: "key"}},
+			AI:     &AIConfig{Gemini: &GeminiConfig{Type: "test", APIKey: apiKey}},
 			Prompt: &PromptConfig{FixedMessage: "test"},
 			Output: &OutputConfig{SlackAPI: nil, Misskey: nil},
 		}
 		slog.Debug("test nil output configs", slog.Any("profile", *profileWithNilOutput))
 		output := logBuffer.String()
 		assert.Contains(t, output, "test nil output configs")
+		// APIKeyがマスクされていることを確認
+		assert.Contains(t, output, "[REDACTED]")
+		assert.NotContains(t, output, "key")
 	})
 }
 
 func TestGeminiConfig_Validate(t *testing.T) {
+	// ヘルパー関数: SecretStringを作成
+	makeSecretString := func(value string) SecretString {
+		var s SecretString
+		s.UnmarshalText([]byte(value))
+		return s
+	}
+
 	tests := []struct {
 		name    string
 		config  *GeminiConfig
@@ -66,7 +78,7 @@ func TestGeminiConfig_Validate(t *testing.T) {
 			name: "正常系_TypeとAPIKeyが適切に設定されている",
 			config: &GeminiConfig{
 				Type:   "gemini-pro",
-				APIKey: "valid-api-key",
+				APIKey: makeSecretString("valid-api-key"),
 			},
 			wantErr: false,
 		},
@@ -74,7 +86,7 @@ func TestGeminiConfig_Validate(t *testing.T) {
 			name: "異常系_Typeが空文字列",
 			config: &GeminiConfig{
 				Type:   "",
-				APIKey: "valid-api-key",
+				APIKey: makeSecretString("valid-api-key"),
 			},
 			wantErr: true,
 			errors:  []string{"Gemini設定のTypeが設定されていません"},
@@ -83,7 +95,7 @@ func TestGeminiConfig_Validate(t *testing.T) {
 			name: "異常系_APIKeyが空文字列",
 			config: &GeminiConfig{
 				Type:   "gemini-pro",
-				APIKey: "",
+				APIKey: SecretString{}, // ゼロ値 (空)
 			},
 			wantErr: true,
 			errors:  []string{"Gemini APIキーが設定されていません"},
@@ -105,10 +117,17 @@ func TestGeminiConfig_Validate(t *testing.T) {
 }
 
 func TestProfile_Validate(t *testing.T) {
+	// ヘルパー関数: SecretStringを作成
+	makeSecretString := func(value string) SecretString {
+		var s SecretString
+		s.UnmarshalText([]byte(value))
+		return s
+	}
+
 	validAI := &AIConfig{
 		Gemini: &GeminiConfig{
 			Type:   "gemini-pro",
-			APIKey: "valid-api-key",
+			APIKey: makeSecretString("valid-api-key"),
 		},
 	}
 	validPrompt := &PromptConfig{
@@ -118,7 +137,7 @@ func TestProfile_Validate(t *testing.T) {
 	validTemplate := "{{.Article.Title}} {{.Article.Link}}"
 	validOutput := &OutputConfig{
 		SlackAPI: &SlackAPIConfig{
-			APIToken:        "valid-token",
+			APIToken:        makeSecretString("valid-token"),
 			Channel:         "#general",
 			MessageTemplate: &validTemplate,
 		},
@@ -158,6 +177,13 @@ func TestProfile_Validate(t *testing.T) {
 }
 
 func TestMisskeyConfig_Validate(t *testing.T) {
+	// ヘルパー関数: SecretStringを作成
+	makeSecretString := func(value string) SecretString {
+		var s SecretString
+		s.UnmarshalText([]byte(value))
+		return s
+	}
+
 	validTemplate := "{{.Article.Title}} {{.Article.Link}}"
 	invalidTemplate := "{{.Article.Title" // 不正な構文
 	emptyTemplate := ""
@@ -171,7 +197,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_必須項目すべて",
 			config: &MisskeyConfig{
-				APIToken:        "valid-token",
+				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
 			},
@@ -180,7 +206,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_テンプレート付き",
 			config: &MisskeyConfig{
-				APIToken:        "valid-token",
+				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
 			},
@@ -189,7 +215,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが未設定",
 			config: &MisskeyConfig{
-				APIToken: "valid-token",
+				APIToken: makeSecretString("valid-token"),
 				APIURL:   "https://misskey.example.com",
 			},
 			wantErr: true,
@@ -198,7 +224,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが空文字列",
 			config: &MisskeyConfig{
-				APIToken:        "valid-token",
+				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &emptyTemplate,
 			},
@@ -208,7 +234,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APITokenが空",
 			config: &MisskeyConfig{
-				APIToken:        "",
+				APIToken:        SecretString{}, // ゼロ値 (空)
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
 			},
@@ -218,7 +244,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APIURLが空",
 			config: &MisskeyConfig{
-				APIToken:        "valid-token",
+				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "",
 				MessageTemplate: &validTemplate,
 			},
@@ -228,7 +254,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APIURLが不正なURL",
 			config: &MisskeyConfig{
-				APIToken:        "valid-token",
+				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "not-a-url",
 				MessageTemplate: &validTemplate,
 			},
@@ -238,7 +264,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_不正なテンプレート構文",
 			config: &MisskeyConfig{
-				APIToken:        "valid-token",
+				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &invalidTemplate,
 			},
@@ -248,7 +274,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_複数のエラー",
 			config: &MisskeyConfig{
-				APIToken: "",
+				APIToken: SecretString{}, // ゼロ値 (空)
 				APIURL:   "not-a-url",
 			},
 			wantErr: true,

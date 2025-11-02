@@ -8,6 +8,13 @@ import (
 
 // TestSlackAPIConfig_Validate はSlackAPIConfigのValidateメソッドをテストする
 func TestSlackAPIConfig_Validate(t *testing.T) {
+	// ヘルパー関数: SecretStringを作成
+	makeSecretString := func(value string) SecretString {
+		var s SecretString
+		s.UnmarshalText([]byte(value))
+		return s
+	}
+
 	validTemplate := "{{.Article.Title}} {{.Article.Link}}"
 	invalidTemplate := "{{.Article.Title" // 不正な構文
 	emptyTemplate := ""
@@ -21,7 +28,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_必須項目すべて",
 			config: &SlackAPIConfig{
-				APIToken:        "xoxb-valid-token",
+				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
 			},
@@ -30,7 +37,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが未設定",
 			config: &SlackAPIConfig{
-				APIToken: "xoxb-valid-token",
+				APIToken: makeSecretString("xoxb-valid-token"),
 				Channel:  "#test",
 			},
 			wantErr: true,
@@ -39,7 +46,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが空文字列",
 			config: &SlackAPIConfig{
-				APIToken:        "xoxb-valid-token",
+				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &emptyTemplate,
 			},
@@ -49,7 +56,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APITokenが空",
 			config: &SlackAPIConfig{
-				APIToken:        "",
+				APIToken:        SecretString{}, // ゼロ値 (空)
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
 			},
@@ -59,7 +66,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_Channelが空",
 			config: &SlackAPIConfig{
-				APIToken:        "xoxb-valid-token",
+				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "",
 				MessageTemplate: &validTemplate,
 			},
@@ -69,7 +76,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_不正なテンプレート構文",
 			config: &SlackAPIConfig{
-				APIToken:        "xoxb-valid-token",
+				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &invalidTemplate,
 			},
@@ -79,7 +86,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_複数のエラー",
 			config: &SlackAPIConfig{
-				APIToken: "",
+				APIToken: SecretString{}, // ゼロ値 (空)
 				Channel:  "",
 			},
 			wantErr: true,
