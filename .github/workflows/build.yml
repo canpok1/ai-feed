@@ -33,8 +33,23 @@ jobs:
     - name: Lint
       run: make lint
 
+    - name: Lint with golangci-lint
+      run: make lint-all
+
     - name: Test
       run: make test
+
+    - name: Test Coverage Check
+      run: make test-coverage-check
+
+    - name: Upload Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: |
+          coverage.out
+          coverage.html
 
     - name: Build
       run: make build
