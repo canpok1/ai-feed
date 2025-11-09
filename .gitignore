@@ -47,5 +47,5 @@ tmp/
 .serena/memories/
 
 # Git worktrees directory (ignore all contents except .gitkeep)
-worktrees/*
-!worktrees/.gitkeep
+/worktrees/**
+!/worktrees/.gitkeep
