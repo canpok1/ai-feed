@@ -163,12 +163,12 @@ func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, 
 			}
 			fmt.Fprintln(cmd.OutOrStdout(), "キャッシュ設定:")
 			if result.Summary.CacheEnabled {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - 有効")
-				fmt.Fprintf(cmd.OutOrStdout(), "  - ファイルパス: %s\n", result.Summary.CacheFilePath)
-				fmt.Fprintf(cmd.OutOrStdout(), "  - 最大エントリ数: %d\n", result.Summary.CacheMaxEntries)
-				fmt.Fprintf(cmd.OutOrStdout(), "  - 保持期間: %d日\n", result.Summary.CacheRetentionDays)
+				fmt.Fprintln(cmd.OutOrStdout(), "  - キャッシュ: 有効")
+				fmt.Fprintf(cmd.OutOrStdout(), "    - ファイルパス: %s\n", result.Summary.CacheFilePath)
+				fmt.Fprintf(cmd.OutOrStdout(), "    - 最大エントリ数: %d\n", result.Summary.CacheMaxEntries)
+				fmt.Fprintf(cmd.OutOrStdout(), "    - 保持期間: %d日\n", result.Summary.CacheRetentionDays)
 			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - 無効")
+				fmt.Fprintln(cmd.OutOrStdout(), "  - キャッシュ: 無効")
 			}
 		}
 	} else {
