@@ -42,6 +42,10 @@ type ConfigSummary struct {
 	SlackMessageTemplateConfigured bool
 	// MisskeyConfigured はMisskeyの設定状態
 	MisskeyConfigured bool
+	// MisskeyAPIURL はMisskey API URL
+	MisskeyAPIURL string
+	// MisskeyMessageTemplateConfigured はMisskeyメッセージテンプレートの設定状態
+	MisskeyMessageTemplateConfigured bool
 }
 
 // ValidationResult はバリデーション結果を表す

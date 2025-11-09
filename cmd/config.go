@@ -152,6 +152,12 @@ func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, 
 			}
 			if result.Summary.MisskeyConfigured {
 				fmt.Fprintln(cmd.OutOrStdout(), "  - Misskey: 設定済み")
+				fmt.Fprintf(cmd.OutOrStdout(), "    - API URL: %s\n", result.Summary.MisskeyAPIURL)
+				if result.Summary.MisskeyMessageTemplateConfigured {
+					fmt.Fprintln(cmd.OutOrStdout(), "    - メッセージテンプレート: 設定済み")
+				} else {
+					fmt.Fprintln(cmd.OutOrStdout(), "    - メッセージテンプレート: 未設定")
+				}
 			} else {
 				fmt.Fprintln(cmd.OutOrStdout(), "  - Misskey: 未設定")
 			}

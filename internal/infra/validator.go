@@ -28,15 +28,17 @@ func (v *ConfigValidator) Validate() (*domain.ValidationResult, error) {
 		Valid:  true,
 		Errors: []domain.ValidationError{},
 		Summary: domain.ConfigSummary{
-			GeminiConfigured:               false,
-			GeminiModel:                    "",
-			SystemPromptConfigured:         false,
-			CommentPromptConfigured:        false,
-			FixedMessageConfigured:         false,
-			SlackConfigured:                false,
-			SlackChannel:                   "",
-			SlackMessageTemplateConfigured: false,
-			MisskeyConfigured:              false,
+			GeminiConfigured:                 false,
+			GeminiModel:                      "",
+			SystemPromptConfigured:           false,
+			CommentPromptConfigured:          false,
+			FixedMessageConfigured:           false,
+			SlackConfigured:                  false,
+			SlackChannel:                     "",
+			SlackMessageTemplateConfigured:   false,
+			MisskeyConfigured:                false,
+			MisskeyAPIURL:                    "",
+			MisskeyMessageTemplateConfigured: false,
 		},
 	}
 
@@ -315,6 +317,10 @@ func (v *ConfigValidator) validateMisskey(misskey *entity.MisskeyConfig, result 
 	// サマリーの更新
 	if !misskey.APIToken.IsEmpty() && !isDummyValue(misskey.APIToken.Value()) && misskey.APIURL != "" {
 		result.Summary.MisskeyConfigured = true
+		result.Summary.MisskeyAPIURL = misskey.APIURL
+		if misskey.MessageTemplate != nil && strings.TrimSpace(*misskey.MessageTemplate) != "" {
+			result.Summary.MisskeyMessageTemplateConfigured = true
+		}
 	}
 }
 
