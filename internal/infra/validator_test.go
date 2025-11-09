@@ -66,9 +66,10 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					SlackAPI: &entity.SlackAPIConfig{
-						Enabled:  true,
-						APIToken: entity.NewSecretString("valid-slack-token"),
-						Channel:  "test-channel",
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-slack-token"),
+						Channel:         "test-channel",
+						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 					},
 				},
 			},
@@ -290,6 +291,108 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 					Field:   "output.misskey.api_token",
 					Type:    domain.ValidationErrorTypeDummyValue,
 					Message: "Misskey APIトークンがダミー値です: \"YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE\"",
+				},
+			},
+		},
+		{
+			name: "Slack MessageTemplateがnil",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-slack-token"),
+						Channel:         "test-channel",
+						MessageTemplate: nil,
+					},
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "output.slack_api.message_template",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "Slackメッセージテンプレートが設定されていません",
+				},
+			},
+		},
+		{
+			name: "Slack MessageTemplateが空文字列",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-slack-token"),
+						Channel:         "test-channel",
+						MessageTemplate: strPtr(""),
+					},
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "output.slack_api.message_template",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "Slackメッセージテンプレートが設定されていません",
+				},
+			},
+		},
+		{
+			name: "Slack MessageTemplateの構文エラー",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-slack-token"),
+						Channel:         "test-channel",
+						MessageTemplate: strPtr("{{.InvalidSyntax"),
+					},
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "output.slack_api.message_template",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "Slackメッセージテンプレートが無効です: template: slack_message:1: unclosed action",
 				},
 			},
 		},
@@ -544,4 +647,9 @@ func TestConfigValidator_Validate_Cache(t *testing.T) {
 // toPtr はbool値のポインタを返すヘルパー関数
 func toPtr(b bool) *bool {
 	return &b
+}
+
+// strPtr は文字列のポインタを返すヘルパー関数
+func strPtr(s string) *string {
+	return &s
 }

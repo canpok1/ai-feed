@@ -1,6 +1,9 @@
 package infra
 
 import (
+	"html/template"
+	"strings"
+
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
@@ -218,6 +221,24 @@ func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result 
 			Type:    domain.ValidationErrorTypeRequired,
 			Message: "Slackチャンネルが設定されていません",
 		})
+	}
+
+	// MessageTemplate のバリデーション
+	if slack.MessageTemplate == nil || strings.TrimSpace(*slack.MessageTemplate) == "" {
+		result.Errors = append(result.Errors, domain.ValidationError{
+			Field:   "output.slack_api.message_template",
+			Type:    domain.ValidationErrorTypeRequired,
+			Message: "Slackメッセージテンプレートが設定されていません",
+		})
+	} else {
+		// テンプレート構文のチェック
+		if _, err := template.New("slack_message").Parse(*slack.MessageTemplate); err != nil {
+			result.Errors = append(result.Errors, domain.ValidationError{
+				Field:   "output.slack_api.message_template",
+				Type:    domain.ValidationErrorTypeRequired,
+				Message: "Slackメッセージテンプレートが無効です: " + err.Error(),
+			})
+		}
 	}
 
 	// サマリーの更新
