@@ -161,6 +161,15 @@ func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, 
 			} else {
 				fmt.Fprintln(cmd.OutOrStdout(), "  - Misskey: 未設定")
 			}
+			fmt.Fprintln(cmd.OutOrStdout(), "キャッシュ設定:")
+			if result.Summary.CacheEnabled {
+				fmt.Fprintln(cmd.OutOrStdout(), "  - 有効")
+				fmt.Fprintf(cmd.OutOrStdout(), "  - ファイルパス: %s\n", result.Summary.CacheFilePath)
+				fmt.Fprintf(cmd.OutOrStdout(), "  - 最大エントリ数: %d\n", result.Summary.CacheMaxEntries)
+				fmt.Fprintf(cmd.OutOrStdout(), "  - 保持期間: %d日\n", result.Summary.CacheRetentionDays)
+			} else {
+				fmt.Fprintln(cmd.OutOrStdout(), "  - 無効")
+			}
 		}
 	} else {
 		fmt.Fprintln(cmd.ErrOrStderr(), "設定に以下の問題があります：")

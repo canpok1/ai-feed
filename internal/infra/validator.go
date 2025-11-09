@@ -39,6 +39,10 @@ func (v *ConfigValidator) Validate() (*domain.ValidationResult, error) {
 			MisskeyConfigured:                false,
 			MisskeyAPIURL:                    "",
 			MisskeyMessageTemplateConfigured: false,
+			CacheEnabled:                     false,
+			CacheFilePath:                    "",
+			CacheMaxEntries:                  0,
+			CacheRetentionDays:               0,
 		},
 	}
 
@@ -208,6 +212,14 @@ func (v *ConfigValidator) validateCache(result *domain.ValidationResult) {
 				Message: errMsg,
 			})
 		}
+	}
+
+	// サマリーの更新
+	if cacheEntity.Enabled {
+		result.Summary.CacheEnabled = true
+		result.Summary.CacheFilePath = cacheEntity.FilePath
+		result.Summary.CacheMaxEntries = cacheEntity.MaxEntries
+		result.Summary.CacheRetentionDays = cacheEntity.RetentionDays
 	}
 }
 

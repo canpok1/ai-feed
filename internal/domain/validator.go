@@ -46,6 +46,14 @@ type ConfigSummary struct {
 	MisskeyAPIURL string
 	// MisskeyMessageTemplateConfigured はMisskeyメッセージテンプレートの設定状態
 	MisskeyMessageTemplateConfigured bool
+	// CacheEnabled はキャッシュの有効/無効
+	CacheEnabled bool
+	// CacheFilePath はキャッシュファイルのパス
+	CacheFilePath string
+	// CacheMaxEntries はキャッシュの最大エントリ数
+	CacheMaxEntries int
+	// CacheRetentionDays はキャッシュの保持期間（日数）
+	CacheRetentionDays int
 }
 
 // ValidationResult はバリデーション結果を表す
