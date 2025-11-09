@@ -52,7 +52,8 @@ func (c *FileRecommendCache) Initialize() error {
 
 	// Load existing cache data
 	if err := c.loadFromFile(); err != nil {
-		c.releaseLock() // Release lock on error
+		// Release lock on error (ignore release error as load already failed)
+		_ = c.releaseLock()
 		return fmt.Errorf("failed to load cache data: %w", err)
 	}
 
@@ -143,7 +144,7 @@ func (c *FileRecommendCache) loadFromFile() error {
 		}
 		return fmt.Errorf("failed to open cache file: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	scanner := bufio.NewScanner(file)
 	validEntries := make([]domain.RecommendEntry, 0)
@@ -191,7 +192,7 @@ func (c *FileRecommendCache) saveToFile() error {
 	defer func() {
 		// On error, close the file (if not already closed) and remove the temp file.
 		// On success, the file is already closed and the temp file is renamed, so this is a no-op.
-		file.Close()
+		_ = file.Close()
 		if !success {
 			os.Remove(tempPath)
 		}
@@ -255,7 +256,7 @@ func (c *FileRecommendCache) acquireLock() error {
 // releaseLock releases the cache file lock
 func (c *FileRecommendCache) releaseLock() error {
 	if c.lockFile != nil {
-		c.lockFile.Close()
+		_ = c.lockFile.Close()
 		if err := os.Remove(c.lockPath); err != nil && !os.IsNotExist(err) {
 			slog.Warn("Failed to remove lock file", "lock_path", c.lockPath, "error", err.Error())
 			return err
