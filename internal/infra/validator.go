@@ -271,6 +271,24 @@ func (v *ConfigValidator) validateMisskey(misskey *entity.MisskeyConfig, result 
 		})
 	}
 
+	// MessageTemplate のバリデーション
+	if misskey.MessageTemplate == nil || strings.TrimSpace(*misskey.MessageTemplate) == "" {
+		result.Errors = append(result.Errors, domain.ValidationError{
+			Field:   "output.misskey.message_template",
+			Type:    domain.ValidationErrorTypeRequired,
+			Message: "Misskeyメッセージテンプレートが設定されていません",
+		})
+	} else {
+		// テンプレート構文のチェック
+		if _, err := template.New("misskey_message").Parse(*misskey.MessageTemplate); err != nil {
+			result.Errors = append(result.Errors, domain.ValidationError{
+				Field:   "output.misskey.message_template",
+				Type:    domain.ValidationErrorTypeRequired,
+				Message: "Misskeyメッセージテンプレートが無効です: " + err.Error(),
+			})
+		}
+	}
+
 	// サマリーの更新
 	if !misskey.APIToken.IsEmpty() && !isDummyValue(misskey.APIToken.Value()) && misskey.APIURL != "" {
 		result.Summary.MisskeyConfigured = true

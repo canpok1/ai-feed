@@ -103,9 +103,10 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					Misskey: &entity.MisskeyConfig{
-						Enabled:  true,
-						APIToken: entity.NewSecretString("valid-misskey-token"),
-						APIURL:   "https://misskey.example.com",
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-misskey-token"),
+						APIURL:          "https://misskey.example.com",
+						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 					},
 				},
 			},
@@ -279,9 +280,10 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					Misskey: &entity.MisskeyConfig{
-						Enabled:  true,
-						APIToken: entity.NewSecretString("YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE"),
-						APIURL:   "https://misskey.example.com",
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE"),
+						APIURL:          "https://misskey.example.com",
+						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 					},
 				},
 			},
@@ -393,6 +395,108 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 					Field:   "output.slack_api.message_template",
 					Type:    domain.ValidationErrorTypeRequired,
 					Message: "Slackメッセージテンプレートが無効です: template: slack_message:1: unclosed action",
+				},
+			},
+		},
+		{
+			name: "Misskey MessageTemplateがnil",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					Misskey: &entity.MisskeyConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-misskey-token"),
+						APIURL:          "https://misskey.example.com",
+						MessageTemplate: nil,
+					},
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "output.misskey.message_template",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "Misskeyメッセージテンプレートが設定されていません",
+				},
+			},
+		},
+		{
+			name: "Misskey MessageTemplateが空文字列",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					Misskey: &entity.MisskeyConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-misskey-token"),
+						APIURL:          "https://misskey.example.com",
+						MessageTemplate: strPtr(""),
+					},
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "output.misskey.message_template",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "Misskeyメッセージテンプレートが設定されていません",
+				},
+			},
+		},
+		{
+			name: "Misskey MessageTemplateの構文エラー",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					Misskey: &entity.MisskeyConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-misskey-token"),
+						APIURL:          "https://misskey.example.com",
+						MessageTemplate: strPtr("{{.InvalidSyntax"),
+					},
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "output.misskey.message_template",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "Misskeyメッセージテンプレートが無効です: template: misskey_message:1: unclosed action",
 				},
 			},
 		},
