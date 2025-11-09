@@ -210,18 +210,14 @@ func (v *ConfigValidator) validateMisskey(misskey *entity.MisskeyConfig, result 
 	}
 }
 
+// dummyValues はダミー値として認識する文字列のセット
+var dummyValues = map[string]struct{}{
+	"xxxxxx":                             {},
+	"YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE": {},
+}
+
 // isDummyValue はダミー値かどうかを判定する
 func isDummyValue(value string) bool {
-	dummyValues := []string{
-		"xxxxxx",
-		"YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE",
-	}
-
-	for _, dummy := range dummyValues {
-		if value == dummy {
-			return true
-		}
-	}
-
-	return false
+	_, exists := dummyValues[value]
+	return exists
 }
