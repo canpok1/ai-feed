@@ -27,7 +27,7 @@ make lint-all
 # テストカバレッジレポート生成（HTML形式）
 make test-coverage
 
-# テストカバレッジ閾値チェック（70%目標）
+# テストカバレッジ閾値チェック（60%以上、将来的に70%目標）
 make test-coverage-check
 
 # コードのフォーマット

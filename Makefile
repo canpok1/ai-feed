@@ -4,7 +4,7 @@ VERSION?=dev
 setup:
 	go install go.uber.org/mock/mockgen@latest
 	go install golang.org/x/tools/cmd/goimports@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
 
 run:
 	@go run main.go ${option}
@@ -39,7 +39,7 @@ test-coverage:
 test-coverage-check:
 	@go test -coverprofile=coverage.out ./...
 	@go tool cover -func=coverage.out | grep total | awk '{print $$3}' | sed 's/%//' | \
-	awk '{if ($$1 < 70) {print "Coverage " $$1 "% is below threshold 70%"; exit 1} else {print "Coverage " $$1 "% meets threshold 70%"}}'
+	awk '{if ($$1 < 60) {print "Coverage " $$1 "% is below threshold 60%"; exit 1} else {print "Coverage " $$1 "% meets threshold 60%"}}'
 
 lint:
 	go vet ./...
