@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
 
 	"github.com/canpok1/ai-feed/internal/domain"
@@ -112,69 +113,93 @@ func validateAndPrint(cmd *cobra.Command, config *infra.Config, entityProfile *e
 func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, verboseFlag bool) {
 	if result.Valid {
 		fmt.Fprintln(cmd.OutOrStdout(), "設定に問題ありません。")
-
 		if verboseFlag {
-			fmt.Fprintln(cmd.OutOrStdout(), "")
-			fmt.Fprintln(cmd.OutOrStdout(), "【設定サマリー】")
-			fmt.Fprintln(cmd.OutOrStdout(), "AI設定:")
-			if result.Summary.GeminiConfigured {
-				fmt.Fprintf(cmd.OutOrStdout(), "  - Gemini API: 設定済み（モデル: %s）\n", result.Summary.GeminiModel)
-			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - Gemini API: 未設定")
-			}
-			fmt.Fprintln(cmd.OutOrStdout(), "プロンプト設定:")
-			if result.Summary.SystemPromptConfigured {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - システムプロンプト: 設定済み")
-			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - システムプロンプト: 未設定")
-			}
-			if result.Summary.CommentPromptConfigured {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - コメントプロンプト: 設定済み")
-			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - コメントプロンプト: 未設定")
-			}
-			if result.Summary.FixedMessageConfigured {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - 固定メッセージ: 設定済み")
-			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - 固定メッセージ: 未設定")
-			}
-			fmt.Fprintln(cmd.OutOrStdout(), "出力設定:")
-			if result.Summary.SlackConfigured {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - Slack API: 有効")
-				fmt.Fprintf(cmd.OutOrStdout(), "    - チャンネル: %s\n", result.Summary.SlackChannel)
-				if result.Summary.SlackMessageTemplateConfigured {
-					fmt.Fprintln(cmd.OutOrStdout(), "    - メッセージテンプレート: 設定済み")
-				} else {
-					fmt.Fprintln(cmd.OutOrStdout(), "    - メッセージテンプレート: 未設定")
-				}
-			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - Slack API: 無効")
-			}
-			if result.Summary.MisskeyConfigured {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - Misskey: 有効")
-				fmt.Fprintf(cmd.OutOrStdout(), "    - API URL: %s\n", result.Summary.MisskeyAPIURL)
-				if result.Summary.MisskeyMessageTemplateConfigured {
-					fmt.Fprintln(cmd.OutOrStdout(), "    - メッセージテンプレート: 設定済み")
-				} else {
-					fmt.Fprintln(cmd.OutOrStdout(), "    - メッセージテンプレート: 未設定")
-				}
-			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - Misskey: 無効")
-			}
-			fmt.Fprintln(cmd.OutOrStdout(), "キャッシュ設定:")
-			if result.Summary.CacheEnabled {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - キャッシュ: 有効")
-				fmt.Fprintf(cmd.OutOrStdout(), "    - ファイルパス: %s\n", result.Summary.CacheFilePath)
-				fmt.Fprintf(cmd.OutOrStdout(), "    - 最大エントリ数: %d\n", result.Summary.CacheMaxEntries)
-				fmt.Fprintf(cmd.OutOrStdout(), "    - 保持期間: %d日\n", result.Summary.CacheRetentionDays)
-			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "  - キャッシュ: 無効")
-			}
+			printSummary(cmd.OutOrStdout(), result.Summary)
 		}
 	} else {
 		fmt.Fprintln(cmd.ErrOrStderr(), "設定に以下の問題があります：")
 		for _, err := range result.Errors {
 			fmt.Fprintf(cmd.ErrOrStderr(), "- %s: %s\n", err.Field, err.Message)
 		}
+	}
+}
+
+// printSummary は設定のサマリー情報を出力する
+func printSummary(out io.Writer, summary domain.ConfigSummary) {
+	fmt.Fprintln(out, "")
+	fmt.Fprintln(out, "【設定サマリー】")
+	printAISummary(out, summary)
+	printPromptSummary(out, summary)
+	printOutputSummary(out, summary)
+	printCacheSummary(out, summary)
+}
+
+// printAISummary はAI設定のサマリーを出力する
+func printAISummary(out io.Writer, summary domain.ConfigSummary) {
+	fmt.Fprintln(out, "AI設定:")
+	if summary.GeminiConfigured {
+		fmt.Fprintf(out, "  - Gemini API: 設定済み（モデル: %s）\n", summary.GeminiModel)
+	} else {
+		fmt.Fprintln(out, "  - Gemini API: 未設定")
+	}
+}
+
+// printPromptSummary はプロンプト設定のサマリーを出力する
+func printPromptSummary(out io.Writer, summary domain.ConfigSummary) {
+	fmt.Fprintln(out, "プロンプト設定:")
+	if summary.SystemPromptConfigured {
+		fmt.Fprintln(out, "  - システムプロンプト: 設定済み")
+	} else {
+		fmt.Fprintln(out, "  - システムプロンプト: 未設定")
+	}
+	if summary.CommentPromptConfigured {
+		fmt.Fprintln(out, "  - コメントプロンプト: 設定済み")
+	} else {
+		fmt.Fprintln(out, "  - コメントプロンプト: 未設定")
+	}
+	if summary.FixedMessageConfigured {
+		fmt.Fprintln(out, "  - 固定メッセージ: 設定済み")
+	} else {
+		fmt.Fprintln(out, "  - 固定メッセージ: 未設定")
+	}
+}
+
+// printOutputSummary は出力設定のサマリーを出力する
+func printOutputSummary(out io.Writer, summary domain.ConfigSummary) {
+	fmt.Fprintln(out, "出力設定:")
+	if summary.SlackConfigured {
+		fmt.Fprintln(out, "  - Slack API: 有効")
+		fmt.Fprintf(out, "    - チャンネル: %s\n", summary.SlackChannel)
+		if summary.SlackMessageTemplateConfigured {
+			fmt.Fprintln(out, "    - メッセージテンプレート: 設定済み")
+		} else {
+			fmt.Fprintln(out, "    - メッセージテンプレート: 未設定")
+		}
+	} else {
+		fmt.Fprintln(out, "  - Slack API: 無効")
+	}
+	if summary.MisskeyConfigured {
+		fmt.Fprintln(out, "  - Misskey: 有効")
+		fmt.Fprintf(out, "    - API URL: %s\n", summary.MisskeyAPIURL)
+		if summary.MisskeyMessageTemplateConfigured {
+			fmt.Fprintln(out, "    - メッセージテンプレート: 設定済み")
+		} else {
+			fmt.Fprintln(out, "    - メッセージテンプレート: 未設定")
+		}
+	} else {
+		fmt.Fprintln(out, "  - Misskey: 無効")
+	}
+}
+
+// printCacheSummary はキャッシュ設定のサマリーを出力する
+func printCacheSummary(out io.Writer, summary domain.ConfigSummary) {
+	fmt.Fprintln(out, "キャッシュ設定:")
+	if summary.CacheEnabled {
+		fmt.Fprintln(out, "  - キャッシュ: 有効")
+		fmt.Fprintf(out, "    - ファイルパス: %s\n", summary.CacheFilePath)
+		fmt.Fprintf(out, "    - 最大エントリ数: %d\n", summary.CacheMaxEntries)
+		fmt.Fprintf(out, "    - 保持期間: %d日\n", summary.CacheRetentionDays)
+	} else {
+		fmt.Fprintln(out, "  - キャッシュ: 無効")
 	}
 }

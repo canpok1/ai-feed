@@ -362,7 +362,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 			expectValid: false,
 			expectError: []domain.ValidationError{
 				{
-					Field:   "comment_prompt_template",
+					Field:   "prompt.comment_prompt_template",
 					Type:    domain.ValidationErrorTypeRequired,
 					Message: "コメントプロンプトテンプレートが設定されていません",
 				},
@@ -499,7 +499,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 			expectError: []domain.ValidationError{
 				{
 					Field:   "output.slack_api.message_template",
-					Type:    domain.ValidationErrorTypeRequired,
+					Type:    domain.ValidationErrorTypeInvalid,
 					Message: "Slackメッセージテンプレートが無効です: template: slack_message:1: unclosed action",
 				},
 			},
@@ -601,7 +601,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 			expectError: []domain.ValidationError{
 				{
 					Field:   "output.misskey.message_template",
-					Type:    domain.ValidationErrorTypeRequired,
+					Type:    domain.ValidationErrorTypeInvalid,
 					Message: "Misskeyメッセージテンプレートが無効です: template: misskey_message:1: unclosed action",
 				},
 			},
@@ -637,7 +637,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 			expectError: []domain.ValidationError{
 				{
 					Field:   "output.slack_api",
-					Type:    domain.ValidationErrorTypeRequired,
+					Type:    domain.ValidationErrorTypeInvalid,
 					Message: "Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。",
 				},
 			},

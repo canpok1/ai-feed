@@ -142,11 +142,11 @@ func (v *ConfigValidator) validatePrompt(result *domain.ValidationResult) {
 	}
 
 	// CommentPromptTemplate のバリデーション
-	if prompt.CommentPromptTemplate == "" {
+	if err := entity.ValidateRequired(prompt.CommentPromptTemplate, "コメントプロンプトテンプレート"); err != nil {
 		result.Errors = append(result.Errors, domain.ValidationError{
-			Field:   "comment_prompt_template",
+			Field:   "prompt.comment_prompt_template",
 			Type:    domain.ValidationErrorTypeRequired,
-			Message: "コメントプロンプトテンプレートが設定されていません",
+			Message: err.Error(),
 		})
 	}
 
@@ -259,7 +259,7 @@ func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result 
 		if _, err := template.New("slack_message").Parse(*slack.MessageTemplate); err != nil {
 			result.Errors = append(result.Errors, domain.ValidationError{
 				Field:   "output.slack_api.message_template",
-				Type:    domain.ValidationErrorTypeRequired,
+				Type:    domain.ValidationErrorTypeInvalid,
 				Message: "Slackメッセージテンプレートが無効です: " + err.Error(),
 			})
 		}
@@ -269,7 +269,7 @@ func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result 
 	if slack.IconURL != nil && *slack.IconURL != "" && slack.IconEmoji != nil && *slack.IconEmoji != "" {
 		result.Errors = append(result.Errors, domain.ValidationError{
 			Field:   "output.slack_api",
-			Type:    domain.ValidationErrorTypeRequired,
+			Type:    domain.ValidationErrorTypeInvalid,
 			Message: "Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。",
 		})
 	}
@@ -320,7 +320,7 @@ func (v *ConfigValidator) validateMisskey(misskey *entity.MisskeyConfig, result 
 		if _, err := template.New("misskey_message").Parse(*misskey.MessageTemplate); err != nil {
 			result.Errors = append(result.Errors, domain.ValidationError{
 				Field:   "output.misskey.message_template",
-				Type:    domain.ValidationErrorTypeRequired,
+				Type:    domain.ValidationErrorTypeInvalid,
 				Message: "Misskeyメッセージテンプレートが無効です: " + err.Error(),
 			})
 		}
