@@ -52,7 +52,8 @@ func (c *FileRecommendCache) Initialize() error {
 
 	// Load existing cache data
 	if err := c.loadFromFile(); err != nil {
-		c.releaseLock() // Release lock on error
+		// Release lock on error (ignore release error as load already failed)
+		_ = c.releaseLock()
 		return fmt.Errorf("failed to load cache data: %w", err)
 	}
 
