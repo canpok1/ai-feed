@@ -119,10 +119,6 @@ linters-settings:
   errcheck:
     # エラーチェックを除外する関数
     exclude-functions:
-      - (*database/sql.DB).Close
-      - (*database/sql.Rows).Close
-      - (io.Closer).Close
-      - (*os.File).Close
       - fmt.Fprintf
       - fmt.Fprintln
       - fmt.Println

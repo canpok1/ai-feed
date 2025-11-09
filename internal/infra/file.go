@@ -31,7 +31,7 @@ func ReadURLsFromFile(filePath string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	var urls []string
 	scanner := bufio.NewScanner(file)

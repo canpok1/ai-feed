@@ -283,7 +283,7 @@ func (r *YamlConfigRepository) SaveWithTemplate() error {
 		}
 		return fmt.Errorf("failed to create config file: %s, %w", r.filePath, err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// 埋め込まれたYAMLファイルの内容を取得してファイルに書き込み
 	templateData, err := GetConfigTemplate()
@@ -308,7 +308,7 @@ func (r *YamlConfigRepository) Save(config *Config) error {
 		}
 		return fmt.Errorf("failed to create config file: %s, %w", r.filePath, err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// 構造体をYAMLエンコードして書き込み（既存のテスト互換性のため）
 	data, err := yaml.Marshal(config)

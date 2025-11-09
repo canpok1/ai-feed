@@ -49,7 +49,7 @@ func (r *YamlProfileRepository) SaveProfileTemplate() error {
 		}
 		return fmt.Errorf("failed to create profile file: %s, %w", r.filePath, err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// 埋め込まれたYAMLファイルの内容を取得してファイルに書き込み
 	templateData, err := infra.GetProfileTemplate()
