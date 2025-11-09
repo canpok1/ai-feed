@@ -133,6 +133,11 @@ func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, 
 			} else {
 				fmt.Fprintln(cmd.OutOrStdout(), "  - コメントプロンプト: 未設定")
 			}
+			if result.Summary.FixedMessageConfigured {
+				fmt.Fprintln(cmd.OutOrStdout(), "  - 固定メッセージ: 設定済み")
+			} else {
+				fmt.Fprintln(cmd.OutOrStdout(), "  - 固定メッセージ: 未設定")
+			}
 			fmt.Fprintln(cmd.OutOrStdout(), "出力設定:")
 			if result.Summary.SlackConfigured {
 				fmt.Fprintln(cmd.OutOrStdout(), "  - Slack API: 設定済み")

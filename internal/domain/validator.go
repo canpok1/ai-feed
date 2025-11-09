@@ -32,6 +32,8 @@ type ConfigSummary struct {
 	SystemPromptConfigured bool
 	// CommentPromptConfigured はコメントプロンプトの設定状態
 	CommentPromptConfigured bool
+	// FixedMessageConfigured は固定メッセージの設定状態
+	FixedMessageConfigured bool
 	// SlackConfigured はSlack APIの設定状態
 	SlackConfigured bool
 	// MisskeyConfigured はMisskeyの設定状態

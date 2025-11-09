@@ -32,6 +32,7 @@ func (v *ConfigValidator) Validate() (*domain.ValidationResult, error) {
 			GeminiModel:             "",
 			SystemPromptConfigured:  false,
 			CommentPromptConfigured: false,
+			FixedMessageConfigured:  false,
 			SlackConfigured:         false,
 			MisskeyConfigured:       false,
 		},
@@ -147,6 +148,9 @@ func (v *ConfigValidator) validatePrompt(result *domain.ValidationResult) {
 	}
 	if prompt.CommentPromptTemplate != "" {
 		result.Summary.CommentPromptConfigured = true
+	}
+	if prompt.FixedMessage != "" {
+		result.Summary.FixedMessageConfigured = true
 	}
 }
 
