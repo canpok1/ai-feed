@@ -19,6 +19,7 @@ clean:
 	go clean
 	rm -f ${BINARY_NAME}
 	rm -rf ./dist
+	rm -f coverage.out coverage.html
 
 test:
 	go test ./...
@@ -30,6 +31,15 @@ test-performance:
 	go test -tags=integration -v -run="Performance" ./cmd/...
 
 test-all: test test-integration
+
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+
+test-coverage-check:
+	@go test -coverprofile=coverage.out ./...
+	@go tool cover -func=coverage.out | grep total | awk '{print $$3}' | sed 's/%//' | \
+	awk '{if ($$1 < 70) {print "Coverage " $$1 "% is below threshold 70%"; exit 1} else {print "Coverage " $$1 "% meets threshold 70%"}}'
 
 lint:
 	go vet ./...
