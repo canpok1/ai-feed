@@ -392,3 +392,116 @@ func TestIsDummyValue(t *testing.T) {
 		})
 	}
 }
+
+func TestConfigValidator_Validate_Cache(t *testing.T) {
+	tests := []struct {
+		name        string
+		config      *infra.Config
+		profile     *entity.Profile
+		expectValid bool
+		expectError bool
+	}{
+		{
+			name: "キャッシュ設定がnil（エラーなし）",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+				Cache:          nil,
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					CommentPromptTemplate: "test prompt template",
+				},
+			},
+			expectValid: true,
+			expectError: false,
+		},
+		{
+			name: "キャッシュ設定が正しい",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+				Cache: &infra.CacheConfig{
+					Enabled:       toPtr(true),
+					FilePath:      "~/.ai-feed/cache.jsonl",
+					MaxEntries:    1000,
+					RetentionDays: 30,
+				},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					CommentPromptTemplate: "test prompt template",
+				},
+			},
+			expectValid: true,
+			expectError: false,
+		},
+		{
+			name: "キャッシュのFilePathが空（デフォルト値が使用されエラーなし）",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+				Cache: &infra.CacheConfig{
+					Enabled:  toPtr(true),
+					FilePath: "",
+				},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					CommentPromptTemplate: "test prompt template",
+				},
+			},
+			expectValid: true,
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			validator := infra.NewConfigValidator(tt.config, tt.profile)
+			result, err := validator.Validate()
+			assert.NoError(t, err)
+
+			if tt.expectError {
+				assert.False(t, result.Valid)
+				assert.NotEmpty(t, result.Errors)
+				// キャッシュ関連のエラーが含まれているか確認
+				found := false
+				for _, e := range result.Errors {
+					if e.Field == "cache.file_path" || e.Field == "cache" {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found, "キャッシュ関連のエラーが見つかりませんでした")
+			} else {
+				if !tt.expectValid {
+					assert.False(t, result.Valid)
+				} else {
+					assert.True(t, result.Valid)
+					assert.Empty(t, result.Errors)
+				}
+			}
+		})
+	}
+}
+
+// toPtr はbool値のポインタを返すヘルパー関数
+func toPtr(b bool) *bool {
+	return &b
+}

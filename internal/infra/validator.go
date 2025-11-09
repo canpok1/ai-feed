@@ -42,6 +42,9 @@ func (v *ConfigValidator) Validate() (*domain.ValidationResult, error) {
 	// 出力先設定のバリデーション（設定されている場合のみ）
 	v.validateOutput(result)
 
+	// キャッシュ設定のバリデーション（設定されている場合のみ）
+	v.validateCache(result)
+
 	// エラーがある場合はValidをfalseに設定
 	if len(result.Errors) > 0 {
 		result.Valid = false
@@ -147,6 +150,40 @@ func (v *ConfigValidator) validateOutput(result *domain.ValidationResult) {
 	// Misskey設定のバリデーション
 	if output.Misskey != nil && output.Misskey.Enabled {
 		v.validateMisskey(output.Misskey, result)
+	}
+}
+
+// validateCache はキャッシュ設定をバリデーションする
+func (v *ConfigValidator) validateCache(result *domain.ValidationResult) {
+	if v.config.Cache == nil {
+		return
+	}
+
+	// entity化してバリデーション
+	cacheEntity, err := v.config.Cache.ToEntity()
+	if err != nil {
+		result.Errors = append(result.Errors, domain.ValidationError{
+			Field:   "cache",
+			Type:    domain.ValidationErrorTypeRequired,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if cacheEntity == nil {
+		return
+	}
+
+	// entity層のバリデーションを実行
+	validationResult := cacheEntity.Validate()
+	if !validationResult.IsValid {
+		for _, errMsg := range validationResult.Errors {
+			result.Errors = append(result.Errors, domain.ValidationError{
+				Field:   "cache.file_path",
+				Type:    domain.ValidationErrorTypeRequired,
+				Message: errMsg,
+			})
+		}
 	}
 }
 
