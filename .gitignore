@@ -45,3 +45,7 @@ tmp/
 
 # Serena memories (AI assistant memory files)
 .serena/memories/
+
+# Git worktrees directory (ignore all contents except .gitkeep)
+/worktrees/**
+!/worktrees/.gitkeep
