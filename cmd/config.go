@@ -57,6 +57,12 @@ func makeConfigCheckCmd() *cobra.Command {
 				currentProfile = &infra.Profile{}
 			}
 
+			// プロファイルをentity.Profileに変換
+			entityProfile, err := currentProfile.ToEntity()
+			if err != nil {
+				return fmt.Errorf("failed to convert profile to entity: %w", err)
+			}
+
 			// プロファイルファイルが指定されている場合は読み込んでマージ
 			if profilePath != "" {
 				slog.Debug("Loading profile", "profile_path", profilePath)
@@ -67,22 +73,7 @@ func makeConfigCheckCmd() *cobra.Command {
 					slog.Error("Failed to load profile", "profile_path", profilePath, "error", loadProfileErr)
 					return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
 				}
-
-				// currentProfileをentityに変換してマージ
-				entityProfile, err := currentProfile.ToEntity()
-				if err != nil {
-					return fmt.Errorf("failed to convert profile to entity: %w", err)
-				}
 				entityProfile.Merge(loadedProfile)
-
-				// バリデーションを実行して結果を返す
-				return validateAndPrint(cmd, config, entityProfile, verboseFlag)
-			}
-
-			// プロファイルファイルが指定されていない場合は、currentProfileをそのまま変換
-			entityProfile, err := currentProfile.ToEntity()
-			if err != nil {
-				return fmt.Errorf("failed to convert profile to entity: %w", err)
 			}
 
 			// バリデーションを実行して結果を返す
