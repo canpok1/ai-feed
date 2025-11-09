@@ -107,7 +107,7 @@ func (v *ConfigValidator) validateAI(result *domain.ValidationResult) {
 func (v *ConfigValidator) validatePrompt(result *domain.ValidationResult) {
 	if v.profile.Prompt == nil {
 		result.Errors = append(result.Errors, domain.ValidationError{
-			Field:   "comment_prompt_template",
+			Field:   "prompt",
 			Type:    domain.ValidationErrorTypeRequired,
 			Message: "プロンプト設定が設定されていません",
 		})

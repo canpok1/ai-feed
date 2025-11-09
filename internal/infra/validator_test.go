@@ -184,6 +184,28 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 			},
 		},
 		{
+			name: "プロンプト設定が未設定",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "prompt",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "プロンプト設定が設定されていません",
+				},
+			},
+		},
+		{
 			name: "コメントプロンプトテンプレートが未設定",
 			config: &infra.Config{
 				DefaultProfile: &infra.Profile{},
