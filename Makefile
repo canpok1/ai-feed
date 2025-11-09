@@ -4,6 +4,7 @@ VERSION?=dev
 setup:
 	go install go.uber.org/mock/mockgen@latest
 	go install golang.org/x/tools/cmd/goimports@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 run:
 	@go run main.go ${option}
@@ -32,6 +33,9 @@ test-all: test test-integration
 
 lint:
 	go vet ./...
+
+lint-all:
+	golangci-lint run ./...
 
 fmt:
 	go fmt ./...
