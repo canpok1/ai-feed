@@ -37,6 +37,8 @@ func Execute() error {
 
 	rootCmd.AddCommand(makeProfileCmd())
 
+	rootCmd.AddCommand(makeConfigCmd())
+
 	rootCmd.AddCommand(makeVersionCmd())
 
 	return rootCmd.Execute()
