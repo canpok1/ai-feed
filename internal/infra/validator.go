@@ -119,6 +119,15 @@ func (v *ConfigValidator) validatePrompt(result *domain.ValidationResult) {
 
 	prompt := v.profile.Prompt
 
+	// SystemPrompt のバリデーション
+	if err := entity.ValidateRequired(prompt.SystemPrompt, "システムプロンプト"); err != nil {
+		result.Errors = append(result.Errors, domain.ValidationError{
+			Field:   "prompt.system_prompt",
+			Type:    domain.ValidationErrorTypeRequired,
+			Message: err.Error(),
+		})
+	}
+
 	// CommentPromptTemplate のバリデーション
 	if prompt.CommentPromptTemplate == "" {
 		result.Errors = append(result.Errors, domain.ValidationError{

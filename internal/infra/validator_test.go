@@ -32,6 +32,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 			},
@@ -60,6 +61,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 				Output: &entity.OutputConfig{
@@ -95,6 +97,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 				Output: &entity.OutputConfig{
@@ -146,6 +149,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 			},
 			profile: &entity.Profile{
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 			},
@@ -171,6 +175,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 			},
@@ -206,6 +211,31 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 			},
 		},
 		{
+			name: "システムプロンプトが未設定",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					CommentPromptTemplate: "test prompt template",
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "prompt.system_prompt",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "システムプロンプトが設定されていません",
+				},
+			},
+		},
+		{
 			name: "コメントプロンプトテンプレートが未設定",
 			config: &infra.Config{
 				DefaultProfile: &infra.Profile{},
@@ -217,7 +247,9 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 						APIKey: entity.NewSecretString("valid-api-key-12345"),
 					},
 				},
-				Prompt: &entity.PromptConfig{},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt: "test system prompt",
+				},
 			},
 			expectValid: false,
 			expectError: []domain.ValidationError{
@@ -241,6 +273,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 				Output: &entity.OutputConfig{
@@ -289,6 +322,7 @@ func TestConfigValidator_WithProfileMerge(t *testing.T) {
 				},
 			},
 			Prompt: &infra.PromptConfig{
+				SystemPrompt:          "default system prompt",
 				CommentPromptTemplate: "default template",
 			},
 		},
@@ -308,6 +342,8 @@ func TestConfigValidator_WithProfileMerge(t *testing.T) {
 	profileContent := `ai:
   gemini:
     api_key: valid-profile-api-key
+prompt:
+  system_prompt: test system prompt
 `
 	_, err = profileFile.WriteString(profileContent)
 	assert.NoError(t, err)
@@ -374,6 +410,7 @@ func TestIsDummyValue(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 			}
@@ -415,6 +452,7 @@ func TestConfigValidator_Validate_Cache(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 			},
@@ -440,6 +478,7 @@ func TestConfigValidator_Validate_Cache(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 			},
@@ -463,6 +502,7 @@ func TestConfigValidator_Validate_Cache(t *testing.T) {
 					},
 				},
 				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
 					CommentPromptTemplate: "test prompt template",
 				},
 			},

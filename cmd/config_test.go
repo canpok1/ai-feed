@@ -41,6 +41,7 @@ func TestConfigCheckCmd_Success(t *testing.T) {
 				},
 			},
 			Prompt: &infra.PromptConfig{
+				SystemPrompt:          "test system prompt",
 				CommentPromptTemplate: "test prompt template",
 			},
 		},
@@ -79,6 +80,7 @@ func TestConfigCheckCmd_WithVerbose(t *testing.T) {
 				},
 			},
 			Prompt: &infra.PromptConfig{
+				SystemPrompt:          "test system prompt",
 				CommentPromptTemplate: "test prompt template",
 			},
 		},
@@ -123,6 +125,7 @@ func TestConfigCheckCmd_ValidationError(t *testing.T) {
 				},
 			},
 			Prompt: &infra.PromptConfig{
+				SystemPrompt:          "test system prompt",
 				CommentPromptTemplate: "test prompt template",
 			},
 		},
@@ -163,6 +166,7 @@ func TestConfigCheckCmd_WithProfile(t *testing.T) {
 				},
 			},
 			Prompt: &infra.PromptConfig{
+				SystemPrompt:          "test system prompt",
 				CommentPromptTemplate: "test prompt template",
 			},
 		},
@@ -179,6 +183,8 @@ func TestConfigCheckCmd_WithProfile(t *testing.T) {
 	profileContent := `ai:
   gemini:
     api_key: valid-profile-api-key
+prompt:
+  system_prompt: test system prompt
 `
 	_, err = profileFile.WriteString(profileContent)
 	assert.NoError(t, err)
@@ -235,6 +241,7 @@ func TestConfigCheckCmd_ProfileNotFound(t *testing.T) {
 				},
 			},
 			Prompt: &infra.PromptConfig{
+				SystemPrompt:          "test system prompt",
 				CommentPromptTemplate: "test prompt template",
 			},
 		},
