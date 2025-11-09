@@ -141,6 +141,12 @@ func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, 
 			fmt.Fprintln(cmd.OutOrStdout(), "出力設定:")
 			if result.Summary.SlackConfigured {
 				fmt.Fprintln(cmd.OutOrStdout(), "  - Slack API: 設定済み")
+				fmt.Fprintf(cmd.OutOrStdout(), "    - チャンネル: %s\n", result.Summary.SlackChannel)
+				if result.Summary.SlackMessageTemplateConfigured {
+					fmt.Fprintln(cmd.OutOrStdout(), "    - メッセージテンプレート: 設定済み")
+				} else {
+					fmt.Fprintln(cmd.OutOrStdout(), "    - メッセージテンプレート: 未設定")
+				}
 			} else {
 				fmt.Fprintln(cmd.OutOrStdout(), "  - Slack API: 未設定")
 			}

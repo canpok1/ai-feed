@@ -36,6 +36,10 @@ type ConfigSummary struct {
 	FixedMessageConfigured bool
 	// SlackConfigured はSlack APIの設定状態
 	SlackConfigured bool
+	// SlackChannel はSlackチャンネル
+	SlackChannel string
+	// SlackMessageTemplateConfigured はSlackメッセージテンプレートの設定状態
+	SlackMessageTemplateConfigured bool
 	// MisskeyConfigured はMisskeyの設定状態
 	MisskeyConfigured bool
 }

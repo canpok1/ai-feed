@@ -28,13 +28,15 @@ func (v *ConfigValidator) Validate() (*domain.ValidationResult, error) {
 		Valid:  true,
 		Errors: []domain.ValidationError{},
 		Summary: domain.ConfigSummary{
-			GeminiConfigured:        false,
-			GeminiModel:             "",
-			SystemPromptConfigured:  false,
-			CommentPromptConfigured: false,
-			FixedMessageConfigured:  false,
-			SlackConfigured:         false,
-			MisskeyConfigured:       false,
+			GeminiConfigured:               false,
+			GeminiModel:                    "",
+			SystemPromptConfigured:         false,
+			CommentPromptConfigured:        false,
+			FixedMessageConfigured:         false,
+			SlackConfigured:                false,
+			SlackChannel:                   "",
+			SlackMessageTemplateConfigured: false,
+			MisskeyConfigured:              false,
 		},
 	}
 
@@ -261,6 +263,10 @@ func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result 
 	// サマリーの更新
 	if !slack.APIToken.IsEmpty() && !isDummyValue(slack.APIToken.Value()) && slack.Channel != "" {
 		result.Summary.SlackConfigured = true
+		result.Summary.SlackChannel = slack.Channel
+		if slack.MessageTemplate != nil && strings.TrimSpace(*slack.MessageTemplate) != "" {
+			result.Summary.SlackMessageTemplateConfigured = true
+		}
 	}
 }
 
