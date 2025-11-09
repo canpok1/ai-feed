@@ -122,6 +122,82 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Slack IconURLのみが設定されている",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-slack-token"),
+						Channel:         "test-channel",
+						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+						IconURL:         strPtr("https://example.com/icon.png"),
+					},
+				},
+			},
+			want: &domain.ValidationResult{
+				Valid:  true,
+				Errors: []domain.ValidationError{},
+				Summary: domain.ConfigSummary{
+					GeminiConfigured:        true,
+					GeminiModel:             "gemini-1.5-flash",
+					CommentPromptConfigured: true,
+					SlackConfigured:         true,
+					MisskeyConfigured:       false,
+				},
+			},
+		},
+		{
+			name: "Slack IconEmojiのみが設定されている",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-slack-token"),
+						Channel:         "test-channel",
+						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+						IconEmoji:       strPtr(":robot_face:"),
+					},
+				},
+			},
+			want: &domain.ValidationResult{
+				Valid:  true,
+				Errors: []domain.ValidationError{},
+				Summary: domain.ConfigSummary{
+					GeminiConfigured:        true,
+					GeminiModel:             "gemini-1.5-flash",
+					CommentPromptConfigured: true,
+					SlackConfigured:         true,
+					MisskeyConfigured:       false,
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -497,6 +573,42 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 					Field:   "output.misskey.message_template",
 					Type:    domain.ValidationErrorTypeRequired,
 					Message: "Misskeyメッセージテンプレートが無効です: template: misskey_message:1: unclosed action",
+				},
+			},
+		},
+		{
+			name: "Slack IconURLとIconEmojiが両方設定されている",
+			config: &infra.Config{
+				DefaultProfile: &infra.Profile{},
+			},
+			profile: &entity.Profile{
+				AI: &entity.AIConfig{
+					Gemini: &entity.GeminiConfig{
+						Type:   "gemini-1.5-flash",
+						APIKey: entity.NewSecretString("valid-api-key-12345"),
+					},
+				},
+				Prompt: &entity.PromptConfig{
+					SystemPrompt:          "test system prompt",
+					CommentPromptTemplate: "test prompt template",
+				},
+				Output: &entity.OutputConfig{
+					SlackAPI: &entity.SlackAPIConfig{
+						Enabled:         true,
+						APIToken:        entity.NewSecretString("valid-slack-token"),
+						Channel:         "test-channel",
+						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+						IconURL:         strPtr("https://example.com/icon.png"),
+						IconEmoji:       strPtr(":robot_face:"),
+					},
+				},
+			},
+			expectValid: false,
+			expectError: []domain.ValidationError{
+				{
+					Field:   "output.slack_api",
+					Type:    domain.ValidationErrorTypeRequired,
+					Message: "Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。",
 				},
 			},
 		},

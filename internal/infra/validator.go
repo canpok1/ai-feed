@@ -241,6 +241,15 @@ func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result 
 		}
 	}
 
+	// IconURL と IconEmoji の排他チェック
+	if slack.IconURL != nil && *slack.IconURL != "" && slack.IconEmoji != nil && *slack.IconEmoji != "" {
+		result.Errors = append(result.Errors, domain.ValidationError{
+			Field:   "output.slack_api",
+			Type:    domain.ValidationErrorTypeRequired,
+			Message: "Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。",
+		})
+	}
+
 	// サマリーの更新
 	if !slack.APIToken.IsEmpty() && !isDummyValue(slack.APIToken.Value()) && slack.Channel != "" {
 		result.Summary.SlackConfigured = true
