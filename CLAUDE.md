@@ -21,6 +21,15 @@ make test
 # コードの静的解析（重要：コミット前に必ず実行）
 make lint
 
+# golangci-lintによる包括的な静的解析
+make lint-all
+
+# テストカバレッジレポート生成（HTML形式）
+make test-coverage
+
+# テストカバレッジ閾値チェック（70%目標）
+make test-coverage-check
+
 # コードのフォーマット
 make fmt
 
