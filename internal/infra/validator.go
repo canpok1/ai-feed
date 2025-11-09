@@ -2,7 +2,6 @@ package infra
 
 import (
 	"github.com/canpok1/ai-feed/internal/domain"
-	domainfra "github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
@@ -152,7 +151,7 @@ func (v *ConfigValidator) validateOutput(result *domain.ValidationResult) {
 }
 
 // validateSlackAPI はSlack API設定をバリデーションする
-func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result *domainfra.ValidationResult) {
+func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result *domain.ValidationResult) {
 	if slack.APIToken.IsEmpty() {
 		result.Errors = append(result.Errors, domain.ValidationError{
 			Field:   "output.slack_api.api_token",
@@ -182,7 +181,7 @@ func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result 
 }
 
 // validateMisskey はMisskey設定をバリデーションする
-func (v *ConfigValidator) validateMisskey(misskey *entity.MisskeyConfig, result *domainfra.ValidationResult) {
+func (v *ConfigValidator) validateMisskey(misskey *entity.MisskeyConfig, result *domain.ValidationResult) {
 	if misskey.APIToken.IsEmpty() {
 		result.Errors = append(result.Errors, domain.ValidationError{
 			Field:   "output.misskey.api_token",

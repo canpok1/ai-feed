@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
@@ -74,23 +75,8 @@ func makeConfigCheckCmd() *cobra.Command {
 				}
 				entityProfile.Merge(loadedProfile)
 
-				// バリデータに渡すためにentityProfileを使用
-				validator := infra.NewConfigValidator(config, entityProfile)
-				result, validateErr := validator.Validate()
-				if validateErr != nil {
-					return fmt.Errorf("failed to validate config: %w", validateErr)
-				}
-
-				// バリデーション結果を出力
-				printValidationResult(cmd, result, verboseFlag)
-
-				// バリデーション失敗時は終了コード1
-				if !result.Valid {
-					return fmt.Errorf("設定ファイルのバリデーションに失敗しました")
-				}
-
-				slog.Debug("Config check command completed successfully")
-				return nil
+				// バリデーションを実行して結果を返す
+				return validateAndPrint(cmd, config, entityProfile, verboseFlag)
 			}
 
 			// プロファイルファイルが指定されていない場合は、currentProfileをそのまま変換
@@ -99,23 +85,8 @@ func makeConfigCheckCmd() *cobra.Command {
 				return fmt.Errorf("failed to convert profile to entity: %w", err)
 			}
 
-			// バリデーション実行
-			validator := infra.NewConfigValidator(config, entityProfile)
-			result, validateErr := validator.Validate()
-			if validateErr != nil {
-				return fmt.Errorf("failed to validate config: %w", validateErr)
-			}
-
-			// バリデーション結果を出力
-			printValidationResult(cmd, result, verboseFlag)
-
-			// バリデーション失敗時は終了コード1
-			if !result.Valid {
-				return fmt.Errorf("設定ファイルのバリデーションに失敗しました")
-			}
-
-			slog.Debug("Config check command completed successfully")
-			return nil
+			// バリデーションを実行して結果を返す
+			return validateAndPrint(cmd, config, entityProfile, verboseFlag)
 		},
 	}
 
@@ -124,6 +95,26 @@ func makeConfigCheckCmd() *cobra.Command {
 	cmd.SilenceUsage = true
 
 	return cmd
+}
+
+// validateAndPrint はバリデーションを実行して結果を出力する
+func validateAndPrint(cmd *cobra.Command, config *infra.Config, entityProfile *entity.Profile, verboseFlag bool) error {
+	validator := infra.NewConfigValidator(config, entityProfile)
+	result, validateErr := validator.Validate()
+	if validateErr != nil {
+		return fmt.Errorf("failed to validate config: %w", validateErr)
+	}
+
+	// バリデーション結果を出力
+	printValidationResult(cmd, result, verboseFlag)
+
+	// バリデーション失敗時は終了コード1
+	if !result.Valid {
+		return fmt.Errorf("設定ファイルのバリデーションに失敗しました")
+	}
+
+	slog.Debug("Config check command completed successfully")
+	return nil
 }
 
 // printValidationResult はバリデーション結果を出力する
