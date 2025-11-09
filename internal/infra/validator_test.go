@@ -42,6 +42,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				Summary: domain.ConfigSummary{
 					GeminiConfigured:        true,
 					GeminiModel:             "gemini-1.5-flash",
+					SystemPromptConfigured:  true,
 					CommentPromptConfigured: true,
 					SlackConfigured:         false,
 					MisskeyConfigured:       false,
@@ -79,6 +80,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				Summary: domain.ConfigSummary{
 					GeminiConfigured:        true,
 					GeminiModel:             "gemini-1.5-flash",
+					SystemPromptConfigured:  true,
 					CommentPromptConfigured: true,
 					SlackConfigured:         true,
 					MisskeyConfigured:       false,
@@ -116,6 +118,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				Summary: domain.ConfigSummary{
 					GeminiConfigured:        true,
 					GeminiModel:             "gemini-1.5-flash",
+					SystemPromptConfigured:  true,
 					CommentPromptConfigured: true,
 					SlackConfigured:         false,
 					MisskeyConfigured:       true,
@@ -154,6 +157,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				Summary: domain.ConfigSummary{
 					GeminiConfigured:        true,
 					GeminiModel:             "gemini-1.5-flash",
+					SystemPromptConfigured:  true,
 					CommentPromptConfigured: true,
 					SlackConfigured:         true,
 					MisskeyConfigured:       false,
@@ -192,6 +196,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				Summary: domain.ConfigSummary{
 					GeminiConfigured:        true,
 					GeminiModel:             "gemini-1.5-flash",
+					SystemPromptConfigured:  true,
 					CommentPromptConfigured: true,
 					SlackConfigured:         true,
 					MisskeyConfigured:       false,

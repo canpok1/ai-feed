@@ -30,6 +30,7 @@ func (v *ConfigValidator) Validate() (*domain.ValidationResult, error) {
 		Summary: domain.ConfigSummary{
 			GeminiConfigured:        false,
 			GeminiModel:             "",
+			SystemPromptConfigured:  false,
 			CommentPromptConfigured: false,
 			SlackConfigured:         false,
 			MisskeyConfigured:       false,
@@ -141,6 +142,9 @@ func (v *ConfigValidator) validatePrompt(result *domain.ValidationResult) {
 	}
 
 	// サマリーの更新
+	if prompt.SystemPrompt != "" {
+		result.Summary.SystemPromptConfigured = true
+	}
 	if prompt.CommentPromptTemplate != "" {
 		result.Summary.CommentPromptConfigured = true
 	}

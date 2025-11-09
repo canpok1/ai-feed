@@ -28,6 +28,8 @@ type ConfigSummary struct {
 	GeminiConfigured bool
 	// GeminiModel は設定されているGeminiモデル
 	GeminiModel string
+	// SystemPromptConfigured はシステムプロンプトの設定状態
+	SystemPromptConfigured bool
 	// CommentPromptConfigured はコメントプロンプトの設定状態
 	CommentPromptConfigured bool
 	// SlackConfigured はSlack APIの設定状態

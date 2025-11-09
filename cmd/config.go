@@ -123,6 +123,11 @@ func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, 
 				fmt.Fprintln(cmd.OutOrStdout(), "  - Gemini API: 未設定")
 			}
 			fmt.Fprintln(cmd.OutOrStdout(), "プロンプト設定:")
+			if result.Summary.SystemPromptConfigured {
+				fmt.Fprintln(cmd.OutOrStdout(), "  - システムプロンプト: 設定済み")
+			} else {
+				fmt.Fprintln(cmd.OutOrStdout(), "  - システムプロンプト: 未設定")
+			}
 			if result.Summary.CommentPromptConfigured {
 				fmt.Fprintln(cmd.OutOrStdout(), "  - コメントプロンプト: 設定済み")
 			} else {
