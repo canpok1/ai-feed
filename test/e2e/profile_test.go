@@ -120,8 +120,8 @@ func TestProfileCommand_Check(t *testing.T) {
 		name              string
 		profileFileName   string // 空文字列の場合はプロファイルファイルなし
 		wantOutputContain string
+		wantErrorContains []string // 期待されるエラーメッセージのリスト
 		wantError         bool
-		checkErrorList    bool
 	}{
 		{
 			name:              "有効なプロファイルで検証が成功する",
@@ -139,8 +139,11 @@ func TestProfileCommand_Check(t *testing.T) {
 			name:              "無効なプロファイルでエラーが検出される",
 			profileFileName:   "invalid_profile.yml",
 			wantOutputContain: "プロファイルの検証に失敗しました",
-			wantError:         true,
-			checkErrorList:    true,
+			wantErrorContains: []string{
+				"AI設定が設定されていません",
+				"出力設定が設定されていません",
+			},
+			wantError: true,
 		},
 		{
 			name:              "プロファイルファイルが存在しない場合、エラーが発生する",
@@ -197,9 +200,9 @@ func TestProfileCommand_Check(t *testing.T) {
 				assert.Contains(t, output, tt.wantOutputContain, "期待される出力メッセージが含まれているはずです")
 			}
 
-			// エラーリストの確認
-			if tt.checkErrorList {
-				assert.Contains(t, output, "エラー:", "エラー項目が表示されているはずです")
+			// 具体的なエラーメッセージの確認
+			for _, expectedError := range tt.wantErrorContains {
+				assert.Contains(t, output, expectedError, "期待されるエラーメッセージが含まれているはずです")
 			}
 		})
 	}
