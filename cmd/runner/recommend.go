@@ -243,7 +243,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	}
 
 	// 進行状況メッセージ: 記事選定とコメント生成の完了
-	fmt.Fprintln(r.stderr, "記事選定とコメント生成が完了しました")
+	fmt.Fprintf(r.stderr, "記事選定とコメント生成が完了しました: %s\n", recommend.Article.Title)
 
 	// AIが生成したコメントをユーザーに表示
 	if recommend.Comment != nil && *recommend.Comment != "" {
