@@ -469,17 +469,85 @@ test/e2e/
 ├── .gitkeep
 ├── helper.go              # 共通ヘルパー関数
 ├── init_test.go           # initコマンドのE2Eテスト
-├── mock/                  # モック用データ
-│   └── .gitkeep
+├── config_test.go         # configコマンドのE2Eテスト
+├── profile_test.go        # profileコマンドのE2Eテスト
+├── recommend_test.go      # recommendコマンドのE2Eテスト
+├── mock/                  # モックサーバー実装
+│   ├── rss.go            # RSS/Atomフィードモックサーバー
+│   ├── slack.go          # Slackモックサーバー
+│   └── misskey.go        # Misskeyモックサーバー
 └── testdata/              # テストデータ
     ├── .gitkeep
     ├── configs/           # テスト用設定ファイル
     │   └── .gitkeep
     ├── feeds/             # テスト用フィードデータ
-    │   └── .gitkeep
+    │   ├── valid_rss.xml
+    │   ├── valid_atom.xml
+    │   ├── empty_feed.xml
+    │   ├── single_article_feed.xml
+    │   └── invalid_feed.xml
     └── profiles/          # テスト用プロファイル
         └── .gitkeep
 ```
+
+### recommendコマンドのE2Eテスト
+
+recommendコマンドは実際のGemini APIを使用するため、特別な設定が必要です。
+
+#### 環境変数の設定
+
+```bash
+# Gemini APIキーを設定（必須）
+export GEMINI_API_KEY=your_gemini_api_key_here
+
+# E2Eテストを実行
+make test-e2e
+```
+
+**重要**: `GEMINI_API_KEY`環境変数が設定されていない場合、エラーメッセージが表示されテストは実行されません。
+
+#### モックサーバーの使用
+
+recommendコマンドのE2Eテストでは、以下のモックサーバーを使用します：
+
+1. **RSSフィードモックサーバー** (`test/e2e/mock/rss.go`)
+   - `NewMockRSSHandler()`: 標準的なRSSフィードを返す
+   - `NewMockAtomHandler()`: Atomフィードを返す
+   - `NewMockEmptyFeedHandler()`: 空のフィードを返す
+   - `NewMockInvalidFeedHandler()`: 不正なXMLを返す
+   - `NewMockErrorHandler(statusCode)`: 指定したHTTPエラーを返す
+
+2. **Slackモックサーバー** (`test/e2e/mock/slack.go`)
+   - Slack Webhookへのメッセージ送信を受信・記録
+   - `ReceivedMessage()`: メッセージ受信確認
+   - `GetMessages()`: 受信したメッセージ一覧取得
+   - `Reset()`: 状態リセット
+
+3. **Misskeyモックサーバー** (`test/e2e/mock/misskey.go`)
+   - Misskeyのノート作成APIを模倣
+   - `ReceivedNote()`: ノート受信確認
+   - `GetNotes()`: 受信したノート一覧取得
+   - `Reset()`: 状態リセット
+
+#### テストケース
+
+- `TestRecommendCommand_WithRealGeminiAPI`: 実際のGemini APIを使用した正常系テスト
+- `TestRecommendCommand_WithMisskey`: Misskeyへの出力テスト
+- `TestRecommendCommand_MultipleOutputs`: 複数出力先(Slack+Misskey)テスト
+- `TestRecommendCommand_EmptyFeed`: 空フィードの処理テスト
+- `TestRecommendCommand_InvalidFeed`: 不正なフィードの処理テスト
+- `TestRecommendCommand_WithProfile`: プロファイル使用時のテスト
+
+#### GitHub ActionsでのE2Eテスト実行
+
+リポジトリのSecretsに`GEMINI_API_KEY`を設定することで、CIでもE2Eテストが実行されます：
+
+1. GitHub リポジトリ > Settings > Secrets and variables > Actions
+2. "New repository secret" をクリック
+3. Name: `GEMINI_API_KEY`、Secret: Gemini APIキーを入力
+4. "Add secret" をクリック
+
+設定後、プルリクエストやmainブランチへのプッシュ時に自動的にE2Eテストが実行されます。
 
 ### E2Eテストのベストプラクティス
 
@@ -509,6 +577,14 @@ test/e2e/
 4. **実行環境を汚さない**
    - 一時ディレクトリ内で作業する
    - テスト後にクリーンアップする（t.TempDirが自動的に行う）
+
+5. **外部APIを使用するテストはスキップ可能にする**
+   ```go
+   geminiAPIKey := os.Getenv("GEMINI_API_KEY")
+   if geminiAPIKey == "" {
+       t.Skip("GEMINI_API_KEY環境変数が設定されていないためスキップします")
+   }
+   ```
 
 ### E2Eテストのトラブルシューティング
 

@@ -189,6 +189,8 @@ type SlackAPIConfig struct {
 	Username        *string `yaml:"username,omitempty"`
 	IconURL         *string `yaml:"icon_url,omitempty"`
 	IconEmoji       *string `yaml:"icon_emoji,omitempty"`
+	// APIURL はテスト用にSlack APIのエンドポイントURLをオーバーライドする（オプショナル）
+	APIURL *string `yaml:"api_url,omitempty"`
 }
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
@@ -220,6 +222,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 		Username:        c.Username,
 		IconURL:         c.IconURL,
 		IconEmoji:       c.IconEmoji,
+		APIURL:          c.APIURL,
 	}, nil
 }
 

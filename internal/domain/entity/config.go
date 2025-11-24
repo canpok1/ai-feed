@@ -273,6 +273,8 @@ type SlackAPIConfig struct {
 	Username        *string
 	IconURL         *string
 	IconEmoji       *string
+	// APIURL はテスト用にSlack APIのエンドポイントURLをオーバーライドする（オプショナル）
+	APIURL *string
 }
 
 // Validate はSlackAPIConfigの内容をバリデーションする

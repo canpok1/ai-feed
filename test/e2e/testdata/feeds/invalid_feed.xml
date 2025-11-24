@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Invalid Feed</title>
+    <link>https://example.com</link>
+    <description>Invalid Feed for Testing</description>
+    <item>
+      <title>閉じタグがない記事
+      <link>https://example.com/broken-article
+      <description>この記事のXMLは正しく閉じられていません
+    </item>
+  </channel>

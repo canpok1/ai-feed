@@ -54,7 +54,13 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			if !slackConfig.Enabled {
 				slog.Info("Slack API output is disabled (enabled: false)")
 			} else {
-				slackClient := slack.New(slackConfig.APIToken.Value())
+				// Slackクライアントのオプションを設定
+				options := []slack.Option{}
+				if slackConfig.APIURL != nil && *slackConfig.APIURL != "" {
+					// テスト用：カスタムAPIエンドポイントを設定
+					options = append(options, slack.OptionAPIURL(*slackConfig.APIURL))
+				}
+				slackClient := slack.New(slackConfig.APIToken.Value(), options...)
 				slackViewer := message.NewSlackSender(slackConfig, slackClient)
 				viewers = append(viewers, slackViewer)
 			}
