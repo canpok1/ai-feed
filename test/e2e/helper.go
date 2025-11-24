@@ -139,13 +139,11 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 		DefaultProfile *struct {
 			AI     *infra.AIConfig     `yaml:"ai,omitempty"`
 			Output *infra.OutputConfig `yaml:"output,omitempty"`
-			Feeds  []string            `yaml:"feeds,omitempty"` // テスト用のfeedsフィールド（実際のProfileには存在しない）
 		} `yaml:"default_profile,omitempty"`
 	}{
 		DefaultProfile: &struct {
 			AI     *infra.AIConfig     `yaml:"ai,omitempty"`
 			Output *infra.OutputConfig `yaml:"output,omitempty"`
-			Feeds  []string            `yaml:"feeds,omitempty"`
 		}{
 			// AI設定
 			AI: &infra.AIConfig{
@@ -154,8 +152,6 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 					APIKey: params.GeminiAPIKey,
 				},
 			},
-			// Feeds設定（テスト用）
-			Feeds: params.FeedURLs,
 		},
 	}
 

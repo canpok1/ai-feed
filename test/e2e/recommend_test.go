@@ -39,7 +39,7 @@ func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
 	changeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend")
+	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
 	assert.NoError(t, err, "recommendコマンドは成功するはずです")
@@ -85,7 +85,7 @@ func TestRecommendCommand_WithMisskey(t *testing.T) {
 	changeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend")
+	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
 	assert.NoError(t, err, "recommendコマンドは成功するはずです")
@@ -133,7 +133,7 @@ func TestRecommendCommand_MultipleOutputs(t *testing.T) {
 	changeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend")
+	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
 	assert.NoError(t, err, "recommendコマンドは成功するはずです")
@@ -185,7 +185,7 @@ func TestRecommendCommand_EmptyFeed(t *testing.T) {
 	changeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend")
+	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// 空のフィードの場合、エラーなく正常終了する
 	require.NoError(t, err, "空フィードの場合、コマンドはエラーなく終了するはずです")
@@ -223,7 +223,7 @@ func TestRecommendCommand_InvalidFeed(t *testing.T) {
 	changeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend")
+	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// 不正なフィードの場合、エラーが発生するか、エラーメッセージが出力される
 	if err != nil {
