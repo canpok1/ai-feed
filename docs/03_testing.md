@@ -334,6 +334,207 @@ func TestRealAPIIntegration(t *testing.T) {
 go test -tags=integration ./...
 ```
 
+## E2Eテスト (End-to-End Testing)
+
+### E2Eテストの概要
+
+E2Eテストは、実際のバイナリを実行してエンドユーザーの視点で動作を検証するテストです。
+
+#### テストの種類の違い
+
+| テストの種類 | 対象範囲 | 実行方法 | 目的 |
+|------------|---------|---------|------|
+| ユニットテスト | 関数・メソッド単位 | パッケージを直接テスト | 個別のロジックの正確性 |
+| 統合テスト | 複数コンポーネント | ビルドタグ`integration` | コンポーネント間の連携 |
+| E2Eテスト | アプリケーション全体 | ビルドタグ`e2e` | 実際のユーザー操作の再現 |
+
+### E2Eテストの実行方法
+
+```bash
+# E2Eテストを実行
+make test-e2e
+
+# または直接実行
+go test -tags=e2e -v ./test/e2e/...
+
+# 特定のテストのみ実行
+go test -tags=e2e -v -run TestInitCommand ./test/e2e/
+```
+
+### ビルドタグの使用
+
+E2Eテストファイルには`//go:build e2e`タグを追加します：
+
+```go
+//go:build e2e
+
+package e2e
+
+import (
+    "testing"
+)
+
+func TestInitCommand_CreateConfigFile(t *testing.T) {
+    // E2Eテストの実装
+}
+```
+
+このタグにより、通常の`go test`では実行されず、`-tags=e2e`を指定した時のみ実行されます。
+
+### E2Eテストの書き方
+
+E2Eテストでは、共通ヘルパー関数を使用してバイナリをビルド・実行します：
+
+```go
+//go:build e2e
+
+package e2e
+
+import (
+    "testing"
+    "github.com/stretchr/testify/assert"
+)
+
+func TestInitCommand_CreateConfigFile(t *testing.T) {
+    // バイナリをビルド
+    binaryPath := BuildBinary(t)
+
+    // 一時ディレクトリを作成
+    tmpDir := t.TempDir()
+
+    // 一時ディレクトリに移動
+    os.Chdir(tmpDir)
+
+    // コマンドを実行
+    output, err := ExecuteCommand(t, binaryPath, "init")
+
+    // 結果を検証
+    assert.NoError(t, err)
+    assert.Contains(t, output, "config.yml を生成しました")
+
+    // ファイルが作成されたことを確認
+    _, err = os.Stat("config.yml")
+    assert.NoError(t, err)
+}
+```
+
+### E2Eヘルパー関数
+
+`test/e2e/helper.go`には以下のヘルパー関数が定義されています：
+
+#### GetProjectRoot
+
+プロジェクトのルートディレクトリパスを取得します。
+
+```go
+projectRoot := GetProjectRoot(t)
+```
+
+#### BuildBinary
+
+テスト用のバイナリをビルドし、一時ディレクトリに配置します。
+
+```go
+binaryPath := BuildBinary(t)
+```
+
+#### ExecuteCommand
+
+バイナリを実行し、標準出力と標準エラー出力を結合して返します。
+
+```go
+output, err := ExecuteCommand(t, binaryPath, "init")
+```
+
+#### CreateTestConfig
+
+テスト用の設定ファイルを作成します。
+
+```go
+configPath := CreateTestConfig(t, tmpDir, TestConfigParams{
+    DefaultProfile: map[string]interface{}{
+        "ai": map[string]interface{}{
+            "gemini": map[string]interface{}{
+                "type": "gemini-2.5-flash",
+            },
+        },
+    },
+})
+```
+
+### E2Eテストのディレクトリ構造
+
+```
+test/e2e/
+├── .gitkeep
+├── helper.go              # 共通ヘルパー関数
+├── init_test.go           # initコマンドのE2Eテスト
+├── mock/                  # モック用データ
+│   └── .gitkeep
+└── testdata/              # テストデータ
+    ├── .gitkeep
+    ├── configs/           # テスト用設定ファイル
+    │   └── .gitkeep
+    ├── feeds/             # テスト用フィードデータ
+    │   └── .gitkeep
+    └── profiles/          # テスト用プロファイル
+        └── .gitkeep
+```
+
+### E2Eテストのベストプラクティス
+
+1. **一時ディレクトリを使用する**
+   ```go
+   tmpDir := t.TempDir()  // テスト終了時に自動削除される
+   ```
+
+2. **実際のバイナリをビルドして実行する**
+   ```go
+   binaryPath := BuildBinary(t)
+   output, err := ExecuteCommand(t, binaryPath, "command", "args")
+   ```
+
+3. **テーブル駆動テストを使用する**
+   ```go
+   tests := []struct {
+       name    string
+       args    []string
+       wantErr bool
+   }{
+       {name: "正常系", args: []string{"init"}, wantErr: false},
+       {name: "異常系", args: []string{"invalid"}, wantErr: true},
+   }
+   ```
+
+4. **実行環境を汚さない**
+   - 一時ディレクトリ内で作業する
+   - テスト後にクリーンアップする（t.TempDirが自動的に行う）
+
+### E2Eテストのトラブルシューティング
+
+#### バイナリのビルドに失敗する
+
+```bash
+# プロジェクトルートで手動ビルドして確認
+go build -o /tmp/ai-feed .
+```
+
+#### テストが一時ディレクトリ外で実行される
+
+```go
+// 明示的にディレクトリを変更し、クリーンアップを設定
+originalWd, _ := os.Getwd()
+os.Chdir(tmpDir)
+t.Cleanup(func() {
+    os.Chdir(originalWd)
+})
+```
+
+#### E2Eテストが通常のテストで実行される
+
+- ファイル先頭に`//go:build e2e`タグがあることを確認
+- `go test`ではなく`go test -tags=e2e`で実行
+
 ## ベンチマークテスト
 
 ### ベンチマークの書き方
