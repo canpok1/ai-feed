@@ -66,6 +66,17 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				currentProfile.Merge(loadedProfile)
 			}
 
+			// プロファイルのバリデーション
+			validationResult := currentProfile.Validate()
+			if !validationResult.IsValid {
+				fmt.Fprintln(cmd.ErrOrStderr(), "設定の検証に失敗しました:")
+				for _, errMsg := range validationResult.Errors {
+					fmt.Fprintf(cmd.ErrOrStderr(), "  エラー: %s\n", errMsg)
+				}
+				slog.Error("Profile validation failed", "errors", validationResult.Errors)
+				return fmt.Errorf("プロファイルの検証に失敗しました")
+			}
+
 			// Recommender を作成
 			recommender := domain.NewRandomRecommender(
 				comment.NewCommentGeneratorFactory(),
