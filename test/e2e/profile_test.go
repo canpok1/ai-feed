@@ -100,9 +100,9 @@ func TestProfileCommand_Init(t *testing.T) {
 				assert.NoError(t, yamlErr, "YAMLフォーマットが正しいはずです")
 
 				// テンプレートに必要なセクションが含まれているか確認
-				assert.Contains(t, string(content), "ai:", "AIセクションが含まれているはずです")
-				assert.Contains(t, string(content), "system_prompt:", "system_promptが含まれているはずです")
-				assert.Contains(t, string(content), "output:", "outputセクションが含まれているはずです")
+				assert.Contains(t, parsedContent, "ai", "AIセクションが含まれているはずです")
+				assert.Contains(t, parsedContent, "system_prompt", "system_promptが含まれているはずです")
+				assert.Contains(t, parsedContent, "output", "outputセクションが含まれているはずです")
 			}
 		})
 	}
