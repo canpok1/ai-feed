@@ -49,22 +49,21 @@ func (g *geminiArticleSelector) Select(ctx context.Context, articles []entity.Ar
 	prompt := g.buildSelectionPrompt(articles)
 
 	// Gemini APIに送信（構造化出力）
-	resp, err := g.client.Models.GenerateContent(ctx, g.modelType,
-		genai.Text(prompt),
-		&genai.GenerateContentConfig{
-			SystemInstruction: genai.NewContentFromText(g.systemPrompt, ""),
-			ResponseMIMEType:  "application/json",
-			ResponseSchema: &genai.Schema{
-				Type: genai.TypeObject,
-				Properties: map[string]*genai.Schema{
-					"selected_index": {
-						Type:        genai.TypeInteger,
-						Description: "選択した記事のインデックス（0始まり）",
-					},
+	config := &genai.GenerateContentConfig{
+		SystemInstruction: genai.NewContentFromText(g.systemPrompt, ""),
+		ResponseMIMEType:  "application/json",
+		ResponseSchema: &genai.Schema{
+			Type: genai.TypeObject,
+			Properties: map[string]*genai.Schema{
+				"selected_index": {
+					Type:        genai.TypeInteger,
+					Description: "選択した記事のインデックス（0始まり）",
 				},
-				Required: []string{"selected_index"},
 			},
-		})
+			Required: []string{"selected_index"},
+		},
+	}
+	resp, err := g.client.Models.GenerateContent(ctx, g.modelType, genai.Text(prompt), config)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate content: %w", err)
