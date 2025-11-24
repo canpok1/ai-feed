@@ -233,8 +233,8 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 
 	fmt.Fprintf(r.stderr, "%d件の新しい記事が見つかりました\n", len(uniqueArticles))
 
-	// 進行状況メッセージ: AI推薦生成
-	fmt.Fprintln(r.stderr, "推薦記事を生成しています...")
+	// 進行状況メッセージ: 記事選定とAI推薦生成
+	fmt.Fprintln(r.stderr, "記事を選定しています...")
 
 	slog.Debug("Generating recommendation from unique articles", "unique_article_count", len(uniqueArticles))
 	recommend, err := r.recommender.Recommend(ctx, uniqueArticles)

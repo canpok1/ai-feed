@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
@@ -70,10 +71,13 @@ func (r *SelectorBasedRecommender) Recommend(ctx context.Context, articles []ent
 	}
 
 	// セレクターに記事選択を委譲
+	slog.Info("Starting article selection", "article_count", len(articles))
 	article, err := r.selector.Select(ctx, articles)
 	if err != nil {
+		slog.Error("Failed to select article", "error", err, "article_count", len(articles))
 		return nil, fmt.Errorf("failed to select article: %w", err)
 	}
+	slog.Info("Article selected successfully", "title", article.Title, "link", article.Link)
 
 	// コメント生成
 	var comment *string
