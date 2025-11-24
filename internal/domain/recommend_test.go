@@ -34,6 +34,18 @@ func (m *mockCommentGeneratorFactory) MakeCommentGenerator(aiConfig *entity.AICo
 	return nil, nil
 }
 
+// モックのArticleSelector
+type mockArticleSelector struct {
+	selectFunc func(context.Context, []entity.Article) (*entity.Article, error)
+}
+
+func (m *mockArticleSelector) Select(ctx context.Context, articles []entity.Article) (*entity.Article, error) {
+	if m.selectFunc != nil {
+		return m.selectFunc(ctx, articles)
+	}
+	return nil, nil
+}
+
 func TestNewRandomRecommender(t *testing.T) {
 	t.Run("コンストラクタが正しく動作する", func(t *testing.T) {
 		factory := &mockCommentGeneratorFactory{}
@@ -468,5 +480,159 @@ func Test_generateComment(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, comment)
 		assert.Equal(t, expectedErr, err)
+	})
+}
+
+func TestNewSelectorBasedRecommender(t *testing.T) {
+	t.Run("コンストラクタが正しく動作する", func(t *testing.T) {
+		selector := &mockArticleSelector{}
+		factory := &mockCommentGeneratorFactory{}
+		aiConfig := &entity.AIConfig{}
+		promptConfig := &entity.PromptConfig{}
+
+		recommender := NewSelectorBasedRecommender(selector, factory, aiConfig, promptConfig)
+
+		assert.NotNil(t, recommender)
+		selectorRecommender, ok := recommender.(*SelectorBasedRecommender)
+		assert.True(t, ok)
+		assert.Equal(t, selector, selectorRecommender.selector)
+		assert.Equal(t, factory, selectorRecommender.commentFactory)
+		assert.Equal(t, aiConfig, selectorRecommender.aiConfig)
+		assert.Equal(t, promptConfig, selectorRecommender.promptConfig)
+	})
+}
+
+func TestSelectorBasedRecommender_Recommend(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("正常系_記事選択とコメント生成が成功", func(t *testing.T) {
+		articles := []entity.Article{
+			{Title: "Article 1", Link: "https://example.com/1"},
+			{Title: "Article 2", Link: "https://example.com/2"},
+			{Title: "Article 3", Link: "https://example.com/3"},
+		}
+
+		selectedArticle := &articles[1]
+		expectedComment := "AIが生成したコメント"
+
+		selector := &mockArticleSelector{
+			selectFunc: func(ctx context.Context, arts []entity.Article) (*entity.Article, error) {
+				return selectedArticle, nil
+			},
+		}
+
+		factory := &mockCommentGeneratorFactory{
+			makeFunc: func(ai *entity.AIConfig, prompt *entity.PromptConfig) (CommentGenerator, error) {
+				return &mockCommentGenerator{
+					generateFunc: func(ctx context.Context, article *entity.Article) (string, error) {
+						return expectedComment, nil
+					},
+				}, nil
+			},
+		}
+
+		aiConfig := &entity.AIConfig{}
+		promptConfig := &entity.PromptConfig{}
+		recommender := NewSelectorBasedRecommender(selector, factory, aiConfig, promptConfig)
+
+		result, err := recommender.Recommend(ctx, articles)
+
+		require.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, *selectedArticle, result.Article)
+		require.NotNil(t, result.Comment)
+		assert.Equal(t, expectedComment, *result.Comment)
+	})
+
+	t.Run("正常系_コメント生成なし", func(t *testing.T) {
+		articles := []entity.Article{
+			{Title: "Article 1", Link: "https://example.com/1"},
+		}
+
+		selectedArticle := &articles[0]
+
+		selector := &mockArticleSelector{
+			selectFunc: func(ctx context.Context, arts []entity.Article) (*entity.Article, error) {
+				return selectedArticle, nil
+			},
+		}
+
+		recommender := NewSelectorBasedRecommender(selector, nil, nil, nil)
+
+		result, err := recommender.Recommend(ctx, articles)
+
+		require.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, *selectedArticle, result.Article)
+		assert.Nil(t, result.Comment)
+	})
+
+	t.Run("異常系_記事配列が空", func(t *testing.T) {
+		articles := []entity.Article{}
+
+		selector := &mockArticleSelector{}
+		recommender := NewSelectorBasedRecommender(selector, nil, nil, nil)
+
+		result, err := recommender.Recommend(ctx, articles)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "no articles found")
+	})
+
+	t.Run("異常系_記事選択に失敗", func(t *testing.T) {
+		articles := []entity.Article{
+			{Title: "Article 1", Link: "https://example.com/1"},
+		}
+
+		expectedErr := errors.New("記事選択エラー")
+		selector := &mockArticleSelector{
+			selectFunc: func(ctx context.Context, arts []entity.Article) (*entity.Article, error) {
+				return nil, expectedErr
+			},
+		}
+
+		recommender := NewSelectorBasedRecommender(selector, nil, nil, nil)
+
+		result, err := recommender.Recommend(ctx, articles)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "failed to select article")
+	})
+
+	t.Run("異常系_コメント生成に失敗", func(t *testing.T) {
+		articles := []entity.Article{
+			{Title: "Article 1", Link: "https://example.com/1"},
+		}
+
+		selectedArticle := &articles[0]
+		expectedErr := errors.New("コメント生成エラー")
+
+		selector := &mockArticleSelector{
+			selectFunc: func(ctx context.Context, arts []entity.Article) (*entity.Article, error) {
+				return selectedArticle, nil
+			},
+		}
+
+		factory := &mockCommentGeneratorFactory{
+			makeFunc: func(ai *entity.AIConfig, prompt *entity.PromptConfig) (CommentGenerator, error) {
+				return &mockCommentGenerator{
+					generateFunc: func(ctx context.Context, article *entity.Article) (string, error) {
+						return "", expectedErr
+					},
+				}, nil
+			},
+		}
+
+		aiConfig := &entity.AIConfig{}
+		promptConfig := &entity.PromptConfig{}
+		recommender := NewSelectorBasedRecommender(selector, factory, aiConfig, promptConfig)
+
+		result, err := recommender.Recommend(ctx, articles)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "failed to generate comment")
 	})
 }

@@ -77,6 +77,55 @@ func (r *FirstRecommender) Recommend(ctx context.Context, articles []entity.Arti
 	}, nil
 }
 
+// SelectorBasedRecommender は ArticleSelector を使用して記事を選択するRecommender
+type SelectorBasedRecommender struct {
+	selector       ArticleSelector
+	commentFactory CommentGeneratorFactory
+	aiConfig       *entity.AIConfig
+	promptConfig   *entity.PromptConfig
+}
+
+// NewSelectorBasedRecommender は新しいSelectorBasedRecommenderを作成する
+func NewSelectorBasedRecommender(
+	selector ArticleSelector,
+	factory CommentGeneratorFactory,
+	ai *entity.AIConfig,
+	prompt *entity.PromptConfig,
+) Recommender {
+	return &SelectorBasedRecommender{
+		selector:       selector,
+		commentFactory: factory,
+		aiConfig:       ai,
+		promptConfig:   prompt,
+	}
+}
+
+func (r *SelectorBasedRecommender) Recommend(ctx context.Context, articles []entity.Article) (*entity.Recommend, error) {
+	if len(articles) == 0 {
+		return nil, fmt.Errorf("no articles found")
+	}
+
+	// セレクターに記事選択を委譲
+	article, err := r.selector.Select(ctx, articles)
+	if err != nil {
+		return nil, fmt.Errorf("failed to select article: %w", err)
+	}
+
+	// コメント生成
+	var comment *string
+	if r.commentFactory != nil && r.aiConfig != nil && r.promptConfig != nil {
+		comment, err = generateComment(r.commentFactory, r.aiConfig, r.promptConfig, ctx, article)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate comment: %w", err)
+		}
+	}
+
+	return &entity.Recommend{
+		Article: *article,
+		Comment: comment,
+	}, nil
+}
+
 func generateComment(
 	factory CommentGeneratorFactory,
 	model *entity.AIConfig,

@@ -93,9 +93,10 @@ func (g GeminiConfig) LogValue() slog.Value {
 }
 
 type PromptConfig struct {
-	SystemPrompt          string
-	CommentPromptTemplate string
-	FixedMessage          string
+	SystemPrompt           string
+	CommentPromptTemplate  string
+	SelectorPromptTemplate string
+	FixedMessage           string
 }
 
 // Validate はPromptConfigの内容をバリデーションする
@@ -167,6 +168,7 @@ func (p *PromptConfig) Merge(other *PromptConfig) {
 	}
 	mergeString(&p.SystemPrompt, other.SystemPrompt)
 	mergeString(&p.CommentPromptTemplate, other.CommentPromptTemplate)
+	mergeString(&p.SelectorPromptTemplate, other.SelectorPromptTemplate)
 	mergeString(&p.FixedMessage, other.FixedMessage)
 }
 
@@ -175,6 +177,7 @@ func (p PromptConfig) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.Int("SystemPromptLength", len(p.SystemPrompt)),
 		slog.Int("CommentPromptTemplateLength", len(p.CommentPromptTemplate)),
+		slog.Int("SelectorPromptTemplateLength", len(p.SelectorPromptTemplate)),
 		slog.String("FixedMessage", p.FixedMessage),
 	)
 }
