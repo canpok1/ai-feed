@@ -207,3 +207,107 @@ func TestProfileCommand_Check(t *testing.T) {
 		})
 	}
 }
+
+// TestProfileCommand_Check_WithConfig は config + profile の統合テストケース
+func TestProfileCommand_Check_WithConfig(t *testing.T) {
+	// バイナリをビルド
+	binaryPath := BuildBinary(t)
+
+	// プロジェクトルートを取得
+	projectRoot := GetProjectRoot(t)
+
+	tests := []struct {
+		name              string
+		configFileName    string // 空文字列の場合は設定ファイルなし
+		profileFileName   string
+		wantOutputContain string
+		wantError         bool
+	}{
+		{
+			name:              "デフォルト設定 + プロファイルで検証が成功する",
+			configFileName:    "valid_config.yml",
+			profileFileName:   "valid_profile.yml",
+			wantOutputContain: "プロファイルの検証が完了しました",
+			wantError:         false,
+		},
+		{
+			name:              "カスタム設定 + 最小限のプロファイルで検証が成功する",
+			configFileName:    "valid_config.yml",
+			profileFileName:   "minimal_profile.yml",
+			wantOutputContain: "プロファイルの検証が完了しました",
+			wantError:         false,
+		},
+		{
+			name:              "設定ファイル + オーバーライドプロファイルで検証が成功する",
+			configFileName:    "valid_config.yml",
+			profileFileName:   "override_profile.yml",
+			wantOutputContain: "プロファイルの検証が完了しました",
+			wantError:         false,
+		},
+		{
+			name:              "設定ファイルなし + 有効なプロファイルで検証が成功する",
+			configFileName:    "",
+			profileFileName:   "valid_profile.yml",
+			wantOutputContain: "プロファイルの検証が完了しました",
+			wantError:         false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// 一時ディレクトリを作成
+			tmpDir := t.TempDir()
+
+			// configFileNameが指定されている場合、テストデータファイルをコピー
+			if tt.configFileName != "" {
+				srcPath := filepath.Join(projectRoot, "test", "e2e", "testdata", "configs", tt.configFileName)
+				dstPath := filepath.Join(tmpDir, "config.yml")
+
+				srcData, err := os.ReadFile(srcPath)
+				require.NoError(t, err, "テストデータファイルの読み込みに成功するはずです")
+
+				err = os.WriteFile(dstPath, srcData, 0644)
+				require.NoError(t, err, "設定ファイルのコピーに成功するはずです")
+			}
+
+			// profileFileNameが指定されている場合、テストデータファイルをコピー
+			var profilePath string
+			if tt.profileFileName != "" {
+				srcPath := filepath.Join(projectRoot, "test", "e2e", "testdata", "profiles", tt.profileFileName)
+				profilePath = filepath.Join(tmpDir, "profile.yml")
+
+				srcData, err := os.ReadFile(srcPath)
+				require.NoError(t, err, "テストデータファイルの読み込みに成功するはずです")
+
+				err = os.WriteFile(profilePath, srcData, 0644)
+				require.NoError(t, err, "プロファイルファイルのコピーに成功するはずです")
+			}
+
+			// 一時ディレクトリに移動
+			originalWd, err := os.Getwd()
+			require.NoError(t, err)
+
+			err = os.Chdir(tmpDir)
+			require.NoError(t, err)
+
+			t.Cleanup(func() {
+				assert.NoError(t, os.Chdir(originalWd))
+			})
+
+			// コマンドを実行
+			output, err := ExecuteCommand(t, binaryPath, "profile", "check", profilePath)
+
+			// エラー確認
+			if tt.wantError {
+				assert.Error(t, err, "エラーが発生するはずです")
+			} else {
+				assert.NoError(t, err, "エラーは発生しないはずです")
+			}
+
+			// 出力メッセージの確認
+			if tt.wantOutputContain != "" {
+				assert.Contains(t, output, tt.wantOutputContain, "期待される出力メッセージが含まれているはずです")
+			}
+		})
+	}
+}
