@@ -35,7 +35,7 @@ func TestProfileCommandIntegration(t *testing.T) {
 
 		err := initCmd.Execute()
 		require.NoError(t, err)
-		assert.Contains(t, initOut.String(), "プロファイルファイルが正常に作成されました")
+		assert.Contains(t, initOut.String(), "プロファイルファイルを作成しました:")
 
 		// ファイルが実際に作成されていることを確認
 		_, statErr := os.Stat(profilePath)
@@ -77,6 +77,7 @@ func TestProfileCommandIntegration(t *testing.T) {
       type: "gemini-2.5-flash"
       api_key: "config-api-key"
   system_prompt: "デフォルトシステムプロンプト"
+  selector_prompt: "デフォルト記事選択プロンプト"
   output:
     slack_api:
       api_token: "xoxb-config-token"
@@ -163,34 +164,28 @@ invalid yaml content:
 
 // updateProfileContent テンプレートファイルの内容を有効なプロファイルに更新する
 func updateProfileContent(templateContent string) string {
-	// テンプレートコメントを実際の設定に置き換える
+	// テンプレートの環境変数参照を固定値に置き換える
 	lines := strings.Split(templateContent, "\n")
 	var result []string
 
-	inExampleSection := false
 	for _, line := range lines {
-		if strings.Contains(line, "# 以下は設定例です") {
-			inExampleSection = true
-			result = append(result, line)
-			// 有効な設定を追加
-			result = append(result, "ai:")
-			result = append(result, "  gemini:")
-			result = append(result, "    type: \"gemini-2.5-flash\"")
-			result = append(result, "    api_key: \"test-api-key\"")
-			result = append(result, "system_prompt: \"テスト用システムプロンプト\"")
-			result = append(result, "comment_prompt_template: \"テスト用テンプレート {{TITLE}}\"")
-			result = append(result, "output:")
-			result = append(result, "  slack_api:")
-			result = append(result, "    api_token: \"xoxb-test-token\"")
-			result = append(result, "    channel: \"#test\"")
-			result = append(result, "    message_template: \"{{COMMENT}} {{URL}}\"")
+		// api_key_env を api_key に置き換え
+		if strings.Contains(line, "api_key_env:") {
+			result = append(result, "    # api_key_env: GEMINI_API_KEY")
+			result = append(result, "    api_key: test-api-key")
 			continue
 		}
-
-		if inExampleSection && strings.HasPrefix(line, "#") {
-			continue // コメント化された例を削除
+		// api_token_env を api_token に置き換え
+		if strings.Contains(line, "api_token_env:") {
+			result = append(result, "    # api_token_env: SLACK_TOKEN / MISSKEY_TOKEN")
+			result = append(result, "    api_token: test-api-token")
+			continue
 		}
-
+		// enabled: false を enabled: true に変更
+		if strings.Contains(line, "enabled: false") {
+			result = append(result, strings.Replace(line, "enabled: false", "enabled: true", 1))
+			continue
+		}
 		result = append(result, line)
 	}
 

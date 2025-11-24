@@ -39,6 +39,9 @@ jobs:
     - name: Test
       run: make test
 
+    - name: Test Integration
+      run: make test-integration
+
     - name: Test Coverage Check
       run: make test-coverage-check
 
