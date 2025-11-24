@@ -31,6 +31,9 @@ test-integration:
 test-performance:
 	go test -tags=integration -v -run="Performance" ./cmd/...
 
+test-e2e:
+	go test -tags=e2e -v ./test/e2e/...
+
 test-all: test test-integration
 
 test-coverage:
