@@ -35,7 +35,7 @@ func TestProfileCommandIntegration(t *testing.T) {
 
 		err := initCmd.Execute()
 		require.NoError(t, err)
-		assert.Contains(t, initOut.String(), "プロファイルファイルが正常に作成されました")
+		assert.Contains(t, initOut.String(), "プロファイルファイルを作成しました:")
 
 		// ファイルが実際に作成されていることを確認
 		_, statErr := os.Stat(profilePath)
@@ -77,6 +77,7 @@ func TestProfileCommandIntegration(t *testing.T) {
       type: "gemini-2.5-flash"
       api_key: "config-api-key"
   system_prompt: "デフォルトシステムプロンプト"
+  selector_prompt: "デフォルト記事選択プロンプト"
   output:
     slack_api:
       api_token: "xoxb-config-token"
