@@ -27,6 +27,7 @@ func TestProfileCheckCommand_Success(t *testing.T) {
       api_key: "test-api-key"
   system_prompt: "テスト用システムプロンプト"
   comment_prompt_template: "テスト用テンプレート {{TITLE}}"
+  selector_prompt: "テスト用記事選択プロンプト"
   output:
     slack_api:
       api_token: "xoxb-test-token"
@@ -119,6 +120,7 @@ func TestProfileCheckCommand_PathResolution(t *testing.T) {
     api_key: "test-api-key"
 system_prompt: "テスト用システムプロンプト"
 comment_prompt_template: "テスト用テンプレート {{TITLE}}"
+selector_prompt: "テスト用記事選択プロンプト"
 output:
   slack_api:
     api_token: "xoxb-test-token"
@@ -168,6 +170,8 @@ func TestProfileCheckCommand_WithProfileMerge(t *testing.T) {
       type: "gemini-2.5-flash"
       api_key: "default-api-key"
   system_prompt: "デフォルトシステムプロンプト"
+  comment_prompt_template: "デフォルトテンプレート {{TITLE}}"
+  selector_prompt: "デフォルト記事選択プロンプト"
   output:
     slack_api:
       api_token: "xoxb-default-token"
