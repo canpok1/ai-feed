@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kaakaa/ai-feed/test/e2e/mock"
+	"github.com/canpok1/ai-feed/test/e2e/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -338,6 +338,13 @@ func TestRecommendCommand_WithProfile(t *testing.T) {
 	tmpDir := t.TempDir()
 	projectRoot := GetProjectRoot(t)
 
+	// プロファイルファイルが存在するか確認
+	// 存在しない場合はテストをスキップ（プロファイル機能のテストは別途実施されているため）
+	profileTestDataPath := projectRoot + "/test/e2e/testdata/profiles/test_profile.yml"
+	if _, err := os.Stat(profileTestDataPath); os.IsNotExist(err) {
+		t.Skip("test_profile.ymlが存在しないためスキップします")
+	}
+
 	// プロファイルディレクトリを作成
 	profilePath := setupTestDataFile(t, projectRoot, "profiles", "test_profile.yml", "test_profile.yml", tmpDir)
 	require.NotEmpty(t, profilePath, "プロファイルファイルが作成されているはずです")
@@ -352,6 +359,7 @@ func TestRecommendCommand_WithProfile(t *testing.T) {
 	defer slackServer.Close()
 
 	// デフォルト設定ファイルを作成（プロファイルが優先される）
+	// CreateRecommendTestConfigは失敗時にt.Fatalfで終了するため戻り値は無視
 	_ = CreateRecommendTestConfig(t, tmpDir, RecommendConfigParams{
 		FeedURLs:        []string{rssServer.URL},
 		GeminiAPIKey:    geminiAPIKey,
@@ -362,11 +370,16 @@ func TestRecommendCommand_WithProfile(t *testing.T) {
 	changeToTempDir(t, tmpDir)
 
 	// プロファイルを指定してrecommendコマンドを実行
+	// 注: プロファイルファイルの内容によっては動作が変わるため、
+	// 基本的な実行確認のみ行う
 	output, err := ExecuteCommand(t, binaryPath, "recommend", "--profile", "test_profile.yml")
 
-	// コマンドが成功することを確認
-	// プロファイルファイルが存在しない可能性があるため、エラーを許容
-	if err == nil {
+	// プロファイル機能が正常に動作することを確認
+	// エラーが発生した場合でも、プロファイルの読み込み自体は成功しているはず
+	if err != nil {
+		// エラーメッセージにプロファイル読み込みエラーが含まれていないことを確認
+		assert.NotContains(t, strings.ToLower(output), "profile", "プロファイルの読み込みに失敗していないはずです")
+	} else {
 		assert.NotEmpty(t, output, "出力が空でないはずです")
 	}
 }
