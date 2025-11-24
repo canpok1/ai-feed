@@ -110,3 +110,100 @@ func TestProfileCommand_Init(t *testing.T) {
 		})
 	}
 }
+
+// TestProfileCommand_Check は profile check コマンドのe2eテスト
+func TestProfileCommand_Check(t *testing.T) {
+	// バイナリをビルド
+	binaryPath := BuildBinary(t)
+
+	// プロジェクトルートを取得
+	projectRoot := GetProjectRoot(t)
+
+	tests := []struct {
+		name              string
+		profileFileName   string // 空文字列の場合はプロファイルファイルなし
+		wantOutputContain string
+		wantError         bool
+		checkErrorList    bool
+	}{
+		{
+			name:              "有効なプロファイルで検証が成功する",
+			profileFileName:   "valid_profile.yml",
+			wantOutputContain: "プロファイルの検証が完了しました",
+			wantError:         false,
+		},
+		{
+			name:              "最小限のプロファイルで検証が成功する",
+			profileFileName:   "minimal_profile.yml",
+			wantOutputContain: "プロファイルの検証が完了しました",
+			wantError:         false,
+		},
+		{
+			name:              "無効なプロファイルでエラーが検出される",
+			profileFileName:   "invalid_profile.yml",
+			wantOutputContain: "プロファイルに以下の問題があります：",
+			wantError:         true,
+			checkErrorList:    true,
+		},
+		{
+			name:              "プロファイルファイルが存在しない場合、エラーが発生する",
+			profileFileName:   "",
+			wantOutputContain: "プロファイルファイルが見つかりません",
+			wantError:         true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// 一時ディレクトリを作成
+			tmpDir := t.TempDir()
+
+			var profilePath string
+			// profileFileNameが指定されている場合、テストデータファイルをコピー
+			if tt.profileFileName != "" {
+				srcPath := filepath.Join(projectRoot, "test", "e2e", "testdata", "profiles", tt.profileFileName)
+				profilePath = filepath.Join(tmpDir, "profile.yml")
+
+				srcData, err := os.ReadFile(srcPath)
+				require.NoError(t, err, "テストデータファイルの読み込みに成功するはずです")
+
+				err = os.WriteFile(profilePath, srcData, 0644)
+				require.NoError(t, err, "プロファイルファイルのコピーに成功するはずです")
+			} else {
+				// ファイルが存在しないパスを指定
+				profilePath = filepath.Join(tmpDir, "nonexistent.yml")
+			}
+
+			// 一時ディレクトリに移動
+			originalWd, err := os.Getwd()
+			require.NoError(t, err)
+
+			err = os.Chdir(tmpDir)
+			require.NoError(t, err)
+
+			t.Cleanup(func() {
+				assert.NoError(t, os.Chdir(originalWd))
+			})
+
+			// コマンドを実行
+			output, err := ExecuteCommand(t, binaryPath, "profile", "check", profilePath)
+
+			// エラー確認
+			if tt.wantError {
+				assert.Error(t, err, "エラーが発生するはずです")
+			} else {
+				assert.NoError(t, err, "エラーは発生しないはずです")
+			}
+
+			// 出力メッセージの確認
+			if tt.wantOutputContain != "" {
+				assert.Contains(t, output, tt.wantOutputContain, "期待される出力メッセージが含まれているはずです")
+			}
+
+			// エラーリストの確認
+			if tt.checkErrorList {
+				assert.Contains(t, output, "-", "エラー項目がリスト表示されているはずです")
+			}
+		})
+	}
+}
