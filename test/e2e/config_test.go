@@ -154,3 +154,54 @@ func TestConfigCommand_Check_Invalid(t *testing.T) {
 		})
 	}
 }
+
+// TestConfigCommand_Check_NonexistentFile は設定ファイルが存在しない場合のエラーを確認するテスト
+func TestConfigCommand_Check_NonexistentFile(t *testing.T) {
+	// バイナリをビルド
+	binaryPath := BuildBinary(t)
+
+	tests := []struct {
+		name              string
+		wantOutputContain string
+		wantError         bool
+	}{
+		{
+			name:              "設定ファイルが存在しない場合、エラーが発生する",
+			wantOutputContain: "設定ファイルの読み込みに失敗しました",
+			wantError:         true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// 一時ディレクトリを作成（設定ファイルは作成しない）
+			tmpDir := t.TempDir()
+
+			// 一時ディレクトリに移動
+			originalWd, err := os.Getwd()
+			require.NoError(t, err)
+
+			err = os.Chdir(tmpDir)
+			require.NoError(t, err)
+
+			t.Cleanup(func() {
+				assert.NoError(t, os.Chdir(originalWd))
+			})
+
+			// コマンドを実行
+			output, err := ExecuteCommand(t, binaryPath, "config", "check")
+
+			// エラー確認
+			if tt.wantError {
+				assert.Error(t, err, "エラーが発生するはずです")
+			} else {
+				assert.NoError(t, err, "エラーは発生しないはずです")
+			}
+
+			// 出力メッセージの確認
+			if tt.wantOutputContain != "" {
+				assert.Contains(t, output, tt.wantOutputContain, "期待される出力メッセージが含まれているはずです")
+			}
+		})
+	}
+}
