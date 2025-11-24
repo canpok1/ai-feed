@@ -134,6 +134,7 @@ func TestProfile_Validate(t *testing.T) {
 	validTemplate := "{{.Article.Title}} {{.Article.Link}}"
 	validOutput := &OutputConfig{
 		SlackAPI: &SlackAPIConfig{
+			Enabled:         true,
 			APIToken:        makeSecretString("valid-token"),
 			Channel:         "#general",
 			MessageTemplate: &validTemplate,
@@ -192,6 +193,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_必須項目すべて",
 			config: &MisskeyConfig{
+				Enabled:         true,
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
@@ -201,6 +203,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_テンプレート付き",
 			config: &MisskeyConfig{
+				Enabled:         true,
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
@@ -210,6 +213,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが未設定",
 			config: &MisskeyConfig{
+				Enabled:  true,
 				APIToken: makeSecretString("valid-token"),
 				APIURL:   "https://misskey.example.com",
 			},
@@ -219,6 +223,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが空文字列",
 			config: &MisskeyConfig{
+				Enabled:         true,
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &emptyTemplate,
@@ -229,6 +234,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APITokenが空",
 			config: &MisskeyConfig{
+				Enabled:         true,
 				APIToken:        SecretString{}, // ゼロ値 (空)
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
@@ -239,6 +245,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APIURLが空",
 			config: &MisskeyConfig{
+				Enabled:         true,
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "",
 				MessageTemplate: &validTemplate,
@@ -249,6 +256,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APIURLが不正なURL",
 			config: &MisskeyConfig{
+				Enabled:         true,
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "not-a-url",
 				MessageTemplate: &validTemplate,
@@ -259,6 +267,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_不正なテンプレート構文",
 			config: &MisskeyConfig{
+				Enabled:         true,
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &invalidTemplate,
@@ -269,6 +278,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_複数のエラー",
 			config: &MisskeyConfig{
+				Enabled:  true,
 				APIToken: SecretString{}, // ゼロ値 (空)
 				APIURL:   "not-a-url",
 			},

@@ -198,6 +198,11 @@ type MisskeyConfig struct {
 func (m *MisskeyConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
+	// Enabledがfalseの場合はバリデーションをスキップ
+	if !m.Enabled {
+		return builder.Build()
+	}
+
 	// APIToken: 必須項目（空でない）
 	if m.APIToken.IsEmpty() {
 		builder.AddError("Misskey APIトークンが設定されていません")
@@ -273,6 +278,11 @@ type SlackAPIConfig struct {
 // Validate はSlackAPIConfigの内容をバリデーションする
 func (s *SlackAPIConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
+
+	// Enabledがfalseの場合はバリデーションをスキップ
+	if !s.Enabled {
+		return builder.Build()
+	}
 
 	// APIToken: 必須項目（空でない）
 	if s.APIToken.IsEmpty() {
@@ -500,9 +510,16 @@ func mergeString(target *string, source string) {
 func (o *OutputConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
-	// SlackAPIとMisskeyの少なくとも一方は設定されている必要がある
-	if o.SlackAPI == nil && o.Misskey == nil {
-		builder.AddError("SlackAPI設定またはMisskey設定の少なくとも一方が必要です")
+	// SlackAPIとMisskeyの少なくとも一方が設定されており、かつ有効である必要がある
+	hasEnabledOutput := false
+	if o.SlackAPI != nil && o.SlackAPI.Enabled {
+		hasEnabledOutput = true
+	}
+	if o.Misskey != nil && o.Misskey.Enabled {
+		hasEnabledOutput = true
+	}
+	if !hasEnabledOutput {
+		builder.AddError("SlackAPI設定またはMisskey設定の少なくとも一方を有効にする必要があります")
 	}
 
 	// 設定されているConfigオブジェクトに対してそれぞれのValidate()メソッドを呼び出す
