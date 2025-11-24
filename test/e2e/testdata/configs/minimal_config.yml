@@ -1,0 +1,32 @@
+# 最小限の設定ファイル（テスト用）
+default_profile:
+  # AI設定（必須項目のみ）
+  ai:
+    gemini:
+      type: gemini-2.5-flash
+      api_key: test_api_key_minimal_1234567890
+
+  # システムプロンプト
+  system_prompt: |
+    最小限のプロンプト
+
+  # 記事紹介文生成用のプロンプトテンプレート
+  comment_prompt_template: |
+    {{TITLE}}
+    {{URL}}
+
+  # 記事選択用のプロンプト
+  selector_prompt: |
+    記事を選択してください。
+
+  # 出力先設定（無効化）
+  output:
+    slack_api:
+      enabled: false
+
+    misskey:
+      enabled: false
+
+# キャッシュ設定（無効化）
+cache:
+  enabled: false
