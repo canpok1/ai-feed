@@ -50,7 +50,7 @@ lint-all:
 
 fmt:
 	go fmt ./...
-	export PATH=$$PATH:$$(go env GOPATH)/bin && go list -f '{{.Dir}}' ./... | xargs goimports -w
+	go list -f '{{.Dir}}' ./... | xargs goimports -w
 
 generate:
 	go generate ./...
