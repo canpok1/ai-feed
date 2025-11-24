@@ -54,7 +54,11 @@ func (m *MockSlackReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Slackは通常 "ok" を返す
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte("ok"))
+	if _, err := w.Write([]byte("ok")); err != nil {
+		// テスト用モックサーバーなので、エラーは無視するがログ出力のみ行う
+		// 実際のテストではクライアントの接続切断などでエラーが発生する可能性がある
+		_ = err // エラーは無視
+	}
 }
 
 // ReceivedMessage はメッセージが少なくとも1つ受信されたかを返す

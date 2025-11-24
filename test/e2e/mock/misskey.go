@@ -59,7 +59,11 @@ func (m *MockMisskeyReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		"id":        "mock-note-id",
 		"createdAt": "2024-01-01T00:00:00.000Z",
 	}
-	_ = json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		// テスト用モックサーバーなので、エラーは無視するがログ出力のみ行う
+		// 実際のテストではクライアントの接続切断などでエラーが発生する可能性がある
+		_ = err // エラーは無視
+	}
 }
 
 // ReceivedNote はノートが少なくとも1つ受信されたかを返す
