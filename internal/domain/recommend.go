@@ -82,9 +82,16 @@ func (r *SelectorBasedRecommender) Recommend(ctx context.Context, articles []ent
 	// コメント生成
 	var comment *string
 	if r.commentFactory != nil && r.aiConfig != nil && r.promptConfig != nil {
+		slog.Info("Starting comment generation", "article_title", article.Title)
 		comment, err = generateComment(r.commentFactory, r.aiConfig, r.promptConfig, ctx, article)
 		if err != nil {
+			slog.Error("Failed to generate comment", "error", err, "article_title", article.Title)
 			return nil, fmt.Errorf("failed to generate comment: %w", err)
+		}
+		if comment != nil && *comment != "" {
+			slog.Info("Comment generated successfully", "article_title", article.Title, "comment_length", len(*comment))
+		} else {
+			slog.Info("Comment generation skipped or returned empty", "article_title", article.Title)
 		}
 	}
 
