@@ -82,3 +82,75 @@ func TestConfigCommand_Check_Valid(t *testing.T) {
 		})
 	}
 }
+
+// TestConfigCommand_Check_Invalid は無効な設定ファイルでエラーが検出されることを確認するテスト
+func TestConfigCommand_Check_Invalid(t *testing.T) {
+	// バイナリをビルド
+	binaryPath := BuildBinary(t)
+
+	// プロジェクトルートを取得
+	projectRoot := GetProjectRoot(t)
+
+	tests := []struct {
+		name              string
+		configFileName    string
+		wantOutputContain string
+		wantError         bool
+	}{
+		{
+			name:              "無効な設定ファイルでエラーが検出される",
+			configFileName:    "invalid_config.yml",
+			wantOutputContain: "設定に以下の問題があります：",
+			wantError:         true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// 一時ディレクトリを作成
+			tmpDir := t.TempDir()
+
+			// テストデータファイルをコピー
+			srcPath := filepath.Join(projectRoot, "test", "e2e", "testdata", "configs", tt.configFileName)
+			dstPath := filepath.Join(tmpDir, "config.yml")
+
+			srcData, err := os.ReadFile(srcPath)
+			require.NoError(t, err, "テストデータファイルの読み込みに成功するはずです")
+
+			err = os.WriteFile(dstPath, srcData, 0644)
+			require.NoError(t, err, "設定ファイルのコピーに成功するはずです")
+
+			// 一時ディレクトリに移動
+			originalWd, err := os.Getwd()
+			require.NoError(t, err)
+
+			err = os.Chdir(tmpDir)
+			require.NoError(t, err)
+
+			t.Cleanup(func() {
+				assert.NoError(t, os.Chdir(originalWd))
+			})
+
+			// コマンドを実行
+			output, err := ExecuteCommand(t, binaryPath, "config", "check")
+
+			// エラー確認
+			if tt.wantError {
+				assert.Error(t, err, "エラーが発生するはずです")
+			} else {
+				assert.NoError(t, err, "エラーは発生しないはずです")
+			}
+
+			// 出力メッセージの確認
+			if tt.wantOutputContain != "" {
+				assert.Contains(t, output, tt.wantOutputContain, "期待される出力メッセージが含まれているはずです")
+			}
+
+			// エラーが発生した場合、エラー内容が明確に表示されることを確認
+			if tt.wantError {
+				// エラーメッセージに「-」が含まれていることを確認（エラー項目のリスト表示）
+				assert.Contains(t, output, "-", "エラー項目がリスト表示されているはずです")
+			}
+		})
+	}
+}
