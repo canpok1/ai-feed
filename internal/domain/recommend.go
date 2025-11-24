@@ -3,48 +3,12 @@ package domain
 import (
 	"context"
 	"fmt"
-	"math/rand/v2"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
 type Recommender interface {
 	Recommend(context.Context, []entity.Article) (*entity.Recommend, error)
-}
-
-type RandomRecommender struct {
-	factory      CommentGeneratorFactory
-	aiConfig     *entity.AIConfig
-	promptConfig *entity.PromptConfig
-}
-
-func NewRandomRecommender(f CommentGeneratorFactory, ai *entity.AIConfig, prompt *entity.PromptConfig) Recommender {
-	return &RandomRecommender{
-		factory:      f,
-		aiConfig:     ai,
-		promptConfig: prompt,
-	}
-}
-
-func (r *RandomRecommender) Recommend(ctx context.Context, articles []entity.Article) (*entity.Recommend, error) {
-	if len(articles) == 0 {
-		return nil, fmt.Errorf("no articles found")
-	}
-
-	article := articles[rand.IntN(len(articles))]
-	recommend := entity.Recommend{
-		Article: article,
-	}
-
-	if (r.factory != nil) && (r.aiConfig != nil) && (r.promptConfig != nil) {
-		comment, err := generateComment(r.factory, r.aiConfig, r.promptConfig, ctx, &article)
-		if err != nil {
-			return nil, err
-		}
-		recommend.Comment = comment
-	}
-
-	return &recommend, nil
 }
 
 type FirstRecommender struct {
