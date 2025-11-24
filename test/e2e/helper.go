@@ -136,21 +136,21 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 	// テスト用の設定を型安全に構築
 	// infra.Configとinfra.Profileを使用して構造を定義
 	config := struct {
-		DefaultProfile *struct {
-			AI     *infra.AIConfig     `yaml:"ai,omitempty"`
-			Output *infra.OutputConfig `yaml:"output,omitempty"`
-		} `yaml:"default_profile,omitempty"`
+		DefaultProfile *infra.Profile `yaml:"default_profile,omitempty"`
 	}{
-		DefaultProfile: &struct {
-			AI     *infra.AIConfig     `yaml:"ai,omitempty"`
-			Output *infra.OutputConfig `yaml:"output,omitempty"`
-		}{
+		DefaultProfile: &infra.Profile{
 			// AI設定
 			AI: &infra.AIConfig{
 				Gemini: &infra.GeminiConfig{
 					Type:   "gemini-2.5-flash",
 					APIKey: params.GeminiAPIKey,
 				},
+			},
+			// プロンプト設定
+			Prompt: &infra.PromptConfig{
+				SystemPrompt:          "あなたはテスト用のアシスタントです。",
+				CommentPromptTemplate: "以下の記事の紹介文を100字以内で作成してください。\n記事タイトル: {{TITLE}}\n記事URL: {{URL}}\n記事内容:\n{{CONTENT}}",
+				SelectorPrompt:        "以下の記事一覧から、最も興味深い記事を1つ選択してください。",
 			},
 		},
 	}
@@ -163,9 +163,10 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 		// テストではWebhook URLをAPI Tokenとして扱う（モックサーバー用）
 		enabled := true
 		outputConfig.SlackAPI = &infra.SlackAPIConfig{
-			Enabled:  &enabled,
-			APIToken: params.SlackWebhookURL,
-			Channel:  "#test-channel",
+			Enabled:         &enabled,
+			APIToken:        params.SlackWebhookURL,
+			Channel:         "#test-channel",
+			MessageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}<{{.Article.Link}}|{{.Article.Title}}>",
 		}
 	}
 
@@ -173,9 +174,10 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 	if params.MisskeyURL != "" && params.MisskeyToken != "" {
 		enabled := true
 		outputConfig.Misskey = &infra.MisskeyConfig{
-			Enabled:  &enabled,
-			APIToken: params.MisskeyToken,
-			APIURL:   params.MisskeyURL,
+			Enabled:         &enabled,
+			APIToken:        params.MisskeyToken,
+			APIURL:          params.MisskeyURL,
+			MessageTemplate: "{{COMMENT}}\n[{{TITLE}}]({{URL}})",
 		}
 	}
 
