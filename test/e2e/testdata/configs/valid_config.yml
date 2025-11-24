@@ -1,0 +1,57 @@
+# 有効な設定ファイル（テスト用）
+default_profile:
+  # AI設定
+  ai:
+    gemini:
+      type: gemini-2.5-flash
+      api_key: test_api_key_valid_1234567890
+
+  # システムプロンプト
+  system_prompt: |
+    あなたは次の特徴を持っています。
+    - 陽気な性格
+
+  # 記事紹介文生成用のプロンプトテンプレート
+  comment_prompt_template: |
+    以下の記事の紹介文を100字以内で作成してください。
+    ---
+    記事タイトル: {{TITLE}}
+    記事URL: {{URL}}
+    記事内容:
+    {{CONTENT}}
+
+  # 記事選択用のプロンプト
+  selector_prompt: |
+    以下の記事一覧から、最も興味深い記事を1つ選択してください。
+
+  # 記事紹介文に追加する固定文言
+  fixed_message: ※固定の文言です。
+
+  # 出力先設定
+  output:
+    # Slack投稿設定
+    slack_api:
+      enabled: true
+      api_token: xoxb-test-slack-token-1234567890
+      channel: "#test-channel"
+      message_template: |
+        {{COMMENT}}
+        <{{URL}}|{{TITLE}}>
+        {{FIXED_MESSAGE}}
+
+    # Misskey投稿設定
+    misskey:
+      enabled: true
+      api_token: test_misskey_token_1234567890
+      api_url: https://test.misskey.example.com
+      message_template: |
+        {{COMMENT}}
+        [{{TITLE}}]({{URL}})
+        {{FIXED_MESSAGE}}
+
+# キャッシュ設定
+cache:
+  enabled: true
+  file_path: ~/.ai-feed/test_recommend_history.jsonl
+  max_entries: 500
+  retention_days: 15
