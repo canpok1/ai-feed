@@ -4,13 +4,17 @@ package e2e
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/test/e2e/mock"
 	"gopkg.in/yaml.v3"
 )
 
@@ -193,4 +197,93 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 	}
 
 	return configPath
+}
+
+// RecommendTestEnv はrecommendコマンドテストの環境を保持する構造体
+type RecommendTestEnv struct {
+	TmpDir          string
+	BinaryPath      string
+	RSSServer       *httptest.Server
+	SlackReceiver   *mock.MockSlackReceiver
+	SlackServer     *httptest.Server
+	MisskeyReceiver *mock.MockMisskeyReceiver
+	MisskeyServer   *httptest.Server
+}
+
+// Cleanup はテスト環境のクリーンアップを実行する
+func (e *RecommendTestEnv) Cleanup() {
+	if e.RSSServer != nil {
+		e.RSSServer.Close()
+	}
+	if e.SlackServer != nil {
+		e.SlackServer.Close()
+	}
+	if e.MisskeyServer != nil {
+		e.MisskeyServer.Close()
+	}
+}
+
+// SetupRecommendTestOptions はセットアップのオプションを保持する構造体
+type SetupRecommendTestOptions struct {
+	// UseRSSServer はRSSモックサーバーを起動するかどうか
+	UseRSSServer bool
+	// RSSHandler はカスタムRSSハンドラ（nilの場合はデフォルトを使用）
+	RSSHandler http.Handler
+	// UseSlackServer はSlackモックサーバーを起動するかどうか
+	UseSlackServer bool
+	// UseMisskeyServer はMisskeyモックサーバーを起動するかどうか
+	UseMisskeyServer bool
+}
+
+// SetupRecommendTest はrecommendコマンドテストの共通セットアップを実行する
+// 必要なモックサーバーを起動し、テスト環境を構築する
+func SetupRecommendTest(t *testing.T, opts SetupRecommendTestOptions) *RecommendTestEnv {
+	t.Helper()
+
+	env := &RecommendTestEnv{
+		TmpDir:     t.TempDir(),
+		BinaryPath: BuildBinary(t),
+	}
+
+	// RSSサーバーのセットアップ
+	if opts.UseRSSServer {
+		handler := opts.RSSHandler
+		if handler == nil {
+			handler = mock.NewMockRSSHandler()
+		}
+		env.RSSServer = httptest.NewServer(handler)
+	}
+
+	// Slackサーバーのセットアップ
+	if opts.UseSlackServer {
+		env.SlackReceiver = mock.NewMockSlackReceiver()
+		env.SlackServer = httptest.NewServer(env.SlackReceiver)
+	}
+
+	// Misskeyサーバーのセットアップ
+	if opts.UseMisskeyServer {
+		env.MisskeyReceiver = mock.NewMockMisskeyReceiver()
+		env.MisskeyServer = httptest.NewServer(env.MisskeyReceiver)
+	}
+
+	return env
+}
+
+// waitForCondition は条件が満たされるまでポーリングで待機する
+// タイムアウト時間内に条件が満たされればtrue、タイムアウトした場合はfalseを返す
+func waitForCondition(timeout time.Duration, condition func() bool) bool {
+	timeoutCh := time.After(timeout)
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-timeoutCh:
+			return false
+		case <-ticker.C:
+			if condition() {
+				return true
+			}
+		}
+	}
 }
