@@ -179,6 +179,7 @@ func updateProfileContent(templateContent string) string {
 			result = append(result, "    type: \"gemini-2.5-flash\"")
 			result = append(result, "    api_key: \"test-api-key\"")
 			result = append(result, "system_prompt: \"テスト用システムプロンプト\"")
+			result = append(result, "selector_prompt: \"テスト用記事選択プロンプト\"")
 			result = append(result, "comment_prompt_template: \"テスト用テンプレート {{TITLE}}\"")
 			result = append(result, "output:")
 			result = append(result, "  slack_api:")
