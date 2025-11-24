@@ -21,6 +21,14 @@ func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIConfig, p
 		return nil, fmt.Errorf("prompt is nil")
 	}
 
+	// Gemini設定のチェック
+	if model.Gemini == nil {
+		return nil, fmt.Errorf("gemini config is nil")
+	}
+	if model.Gemini.Type == "" {
+		return nil, fmt.Errorf("gemini model type is empty")
+	}
+
 	// すべてのGeminiモデルをサポート
 	// モデルの使用可否判定はGeminiライブラリに任せる
 	return newGeminiCommentGenerator(model, prompt, prompt.SystemPrompt)
