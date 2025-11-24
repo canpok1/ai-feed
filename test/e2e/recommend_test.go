@@ -260,12 +260,9 @@ func TestRecommendCommand_EmptyFeed(t *testing.T) {
 	// recommendコマンドを実行
 	output, err := ExecuteCommand(t, binaryPath, "recommend")
 
-	// 空のフィードの場合、エラーにならず正常に終了することを期待
-	// （記事がないため推薦もされない）
-	if err != nil {
-		// エラーの場合は、出力に「記事がない」旨のメッセージがあるか確認
-		assert.Contains(t, strings.ToLower(output), "no", "記事がないことを示すメッセージが含まれるはずです")
-	}
+	// 空のフィードの場合、エラーなく正常終了する
+	require.NoError(t, err, "空フィードの場合、コマンドはエラーなく終了するはずです")
+	assert.Contains(t, output, "記事が見つかりませんでした", "出力に記事がない旨のメッセージが含まれるはずです")
 
 	// Slackにはメッセージが送信されないはず
 	time.Sleep(2 * time.Second)
