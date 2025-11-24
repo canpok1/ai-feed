@@ -161,14 +161,16 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 	// Slack設定がある場合は追加
 	if params.SlackWebhookURL != "" {
 		// テストではモックサーバーのURLをAPI URLとして設定
+		// slack-goは base URL に /api/ が含まれることを期待しているため、末尾に /api/ を追加
 		enabled := true
 		slackTemplate := "{{if .Comment}}{{.Comment}}\n{{end}}<{{.Article.Link}}|{{.Article.Title}}>"
+		apiURL := params.SlackWebhookURL + "/api/"
 		outputConfig.SlackAPI = &infra.SlackAPIConfig{
 			Enabled:         &enabled,
 			APIToken:        "test-token", // モックサーバー用のダミートークン
 			Channel:         "#test-channel",
 			MessageTemplate: &slackTemplate,
-			APIURL:          &params.SlackWebhookURL, // モックサーバーのURL
+			APIURL:          &apiURL, // モックサーバーのURL + /api/
 		}
 	}
 
