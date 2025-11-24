@@ -11,7 +11,9 @@ func NewMockRSSHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/rss+xml")
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+		// レスポンスの書き込みエラーは通常発生しないが、
+		// クライアントが接続を切断した場合などに備えてエラーを無視
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>Test RSS Feed</title>
@@ -36,10 +38,7 @@ func NewMockRSSHandler() http.Handler {
       <pubDate>Wed, 03 Jan 2024 00:00:00 +0000</pubDate>
     </item>
   </channel>
-</rss>`)); err != nil {
-			// テスト用モックサーバーなので、エラーは無視
-			_ = err
-		}
+</rss>`))
 	})
 }
 
@@ -48,7 +47,9 @@ func NewMockAtomHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/atom+xml")
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+		// レスポンスの書き込みエラーは通常発生しないが、
+		// クライアントが接続を切断した場合などに備えてエラーを無視
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Test Atom Feed</title>
   <link href="https://example.com"/>
@@ -68,10 +69,7 @@ func NewMockAtomHandler() http.Handler {
     <updated>2024-01-02T00:00:00Z</updated>
     <summary>This is test atom article 2</summary>
   </entry>
-</feed>`)); err != nil {
-			// テスト用モックサーバーなので、エラーは無視
-			_ = err
-		}
+</feed>`))
 	})
 }
 
@@ -80,17 +78,16 @@ func NewMockEmptyFeedHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/rss+xml")
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+		// レスポンスの書き込みエラーは通常発生しないが、
+		// クライアントが接続を切断した場合などに備えてエラーを無視
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>Empty Feed</title>
     <link>https://example.com</link>
     <description>Empty Feed for Testing</description>
   </channel>
-</rss>`)); err != nil {
-			// テスト用モックサーバーなので、エラーは無視
-			_ = err
-		}
+</rss>`))
 	})
 }
 
@@ -99,7 +96,9 @@ func NewMockInvalidFeedHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/rss+xml")
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+		// レスポンスの書き込みエラーは通常発生しないが、
+		// クライアントが接続を切断した場合などに備えてエラーを無視
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>Invalid Feed</title>
@@ -109,10 +108,7 @@ func NewMockInvalidFeedHandler() http.Handler {
       <title>Unclosed Item
       <link>https://example.com/broken
     </item>
-  </channel>`)); err != nil {
-			// テスト用モックサーバーなので、エラーは無視
-			_ = err
-		}
+  </channel>`))
 	})
 }
 

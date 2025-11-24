@@ -201,7 +201,6 @@ func TestRecommendCommand_EmptyFeed(t *testing.T) {
 	assert.Contains(t, output, "記事が見つかりませんでした", "出力に記事がない旨のメッセージが含まれるはずです")
 
 	// Slackにはメッセージが送信されないはず
-	time.Sleep(2 * time.Second)
 	assert.False(t, env.SlackReceiver.ReceivedMessage(), "空フィードの場合、Slackにメッセージは送信されないはずです")
 }
 
@@ -234,18 +233,14 @@ func TestRecommendCommand_InvalidFeed(t *testing.T) {
 	// recommendコマンドを実行
 	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
-	// 不正なフィードの場合、エラーが発生するか、エラーメッセージが出力される
-	if err != nil {
-		// エラーの場合は、出力にパースエラーやXMLエラーがあることを確認
-		outputLower := strings.ToLower(output)
-		hasError := strings.Contains(outputLower, "error") ||
-			strings.Contains(outputLower, "failed") ||
-			strings.Contains(outputLower, "parse")
-		assert.True(t, hasError, "エラーメッセージが含まれるはずです")
-	}
+	// 不正なフィードの場合、コマンドはエラーなく終了し、エラーメッセージが出力される
+	require.NoError(t, err, "不正なフィードでもコマンドはエラーなく終了するはずです。出力: %s", output)
+
+	// 出力にフィード取得失敗のメッセージが含まれていることを確認
+	assert.Contains(t, output, "エラー: フィードの取得に失敗しました", "フィード取得失敗のメッセージが出力されるはずです")
+	assert.Contains(t, output, "記事が見つかりませんでした", "最終的に記事が見つからなかった旨のメッセージが出力されるはずです")
 
 	// Slackにはメッセージが送信されないはず
-	time.Sleep(2 * time.Second)
 	assert.False(t, env.SlackReceiver.ReceivedMessage(), "不正なフィードの場合、Slackにメッセージは送信されないはずです")
 }
 

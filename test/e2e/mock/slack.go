@@ -67,10 +67,9 @@ func (m *MockSlackReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"channel": "C1234567890",
 		"ts":      "1234567890.123456",
 	}
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		// テスト用モックサーバーなので、エラーは無視
-		_ = err
-	}
+	// レスポンスの書き込みエラーは通常発生しないが、
+	// クライアントが接続を切断した場合などに備えてエラーを無視
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 // ReceivedMessage はメッセージが少なくとも1つ受信されたかを返す
