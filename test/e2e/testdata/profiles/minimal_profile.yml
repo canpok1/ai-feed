@@ -1,0 +1,21 @@
+# 最小限のプロファイル設定（e2eテスト用）
+# 必須フィールドのみを設定
+
+ai:
+  gemini:
+    type: gemini-2.5-flash
+    api_key: test_minimal_api_key_1234567890
+
+system_prompt: 最小限のシステムプロンプト
+
+comment_prompt_template: |
+  記事: {{TITLE}}
+  URL: {{URL}}
+
+selector_prompt: 記事を選択してください
+
+output:
+  slack_api:
+    enabled: false
+  misskey:
+    enabled: false

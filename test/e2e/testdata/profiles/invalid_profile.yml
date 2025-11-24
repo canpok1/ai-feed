@@ -1,0 +1,16 @@
+# 無効なプロファイル設定（e2eテスト用）
+# 必須フィールドが欠けている
+
+# AIセクションが欠けている
+system_prompt: |
+  これは無効なプロファイルです。
+
+comment_prompt_template: |
+  記事の紹介文を作成してください。
+
+selector_prompt: |
+  記事を選択してください。
+
+fixed_message: ※無効なプロファイル
+
+# Outputセクションも欠けている

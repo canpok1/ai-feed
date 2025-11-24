@@ -1,0 +1,35 @@
+# 設定ファイルをオーバーライドするプロファイル（e2eテスト用）
+# config.ymlの設定を上書きする
+
+ai:
+  gemini:
+    type: gemini-2.5-flash
+    api_key: overridden_api_key_9876543210
+
+system_prompt: |
+  オーバーライドされたシステムプロンプト。
+  設定ファイルの値を上書きします。
+
+comment_prompt_template: |
+  【オーバーライド版】
+  記事タイトル: {{TITLE}}
+  記事URL: {{URL}}
+  記事内容: {{CONTENT}}
+
+selector_prompt: |
+  【オーバーライド版】記事を選択してください。
+
+fixed_message: ※オーバーライドされた固定文言
+
+output:
+  slack_api:
+    enabled: true
+    api_token: xoxb-overridden-slack-token
+    channel: "#overridden-channel"
+    message_template: |
+      【オーバーライド】
+      {{COMMENT}}
+      <{{URL}}|{{TITLE}}>
+
+  misskey:
+    enabled: false

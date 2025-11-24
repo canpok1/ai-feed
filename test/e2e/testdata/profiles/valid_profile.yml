@@ -1,0 +1,41 @@
+# 有効なプロファイル設定（e2eテスト用）
+ai:
+  gemini:
+    type: gemini-2.5-flash
+    api_key: test_profile_api_key_1234567890
+
+system_prompt: |
+  あなたはテクノロジーに精通したアシスタントです。
+  最新の技術トレンドについて分かりやすく解説します。
+
+comment_prompt_template: |
+  以下の記事の紹介文を150字以内で作成してください。
+  ---
+  記事タイトル: {{TITLE}}
+  記事URL: {{URL}}
+  記事内容:
+  {{CONTENT}}
+
+selector_prompt: |
+  以下の記事一覧から、最も技術的に興味深い記事を1つ選択してください。
+
+fixed_message: ※プロファイル設定による固定文言です。
+
+output:
+  slack_api:
+    enabled: true
+    api_token: xoxb-profile-slack-token-1234567890
+    channel: "#profile-test-channel"
+    message_template: |
+      {{COMMENT}}
+      <{{URL}}|{{TITLE}}>
+      {{FIXED_MESSAGE}}
+
+  misskey:
+    enabled: true
+    api_token: profile_misskey_token_1234567890
+    api_url: https://profile.misskey.example.com
+    message_template: |
+      {{COMMENT}}
+      [{{TITLE}}]({{URL}})
+      {{FIXED_MESSAGE}}
