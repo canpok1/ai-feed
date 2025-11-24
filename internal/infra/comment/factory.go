@@ -7,19 +7,10 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
-type factoryFunc func(*entity.AIConfig, *entity.PromptConfig, string) (domain.CommentGenerator, error)
-
-type CommentGeneratorFactory struct {
-	factoryFuncMap map[string]factoryFunc
-}
+type CommentGeneratorFactory struct{}
 
 func NewCommentGeneratorFactory() domain.CommentGeneratorFactory {
-	return &CommentGeneratorFactory{
-		factoryFuncMap: map[string]factoryFunc{
-			"gemini-2.5-flash": newGeminiCommentGenerator,
-			"gemini-2.5-pro":   newGeminiCommentGenerator,
-		},
-	}
+	return &CommentGeneratorFactory{}
 }
 
 func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIConfig, prompt *entity.PromptConfig) (domain.CommentGenerator, error) {
@@ -30,8 +21,7 @@ func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIConfig, p
 		return nil, fmt.Errorf("prompt is nil")
 	}
 
-	if f, ok := f.factoryFuncMap[model.Gemini.Type]; ok {
-		return f(model, prompt, prompt.SystemPrompt)
-	}
-	return nil, fmt.Errorf("unsupported model type: %s", model.Gemini.Type)
+	// すべてのGeminiモデルをサポート
+	// モデルの使用可否判定はGeminiライブラリに任せる
+	return newGeminiCommentGenerator(model, prompt, prompt.SystemPrompt)
 }
