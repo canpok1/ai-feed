@@ -42,7 +42,10 @@ func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
 	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
-	assert.NoError(t, err, "recommendコマンドは成功するはずです")
+	if !assert.NoError(t, err, "recommendコマンドは成功するはずです。出力: %s", output) {
+		t.Logf("コマンド出力:\n%s", output)
+		return
+	}
 	assert.NotEmpty(t, output, "出力が空でないはずです")
 
 	// Slackにメッセージが送信されたことを確認
@@ -88,7 +91,10 @@ func TestRecommendCommand_WithMisskey(t *testing.T) {
 	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
-	assert.NoError(t, err, "recommendコマンドは成功するはずです")
+	if !assert.NoError(t, err, "recommendコマンドは成功するはずです。出力: %s", output) {
+		t.Logf("コマンド出力:\n%s", output)
+		return
+	}
 	assert.NotEmpty(t, output, "出力が空でないはずです")
 
 	// Misskeyにノートが送信されたことを確認
@@ -136,7 +142,10 @@ func TestRecommendCommand_MultipleOutputs(t *testing.T) {
 	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
-	assert.NoError(t, err, "recommendコマンドは成功するはずです")
+	if !assert.NoError(t, err, "recommendコマンドは成功するはずです。出力: %s", output) {
+		t.Logf("コマンド出力:\n%s", output)
+		return
+	}
 	assert.NotEmpty(t, output, "出力が空でないはずです")
 
 	// Slackとミスキー両方にメッセージが送信されたことを確認
@@ -188,7 +197,7 @@ func TestRecommendCommand_EmptyFeed(t *testing.T) {
 	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// 空のフィードの場合、エラーなく正常終了する
-	require.NoError(t, err, "空フィードの場合、コマンドはエラーなく終了するはずです")
+	require.NoError(t, err, "空フィードの場合、コマンドはエラーなく終了するはずです。出力: %s", output)
 	assert.Contains(t, output, "記事が見つかりませんでした", "出力に記事がない旨のメッセージが含まれるはずです")
 
 	// Slackにはメッセージが送信されないはず
