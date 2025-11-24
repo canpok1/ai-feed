@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/canpok1/ai-feed/internal/infra"
 	"gopkg.in/yaml.v3"
 )
 
@@ -122,53 +123,63 @@ type RecommendConfigParams struct {
 }
 
 // CreateRecommendTestConfig はrecommendコマンドのテスト用設定ファイルを作成する
+// infra構造体を使用して型安全に設定を構築する
 func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConfigParams) string {
 	t.Helper()
 
 	configPath := filepath.Join(tmpDir, "config.yml")
 
-	// AIの設定
-	aiConfig := map[string]interface{}{
-		"gemini": map[string]interface{}{
-			"api_key": params.GeminiAPIKey,
+	// テスト用の設定を型安全に構築
+	// infra.Configとinfra.Profileを使用して構造を定義
+	config := struct {
+		DefaultProfile *struct {
+			AI     *infra.AIConfig     `yaml:"ai,omitempty"`
+			Output *infra.OutputConfig `yaml:"output,omitempty"`
+			Feeds  []string            `yaml:"feeds,omitempty"` // テスト用のfeedsフィールド（実際のProfileには存在しない）
+		} `yaml:"default_profile,omitempty"`
+	}{
+		DefaultProfile: &struct {
+			AI     *infra.AIConfig     `yaml:"ai,omitempty"`
+			Output *infra.OutputConfig `yaml:"output,omitempty"`
+			Feeds  []string            `yaml:"feeds,omitempty"`
+		}{
+			// AI設定
+			AI: &infra.AIConfig{
+				Gemini: &infra.GeminiConfig{
+					Type:   "gemini-2.5-flash",
+					APIKey: params.GeminiAPIKey,
+				},
+			},
+			// Feeds設定（テスト用）
+			Feeds: params.FeedURLs,
 		},
 	}
 
-	// 出力先の設定
-	outputs := []map[string]interface{}{}
+	// Output設定を構築
+	outputConfig := &infra.OutputConfig{}
 
 	// Slack設定がある場合は追加
 	if params.SlackWebhookURL != "" {
-		outputs = append(outputs, map[string]interface{}{
-			"type": "slack",
-			"slack": map[string]interface{}{
-				"webhook_url": params.SlackWebhookURL,
-			},
-		})
+		// テストではWebhook URLをAPI Tokenとして扱う（モックサーバー用）
+		enabled := true
+		outputConfig.SlackAPI = &infra.SlackAPIConfig{
+			Enabled:  &enabled,
+			APIToken: params.SlackWebhookURL,
+			Channel:  "#test-channel",
+		}
 	}
 
 	// Misskey設定がある場合は追加
 	if params.MisskeyURL != "" && params.MisskeyToken != "" {
-		outputs = append(outputs, map[string]interface{}{
-			"type": "misskey",
-			"misskey": map[string]interface{}{
-				"url":   params.MisskeyURL,
-				"token": params.MisskeyToken,
-			},
-		})
+		enabled := true
+		outputConfig.Misskey = &infra.MisskeyConfig{
+			Enabled:  &enabled,
+			APIToken: params.MisskeyToken,
+			APIURL:   params.MisskeyURL,
+		}
 	}
 
-	// デフォルトプロファイルの設定
-	defaultProfile := map[string]interface{}{
-		"ai":     aiConfig,
-		"output": outputs,
-		"feeds":  params.FeedURLs,
-	}
-
-	// 全体の設定
-	config := map[string]interface{}{
-		"default_profile": defaultProfile,
-	}
+	config.DefaultProfile.Output = outputConfig
 
 	// YAMLにマーシャル
 	data, err := yaml.Marshal(config)
