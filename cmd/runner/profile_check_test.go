@@ -32,6 +32,7 @@ default_profile:
       api_key: "test-key"
   system_prompt: "test system prompt"
   comment_prompt_template: "test template {{TITLE}}"
+  selector_prompt: "test selector prompt"
   output:
     slack_api:
       api_token: "xoxb-test-token"
@@ -67,6 +68,7 @@ default_profile:
 				profileContent := `
 system_prompt: "test system prompt"
 comment_prompt_template: "test template {{TITLE}}"
+selector_prompt: "test selector prompt"
 output:
   slack_api:
     api_token: "xoxb-test-token"
@@ -104,6 +106,7 @@ default_profile:
 					"AI設定が設定されていません",
 					"システムプロンプトが設定されていません",
 					"コメントプロンプトテンプレートが設定されていません",
+					"記事選択プロンプトが設定されていません",
 					"出力設定が設定されていません",
 				},
 				Warnings: []string{},
@@ -140,6 +143,7 @@ ai:
     api_key: "test-key"
 system_prompt: "test system prompt"
 comment_prompt_template: "test template {{TITLE}}"
+selector_prompt: "test selector prompt"
 output:
   slack_api:
     api_token: "xoxb-test-token"

@@ -36,6 +36,7 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 			Prompt: &PromptConfig{
 				SystemPrompt:          "test system prompt",
 				CommentPromptTemplate: "test comment prompt template",
+				SelectorPrompt:        "test selector prompt",
 			},
 			Output: &OutputConfig{
 				SlackAPI: &SlackAPIConfig{

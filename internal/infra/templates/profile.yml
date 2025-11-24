@@ -34,6 +34,11 @@ comment_prompt_template: |
   記事内容:
   {{CONTENT}}
 
+# 記事選択用のプロンプト
+# 複数の記事から1つを選択する際にAIに与える指示
+selector_prompt: |
+  以下の記事一覧から、最も興味深い記事を1つ選択してください。
+
 # 記事紹介文に追加する固定文言
 fixed_message: ※固定の文言です。
 

@@ -124,6 +124,7 @@ func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
 type PromptConfig struct {
 	SystemPrompt          string `yaml:"system_prompt,omitempty"`
 	CommentPromptTemplate string `yaml:"comment_prompt_template,omitempty"`
+	SelectorPrompt        string `yaml:"selector_prompt,omitempty"`
 	FixedMessage          string `yaml:"fixed_message,omitempty"`
 }
 
@@ -131,6 +132,7 @@ func (c *PromptConfig) ToEntity() *entity.PromptConfig {
 	return &entity.PromptConfig{
 		SystemPrompt:          c.SystemPrompt,
 		CommentPromptTemplate: c.CommentPromptTemplate,
+		SelectorPrompt:        c.SelectorPrompt,
 		FixedMessage:          c.FixedMessage,
 	}
 }

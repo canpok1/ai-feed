@@ -233,8 +233,8 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 
 	fmt.Fprintf(r.stderr, "%d件の新しい記事が見つかりました\n", len(uniqueArticles))
 
-	// 進行状況メッセージ: AI推薦生成
-	fmt.Fprintln(r.stderr, "推薦記事を生成しています...")
+	// 進行状況メッセージ: 記事選定とコメント生成の開始
+	fmt.Fprintln(r.stderr, "記事選定とコメント生成を行なっています...")
 
 	slog.Debug("Generating recommendation from unique articles", "unique_article_count", len(uniqueArticles))
 	recommend, err := r.recommender.Recommend(ctx, uniqueArticles)
@@ -242,8 +242,8 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		return fmt.Errorf("failed to recommend article: %w", err)
 	}
 
-	// 完了メッセージ: 推薦完了（stdout）
-	fmt.Fprintf(r.stdout, "推薦記事を生成しました: %s\n", recommend.Article.Title)
+	// 進行状況メッセージ: 記事選定とコメント生成の完了
+	fmt.Fprintf(r.stderr, "記事選定とコメント生成が完了しました: %s\n", recommend.Article.Title)
 
 	// AIが生成したコメントをユーザーに表示
 	if recommend.Comment != nil && *recommend.Comment != "" {

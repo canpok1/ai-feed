@@ -95,6 +95,7 @@ func (g GeminiConfig) LogValue() slog.Value {
 type PromptConfig struct {
 	SystemPrompt          string
 	CommentPromptTemplate string
+	SelectorPrompt        string
 	FixedMessage          string
 }
 
@@ -109,6 +110,11 @@ func (p *PromptConfig) Validate() *ValidationResult {
 
 	// CommentPromptTemplate: 必須項目（空文字列でない）
 	if err := ValidateRequired(p.CommentPromptTemplate, "コメントプロンプトテンプレート"); err != nil {
+		builder.AddError(err.Error())
+	}
+
+	// SelectorPrompt: 必須項目（空文字列でない）
+	if err := ValidateRequired(p.SelectorPrompt, "記事選択プロンプト"); err != nil {
 		builder.AddError(err.Error())
 	}
 
@@ -167,6 +173,7 @@ func (p *PromptConfig) Merge(other *PromptConfig) {
 	}
 	mergeString(&p.SystemPrompt, other.SystemPrompt)
 	mergeString(&p.CommentPromptTemplate, other.CommentPromptTemplate)
+	mergeString(&p.SelectorPrompt, other.SelectorPrompt)
 	mergeString(&p.FixedMessage, other.FixedMessage)
 }
 
@@ -175,6 +182,7 @@ func (p PromptConfig) LogValue() slog.Value {
 	return slog.GroupValue(
 		slog.Int("SystemPromptLength", len(p.SystemPrompt)),
 		slog.Int("CommentPromptTemplateLength", len(p.CommentPromptTemplate)),
+		slog.Int("SelectorPromptLength", len(p.SelectorPrompt)),
 		slog.String("FixedMessage", p.FixedMessage),
 	)
 }
@@ -189,6 +197,11 @@ type MisskeyConfig struct {
 // Validate はMisskeyConfigの内容をバリデーションする
 func (m *MisskeyConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
+
+	// Enabledがfalseの場合はバリデーションをスキップ
+	if !m.Enabled {
+		return builder.Build()
+	}
 
 	// APIToken: 必須項目（空でない）
 	if m.APIToken.IsEmpty() {
@@ -265,6 +278,11 @@ type SlackAPIConfig struct {
 // Validate はSlackAPIConfigの内容をバリデーションする
 func (s *SlackAPIConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
+
+	// Enabledがfalseの場合はバリデーションをスキップ
+	if !s.Enabled {
+		return builder.Build()
+	}
 
 	// APIToken: 必須項目（空でない）
 	if s.APIToken.IsEmpty() {
@@ -492,12 +510,8 @@ func mergeString(target *string, source string) {
 func (o *OutputConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
-	// SlackAPIとMisskeyの少なくとも一方は設定されている必要がある
-	if o.SlackAPI == nil && o.Misskey == nil {
-		builder.AddError("SlackAPI設定またはMisskey設定の少なくとも一方が必要です")
-	}
-
 	// 設定されているConfigオブジェクトに対してそれぞれのValidate()メソッドを呼び出す
+	// Enabled=falseの場合は各Configのバリデーションでスキップされる
 	if o.SlackAPI != nil {
 		builder.MergeResult(o.SlackAPI.Validate())
 	}

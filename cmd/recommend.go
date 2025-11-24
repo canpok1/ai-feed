@@ -11,6 +11,7 @@ import (
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/comment"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
+	"github.com/canpok1/ai-feed/internal/infra/selector"
 
 	"github.com/spf13/cobra"
 )
@@ -66,8 +67,27 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				currentProfile.Merge(loadedProfile)
 			}
 
+			// プロファイルのバリデーション
+			validationResult := currentProfile.Validate()
+			if !validationResult.IsValid {
+				fmt.Fprintln(cmd.ErrOrStderr(), "設定の検証に失敗しました:")
+				for _, errMsg := range validationResult.Errors {
+					fmt.Fprintf(cmd.ErrOrStderr(), "  エラー: %s\n", errMsg)
+				}
+				slog.Error("Profile validation failed", "errors", validationResult.Errors)
+				return fmt.Errorf("プロファイルの検証に失敗しました")
+			}
+
+			// ArticleSelector を作成
+			selectorFactory := selector.NewArticleSelectorFactory()
+			articleSelector, err := selectorFactory.MakeArticleSelector(currentProfile.AI, currentProfile.Prompt)
+			if err != nil {
+				return fmt.Errorf("failed to create article selector: %w", err)
+			}
+
 			// Recommender を作成
-			recommender := domain.NewRandomRecommender(
+			recommender := domain.NewSelectorBasedRecommender(
+				articleSelector,
 				comment.NewCommentGeneratorFactory(),
 				currentProfile.AI,
 				currentProfile.Prompt,
