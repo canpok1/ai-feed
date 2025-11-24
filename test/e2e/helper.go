@@ -162,22 +162,24 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 	if params.SlackWebhookURL != "" {
 		// テストではWebhook URLをAPI Tokenとして扱う（モックサーバー用）
 		enabled := true
+		slackTemplate := "{{if .Comment}}{{.Comment}}\n{{end}}<{{.Article.Link}}|{{.Article.Title}}>"
 		outputConfig.SlackAPI = &infra.SlackAPIConfig{
 			Enabled:         &enabled,
 			APIToken:        params.SlackWebhookURL,
 			Channel:         "#test-channel",
-			MessageTemplate: "{{if .Comment}}{{.Comment}}\n{{end}}<{{.Article.Link}}|{{.Article.Title}}>",
+			MessageTemplate: &slackTemplate,
 		}
 	}
 
 	// Misskey設定がある場合は追加
 	if params.MisskeyURL != "" && params.MisskeyToken != "" {
 		enabled := true
+		misskeyTemplate := "{{COMMENT}}\n[{{TITLE}}]({{URL}})"
 		outputConfig.Misskey = &infra.MisskeyConfig{
 			Enabled:         &enabled,
 			APIToken:        params.MisskeyToken,
 			APIURL:          params.MisskeyURL,
-			MessageTemplate: "{{COMMENT}}\n[{{TITLE}}]({{URL}})",
+			MessageTemplate: &misskeyTemplate,
 		}
 	}
 
