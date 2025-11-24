@@ -5,8 +5,11 @@ default_profile:
   ai:
     gemini:
       # 使用するGeminiモデル
-      # 下記URLの仕様に従ったモデルバージョン名を指定してください。
+      # Google Gemini APIで利用可能な任意のモデル名を指定できます。
+      # 利用可能なモデルの一覧は下記URLを参照してください。
       # https://ai.google.dev/gemini-api/docs/models?hl=ja#model-versions
+      #
+      # 例: gemini-2.5-flash, gemini-1.5-pro, gemini-1.5-flash, gemini-2.0-flash-exp など
       type: gemini-2.5-flash
 
       # Gemini APIキー
