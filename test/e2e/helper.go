@@ -14,45 +14,40 @@ import (
 )
 
 // GetProjectRoot はプロジェクトのルートディレクトリパスを取得する
+// go.modファイルを探索してプロジェクトルートを特定する
 func GetProjectRoot(t *testing.T) string {
 	t.Helper()
 
-	// テストファイルの位置からプロジェクトルートを推定
-	// test/e2e からプロジェクトルートへ
-	currentDir, err := os.Getwd()
+	path, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("カレントディレクトリの取得に失敗しました: %v", err)
 	}
 
-	// test/e2e から ../../ でルートへ
-	projectRoot := filepath.Join(currentDir, "..", "..")
-	absPath, err := filepath.Abs(projectRoot)
-	if err != nil {
-		t.Fatalf("プロジェクトルートの絶対パス取得に失敗しました: %v", err)
+	// go.mod ファイルを探索してプロジェクトルートを特定する
+	for {
+		if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil {
+			absPath, err := filepath.Abs(path)
+			if err != nil {
+				t.Fatalf("プロジェクトルートの絶対パス取得に失敗しました: %v", err)
+			}
+			return absPath
+		}
+		// ルートディレクトリに達した場合
+		parent := filepath.Dir(path)
+		if parent == path {
+			break
+		}
+		path = parent
 	}
 
-	return absPath
+	t.Fatalf("プロジェクトルート(go.modファイル)が見つかりませんでした")
+	return "" // 到達しない
 }
 
-// BuildBinary はテスト用のバイナリをビルドし、ビルドしたバイナリのパスを返す
-// バイナリは一時ディレクトリに配置される
+// BuildBinary はTestMainでビルドされたバイナリのパスを返す
+// この関数は下位互換性のために残されており、グローバル変数binaryPathを返す
 func BuildBinary(t *testing.T) string {
 	t.Helper()
-
-	projectRoot := GetProjectRoot(t)
-
-	// 一時ディレクトリにバイナリを作成
-	tmpDir := t.TempDir()
-	binaryPath := filepath.Join(tmpDir, "ai-feed")
-
-	// go buildでバイナリをビルド
-	cmd := exec.Command("go", "build", "-o", binaryPath, ".")
-	cmd.Dir = projectRoot
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Fatalf("バイナリのビルドに失敗しました: %v\n出力: %s", err, string(output))
-	}
-
 	return binaryPath
 }
 

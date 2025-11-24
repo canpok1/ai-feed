@@ -90,7 +90,7 @@ func TestInitCommand_CreateConfigFile(t *testing.T) {
 
 				// default_profileの中身を確認
 				defaultProfile, ok := config["default_profile"].(map[string]interface{})
-				assert.True(t, ok, "default_profileはマップであるはずです")
+				require.True(t, ok, "default_profileはマップであるはずです")
 				assert.Contains(t, defaultProfile, "ai", "default_profile.aiフィールドが含まれているはずです")
 				assert.Contains(t, defaultProfile, "output", "default_profile.outputフィールドが含まれているはずです")
 
