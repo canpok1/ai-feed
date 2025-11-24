@@ -17,9 +17,6 @@ func TestProfileCommand_Init(t *testing.T) {
 	// バイナリをビルド
 	binaryPath := BuildBinary(t)
 
-	// プロジェクトルートを取得
-	projectRoot := GetProjectRoot(t)
-
 	tests := []struct {
 		name              string
 		setupFile         func(string) error // プロファイルファイルのセットアップ
@@ -141,7 +138,7 @@ func TestProfileCommand_Check(t *testing.T) {
 		{
 			name:              "無効なプロファイルでエラーが検出される",
 			profileFileName:   "invalid_profile.yml",
-			wantOutputContain: "プロファイルに以下の問題があります：",
+			wantOutputContain: "プロファイルの検証に失敗しました",
 			wantError:         true,
 			checkErrorList:    true,
 		},
@@ -202,7 +199,7 @@ func TestProfileCommand_Check(t *testing.T) {
 
 			// エラーリストの確認
 			if tt.checkErrorList {
-				assert.Contains(t, output, "-", "エラー項目がリスト表示されているはずです")
+				assert.Contains(t, output, "エラー:", "エラー項目が表示されているはずです")
 			}
 		})
 	}
