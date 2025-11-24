@@ -510,19 +510,8 @@ func mergeString(target *string, source string) {
 func (o *OutputConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
-	// SlackAPIとMisskeyの少なくとも一方が設定されており、かつ有効である必要がある
-	hasEnabledOutput := false
-	if o.SlackAPI != nil && o.SlackAPI.Enabled {
-		hasEnabledOutput = true
-	}
-	if o.Misskey != nil && o.Misskey.Enabled {
-		hasEnabledOutput = true
-	}
-	if !hasEnabledOutput {
-		builder.AddError("SlackAPI設定またはMisskey設定の少なくとも一方を有効にする必要があります")
-	}
-
 	// 設定されているConfigオブジェクトに対してそれぞれのValidate()メソッドを呼び出す
+	// Enabled=falseの場合は各Configのバリデーションでスキップされる
 	if o.SlackAPI != nil {
 		builder.MergeResult(o.SlackAPI.Validate())
 	}
