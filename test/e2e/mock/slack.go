@@ -4,7 +4,6 @@ package mock
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 	"sync"
 )
@@ -22,7 +21,7 @@ func NewMockSlackReceiver() *MockSlackReceiver {
 	}
 }
 
-// ServeHTTP はhttp.Handlerインターフェースを実装し、Webhook受信を処理する
+// ServeHTTP はhttp.Handlerインターフェースを実装し、Slack API (chat.postMessage) を模倣する
 func (m *MockSlackReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// POSTメソッドのみ受け付ける
 	if r.Method != http.MethodPost {
@@ -30,23 +29,31 @@ func (m *MockSlackReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// リクエストボディを読み取る
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
+	// Content-Typeに応じてパース方法を変える
+	contentType := r.Header.Get("Content-Type")
+	var text string
 
-	// JSONをパースしてメッセージを抽出
-	var payload map[string]interface{}
-	if err := json.Unmarshal(body, &payload); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	if contentType == "application/json" {
+		// JSON形式のリクエストを処理
+		var payload map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if t, ok := payload["text"].(string); ok {
+			text = t
+		}
+	} else {
+		// application/x-www-form-urlencoded形式のリクエストを処理
+		if err := r.ParseForm(); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		text = r.FormValue("text")
 	}
 
 	// メッセージを記録
-	if text, ok := payload["text"].(string); ok {
+	if text != "" {
 		m.mu.Lock()
 		m.messages = append(m.messages, text)
 		m.mu.Unlock()
