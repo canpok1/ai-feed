@@ -106,3 +106,80 @@ func ExecuteCommand(t *testing.T, binaryPath string, args ...string) (string, er
 
 	return outputStr, nil
 }
+
+// RecommendConfigParams はrecommendコマンドテスト用の設定パラメータを保持する構造体
+type RecommendConfigParams struct {
+	// FeedURLs はRSSフィードのURL一覧
+	FeedURLs []string
+	// GeminiAPIKey はGemini APIのキー
+	GeminiAPIKey string
+	// SlackWebhookURL はSlack WebhookのURL
+	SlackWebhookURL string
+	// MisskeyURL はMisskeyのURL
+	MisskeyURL string
+	// MisskeyToken はMisskeyのアクセストークン
+	MisskeyToken string
+}
+
+// CreateRecommendTestConfig はrecommendコマンドのテスト用設定ファイルを作成する
+func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConfigParams) string {
+	t.Helper()
+
+	configPath := filepath.Join(tmpDir, "config.yml")
+
+	// AIの設定
+	aiConfig := map[string]interface{}{
+		"gemini": map[string]interface{}{
+			"api_key": params.GeminiAPIKey,
+		},
+	}
+
+	// 出力先の設定
+	outputs := []map[string]interface{}{}
+
+	// Slack設定がある場合は追加
+	if params.SlackWebhookURL != "" {
+		outputs = append(outputs, map[string]interface{}{
+			"type": "slack",
+			"slack": map[string]interface{}{
+				"webhook_url": params.SlackWebhookURL,
+			},
+		})
+	}
+
+	// Misskey設定がある場合は追加
+	if params.MisskeyURL != "" && params.MisskeyToken != "" {
+		outputs = append(outputs, map[string]interface{}{
+			"type": "misskey",
+			"misskey": map[string]interface{}{
+				"url":   params.MisskeyURL,
+				"token": params.MisskeyToken,
+			},
+		})
+	}
+
+	// デフォルトプロファイルの設定
+	defaultProfile := map[string]interface{}{
+		"ai":     aiConfig,
+		"output": outputs,
+		"feeds":  params.FeedURLs,
+	}
+
+	// 全体の設定
+	config := map[string]interface{}{
+		"default_profile": defaultProfile,
+	}
+
+	// YAMLにマーシャル
+	data, err := yaml.Marshal(config)
+	if err != nil {
+		t.Fatalf("設定データのYAMLマーシャルに失敗しました: %v", err)
+	}
+
+	// ファイルに書き込み
+	if err := os.WriteFile(configPath, data, 0644); err != nil {
+		t.Fatalf("設定ファイルの書き込みに失敗しました: %v", err)
+	}
+
+	return configPath
+}
