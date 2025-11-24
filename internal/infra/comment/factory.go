@@ -2,6 +2,7 @@ package comment
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -21,12 +22,12 @@ func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIConfig, p
 		return nil, fmt.Errorf("prompt is nil")
 	}
 
-	// Gemini設定のチェック
+	// Gemini設定のバリデーション
 	if model.Gemini == nil {
 		return nil, fmt.Errorf("gemini config is nil")
 	}
-	if model.Gemini.Type == "" {
-		return nil, fmt.Errorf("gemini model type is empty")
+	if result := model.Gemini.Validate(); !result.IsValid {
+		return nil, fmt.Errorf("invalid gemini config: %s", strings.Join(result.Errors, "; "))
 	}
 
 	// すべてのGeminiモデルをサポート

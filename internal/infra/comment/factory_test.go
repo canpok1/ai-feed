@@ -53,7 +53,19 @@ func TestCommentGeneratorFactory_MakeCommentGenerator(t *testing.T) {
 			},
 			prompt:    &entity.PromptConfig{SystemPrompt: "test"},
 			wantErr:   true,
-			errString: "gemini model type is empty",
+			errString: "Gemini設定のTypeが設定されていません",
+		},
+		{
+			name: "異常系_GeminiのAPIKeyが空",
+			model: &entity.AIConfig{
+				Gemini: &entity.GeminiConfig{
+					Type:   "gemini-2.5-flash",
+					APIKey: entity.NewSecretString(""),
+				},
+			},
+			prompt:    &entity.PromptConfig{SystemPrompt: "test"},
+			wantErr:   true,
+			errString: "Gemini APIキーが設定されていません",
 		},
 		{
 			name: "正常系_任意のGeminiモデル名_gemini-1.5-pro",
