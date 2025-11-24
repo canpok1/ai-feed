@@ -13,10 +13,10 @@ import (
 
 // geminiArticleSelector はGemini APIを使用した記事選択の実装
 type geminiArticleSelector struct {
-	client         *genai.Client
-	modelType      string
-	systemPrompt   string
-	promptTemplate string
+	client       *genai.Client
+	modelType    string
+	systemPrompt string
+	prompt       string
 }
 
 // newGeminiArticleSelector は新しいgeminiArticleSelectorを作成する
@@ -33,10 +33,10 @@ func newGeminiArticleSelector(
 	}
 
 	return &geminiArticleSelector{
-		client:         client,
-		modelType:      aiConfig.Gemini.Type,
-		systemPrompt:   promptConfig.SystemPrompt,
-		promptTemplate: promptConfig.SelectorPromptTemplate,
+		client:       client,
+		modelType:    aiConfig.Gemini.Type,
+		systemPrompt: promptConfig.SystemPrompt,
+		prompt:       promptConfig.SelectorPrompt,
 	}, nil
 }
 
@@ -90,9 +90,9 @@ func (g *geminiArticleSelector) Select(ctx context.Context, articles []entity.Ar
 func (g *geminiArticleSelector) buildSelectionPrompt(articles []entity.Article) string {
 	var sb strings.Builder
 
-	// テンプレートが設定されていればそれを使用
-	if g.promptTemplate != "" {
-		sb.WriteString(g.promptTemplate)
+	// プロンプトが設定されていればそれを使用
+	if g.prompt != "" {
+		sb.WriteString(g.prompt)
 		sb.WriteString("\n\n")
 	}
 
