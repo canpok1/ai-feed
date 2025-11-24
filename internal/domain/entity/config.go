@@ -113,6 +113,11 @@ func (p *PromptConfig) Validate() *ValidationResult {
 		builder.AddError(err.Error())
 	}
 
+	// SelectorPrompt: 必須項目（空文字列でない）
+	if err := ValidateRequired(p.SelectorPrompt, "記事選択プロンプト"); err != nil {
+		builder.AddError(err.Error())
+	}
+
 	// FixedMessage: 任意項目（空文字列でも可）
 
 	return builder.Build()
