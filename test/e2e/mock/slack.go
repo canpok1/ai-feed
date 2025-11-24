@@ -52,12 +52,17 @@ func (m *MockSlackReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		m.mu.Unlock()
 	}
 
-	// Slackは通常 "ok" を返す
+	// Slack API形式のレスポンスを返す
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte("ok")); err != nil {
-		// テスト用モックサーバーなので、エラーは無視するがログ出力のみ行う
-		// 実際のテストではクライアントの接続切断などでエラーが発生する可能性がある
-		_ = err // エラーは無視
+	response := map[string]interface{}{
+		"ok":      true,
+		"channel": "C1234567890",
+		"ts":      "1234567890.123456",
+	}
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		// テスト用モックサーバーなので、エラーは無視
+		_ = err
 	}
 }
 
