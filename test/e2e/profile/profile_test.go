@@ -13,45 +13,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// setupTestDataFile はテストデータファイルをtmpDirにコピーするヘルパー関数
-func setupTestDataFile(t *testing.T, projectRoot, testdataDir, fileName, dstFileName, tmpDir string) string {
-	t.Helper()
-
-	if fileName == "" {
-		return ""
-	}
-
-	srcPath := filepath.Join(projectRoot, "test", "e2e", "profile", "testdata", fileName)
-	dstPath := filepath.Join(tmpDir, dstFileName)
-
-	srcData, err := os.ReadFile(srcPath)
-	require.NoError(t, err, "テストデータファイルの読み込みに成功するはずです")
-
-	err = os.WriteFile(dstPath, srcData, 0644)
-	require.NoError(t, err, "テストデータファイルのコピーに成功するはずです")
-
-	return dstPath
-}
-
-// setupConfigFile は設定ファイルをtmpDirにコピーするヘルパー関数
-func setupConfigFile(t *testing.T, projectRoot, fileName, tmpDir string) string {
-	t.Helper()
-
-	if fileName == "" {
-		return ""
-	}
-
-	srcPath := filepath.Join(projectRoot, "test", "e2e", "config", "testdata", fileName)
-	dstPath := filepath.Join(tmpDir, "config.yml")
-
-	srcData, err := os.ReadFile(srcPath)
-	require.NoError(t, err, "設定ファイルの読み込みに成功するはずです")
-
-	err = os.WriteFile(dstPath, srcData, 0644)
-	require.NoError(t, err, "設定ファイルのコピーに成功するはずです")
-
-	return dstPath
-}
+// testdataDir はprofileテスト用のテストデータディレクトリパス
+const testdataDir = "test/e2e/profile/testdata"
 
 // assertProfileCheckOutput はprofile checkコマンドの出力を検証するヘルパー関数
 func assertProfileCheckOutput(t *testing.T, output string, err error, wantError bool, wantOutputContain string, wantErrorContains []string) {
@@ -214,7 +177,7 @@ func TestProfileCommand_Check(t *testing.T) {
 			tmpDir := t.TempDir()
 
 			// プロファイルファイルをセットアップ
-			profilePath := setupTestDataFile(t, projectRoot, "profiles", tt.profileFileName, "profile.yml", tmpDir)
+			profilePath := common.SetupTestDataFile(t, projectRoot, testdataDir, tt.profileFileName, "profile.yml", tmpDir)
 			if profilePath == "" {
 				// ファイルが存在しないパスを指定
 				profilePath = filepath.Join(tmpDir, "nonexistent.yml")
@@ -282,11 +245,11 @@ func TestProfileCommand_Check_WithConfig(t *testing.T) {
 			// 一時ディレクトリを作成
 			tmpDir := t.TempDir()
 
-			// 設定ファイルをセットアップ
-			setupConfigFile(t, projectRoot, tt.configFileName, tmpDir)
+			// 設定ファイルをセットアップ（profile/testdata内のconfig用ファイルを使用）
+			common.SetupTestDataFile(t, projectRoot, testdataDir, tt.configFileName, "config.yml", tmpDir)
 
 			// プロファイルファイルをセットアップ
-			profilePath := setupTestDataFile(t, projectRoot, "profiles", tt.profileFileName, "profile.yml", tmpDir)
+			profilePath := common.SetupTestDataFile(t, projectRoot, testdataDir, tt.profileFileName, "profile.yml", tmpDir)
 
 			// 一時ディレクトリに移動
 			common.ChangeToTempDir(t, tmpDir)

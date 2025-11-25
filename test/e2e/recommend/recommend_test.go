@@ -15,28 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// setupTestDataFile はテストデータファイルをtmpDirにコピーするヘルパー関数
-func setupTestDataFile(t *testing.T, projectRoot, testdataDir, fileName, dstFileName, tmpDir string) string {
-	t.Helper()
-
-	if fileName == "" {
-		return ""
-	}
-
-	srcPath := filepath.Join(projectRoot, testdataDir, fileName)
-	dstPath := filepath.Join(tmpDir, dstFileName)
-
-	srcData, err := os.ReadFile(srcPath)
-	if err != nil {
-		t.Fatalf("テストデータファイルの読み込みに失敗しました: %v (path: %s)", err, srcPath)
-	}
-
-	if err := os.WriteFile(dstPath, srcData, 0644); err != nil {
-		t.Fatalf("テストデータファイルのコピーに失敗しました: %v", err)
-	}
-
-	return dstPath
-}
+// testdataDir はrecommendテスト用のテストデータディレクトリパス
+const testdataDir = "test/e2e/recommend/testdata"
 
 // TestRecommendCommand_WithRealGeminiAPI は実際のGemini APIを使用してrecommendコマンドをテストする
 func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
@@ -288,13 +268,13 @@ func TestRecommendCommand_WithProfile(t *testing.T) {
 
 	// プロファイルファイルが存在するか確認
 	// 存在しない場合はテストをスキップ（プロファイル機能のテストは別途実施されているため）
-	profileTestDataPath := projectRoot + "/test/e2e/recommend/testdata/test_profile.yml"
+	profileTestDataPath := filepath.Join(projectRoot, testdataDir, "test_profile.yml")
 	if _, err := os.Stat(profileTestDataPath); os.IsNotExist(err) {
 		t.Skip("test_profile.ymlが存在しないためスキップします")
 	}
 
-	// プロファイルディレクトリを作成
-	profilePath := setupTestDataFile(t, projectRoot, "test/e2e/recommend/testdata", "test_profile.yml", "test_profile.yml", env.TmpDir)
+	// プロファイルファイルをセットアップ
+	profilePath := common.SetupTestDataFile(t, projectRoot, testdataDir, "test_profile.yml", "test_profile.yml", env.TmpDir)
 	require.NotEmpty(t, profilePath, "プロファイルファイルが作成されているはずです")
 
 	// デフォルト設定ファイルを作成（プロファイルが優先される）
