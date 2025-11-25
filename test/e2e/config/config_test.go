@@ -1,12 +1,13 @@
 //go:build e2e
 
-package e2e
+package config
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/canpok1/ai-feed/test/e2e/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,10 +15,10 @@ import (
 // TestConfigCommand_Check は config check コマンドのテスト
 func TestConfigCommand_Check(t *testing.T) {
 	// バイナリをビルド
-	binaryPath := BuildBinary(t)
+	binaryPath := common.BuildBinary(t)
 
 	// プロジェクトルートを取得
-	projectRoot := GetProjectRoot(t)
+	projectRoot := common.GetProjectRoot(t)
 
 	tests := []struct {
 		name              string
@@ -60,7 +61,7 @@ func TestConfigCommand_Check(t *testing.T) {
 
 			// configFileNameが指定されている場合、テストデータファイルをコピー
 			if tt.configFileName != "" {
-				srcPath := filepath.Join(projectRoot, "test", "e2e", "testdata", "configs", tt.configFileName)
+				srcPath := filepath.Join(projectRoot, "test", "e2e", "config", "testdata", tt.configFileName)
 				dstPath := filepath.Join(tmpDir, "config.yml")
 
 				srcData, err := os.ReadFile(srcPath)
@@ -71,18 +72,10 @@ func TestConfigCommand_Check(t *testing.T) {
 			}
 
 			// 一時ディレクトリに移動
-			originalWd, err := os.Getwd()
-			require.NoError(t, err)
-
-			err = os.Chdir(tmpDir)
-			require.NoError(t, err)
-
-			t.Cleanup(func() {
-				assert.NoError(t, os.Chdir(originalWd))
-			})
+			common.ChangeToTempDir(t, tmpDir)
 
 			// コマンドを実行
-			output, err := ExecuteCommand(t, binaryPath, "config", "check")
+			output, err := common.ExecuteCommand(t, binaryPath, "config", "check")
 
 			// エラー確認
 			if tt.wantError {

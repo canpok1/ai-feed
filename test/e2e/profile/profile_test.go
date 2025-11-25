@@ -1,12 +1,13 @@
 //go:build e2e
 
-package e2e
+package profile
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/canpok1/ai-feed/test/e2e/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -20,7 +21,7 @@ func setupTestDataFile(t *testing.T, projectRoot, testdataDir, fileName, dstFile
 		return ""
 	}
 
-	srcPath := filepath.Join(projectRoot, "test", "e2e", "testdata", testdataDir, fileName)
+	srcPath := filepath.Join(projectRoot, "test", "e2e", "profile", "testdata", fileName)
 	dstPath := filepath.Join(tmpDir, dstFileName)
 
 	srcData, err := os.ReadFile(srcPath)
@@ -32,19 +33,24 @@ func setupTestDataFile(t *testing.T, projectRoot, testdataDir, fileName, dstFile
 	return dstPath
 }
 
-// changeToTempDir は一時ディレクトリに移動し、テスト終了時に元のディレクトリに戻すヘルパー関数
-func changeToTempDir(t *testing.T, tmpDir string) {
+// setupConfigFile は設定ファイルをtmpDirにコピーするヘルパー関数
+func setupConfigFile(t *testing.T, projectRoot, fileName, tmpDir string) string {
 	t.Helper()
 
-	originalWd, err := os.Getwd()
-	require.NoError(t, err)
+	if fileName == "" {
+		return ""
+	}
 
-	err = os.Chdir(tmpDir)
-	require.NoError(t, err)
+	srcPath := filepath.Join(projectRoot, "test", "e2e", "config", "testdata", fileName)
+	dstPath := filepath.Join(tmpDir, "config.yml")
 
-	t.Cleanup(func() {
-		assert.NoError(t, os.Chdir(originalWd))
-	})
+	srcData, err := os.ReadFile(srcPath)
+	require.NoError(t, err, "設定ファイルの読み込みに成功するはずです")
+
+	err = os.WriteFile(dstPath, srcData, 0644)
+	require.NoError(t, err, "設定ファイルのコピーに成功するはずです")
+
+	return dstPath
 }
 
 // assertProfileCheckOutput はprofile checkコマンドの出力を検証するヘルパー関数
@@ -72,7 +78,7 @@ func assertProfileCheckOutput(t *testing.T, output string, err error, wantError 
 // TestProfileCommand_Init は profile init コマンドのe2eテスト
 func TestProfileCommand_Init(t *testing.T) {
 	// バイナリをビルド
-	binaryPath := BuildBinary(t)
+	binaryPath := common.BuildBinary(t)
 
 	tests := []struct {
 		name              string
@@ -116,18 +122,10 @@ func TestProfileCommand_Init(t *testing.T) {
 			}
 
 			// 一時ディレクトリに移動
-			originalWd, err := os.Getwd()
-			require.NoError(t, err)
-
-			err = os.Chdir(tmpDir)
-			require.NoError(t, err)
-
-			t.Cleanup(func() {
-				assert.NoError(t, os.Chdir(originalWd))
-			})
+			common.ChangeToTempDir(t, tmpDir)
 
 			// コマンドを実行
-			output, err := ExecuteCommand(t, binaryPath, "profile", "init", profilePath)
+			output, err := common.ExecuteCommand(t, binaryPath, "profile", "init", profilePath)
 
 			// エラー確認
 			if tt.wantError {
@@ -168,10 +166,10 @@ func TestProfileCommand_Init(t *testing.T) {
 // TestProfileCommand_Check は profile check コマンドのe2eテスト
 func TestProfileCommand_Check(t *testing.T) {
 	// バイナリをビルド
-	binaryPath := BuildBinary(t)
+	binaryPath := common.BuildBinary(t)
 
 	// プロジェクトルートを取得
-	projectRoot := GetProjectRoot(t)
+	projectRoot := common.GetProjectRoot(t)
 
 	tests := []struct {
 		name              string
@@ -223,10 +221,10 @@ func TestProfileCommand_Check(t *testing.T) {
 			}
 
 			// 一時ディレクトリに移動
-			changeToTempDir(t, tmpDir)
+			common.ChangeToTempDir(t, tmpDir)
 
 			// コマンドを実行
-			output, err := ExecuteCommand(t, binaryPath, "profile", "check", profilePath)
+			output, err := common.ExecuteCommand(t, binaryPath, "profile", "check", profilePath)
 
 			// 出力を検証
 			assertProfileCheckOutput(t, output, err, tt.wantError, tt.wantOutputContain, tt.wantErrorContains)
@@ -237,10 +235,10 @@ func TestProfileCommand_Check(t *testing.T) {
 // TestProfileCommand_Check_WithConfig は config + profile の統合テストケース
 func TestProfileCommand_Check_WithConfig(t *testing.T) {
 	// バイナリをビルド
-	binaryPath := BuildBinary(t)
+	binaryPath := common.BuildBinary(t)
 
 	// プロジェクトルートを取得
-	projectRoot := GetProjectRoot(t)
+	projectRoot := common.GetProjectRoot(t)
 
 	tests := []struct {
 		name              string
@@ -285,16 +283,16 @@ func TestProfileCommand_Check_WithConfig(t *testing.T) {
 			tmpDir := t.TempDir()
 
 			// 設定ファイルをセットアップ
-			setupTestDataFile(t, projectRoot, "configs", tt.configFileName, "config.yml", tmpDir)
+			setupConfigFile(t, projectRoot, tt.configFileName, tmpDir)
 
 			// プロファイルファイルをセットアップ
 			profilePath := setupTestDataFile(t, projectRoot, "profiles", tt.profileFileName, "profile.yml", tmpDir)
 
 			// 一時ディレクトリに移動
-			changeToTempDir(t, tmpDir)
+			common.ChangeToTempDir(t, tmpDir)
 
 			// コマンドを実行
-			output, err := ExecuteCommand(t, binaryPath, "profile", "check", profilePath)
+			output, err := common.ExecuteCommand(t, binaryPath, "profile", "check", profilePath)
 
 			// 出力を検証（統合テストではwantErrorContainsは空なので、nilを渡す）
 			assertProfileCheckOutput(t, output, err, tt.wantError, tt.wantOutputContain, nil)

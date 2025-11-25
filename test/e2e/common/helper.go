@@ -1,31 +1,83 @@
 //go:build e2e
 
-package e2e
+// Package common はe2eテスト用の共通ヘルパー関数とユーティリティを提供する
+package common
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/canpok1/ai-feed/internal/infra"
-	"github.com/canpok1/ai-feed/test/e2e/mock"
+	"github.com/canpok1/ai-feed/test/e2e/common/mock"
 	"gopkg.in/yaml.v3"
 )
 
-// GetProjectRoot はプロジェクトのルートディレクトリパスを取得する
-// go.modファイルを探索してプロジェクトルートを特定する
-func GetProjectRoot(t *testing.T) string {
-	t.Helper()
+var (
+	// binaryPath はテストスイート全体で共有されるバイナリパス
+	binaryPath string
+	// buildOnce はバイナリのビルドを一度だけ行うための同期制御
+	buildOnce sync.Once
+	// buildErr はビルド中に発生したエラーを保持する
+	buildErr error
+)
 
+// SetupPackage は各テストパッケージのTestMainから呼び出され、バイナリをビルドする
+// この関数は同期されており、複数のパッケージから呼ばれても一度だけビルドを行う
+func SetupPackage() {
+	buildOnce.Do(func() {
+		projectRoot, err := FindProjectRoot()
+		if err != nil {
+			buildErr = fmt.Errorf("プロジェクトルートの特定に失敗しました: %w", err)
+			return
+		}
+
+		// 一時ディレクトリにバイナリを作成
+		tmpDir, err := os.MkdirTemp("", "ai-feed-e2e-")
+		if err != nil {
+			buildErr = fmt.Errorf("一時ディレクトリの作成に失敗しました: %w", err)
+			return
+		}
+
+		binaryPath = filepath.Join(tmpDir, "ai-feed")
+
+		// go buildでバイナリをビルド
+		cmd := exec.Command("go", "build", "-o", binaryPath, ".")
+		cmd.Dir = projectRoot
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			buildErr = fmt.Errorf("バイナリのビルドに失敗しました: %w\n出力: %s", err, string(output))
+			return
+		}
+	})
+
+	if buildErr != nil {
+		log.Fatal(buildErr)
+	}
+}
+
+// CleanupPackage はテスト終了時のクリーンアップを行う
+// 注: sync.Onceを使用しているため、実際のクリーンアップは最後に呼ばれた時のみ有効
+func CleanupPackage() {
+	if binaryPath != "" {
+		os.RemoveAll(filepath.Dir(binaryPath))
+	}
+}
+
+// FindProjectRoot はプロジェクトのルートディレクトリパスを取得する
+// go.modファイルを探索してプロジェクトルートを特定する
+func FindProjectRoot() (string, error) {
 	path, err := os.Getwd()
 	if err != nil {
-		t.Fatalf("カレントディレクトリの取得に失敗しました: %v", err)
+		return "", fmt.Errorf("カレントディレクトリの取得に失敗しました: %w", err)
 	}
 
 	// go.mod ファイルを探索してプロジェクトルートを特定する
@@ -33,9 +85,9 @@ func GetProjectRoot(t *testing.T) string {
 		if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil {
 			absPath, err := filepath.Abs(path)
 			if err != nil {
-				t.Fatalf("プロジェクトルートの絶対パス取得に失敗しました: %v", err)
+				return "", fmt.Errorf("プロジェクトルートの絶対パス取得に失敗しました: %w", err)
 			}
-			return absPath
+			return absPath, nil
 		}
 		// ルートディレクトリに達した場合
 		parent := filepath.Dir(path)
@@ -45,15 +97,48 @@ func GetProjectRoot(t *testing.T) string {
 		path = parent
 	}
 
-	t.Fatalf("プロジェクトルート(go.modファイル)が見つかりませんでした")
-	return "" // 到達しない
+	return "", fmt.Errorf("プロジェクトルート(go.modファイル)が見つかりませんでした")
 }
 
-// BuildBinary はTestMainでビルドされたバイナリのパスを返す
-// この関数は下位互換性のために残されており、グローバル変数binaryPathを返す
+// GetProjectRoot はプロジェクトのルートディレクトリパスを取得する
+// テスト用のヘルパー関数
+func GetProjectRoot(t *testing.T) string {
+	t.Helper()
+
+	root, err := FindProjectRoot()
+	if err != nil {
+		t.Fatalf("プロジェクトルートの取得に失敗しました: %v", err)
+	}
+	return root
+}
+
+// GetBinaryPath はビルドされたバイナリのパスを返す
+func GetBinaryPath() string {
+	return binaryPath
+}
+
+// BuildBinary はビルドされたバイナリのパスを返す（下位互換性のため）
 func BuildBinary(t *testing.T) string {
 	t.Helper()
 	return binaryPath
+}
+
+// ExecuteCommand はバイナリを実行し、標準出力と標準エラー出力を結合して返す
+func ExecuteCommand(t *testing.T, binaryPath string, args ...string) (string, error) {
+	t.Helper()
+
+	cmd := exec.Command(binaryPath, args...)
+	output, err := cmd.CombinedOutput()
+
+	// 標準出力と標準エラー出力を結合した出力を文字列として返す
+	outputStr := strings.TrimSpace(string(output))
+
+	if err != nil {
+		// エラーが発生した場合も出力とともにエラーを返す
+		return outputStr, fmt.Errorf("コマンド実行に失敗しました: %w", err)
+	}
+
+	return outputStr, nil
 }
 
 // TestConfigParams はテスト用設定ファイルのパラメータを保持する構造体
@@ -92,24 +177,6 @@ func CreateTestConfig(t *testing.T, tmpDir string, params TestConfigParams) stri
 	}
 
 	return configPath
-}
-
-// ExecuteCommand はバイナリを実行し、標準出力と標準エラー出力を結合して返す
-func ExecuteCommand(t *testing.T, binaryPath string, args ...string) (string, error) {
-	t.Helper()
-
-	cmd := exec.Command(binaryPath, args...)
-	output, err := cmd.CombinedOutput()
-
-	// 標準出力と標準エラー出力を結合した出力を文字列として返す
-	outputStr := strings.TrimSpace(string(output))
-
-	if err != nil {
-		// エラーが発生した場合も出力とともにエラーを返す
-		return outputStr, fmt.Errorf("コマンド実行に失敗しました: %w", err)
-	}
-
-	return outputStr, nil
 }
 
 // RecommendConfigParams はrecommendコマンドテスト用の設定パラメータを保持する構造体
@@ -272,9 +339,9 @@ func SetupRecommendTest(t *testing.T, opts SetupRecommendTestOptions) *Recommend
 	return env
 }
 
-// waitForCondition は条件が満たされるまでポーリングで待機する
+// WaitForCondition は条件が満たされるまでポーリングで待機する
 // タイムアウト時間内に条件が満たされればtrue、タイムアウトした場合はfalseを返す
-func waitForCondition(timeout time.Duration, condition func() bool) bool {
+func WaitForCondition(timeout time.Duration, condition func() bool) bool {
 	timeoutCh := time.After(timeout)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
@@ -289,4 +356,47 @@ func waitForCondition(timeout time.Duration, condition func() bool) bool {
 			}
 		}
 	}
+}
+
+// SetupTestDataFile はテストデータファイルをtmpDirにコピーするヘルパー関数
+func SetupTestDataFile(t *testing.T, projectRoot, testdataDir, fileName, dstFileName, tmpDir string) string {
+	t.Helper()
+
+	if fileName == "" {
+		return ""
+	}
+
+	srcPath := filepath.Join(projectRoot, testdataDir, fileName)
+	dstPath := filepath.Join(tmpDir, dstFileName)
+
+	srcData, err := os.ReadFile(srcPath)
+	if err != nil {
+		t.Fatalf("テストデータファイルの読み込みに失敗しました: %v (path: %s)", err, srcPath)
+	}
+
+	if err := os.WriteFile(dstPath, srcData, 0644); err != nil {
+		t.Fatalf("テストデータファイルのコピーに失敗しました: %v", err)
+	}
+
+	return dstPath
+}
+
+// ChangeToTempDir は一時ディレクトリに移動し、テスト終了時に元のディレクトリに戻すヘルパー関数
+func ChangeToTempDir(t *testing.T, tmpDir string) {
+	t.Helper()
+
+	originalWd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("カレントディレクトリの取得に失敗しました: %v", err)
+	}
+
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("一時ディレクトリへの移動に失敗しました: %v", err)
+	}
+
+	t.Cleanup(func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Errorf("元のディレクトリへの復帰に失敗しました: %v", err)
+		}
+	})
 }

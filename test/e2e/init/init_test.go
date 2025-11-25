@@ -1,6 +1,6 @@
 //go:build e2e
 
-package e2e
+package init
 
 import (
 	"os"
@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/canpok1/ai-feed/test/e2e/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -16,7 +17,7 @@ import (
 // TestInitCommand_CreateConfigFile はai-feed initコマンドが設定ファイルを正常に作成できることを確認するテスト
 func TestInitCommand_CreateConfigFile(t *testing.T) {
 	// バイナリをビルド
-	binaryPath := BuildBinary(t)
+	binaryPath := common.BuildBinary(t)
 
 	tests := []struct {
 		name              string
@@ -45,18 +46,10 @@ func TestInitCommand_CreateConfigFile(t *testing.T) {
 			}
 
 			// 一時ディレクトリに移動
-			originalWd, err := os.Getwd()
-			require.NoError(t, err)
-
-			err = os.Chdir(tmpDir)
-			require.NoError(t, err)
-
-			t.Cleanup(func() {
-				assert.NoError(t, os.Chdir(originalWd))
-			})
+			common.ChangeToTempDir(t, tmpDir)
 
 			// コマンドを実行
-			output, err := ExecuteCommand(t, binaryPath, "init")
+			output, err := common.ExecuteCommand(t, binaryPath, "init")
 
 			// エラー確認
 			if tt.wantError {
@@ -108,7 +101,7 @@ func TestInitCommand_CreateConfigFile(t *testing.T) {
 // TestInitCommand_ExistingFile は既存のconfig.ymlファイルがある場合の動作を確認するテスト
 func TestInitCommand_ExistingFile(t *testing.T) {
 	// バイナリをビルド
-	binaryPath := BuildBinary(t)
+	binaryPath := common.BuildBinary(t)
 
 	tests := []struct {
 		name              string
@@ -135,18 +128,10 @@ func TestInitCommand_ExistingFile(t *testing.T) {
 			require.NoError(t, err, "テスト用の既存ファイル作成に成功するはずです")
 
 			// 一時ディレクトリに移動
-			originalWd, err := os.Getwd()
-			require.NoError(t, err)
-
-			err = os.Chdir(tmpDir)
-			require.NoError(t, err)
-
-			t.Cleanup(func() {
-				assert.NoError(t, os.Chdir(originalWd))
-			})
+			common.ChangeToTempDir(t, tmpDir)
 
 			// コマンドを実行
-			output, err := ExecuteCommand(t, binaryPath, "init")
+			output, err := common.ExecuteCommand(t, binaryPath, "init")
 
 			// エラーが発生することを確認
 			assert.Error(t, err, "既存ファイルがある場合エラーが発生するはずです")
