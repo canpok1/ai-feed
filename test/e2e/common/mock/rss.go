@@ -1,5 +1,6 @@
 //go:build e2e
 
+// Package mock はe2eテスト用のモックサーバーを提供する
 package mock
 
 import (

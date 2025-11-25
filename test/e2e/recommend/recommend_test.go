@@ -1,17 +1,22 @@
 //go:build e2e
 
-package e2e
+package recommend
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/canpok1/ai-feed/test/e2e/mock"
+	"github.com/canpok1/ai-feed/test/e2e/common"
+	"github.com/canpok1/ai-feed/test/e2e/common/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// testdataDir はrecommendテスト用のテストデータディレクトリパス
+const testdataDir = "test/e2e/recommend/testdata"
 
 // TestRecommendCommand_WithRealGeminiAPI は実際のGemini APIを使用してrecommendコマンドをテストする
 func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
@@ -22,24 +27,24 @@ func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
 	}
 
 	// テスト環境をセットアップ
-	env := SetupRecommendTest(t, SetupRecommendTestOptions{
+	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:   true,
 		UseSlackServer: true,
 	})
 	defer env.Cleanup()
 
 	// テスト用の設定ファイルを作成
-	_ = CreateRecommendTestConfig(t, env.TmpDir, RecommendConfigParams{
+	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
 		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 	})
 
 	// 一時ディレクトリに移動
-	changeToTempDir(t, env.TmpDir)
+	common.ChangeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
+	output, err := common.ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
 	if !assert.NoError(t, err, "recommendコマンドは成功するはずです。出力: %s", output) {
@@ -49,7 +54,7 @@ func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
 	assert.NotEmpty(t, output, "出力が空でないはずです")
 
 	// Slackにメッセージが送信されたことを確認
-	if !waitForCondition(10*time.Second, env.SlackReceiver.ReceivedMessage) {
+	if !common.WaitForCondition(10*time.Second, env.SlackReceiver.ReceivedMessage) {
 		t.Fatal("タイムアウト: Slackへのメッセージ送信が確認できませんでした")
 	}
 
@@ -70,14 +75,14 @@ func TestRecommendCommand_WithMisskey(t *testing.T) {
 	}
 
 	// テスト環境をセットアップ
-	env := SetupRecommendTest(t, SetupRecommendTestOptions{
+	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:     true,
 		UseMisskeyServer: true,
 	})
 	defer env.Cleanup()
 
 	// テスト用の設定ファイルを作成
-	_ = CreateRecommendTestConfig(t, env.TmpDir, RecommendConfigParams{
+	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:     []string{env.RSSServer.URL},
 		GeminiAPIKey: geminiAPIKey,
 		MisskeyURL:   env.MisskeyServer.URL,
@@ -85,10 +90,10 @@ func TestRecommendCommand_WithMisskey(t *testing.T) {
 	})
 
 	// 一時ディレクトリに移動
-	changeToTempDir(t, env.TmpDir)
+	common.ChangeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
+	output, err := common.ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
 	if !assert.NoError(t, err, "recommendコマンドは成功するはずです。出力: %s", output) {
@@ -98,7 +103,7 @@ func TestRecommendCommand_WithMisskey(t *testing.T) {
 	assert.NotEmpty(t, output, "出力が空でないはずです")
 
 	// Misskeyにノートが送信されたことを確認
-	if !waitForCondition(10*time.Second, env.MisskeyReceiver.ReceivedNote) {
+	if !common.WaitForCondition(10*time.Second, env.MisskeyReceiver.ReceivedNote) {
 		t.Fatal("タイムアウト: Misskeyへのノート送信が確認できませんでした")
 	}
 
@@ -119,7 +124,7 @@ func TestRecommendCommand_MultipleOutputs(t *testing.T) {
 	}
 
 	// テスト環境をセットアップ
-	env := SetupRecommendTest(t, SetupRecommendTestOptions{
+	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:     true,
 		UseSlackServer:   true,
 		UseMisskeyServer: true,
@@ -127,7 +132,7 @@ func TestRecommendCommand_MultipleOutputs(t *testing.T) {
 	defer env.Cleanup()
 
 	// テスト用の設定ファイルを作成（SlackとMisskey両方）
-	_ = CreateRecommendTestConfig(t, env.TmpDir, RecommendConfigParams{
+	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
 		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
@@ -136,10 +141,10 @@ func TestRecommendCommand_MultipleOutputs(t *testing.T) {
 	})
 
 	// 一時ディレクトリに移動
-	changeToTempDir(t, env.TmpDir)
+	common.ChangeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
+	output, err := common.ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// コマンドが成功することを確認
 	if !assert.NoError(t, err, "recommendコマンドは成功するはずです。出力: %s", output) {
@@ -149,8 +154,8 @@ func TestRecommendCommand_MultipleOutputs(t *testing.T) {
 	assert.NotEmpty(t, output, "出力が空でないはずです")
 
 	// Slackとミスキー両方にメッセージが送信されたことを確認
-	slackReceived := waitForCondition(15*time.Second, env.SlackReceiver.ReceivedMessage)
-	misskeyReceived := waitForCondition(15*time.Second, env.MisskeyReceiver.ReceivedNote)
+	slackReceived := common.WaitForCondition(15*time.Second, env.SlackReceiver.ReceivedMessage)
+	misskeyReceived := common.WaitForCondition(15*time.Second, env.MisskeyReceiver.ReceivedNote)
 
 	if !slackReceived {
 		t.Error("タイムアウト: Slackへのメッセージ送信が確認できませんでした")
@@ -176,7 +181,7 @@ func TestRecommendCommand_EmptyFeed(t *testing.T) {
 	}
 
 	// テスト環境をセットアップ（空フィードハンドラを使用）
-	env := SetupRecommendTest(t, SetupRecommendTestOptions{
+	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:   true,
 		RSSHandler:     mock.NewMockEmptyFeedHandler(),
 		UseSlackServer: true,
@@ -184,17 +189,17 @@ func TestRecommendCommand_EmptyFeed(t *testing.T) {
 	defer env.Cleanup()
 
 	// テスト用の設定ファイルを作成
-	_ = CreateRecommendTestConfig(t, env.TmpDir, RecommendConfigParams{
+	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
 		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 	})
 
 	// 一時ディレクトリに移動
-	changeToTempDir(t, env.TmpDir)
+	common.ChangeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
+	output, err := common.ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// 空のフィードの場合、エラーなく正常終了する
 	require.NoError(t, err, "空フィードの場合、コマンドはエラーなく終了するはずです。出力: %s", output)
@@ -213,7 +218,7 @@ func TestRecommendCommand_InvalidFeed(t *testing.T) {
 	}
 
 	// テスト環境をセットアップ（不正なフィードハンドラを使用）
-	env := SetupRecommendTest(t, SetupRecommendTestOptions{
+	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:   true,
 		RSSHandler:     mock.NewMockInvalidFeedHandler(),
 		UseSlackServer: true,
@@ -221,17 +226,17 @@ func TestRecommendCommand_InvalidFeed(t *testing.T) {
 	defer env.Cleanup()
 
 	// テスト用の設定ファイルを作成
-	_ = CreateRecommendTestConfig(t, env.TmpDir, RecommendConfigParams{
+	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
 		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 	})
 
 	// 一時ディレクトリに移動
-	changeToTempDir(t, env.TmpDir)
+	common.ChangeToTempDir(t, env.TmpDir)
 
 	// recommendコマンドを実行
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
+	output, err := common.ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
 
 	// 不正なフィードの場合、コマンドはエラーなく終了し、エラーメッセージが出力される
 	require.NoError(t, err, "不正なフィードでもコマンドはエラーなく終了するはずです。出力: %s", output)
@@ -253,40 +258,40 @@ func TestRecommendCommand_WithProfile(t *testing.T) {
 	}
 
 	// テスト環境をセットアップ
-	env := SetupRecommendTest(t, SetupRecommendTestOptions{
+	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:   true,
 		UseSlackServer: true,
 	})
 	defer env.Cleanup()
 
-	projectRoot := GetProjectRoot(t)
+	projectRoot := common.GetProjectRoot(t)
 
 	// プロファイルファイルが存在するか確認
 	// 存在しない場合はテストをスキップ（プロファイル機能のテストは別途実施されているため）
-	profileTestDataPath := projectRoot + "/test/e2e/testdata/profiles/test_profile.yml"
+	profileTestDataPath := filepath.Join(projectRoot, testdataDir, "test_profile.yml")
 	if _, err := os.Stat(profileTestDataPath); os.IsNotExist(err) {
 		t.Skip("test_profile.ymlが存在しないためスキップします")
 	}
 
-	// プロファイルディレクトリを作成
-	profilePath := setupTestDataFile(t, projectRoot, "profiles", "test_profile.yml", "test_profile.yml", env.TmpDir)
+	// プロファイルファイルをセットアップ
+	profilePath := common.SetupTestDataFile(t, projectRoot, testdataDir, "test_profile.yml", "test_profile.yml", env.TmpDir)
 	require.NotEmpty(t, profilePath, "プロファイルファイルが作成されているはずです")
 
 	// デフォルト設定ファイルを作成（プロファイルが優先される）
 	// CreateRecommendTestConfigは失敗時にt.Fatalfで終了するため戻り値は無視
-	_ = CreateRecommendTestConfig(t, env.TmpDir, RecommendConfigParams{
+	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
 		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 	})
 
 	// 一時ディレクトリに移動
-	changeToTempDir(t, env.TmpDir)
+	common.ChangeToTempDir(t, env.TmpDir)
 
 	// プロファイルを指定してrecommendコマンドを実行
 	// 注: プロファイルファイルの内容によっては動作が変わるため、
 	// 基本的な実行確認のみ行う
-	output, err := ExecuteCommand(t, env.BinaryPath, "recommend", "--profile", "test_profile.yml")
+	output, err := common.ExecuteCommand(t, env.BinaryPath, "recommend", "--profile", "test_profile.yml")
 
 	// プロファイル機能が正常に動作することを確認
 	// エラーが発生した場合でも、プロファイルの読み込み自体は成功しているはず
