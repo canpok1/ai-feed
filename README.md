@@ -117,17 +117,16 @@ go install github.com/canpok1/ai-feed@latest
 |----------|------|
 | `ai-feed init` | 設定ファイル（config.yml）を生成 |
 | `ai-feed recommend` | 記事の推薦とコメント投稿を実行 |
-| `ai-feed profile` | プロファイル設定の管理 |
-| `ai-feed config` | 設定ファイルの管理（検証など） |
 | `ai-feed version` | バージョン情報を表示 |
 
-### サブコマンド
+### 設定管理コマンド
 
 | コマンド | 説明 |
 |----------|------|
+| `ai-feed config check` | 設定ファイル（config.yml）を検証 |
+| `ai-feed config check -v` | 設定ファイルを検証（詳細サマリー表示） |
 | `ai-feed profile init <file>` | 新しいプロファイルファイルを作成 |
 | `ai-feed profile check [file]` | プロファイルファイルを検証 |
-| `ai-feed config check` | 設定ファイル（config.yml）を検証 |
 
 詳細なオプションについては `ai-feed [コマンド] --help` でご確認ください。
 
