@@ -195,7 +195,7 @@ summaristとcode-reviewerは補完的な関係にあります：
 - `internal/domain/article.go`: Article構造体にタグフィールドを追加
 - `cmd/recommend/main.go`: レコメンドコマンドのエントリーポイント追加
 
-## 技術的選択
+## 技術的選択・実装の詳細
 - 類似度計算にはコサイン類似度を採用
 - キャッシュにはメモリ内キャッシュを使用（将来的にRedis対応を検討）
 
