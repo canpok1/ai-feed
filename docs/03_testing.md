@@ -294,46 +294,6 @@ var customErr *CustomError
 assert.ErrorAs(t, err, &customErr)
 ```
 
-## 統合テスト
-
-### 実際の外部サービスを使用するテスト
-
-```go
-func TestIntegration_RealAPI(t *testing.T) {
-    // 統合テストはスキップ可能にする
-    if testing.Short() {
-        t.Skip("Skipping integration test in short mode")
-    }
-
-    // 環境変数のチェック
-    apiKey := os.Getenv("TEST_API_KEY")
-    if apiKey == "" {
-        t.Skip("TEST_API_KEY not set")
-    }
-
-    // 実際のAPIを使用したテスト
-}
-```
-
-### ビルドタグを使用した統合テスト
-
-```go
-//go:build integration
-// +build integration
-
-package integration_test
-
-func TestRealAPIIntegration(t *testing.T) {
-    // 統合テストの実装
-}
-```
-
-実行方法：
-```bash
-# 統合テストを実行
-go test -tags=integration ./...
-```
-
 ## E2Eテスト (End-to-End Testing)
 
 ### E2Eテストの概要
@@ -342,11 +302,10 @@ E2Eテストは、実際のバイナリを実行してエンドユーザーの�
 
 #### テストの種類の違い
 
-| テストの種類 | 対象範囲 | 実行方法 | 目的 |
-|------------|---------|---------|------|
-| ユニットテスト | 関数・メソッド単位 | パッケージを直接テスト | 個別のロジックの正確性 |
-| 統合テスト | 複数コンポーネント | ビルドタグ`integration` | コンポーネント間の連携 |
-| E2Eテスト | アプリケーション全体 | ビルドタグ`e2e` | 実際のユーザー操作の再現 |
+| テストの種類 | 対象範囲 | 配置場所 | ビルドタグ | 目的 |
+|------------|---------|---------|----------|------|
+| ユニットテスト | 関数・メソッド単位 | `<package>/*_test.go` | なし | 個別のロジックの正確性 |
+| E2Eテスト | アプリケーション全体 | `test/e2e/**/*_test.go` | `e2e` | 実際のユーザー操作の再現 |
 
 ### E2Eテストの実行方法
 
