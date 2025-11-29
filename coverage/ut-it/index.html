@@ -91,57 +91,41 @@
 				
 				<option value="file17">github.com/canpok1/ai-feed/internal/domain/fetch.go (78.9%)</option>
 				
-				<option value="file18">github.com/canpok1/ai-feed/internal/domain/mock_domain/comment.go (0.0%)</option>
+				<option value="file18">github.com/canpok1/ai-feed/internal/domain/recommend.go (97.4%)</option>
 				
-				<option value="file19">github.com/canpok1/ai-feed/internal/domain/mock_domain/config.go (0.0%)</option>
+				<option value="file19">github.com/canpok1/ai-feed/internal/infra/comment/factory.go (100.0%)</option>
 				
-				<option value="file20">github.com/canpok1/ai-feed/internal/domain/mock_domain/fetch.go (0.0%)</option>
+				<option value="file20">github.com/canpok1/ai-feed/internal/infra/comment/gemini.go (17.6%)</option>
 				
-				<option value="file21">github.com/canpok1/ai-feed/internal/domain/mock_domain/message.go (0.0%)</option>
+				<option value="file21">github.com/canpok1/ai-feed/internal/infra/config.go (75.8%)</option>
 				
-				<option value="file22">github.com/canpok1/ai-feed/internal/domain/mock_domain/profile.go (0.0%)</option>
+				<option value="file22">github.com/canpok1/ai-feed/internal/infra/fetch/rss.go (0.0%)</option>
 				
-				<option value="file23">github.com/canpok1/ai-feed/internal/domain/mock_domain/recommend.go (0.0%)</option>
+				<option value="file23">github.com/canpok1/ai-feed/internal/infra/file.go (36.4%)</option>
 				
-				<option value="file24">github.com/canpok1/ai-feed/internal/domain/mock_domain/validator.go (0.0%)</option>
+				<option value="file24">github.com/canpok1/ai-feed/internal/infra/logger.go (50.0%)</option>
 				
-				<option value="file25">github.com/canpok1/ai-feed/internal/domain/recommend.go (97.4%)</option>
+				<option value="file25">github.com/canpok1/ai-feed/internal/infra/message/builder.go (100.0%)</option>
 				
-				<option value="file26">github.com/canpok1/ai-feed/internal/infra/comment/factory.go (100.0%)</option>
+				<option value="file26">github.com/canpok1/ai-feed/internal/infra/message/misskey.go (36.4%)</option>
 				
-				<option value="file27">github.com/canpok1/ai-feed/internal/infra/comment/gemini.go (17.6%)</option>
+				<option value="file27">github.com/canpok1/ai-feed/internal/infra/message/slack.go (88.9%)</option>
 				
-				<option value="file28">github.com/canpok1/ai-feed/internal/infra/config.go (75.8%)</option>
+				<option value="file28">github.com/canpok1/ai-feed/internal/infra/profile/repository.go (0.0%)</option>
 				
-				<option value="file29">github.com/canpok1/ai-feed/internal/infra/fetch/rss.go (0.0%)</option>
+				<option value="file29">github.com/canpok1/ai-feed/internal/infra/selector/factory.go (0.0%)</option>
 				
-				<option value="file30">github.com/canpok1/ai-feed/internal/infra/file.go (36.4%)</option>
+				<option value="file30">github.com/canpok1/ai-feed/internal/infra/selector/gemini.go (0.0%)</option>
 				
-				<option value="file31">github.com/canpok1/ai-feed/internal/infra/logger.go (50.0%)</option>
+				<option value="file31">github.com/canpok1/ai-feed/internal/infra/templates.go (100.0%)</option>
 				
-				<option value="file32">github.com/canpok1/ai-feed/internal/infra/message/builder.go (100.0%)</option>
+				<option value="file32">github.com/canpok1/ai-feed/internal/infra/validator.go (84.5%)</option>
 				
-				<option value="file33">github.com/canpok1/ai-feed/internal/infra/message/misskey.go (36.4%)</option>
+				<option value="file33">github.com/canpok1/ai-feed/internal/testutil/helpers.go (0.0%)</option>
 				
-				<option value="file34">github.com/canpok1/ai-feed/internal/infra/message/slack.go (88.9%)</option>
+				<option value="file34">github.com/canpok1/ai-feed/internal/version/version.go (83.3%)</option>
 				
-				<option value="file35">github.com/canpok1/ai-feed/internal/infra/mock_infra/mock_config.go (0.0%)</option>
-				
-				<option value="file36">github.com/canpok1/ai-feed/internal/infra/profile/repository.go (0.0%)</option>
-				
-				<option value="file37">github.com/canpok1/ai-feed/internal/infra/selector/factory.go (0.0%)</option>
-				
-				<option value="file38">github.com/canpok1/ai-feed/internal/infra/selector/gemini.go (0.0%)</option>
-				
-				<option value="file39">github.com/canpok1/ai-feed/internal/infra/templates.go (100.0%)</option>
-				
-				<option value="file40">github.com/canpok1/ai-feed/internal/infra/validator.go (84.5%)</option>
-				
-				<option value="file41">github.com/canpok1/ai-feed/internal/testutil/helpers.go (0.0%)</option>
-				
-				<option value="file42">github.com/canpok1/ai-feed/internal/version/version.go (83.3%)</option>
-				
-				<option value="file43">github.com/canpok1/ai-feed/main.go (0.0%)</option>
+				<option value="file35">github.com/canpok1/ai-feed/main.go (0.0%)</option>
 				
 				</select>
 			</div>
@@ -2572,467 +2556,7 @@ func (f *Fetcher) Fetch(urls []string, limit int) ([]entity.Article, error) <spa
 }
 </pre>
 		
-		<pre class="file" id="file18" style="display: none">// Code generated by MockGen. DO NOT EDIT.
-// Source: ../comment.go
-//
-// Generated by this command:
-//
-//        mockgen -source=../comment.go -destination=./comment.go
-//
-
-// Package mock_domain is a generated GoMock package.
-package mock_domain
-
-import (
-        context "context"
-        reflect "reflect"
-
-        domain "github.com/canpok1/ai-feed/internal/domain"
-        entity "github.com/canpok1/ai-feed/internal/domain/entity"
-        gomock "go.uber.org/mock/gomock"
-)
-
-// MockCommentGenerator is a mock of CommentGenerator interface.
-type MockCommentGenerator struct {
-        ctrl     *gomock.Controller
-        recorder *MockCommentGeneratorMockRecorder
-        isgomock struct{}
-}
-
-// MockCommentGeneratorMockRecorder is the mock recorder for MockCommentGenerator.
-type MockCommentGeneratorMockRecorder struct {
-        mock *MockCommentGenerator
-}
-
-// NewMockCommentGenerator creates a new mock instance.
-func NewMockCommentGenerator(ctrl *gomock.Controller) *MockCommentGenerator <span class="cov0" title="0">{
-        mock := &amp;MockCommentGenerator{ctrl: ctrl}
-        mock.recorder = &amp;MockCommentGeneratorMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockCommentGenerator) EXPECT() *MockCommentGeneratorMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// Generate mocks base method.
-func (m *MockCommentGenerator) Generate(arg0 context.Context, arg1 *entity.Article) (string, error) <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Generate", arg0, arg1)
-        ret0, _ := ret[0].(string)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}</span>
-
-// Generate indicates an expected call of Generate.
-func (mr *MockCommentGeneratorMockRecorder) Generate(arg0, arg1 any) *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*MockCommentGenerator)(nil).Generate), arg0, arg1)
-}</span>
-
-// MockCommentGeneratorFactory is a mock of CommentGeneratorFactory interface.
-type MockCommentGeneratorFactory struct {
-        ctrl     *gomock.Controller
-        recorder *MockCommentGeneratorFactoryMockRecorder
-        isgomock struct{}
-}
-
-// MockCommentGeneratorFactoryMockRecorder is the mock recorder for MockCommentGeneratorFactory.
-type MockCommentGeneratorFactoryMockRecorder struct {
-        mock *MockCommentGeneratorFactory
-}
-
-// NewMockCommentGeneratorFactory creates a new mock instance.
-func NewMockCommentGeneratorFactory(ctrl *gomock.Controller) *MockCommentGeneratorFactory <span class="cov0" title="0">{
-        mock := &amp;MockCommentGeneratorFactory{ctrl: ctrl}
-        mock.recorder = &amp;MockCommentGeneratorFactoryMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockCommentGeneratorFactory) EXPECT() *MockCommentGeneratorFactoryMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// MakeCommentGenerator mocks base method.
-func (m *MockCommentGeneratorFactory) MakeCommentGenerator(arg0 *entity.AIConfig, arg1 *entity.PromptConfig) (domain.CommentGenerator, error) <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "MakeCommentGenerator", arg0, arg1)
-        ret0, _ := ret[0].(domain.CommentGenerator)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}</span>
-
-// MakeCommentGenerator indicates an expected call of MakeCommentGenerator.
-func (mr *MockCommentGeneratorFactoryMockRecorder) MakeCommentGenerator(arg0, arg1 any) *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeCommentGenerator", reflect.TypeOf((*MockCommentGeneratorFactory)(nil).MakeCommentGenerator), arg0, arg1)
-}</span>
-</pre>
-		
-		<pre class="file" id="file19" style="display: none">// Code generated by MockGen. DO NOT EDIT.
-// Source: ../config.go
-//
-// Generated by this command:
-//
-//        mockgen -source=../config.go -destination=./config.go
-//
-
-// Package mock_domain is a generated GoMock package.
-package mock_domain
-
-import (
-        reflect "reflect"
-
-        gomock "go.uber.org/mock/gomock"
-)
-
-// MockConfigRepository is a mock of ConfigRepository interface.
-type MockConfigRepository struct {
-        ctrl     *gomock.Controller
-        recorder *MockConfigRepositoryMockRecorder
-        isgomock struct{}
-}
-
-// MockConfigRepositoryMockRecorder is the mock recorder for MockConfigRepository.
-type MockConfigRepositoryMockRecorder struct {
-        mock *MockConfigRepository
-}
-
-// NewMockConfigRepository creates a new mock instance.
-func NewMockConfigRepository(ctrl *gomock.Controller) *MockConfigRepository <span class="cov0" title="0">{
-        mock := &amp;MockConfigRepository{ctrl: ctrl}
-        mock.recorder = &amp;MockConfigRepositoryMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockConfigRepository) EXPECT() *MockConfigRepositoryMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// Load mocks base method.
-func (m *MockConfigRepository) Load() (any, error) <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Load")
-        ret0, _ := ret[0].(any)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}</span>
-
-// Load indicates an expected call of Load.
-func (mr *MockConfigRepositoryMockRecorder) Load() *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockConfigRepository)(nil).Load))
-}</span>
-
-// Save mocks base method.
-func (m *MockConfigRepository) Save(config any) error <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Save", config)
-        ret0, _ := ret[0].(error)
-        return ret0
-}</span>
-
-// Save indicates an expected call of Save.
-func (mr *MockConfigRepositoryMockRecorder) Save(config any) *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConfigRepository)(nil).Save), config)
-}</span>
-</pre>
-		
-		<pre class="file" id="file20" style="display: none">// Code generated by MockGen. DO NOT EDIT.
-// Source: ../fetch.go
-//
-// Generated by this command:
-//
-//        mockgen -source=../fetch.go -destination=./fetch.go
-//
-
-// Package mock_domain is a generated GoMock package.
-package mock_domain
-
-import (
-        reflect "reflect"
-
-        entity "github.com/canpok1/ai-feed/internal/domain/entity"
-        gomock "go.uber.org/mock/gomock"
-)
-
-// MockFetchClient is a mock of FetchClient interface.
-type MockFetchClient struct {
-        ctrl     *gomock.Controller
-        recorder *MockFetchClientMockRecorder
-        isgomock struct{}
-}
-
-// MockFetchClientMockRecorder is the mock recorder for MockFetchClient.
-type MockFetchClientMockRecorder struct {
-        mock *MockFetchClient
-}
-
-// NewMockFetchClient creates a new mock instance.
-func NewMockFetchClient(ctrl *gomock.Controller) *MockFetchClient <span class="cov0" title="0">{
-        mock := &amp;MockFetchClient{ctrl: ctrl}
-        mock.recorder = &amp;MockFetchClientMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockFetchClient) EXPECT() *MockFetchClientMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// Fetch mocks base method.
-func (m *MockFetchClient) Fetch(url string) ([]entity.Article, error) <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Fetch", url)
-        ret0, _ := ret[0].([]entity.Article)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}</span>
-
-// Fetch indicates an expected call of Fetch.
-func (mr *MockFetchClientMockRecorder) Fetch(url any) *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockFetchClient)(nil).Fetch), url)
-}</span>
-</pre>
-		
-		<pre class="file" id="file21" style="display: none">// Code generated by MockGen. DO NOT EDIT.
-// Source: ../message.go
-//
-// Generated by this command:
-//
-//        mockgen -source=../message.go -destination=./message.go
-//
-
-// Package mock_domain is a generated GoMock package.
-package mock_domain
-
-import (
-        reflect "reflect"
-
-        entity "github.com/canpok1/ai-feed/internal/domain/entity"
-        gomock "go.uber.org/mock/gomock"
-)
-
-// MockMessageSender is a mock of MessageSender interface.
-type MockMessageSender struct {
-        ctrl     *gomock.Controller
-        recorder *MockMessageSenderMockRecorder
-        isgomock struct{}
-}
-
-// MockMessageSenderMockRecorder is the mock recorder for MockMessageSender.
-type MockMessageSenderMockRecorder struct {
-        mock *MockMessageSender
-}
-
-// NewMockMessageSender creates a new mock instance.
-func NewMockMessageSender(ctrl *gomock.Controller) *MockMessageSender <span class="cov0" title="0">{
-        mock := &amp;MockMessageSender{ctrl: ctrl}
-        mock.recorder = &amp;MockMessageSenderMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMessageSender) EXPECT() *MockMessageSenderMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// SendRecommend mocks base method.
-func (m *MockMessageSender) SendRecommend(arg0 *entity.Recommend, arg1 string) error <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "SendRecommend", arg0, arg1)
-        ret0, _ := ret[0].(error)
-        return ret0
-}</span>
-
-// SendRecommend indicates an expected call of SendRecommend.
-func (mr *MockMessageSenderMockRecorder) SendRecommend(arg0, arg1 any) *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRecommend", reflect.TypeOf((*MockMessageSender)(nil).SendRecommend), arg0, arg1)
-}</span>
-</pre>
-		
-		<pre class="file" id="file22" style="display: none">// Code generated by MockGen. DO NOT EDIT.
-// Source: ../profile.go
-//
-// Generated by this command:
-//
-//        mockgen -source=../profile.go -destination=./profile.go
-//
-
-// Package mock_domain is a generated GoMock package.
-package mock_domain
-
-import (
-        reflect "reflect"
-
-        entity "github.com/canpok1/ai-feed/internal/domain/entity"
-        gomock "go.uber.org/mock/gomock"
-)
-
-// MockProfileRepository is a mock of ProfileRepository interface.
-type MockProfileRepository struct {
-        ctrl     *gomock.Controller
-        recorder *MockProfileRepositoryMockRecorder
-        isgomock struct{}
-}
-
-// MockProfileRepositoryMockRecorder is the mock recorder for MockProfileRepository.
-type MockProfileRepositoryMockRecorder struct {
-        mock *MockProfileRepository
-}
-
-// NewMockProfileRepository creates a new mock instance.
-func NewMockProfileRepository(ctrl *gomock.Controller) *MockProfileRepository <span class="cov0" title="0">{
-        mock := &amp;MockProfileRepository{ctrl: ctrl}
-        mock.recorder = &amp;MockProfileRepositoryMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockProfileRepository) EXPECT() *MockProfileRepositoryMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// LoadProfile mocks base method.
-func (m *MockProfileRepository) LoadProfile() (*entity.Profile, error) <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "LoadProfile")
-        ret0, _ := ret[0].(*entity.Profile)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}</span>
-
-// LoadProfile indicates an expected call of LoadProfile.
-func (mr *MockProfileRepositoryMockRecorder) LoadProfile() *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadProfile", reflect.TypeOf((*MockProfileRepository)(nil).LoadProfile))
-}</span>
-</pre>
-		
-		<pre class="file" id="file23" style="display: none">// Code generated by MockGen. DO NOT EDIT.
-// Source: ../recommend.go
-//
-// Generated by this command:
-//
-//        mockgen -source=../recommend.go -destination=./recommend.go
-//
-
-// Package mock_domain is a generated GoMock package.
-package mock_domain
-
-import (
-        context "context"
-        reflect "reflect"
-
-        entity "github.com/canpok1/ai-feed/internal/domain/entity"
-        gomock "go.uber.org/mock/gomock"
-)
-
-// MockRecommender is a mock of Recommender interface.
-type MockRecommender struct {
-        ctrl     *gomock.Controller
-        recorder *MockRecommenderMockRecorder
-        isgomock struct{}
-}
-
-// MockRecommenderMockRecorder is the mock recorder for MockRecommender.
-type MockRecommenderMockRecorder struct {
-        mock *MockRecommender
-}
-
-// NewMockRecommender creates a new mock instance.
-func NewMockRecommender(ctrl *gomock.Controller) *MockRecommender <span class="cov0" title="0">{
-        mock := &amp;MockRecommender{ctrl: ctrl}
-        mock.recorder = &amp;MockRecommenderMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRecommender) EXPECT() *MockRecommenderMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// Recommend mocks base method.
-func (m *MockRecommender) Recommend(arg0 context.Context, arg1 []entity.Article) (*entity.Recommend, error) <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Recommend", arg0, arg1)
-        ret0, _ := ret[0].(*entity.Recommend)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}</span>
-
-// Recommend indicates an expected call of Recommend.
-func (mr *MockRecommenderMockRecorder) Recommend(arg0, arg1 any) *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recommend", reflect.TypeOf((*MockRecommender)(nil).Recommend), arg0, arg1)
-}</span>
-</pre>
-		
-		<pre class="file" id="file24" style="display: none">// Code generated by MockGen. DO NOT EDIT.
-// Source: ../validator.go
-//
-// Generated by this command:
-//
-//        mockgen -source=../validator.go -destination=./validator.go
-//
-
-// Package mock_domain is a generated GoMock package.
-package mock_domain
-
-import (
-        reflect "reflect"
-
-        domain "github.com/canpok1/ai-feed/internal/domain"
-        gomock "go.uber.org/mock/gomock"
-)
-
-// MockValidator is a mock of Validator interface.
-type MockValidator struct {
-        ctrl     *gomock.Controller
-        recorder *MockValidatorMockRecorder
-        isgomock struct{}
-}
-
-// MockValidatorMockRecorder is the mock recorder for MockValidator.
-type MockValidatorMockRecorder struct {
-        mock *MockValidator
-}
-
-// NewMockValidator creates a new mock instance.
-func NewMockValidator(ctrl *gomock.Controller) *MockValidator <span class="cov0" title="0">{
-        mock := &amp;MockValidator{ctrl: ctrl}
-        mock.recorder = &amp;MockValidatorMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockValidator) EXPECT() *MockValidatorMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// Validate mocks base method.
-func (m *MockValidator) Validate() (*domain.ValidationResult, error) <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Validate")
-        ret0, _ := ret[0].(*domain.ValidationResult)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}</span>
-
-// Validate indicates an expected call of Validate.
-func (mr *MockValidatorMockRecorder) Validate() *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockValidator)(nil).Validate))
-}</span>
-</pre>
-		
-		<pre class="file" id="file25" style="display: none">package domain
+		<pre class="file" id="file18" style="display: none">package domain
 
 import (
         "context"
@@ -3162,7 +2686,7 @@ func generateComment(
 }
 </pre>
 		
-		<pre class="file" id="file26" style="display: none">package comment
+		<pre class="file" id="file19" style="display: none">package comment
 
 import (
         "fmt"
@@ -3200,7 +2724,7 @@ func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIConfig, p
 }
 </pre>
 		
-		<pre class="file" id="file27" style="display: none">package comment
+		<pre class="file" id="file20" style="display: none">package comment
 
 import (
         "context"
@@ -3261,7 +2785,7 @@ func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.A
 }
 </pre>
 		
-		<pre class="file" id="file28" style="display: none">package infra
+		<pre class="file" id="file21" style="display: none">package infra
 
 import (
         "fmt"
@@ -3681,7 +3205,7 @@ func mergeString(target *string, source string) <span class="cov0" title="0">{
 }
 </pre>
 		
-		<pre class="file" id="file29" style="display: none">package fetch
+		<pre class="file" id="file22" style="display: none">package fetch
 
 import (
         "github.com/canpok1/ai-feed/internal/domain"
@@ -3722,7 +3246,7 @@ func (f *FetchClient) Fetch(url string) ([]entity.Article, error) <span class="c
 }
 </pre>
 		
-		<pre class="file" id="file30" style="display: none">package infra
+		<pre class="file" id="file23" style="display: none">package infra
 
 import (
         "bufio"
@@ -3774,7 +3298,7 @@ func ReadURLsFromFile(filePath string) ([]string, error) <span class="cov0" titl
 }
 </pre>
 		
-		<pre class="file" id="file31" style="display: none">package infra
+		<pre class="file" id="file24" style="display: none">package infra
 
 import (
         "context"
@@ -3920,7 +3444,7 @@ func InitLogger(verbose bool) <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file32" style="display: none">package message
+		<pre class="file" id="file25" style="display: none">package message
 
 import (
         "bytes"
@@ -3984,7 +3508,7 @@ func (b *MessageBuilder) BuildRecommendMessage(r *entity.Recommend, fixedMessage
 }
 </pre>
 		
-		<pre class="file" id="file33" style="display: none">package message
+		<pre class="file" id="file26" style="display: none">package message
 
 import (
         "bytes"
@@ -4078,7 +3602,7 @@ func (v *MisskeySender) SendRecommend(recommend *entity.Recommend, fixedMessage 
 }
 </pre>
 		
-		<pre class="file" id="file34" style="display: none">package message
+		<pre class="file" id="file27" style="display: none">package message
 
 import (
         "bytes"
@@ -4159,79 +3683,7 @@ func (s *SlackSender) postMessage(msg string) error <span class="cov8" title="1"
 }
 </pre>
 		
-		<pre class="file" id="file35" style="display: none">// Code generated by MockGen. DO NOT EDIT.
-// Source: ../config.go
-//
-// Generated by this command:
-//
-//        mockgen -source=../config.go -destination=mock_config.go -package=mock_infra ConfigRepository
-//
-
-// Package mock_infra is a generated GoMock package.
-package mock_infra
-
-import (
-        reflect "reflect"
-
-        infra "github.com/canpok1/ai-feed/internal/infra"
-        gomock "go.uber.org/mock/gomock"
-)
-
-// MockConfigRepository is a mock of ConfigRepository interface.
-type MockConfigRepository struct {
-        ctrl     *gomock.Controller
-        recorder *MockConfigRepositoryMockRecorder
-        isgomock struct{}
-}
-
-// MockConfigRepositoryMockRecorder is the mock recorder for MockConfigRepository.
-type MockConfigRepositoryMockRecorder struct {
-        mock *MockConfigRepository
-}
-
-// NewMockConfigRepository creates a new mock instance.
-func NewMockConfigRepository(ctrl *gomock.Controller) *MockConfigRepository <span class="cov0" title="0">{
-        mock := &amp;MockConfigRepository{ctrl: ctrl}
-        mock.recorder = &amp;MockConfigRepositoryMockRecorder{mock}
-        return mock
-}</span>
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockConfigRepository) EXPECT() *MockConfigRepositoryMockRecorder <span class="cov0" title="0">{
-        return m.recorder
-}</span>
-
-// Load mocks base method.
-func (m *MockConfigRepository) Load() (*infra.Config, error) <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Load")
-        ret0, _ := ret[0].(*infra.Config)
-        ret1, _ := ret[1].(error)
-        return ret0, ret1
-}</span>
-
-// Load indicates an expected call of Load.
-func (mr *MockConfigRepositoryMockRecorder) Load() *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockConfigRepository)(nil).Load))
-}</span>
-
-// Save mocks base method.
-func (m *MockConfigRepository) Save(config *infra.Config) error <span class="cov0" title="0">{
-        m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "Save", config)
-        ret0, _ := ret[0].(error)
-        return ret0
-}</span>
-
-// Save indicates an expected call of Save.
-func (mr *MockConfigRepositoryMockRecorder) Save(config any) *gomock.Call <span class="cov0" title="0">{
-        mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConfigRepository)(nil).Save), config)
-}</span>
-</pre>
-		
-		<pre class="file" id="file36" style="display: none">package profile
+		<pre class="file" id="file28" style="display: none">package profile
 
 import (
         "fmt"
@@ -4299,7 +3751,7 @@ func (r *YamlProfileRepository) SaveProfileTemplate() error <span class="cov0" t
 }
 </pre>
 		
-		<pre class="file" id="file37" style="display: none">package selector
+		<pre class="file" id="file29" style="display: none">package selector
 
 import (
         "fmt"
@@ -4337,7 +3789,7 @@ func (f *ArticleSelectorFactory) MakeArticleSelector(
 }
 </pre>
 		
-		<pre class="file" id="file38" style="display: none">package selector
+		<pre class="file" id="file30" style="display: none">package selector
 
 import (
         "context"
@@ -4445,7 +3897,7 @@ func (g *geminiArticleSelector) buildSelectionPrompt(articles []entity.Article) 
 }
 </pre>
 		
-		<pre class="file" id="file39" style="display: none">package infra
+		<pre class="file" id="file31" style="display: none">package infra
 
 import (
         _ "embed"
@@ -4468,7 +3920,7 @@ func GetProfileTemplate() ([]byte, error) <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file40" style="display: none">package infra
+		<pre class="file" id="file32" style="display: none">package infra
 
 import (
         "html/template"
@@ -4819,7 +4271,7 @@ func isDummyValue(value string) bool <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file41" style="display: none">package testutil
+		<pre class="file" id="file33" style="display: none">package testutil
 
 // BoolPtr returns a pointer to the given bool value
 func BoolPtr(b bool) *bool <span class="cov0" title="0">{
@@ -4832,7 +4284,7 @@ func StringPtr(s string) *string <span class="cov0" title="0">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file42" style="display: none">package version
+		<pre class="file" id="file34" style="display: none">package version
 
 import (
         "runtime/debug"
@@ -4872,7 +4324,7 @@ func GetVersionWithReadBuildInfo(buildTimeVersion string, readBuildInfoFunc func
 }
 </pre>
 		
-		<pre class="file" id="file43" style="display: none">package main
+		<pre class="file" id="file35" style="display: none">package main
 
 import (
         "os"
