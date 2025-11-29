@@ -38,8 +38,7 @@ test-e2e:
 test-coverage:
 	@go test -coverprofile=coverage.out ./...
 	@go tool cover -html=coverage.out -o coverage.html
-	@go tool cover -func=coverage.out | grep total | awk '{print $$3}' | sed 's/%//' | \
-	awk -v thold=$(COVERAGE_THRESHOLD) '{if ($$1 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$1, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$1, thold}}'
+	@go tool cover -func=coverage.out | awk -v thold=$(COVERAGE_THRESHOLD) '/^total:/ {gsub(/%/, "", $$3); if ($$3 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$3, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$3, thold}}'
 
 lint:
 	golangci-lint run ./...
