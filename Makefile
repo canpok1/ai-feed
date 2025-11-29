@@ -22,6 +22,7 @@ clean:
 	rm -f ${BINARY_NAME}
 	rm -rf ./dist
 	rm -f coverage.out coverage.html
+	rm -rf public/coverage
 
 test:
 	go test ./...
