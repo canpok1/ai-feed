@@ -37,7 +37,8 @@ test-e2e:
 
 test-coverage:
 	@go test -coverprofile=coverage.out ./...
-	@go tool cover -html=coverage.out -o coverage.html
+	@mkdir -p public/coverage/ut-it
+	@go tool cover -html=coverage.out -o public/coverage/ut-it/index.html
 	@go tool cover -func=coverage.out | awk -v thold=$(COVERAGE_THRESHOLD) '/^total:/ {gsub(/%/, "", $$3); if ($$3 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$3, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$3, thold}}'
 
 lint:
