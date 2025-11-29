@@ -301,7 +301,7 @@ ai-feed profile check my-profile.yml
 - [コントリビューションガイド](./docs/04_contributing.md) - 貢献方法とプルリクエスト作成
 - [API連携ガイド](./docs/05_api_integration.md) - 外部API設定の詳細
 - [コーディングルール](./docs/01_coding_rules.md) - コーディング規約
-- [その他](./public/README.md) - カバレッジレポートなど
+- [その他](https://ktnet.info/ai-feed/) - カバレッジレポートなど
 
 ### 簡単な開発コマンド
 
