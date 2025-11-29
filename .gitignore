@@ -49,3 +49,6 @@ tmp/
 # Git worktrees directory (ignore all contents except .gitkeep)
 /worktrees/**
 !/worktrees/.gitkeep
+
+# coverage reports
+public/coverage/**
