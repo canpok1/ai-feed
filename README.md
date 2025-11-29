@@ -321,7 +321,9 @@ make build
 
 ```bash
 # 開発中にアプリケーションを実行
+# option="..." には ai-feed コマンドの引数を渡します
 make run option="recommend"
+make run option="recommend --url https://example.com/feed"
 
 # リリースビルドをローカルでテスト（goreleaserによるクロスコンパイル）
 make build-release
