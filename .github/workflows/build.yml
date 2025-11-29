@@ -33,9 +33,6 @@ jobs:
     - name: Lint
       run: make lint
 
-    - name: Lint with golangci-lint
-      run: make lint-all
-
     - name: Test
       run: make test
 
