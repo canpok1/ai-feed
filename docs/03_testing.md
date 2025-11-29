@@ -294,67 +294,6 @@ var customErr *CustomError
 assert.ErrorAs(t, err, &customErr)
 ```
 
-## 統合テスト
-
-統合テストは `it_` プレフィックス付きのファイル名で配置します。これにより、ビルドタグを使用せずにファイル名でテストレイヤーを明確に分離できます。
-
-### 統合テストの配置
-
-統合テストは `it_` プレフィックス付きのファイル名で配置します：
-
-```
-cmd/
-├── config.go
-├── config_test.go          # ユニットテスト
-├── it_config_test.go       # config統合テスト
-├── profile.go
-├── profile_test.go         # ユニットテスト
-└── it_profile_test.go      # profile統合テスト
-```
-
-### 統合テストの実行
-
-統合テストは通常のテストと一緒に `make test` で実行されます：
-
-```bash
-# 全テスト（ユニットテスト + 統合テスト）を実行
-make test
-
-# または直接実行
-go test ./...
-
-# 統合テストのみ実行（ファイル名パターンで指定）
-go test -run "Integration|_WithConfigCheck" ./cmd/...
-```
-
-### 統合テストの書き方
-
-統合テストは同じパッケージ内に配置し、内部関数を直接呼び出してテストします：
-
-```go
-package cmd
-
-func TestProfileCommandIntegration(t *testing.T) {
-    if testing.Short() {
-        t.Skip("Skipping integration test in short mode")
-    }
-
-    tmpDir := t.TempDir()
-    profilePath := filepath.Join(tmpDir, "test_profile.yml")
-
-    // 内部関数を直接呼び出してテスト
-    initCmd := makeProfileInitCmd()
-    initCmd.SetArgs([]string{profilePath})
-
-    var out bytes.Buffer
-    initCmd.SetOut(&out)
-
-    err := initCmd.Execute()
-    require.NoError(t, err)
-    assert.Contains(t, out.String(), "プロファイルファイルを作成しました:")
-}
-```
-
 ## E2Eテスト (End-to-End Testing)
 
 ### E2Eテストの概要
@@ -366,7 +305,6 @@ E2Eテストは、実際のバイナリを実行してエンドユーザーの�
 | テストの種類 | 対象範囲 | 配置場所 | ビルドタグ | 目的 |
 |------------|---------|---------|----------|------|
 | ユニットテスト | 関数・メソッド単位 | `<package>/*_test.go` | なし | 個別のロジックの正確性 |
-| 統合テスト | 複数コンポーネント | `<package>/it_*_test.go` | なし | コンポーネント間の連携 |
 | E2Eテスト | アプリケーション全体 | `test/e2e/**/*_test.go` | `e2e` | 実際のユーザー操作の再現 |
 
 ### E2Eテストの実行方法
