@@ -38,8 +38,7 @@ test-e2e:
 
 test-coverage:
 	@go test -coverprofile=coverage.out ./...
-	@head -n 1 coverage.out > coverage.filtered.out
-	@tail -n +2 coverage.out | grep -v "mock_" >> coverage.filtered.out
+	@grep -v "mock_" coverage.out > coverage.filtered.out
 	@mkdir -p public/coverage/ut-it
 	@go tool cover -html=coverage.filtered.out -o public/coverage/ut-it/index.html
 	@go tool cover -func=coverage.filtered.out | awk -v thold=$(COVERAGE_THRESHOLD) '/^total:/ {gsub(/%/, "", $$3); if ($$3 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$3, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$3, thold}}'
