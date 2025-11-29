@@ -316,3 +316,19 @@ make test
 # ビルド
 make build
 ```
+
+### その他の便利なコマンド
+
+```bash
+# 開発中にアプリケーションを実行
+make run option="recommend"
+
+# リリースビルドをローカルでテスト（goreleaserによるクロスコンパイル）
+make build-release
+
+# ビルド成果物とテストファイルを削除
+make clean
+
+# インターフェース変更後にモックを再生成
+make generate
+```
