@@ -37,7 +37,7 @@ jobs:
       run: make test
 
     - name: Test Coverage Check
-      run: make test-coverage-check
+      run: make test-coverage
 
     - name: Upload Coverage Report
       if: always()
