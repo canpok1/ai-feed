@@ -45,9 +45,6 @@ test-coverage-check:
 	awk -v thold=$(COVERAGE_THRESHOLD) '{if ($$1 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$1, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$1, thold}}'
 
 lint:
-	go vet ./...
-
-lint-all:
 	golangci-lint run ./...
 
 fmt:
