@@ -1,6 +1,8 @@
-package it
+package cmd
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,14 +17,23 @@ func TestProfileCommandIntegration(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	t.Run("profile init → check の一連の流れ", func(t *testing.T) {
-		tmpDir := t.TempDir()
-		profilePath := filepath.Join(tmpDir, "test_profile.yml")
+	// テスト用の一時ディレクトリ
+	tmpDir := t.TempDir()
 
+	t.Run("profile init → check の一連の流れ", func(t *testing.T) {
 		// 1. profile init でファイル作成
-		output, err := executeCommand(t, "profile", "init", profilePath)
+		profilePath := filepath.Join(tmpDir, "test_profile.yml")
+		initCmd := makeProfileInitCmd()
+		initCmd.SetArgs([]string{profilePath})
+
+		var initOut bytes.Buffer
+		var initErr bytes.Buffer
+		initCmd.SetOut(&initOut)
+		initCmd.SetErr(&initErr)
+
+		err := initCmd.Execute()
 		require.NoError(t, err)
-		assert.Contains(t, output, "プロファイルファイルを作成しました:")
+		assert.Contains(t, initOut.String(), "プロファイルファイルを作成しました:")
 
 		// ファイルが実際に作成されていることを確認
 		_, statErr := os.Stat(profilePath)
@@ -32,18 +43,30 @@ func TestProfileCommandIntegration(t *testing.T) {
 		content, err := os.ReadFile(profilePath)
 		require.NoError(t, err)
 
-		modifiedContent := updateProfileContent(string(content))
+		// 必要な設定を追加
+		modifiedContent := updateProfileContentForIT(string(content))
 		err = os.WriteFile(profilePath, []byte(modifiedContent), 0644)
 		require.NoError(t, err)
 
 		// 3. profile check で検証
-		output, err = executeCommand(t, "profile", "check", profilePath)
+		checkCmd := makeProfileCheckCmd()
+		checkCmd.SetArgs([]string{profilePath})
+
+		var checkOut bytes.Buffer
+		var checkErr bytes.Buffer
+		checkCmd.SetOut(&checkOut)
+		checkCmd.SetErr(&checkErr)
+
+		err = checkCmd.Execute()
 		assert.NoError(t, err)
-		assert.Contains(t, output, "プロファイルの検証が完了しました")
+		assert.Contains(t, checkOut.String(), "プロファイルの検証が完了しました")
 	})
 
 	t.Run("config.ymlとprofile.ymlのマージテスト", func(t *testing.T) {
-		tmpDir := t.TempDir()
+		// 作業ディレクトリを一時的に変更
+		originalWd, _ := os.Getwd()
+		os.Chdir(tmpDir)
+		defer os.Chdir(originalWd)
 
 		// config.ymlを作成（部分的な設定）
 		configContent := `default_profile:
@@ -59,7 +82,7 @@ func TestProfileCommandIntegration(t *testing.T) {
       channel: "#default"
       message_template: "{{COMMENT}} {{URL}}"
 `
-		err := os.WriteFile(filepath.Join(tmpDir, "config.yml"), []byte(configContent), 0644)
+		err := os.WriteFile("./config.yml", []byte(configContent), 0644)
 		require.NoError(t, err)
 
 		// profile.ymlを作成（追加・上書き設定）
@@ -71,19 +94,23 @@ output:
     api_url: "https://custom.misskey.social/api"
     message_template: "{{COMMENT}} {{URL}}"
 `
-		profilePath := filepath.Join(tmpDir, "test_merge_profile.yml")
+		profilePath := "./test_merge_profile.yml"
 		err = os.WriteFile(profilePath, []byte(profileContent), 0644)
 		require.NoError(t, err)
 
-		// profile check でマージされたプロファイルを検証（一時ディレクトリで実行）
-		output, err := executeCommandInDir(t, tmpDir, "profile", "check", profilePath)
+		// profile check でマージされたプロファイルを検証
+		checkCmd := makeProfileCheckCmd()
+		checkCmd.SetArgs([]string{profilePath})
+
+		var checkOut bytes.Buffer
+		checkCmd.SetOut(&checkOut)
+
+		err = checkCmd.Execute()
 		assert.NoError(t, err)
-		assert.Contains(t, output, "プロファイルの検証が完了しました")
+		assert.Contains(t, checkOut.String(), "プロファイルの検証が完了しました")
 	})
 
 	t.Run("エラーケースの統合テスト", func(t *testing.T) {
-		tmpDir := t.TempDir()
-
 		scenarios := []struct {
 			name        string
 			setupFile   func() string
@@ -117,16 +144,25 @@ invalid yaml content:
 			t.Run(scenario.name, func(t *testing.T) {
 				filePath := scenario.setupFile()
 
-				output, err := executeCommand(t, "profile", "check", filePath)
+				checkCmd := makeProfileCheckCmd()
+				checkCmd.SetArgs([]string{filePath})
+
+				var checkOut bytes.Buffer
+				var checkErr bytes.Buffer
+				checkCmd.SetOut(&checkOut)
+				checkCmd.SetErr(&checkErr)
+
+				err := checkCmd.Execute()
 				assert.Error(t, err)
-				assert.Contains(t, output, scenario.expectedErr)
+				assert.Contains(t, err.Error(), scenario.expectedErr)
 			})
 		}
 	})
 }
 
-// updateProfileContent テンプレートファイルの内容を有効なプロファイルに更新する
-func updateProfileContent(templateContent string) string {
+// updateProfileContentForIT テンプレートファイルの内容を有効なプロファイルに更新する
+func updateProfileContentForIT(templateContent string) string {
+	// テンプレートの環境変数参照を固定値に置き換える
 	lines := strings.Split(templateContent, "\n")
 	var result []string
 
@@ -166,17 +202,22 @@ func TestProfileCommandPerformance(t *testing.T) {
 
 		// 複数のプロファイルファイルを作成
 		for i := 0; i < fileCount; i++ {
-			profilePath := filepath.Join(tmpDir, "profile_"+string(rune('0'+i))+".yml")
+			profilePath := filepath.Join(tmpDir, fmt.Sprintf("profile_%d.yml", i))
 
-			output, err := executeCommand(t, "profile", "init", profilePath)
+			initCmd := makeProfileInitCmd()
+			initCmd.SetArgs([]string{profilePath})
+
+			var initOut bytes.Buffer
+			initCmd.SetOut(&initOut)
+
+			err := initCmd.Execute()
 			require.NoError(t, err)
-			assert.Contains(t, output, "プロファイルファイルを作成しました:")
 
 			// ファイルを有効なプロファイルに更新
 			content, err := os.ReadFile(profilePath)
 			require.NoError(t, err)
 
-			modifiedContent := updateProfileContent(string(content))
+			modifiedContent := updateProfileContentForIT(string(content))
 			err = os.WriteFile(profilePath, []byte(modifiedContent), 0644)
 			require.NoError(t, err)
 		}
@@ -185,9 +226,15 @@ func TestProfileCommandPerformance(t *testing.T) {
 		results := make(chan error, fileCount)
 		for i := 0; i < fileCount; i++ {
 			go func(index int) {
-				profilePath := filepath.Join(tmpDir, "profile_"+string(rune('0'+index))+".yml")
-				_, err := executeCommand(t, "profile", "check", profilePath)
-				results <- err
+				profilePath := filepath.Join(tmpDir, fmt.Sprintf("profile_%d.yml", index))
+
+				checkCmd := makeProfileCheckCmd()
+				checkCmd.SetArgs([]string{profilePath})
+
+				var checkOut bytes.Buffer
+				checkCmd.SetOut(&checkOut)
+
+				results <- checkCmd.Execute()
 			}(i)
 		}
 

@@ -296,21 +296,20 @@ assert.ErrorAs(t, err, &customErr)
 
 ## 統合テスト
 
-統合テストは `<package>/it/` ディレクトリに配置します。これにより、ビルドタグを使用せずにディレクトリ構造でテストレイヤーを明確に分離できます。
+統合テストは `it_` プレフィックス付きのファイル名で配置します。これにより、ビルドタグを使用せずにファイル名でテストレイヤーを明確に分離できます。
 
 ### 統合テストの配置
+
+統合テストは `it_` プレフィックス付きのファイル名で配置します：
 
 ```
 cmd/
 ├── config.go
 ├── config_test.go          # ユニットテスト
+├── it_config_test.go       # config統合テスト
 ├── profile.go
 ├── profile_test.go         # ユニットテスト
-└── it/                     # 統合テストディレクトリ
-    ├── main_test.go        # TestMain（バイナリビルド）
-    ├── helper_test.go      # ヘルパー関数
-    ├── config_test.go      # config統合テスト
-    └── profile_test.go     # profile統合テスト
+└── it_profile_test.go      # profile統合テスト
 ```
 
 ### 統合テストの実行
@@ -324,16 +323,16 @@ make test
 # または直接実行
 go test ./...
 
-# 統合テストのみ実行
-go test ./cmd/it/...
+# 統合テストのみ実行（ファイル名パターンで指定）
+go test -run "Integration|_WithConfigCheck" ./cmd/...
 ```
 
 ### 統合テストの書き方
 
-統合テストはバイナリをビルドして実際のコマンドを実行するブラックボックステストとして実装します：
+統合テストは同じパッケージ内に配置し、内部関数を直接呼び出してテストします：
 
 ```go
-package it
+package cmd
 
 func TestProfileCommandIntegration(t *testing.T) {
     if testing.Short() {
@@ -343,10 +342,16 @@ func TestProfileCommandIntegration(t *testing.T) {
     tmpDir := t.TempDir()
     profilePath := filepath.Join(tmpDir, "test_profile.yml")
 
-    // バイナリを実行してテスト
-    output, err := executeCommand(t, "profile", "init", profilePath)
+    // 内部関数を直接呼び出してテスト
+    initCmd := makeProfileInitCmd()
+    initCmd.SetArgs([]string{profilePath})
+
+    var out bytes.Buffer
+    initCmd.SetOut(&out)
+
+    err := initCmd.Execute()
     require.NoError(t, err)
-    assert.Contains(t, output, "プロファイルファイルを作成しました:")
+    assert.Contains(t, out.String(), "プロファイルファイルを作成しました:")
 }
 ```
 
@@ -358,11 +363,11 @@ E2Eテストは、実際のバイナリを実行してエンドユーザーの�
 
 #### テストの種類の違い
 
-| テストの種類 | 対象範囲 | 実行方法 | 目的 |
-|------------|---------|---------|------|
-| ユニットテスト | 関数・メソッド単位 | パッケージを直接テスト | 個別のロジックの正確性 |
-| 統合テスト | 複数コンポーネント | `<package>/it/*_test.go` | コンポーネント間の連携 |
-| E2Eテスト | アプリケーション全体 | ビルドタグ`e2e` | 実際のユーザー操作の再現 |
+| テストの種類 | 対象範囲 | 配置場所 | ビルドタグ | 目的 |
+|------------|---------|---------|----------|------|
+| ユニットテスト | 関数・メソッド単位 | `<package>/*_test.go` | なし | 個別のロジックの正確性 |
+| 統合テスト | 複数コンポーネント | `<package>/it_*_test.go` | なし | コンポーネント間の連携 |
+| E2Eテスト | アプリケーション全体 | `test/e2e/**/*_test.go` | `e2e` | 実際のユーザー操作の再現 |
 
 ### E2Eテストの実行方法
 
