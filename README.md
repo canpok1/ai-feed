@@ -316,3 +316,21 @@ make test
 # ビルド
 make build
 ```
+
+### その他の便利なコマンド
+
+```bash
+# 開発中にアプリケーションを実行
+# option="..." には ai-feed コマンドの引数を渡します
+make run option="recommend"
+make run option="recommend --url https://example.com/feed"
+
+# リリースビルドをローカルでテスト（goreleaserによるクロスコンパイル）
+make build-release
+
+# ビルド成果物とテストファイルを削除
+make clean
+
+# インターフェース変更後にモックを再生成
+make generate
+```
