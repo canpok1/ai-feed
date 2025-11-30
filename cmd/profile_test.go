@@ -14,7 +14,12 @@ func TestProfileCheckCommand_Success(t *testing.T) {
 	originalWd, _ := os.Getwd()
 	tempDir, _ := os.MkdirTemp("", "profile_test")
 	os.Chdir(tempDir)
+
+	// グローバル変数cfgFileをリセット（テスト間の干渉を防ぐ）
+	originalCfgFile := cfgFile
+	cfgFile = ""
 	defer func() {
+		cfgFile = originalCfgFile
 		os.Chdir(originalWd)
 		os.RemoveAll(tempDir)
 	}()
@@ -158,7 +163,12 @@ func TestProfileCheckCommand_WithProfileMerge(t *testing.T) {
 	originalWd, _ := os.Getwd()
 	tempDir, _ := os.MkdirTemp("", "profile_test")
 	os.Chdir(tempDir)
+
+	// グローバル変数cfgFileをリセット（テスト間の干渉を防ぐ）
+	originalCfgFile := cfgFile
+	cfgFile = ""
 	defer func() {
+		cfgFile = originalCfgFile
 		os.Chdir(originalWd)
 		os.RemoveAll(tempDir)
 	}()
@@ -256,3 +266,135 @@ func TestProfileCheckCommand_ConfigLoadingBehavior(t *testing.T) {
 
 // osExit は os.Exit をモック可能にするための変数
 var osExit = os.Exit
+
+// TestProfileCheckCommand_WithConfigFlag は--configフラグが正しく参照されることをテストする
+func TestProfileCheckCommand_WithConfigFlag(t *testing.T) {
+	// テスト用の一時ディレクトリを作成
+	tempDir, _ := os.MkdirTemp("", "profile_test_config_flag")
+	defer os.RemoveAll(tempDir)
+
+	// カスタム設定ファイルのパスを作成
+	customConfigPath := tempDir + "/custom_config.yml"
+
+	// 有効な設定ファイルを作成
+	configContent := `default_profile:
+  ai:
+    gemini:
+      type: "gemini-2.5-flash"
+      api_key: "test-api-key"
+  system_prompt: "テスト用システムプロンプト"
+  comment_prompt_template: "テスト用テンプレート {{TITLE}}"
+  selector_prompt: "テスト用記事選択プロンプト"
+  output:
+    slack_api:
+      api_token: "xoxb-test-token"
+      channel: "#test"
+      message_template: "{{COMMENT}} {{URL}}"
+`
+	err := os.WriteFile(customConfigPath, []byte(configContent), 0644)
+	assert.NoError(t, err)
+
+	// グローバル変数cfgFileにカスタムパスを設定
+	originalCfgFile := cfgFile
+	cfgFile = customConfigPath
+	defer func() {
+		cfgFile = originalCfgFile
+	}()
+
+	cmd := makeProfileCheckCmd()
+
+	// 標準出力と標準エラーをキャプチャ
+	stdout := bytes.NewBufferString("")
+	stderr := bytes.NewBufferString("")
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+
+	// コマンドライン引数を設定（引数なし）
+	cmd.SetArgs([]string{})
+
+	// コマンドを実行
+	_, err = cmd.ExecuteC()
+
+	// 成功することを確認
+	assert.NoError(t, err, "Command should succeed with custom config path via --config flag")
+
+	// 成功メッセージが出力されることを確認
+	output := stdout.String()
+	assert.Contains(t, output, "プロファイルの検証が完了しました", "Should show success message")
+
+	// 設定ファイルパスが正しく表示されることを確認
+	stderrOutput := stderr.String()
+	assert.Contains(t, stderrOutput, customConfigPath, "Should display the custom config file path")
+}
+
+// TestProfileCheckCommand_ConfigFlagIgnoredBugRegression は--configフラグが無視されるバグの再発を防ぐテスト
+// issue #238: profile check コマンドで --config フラグが無視される問題の修正確認
+func TestProfileCheckCommand_ConfigFlagIgnoredBugRegression(t *testing.T) {
+	// テスト用の一時ディレクトリを2つ作成
+	tempDir1, _ := os.MkdirTemp("", "profile_test_dir1")
+	tempDir2, _ := os.MkdirTemp("", "profile_test_dir2")
+	defer os.RemoveAll(tempDir1)
+	defer os.RemoveAll(tempDir2)
+
+	// tempDir1に有効な設定ファイルを作成
+	validConfigPath := tempDir1 + "/valid_config.yml"
+	validConfigContent := `default_profile:
+  ai:
+    gemini:
+      type: "gemini-2.5-flash"
+      api_key: "test-api-key"
+  system_prompt: "テスト用システムプロンプト"
+  comment_prompt_template: "テスト用テンプレート {{TITLE}}"
+  selector_prompt: "テスト用記事選択プロンプト"
+  output:
+    slack_api:
+      api_token: "xoxb-test-token"
+      channel: "#test"
+      message_template: "{{COMMENT}} {{URL}}"
+`
+	err := os.WriteFile(validConfigPath, []byte(validConfigContent), 0644)
+	assert.NoError(t, err)
+
+	// tempDir2に空の設定ファイルを作成（バリデーション失敗するもの）
+	invalidConfigPath := tempDir2 + "/invalid_config.yml"
+	err = os.WriteFile(invalidConfigPath, []byte("# empty config\n"), 0644)
+	assert.NoError(t, err)
+
+	// 作業ディレクトリをtempDir2に変更（./config.ymlがinvalid_config.ymlになるようにシミュレート）
+	originalWd, _ := os.Getwd()
+	os.Chdir(tempDir2)
+	// ./config.ymlとしてinvalid設定をコピー
+	err = os.WriteFile("./config.yml", []byte("# empty config\n"), 0644)
+	assert.NoError(t, err)
+	defer func() {
+		os.Chdir(originalWd)
+	}()
+
+	// cfgFileに有効な設定ファイルのパスを設定
+	originalCfgFile := cfgFile
+	cfgFile = validConfigPath
+	defer func() {
+		cfgFile = originalCfgFile
+	}()
+
+	cmd := makeProfileCheckCmd()
+
+	// 標準出力と標準エラーをキャプチャ
+	stdout := bytes.NewBufferString("")
+	stderr := bytes.NewBufferString("")
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+
+	cmd.SetArgs([]string{})
+
+	// コマンドを実行
+	_, err = cmd.ExecuteC()
+
+	// cfgFileで指定した有効な設定ファイルが使用されるため、成功するはず
+	// バグがあった場合、./config.yml（無効な設定）が使用され、エラーになる
+	assert.NoError(t, err, "Command should succeed because cfgFile (--config flag) points to valid config, not ./config.yml")
+
+	// 有効な設定ファイルパスが使用されていることを確認
+	stderrOutput := stderr.String()
+	assert.Contains(t, stderrOutput, validConfigPath, "Should use the config file specified by --config flag, not ./config.yml")
+}
