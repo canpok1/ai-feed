@@ -56,8 +56,3 @@ else
     git push origin "$NEW_VERSION"
     echo "タグ $NEW_VERSION をプッシュしました。"
 fi
-
-# GitHub Actions用に作成したタグ名を出力
-if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
-    echo "tag=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-fi

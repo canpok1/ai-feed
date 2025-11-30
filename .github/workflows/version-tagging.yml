@@ -17,8 +17,11 @@ jobs:
           fetch-depth: 0
 
       - name: Create and push version tag
-        id: create-tag
         run: ./scripts/create-version-tag.sh
+
+      - name: Get created tag
+        id: create-tag
+        run: echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
 
   # タグ作成後にリリースを実行
   # GITHUB_TOKENでプッシュされたタグは他のワークフローをトリガーしないため
