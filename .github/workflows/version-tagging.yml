@@ -9,12 +9,15 @@ permissions:
 jobs:
   create-version-tag:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.create-tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Create and push version tag
+        id: create-tag
         run: ./scripts/create-version-tag.sh
 
   # タグ作成後にreleaseワークフローを直接呼び出す
@@ -22,5 +25,7 @@ jobs:
   release:
     needs: create-version-tag
     uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.create-version-tag.outputs.tag }}
     permissions:
       contents: write
