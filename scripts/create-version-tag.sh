@@ -25,7 +25,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # 最新のバージョンタグを取得（セマンティックバージョニング形式、プレリリースタグを除外）
-LATEST_TAG=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | { grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true; } | head -n 1)
+# pipefail環境でのSIGPIPE問題を回避するため、grepの結果を一度変数に格納
+ALL_TAGS=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | { grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true; })
+LATEST_TAG=$(echo "$ALL_TAGS" | head -n 1)
 
 if [[ -z "$LATEST_TAG" ]]; then
     echo "最新のタグが見つかりません。初期バージョン v0.0.1 を使用します。"
