@@ -55,8 +55,11 @@ func makeProfileCheckCmd() *cobra.Command {
 		Short: "プロファイルファイルの設定を検証します",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// config.ymlのパスを取得
-			configPath := "./config.yml"
+			// --config フラグの値を取得（グローバルフラグ）
+			configPath := cfgFile
+			if configPath == "" {
+				configPath = "./config.yml"
+			}
 
 			// 引数からプロファイルファイルのパスを取得
 			profilePath := ""
@@ -64,11 +67,11 @@ func makeProfileCheckCmd() *cobra.Command {
 				profilePath = args[0]
 			}
 
-			// 進行状況メッセージ: 検証開始
+			// 進行状況メッセージ: 検証開始（使用するファイルパスを表示）
+			fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています...\n")
+			fmt.Fprintf(cmd.ErrOrStderr(), "  設定ファイル: %s\n", configPath)
 			if profilePath != "" {
-				fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています... (%s)\n", profilePath)
-			} else {
-				fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています...\n")
+				fmt.Fprintf(cmd.ErrOrStderr(), "  プロファイル: %s\n", profilePath)
 			}
 
 			// ProfileCheckRunnerを使用して検証を実行
