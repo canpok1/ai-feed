@@ -59,7 +59,7 @@
 				
 				<option value="file1">github.com/canpok1/ai-feed/cmd/init.go (100.0%)</option>
 				
-				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (73.9%)</option>
+				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (75.5%)</option>
 				
 				<option value="file3">github.com/canpok1/ai-feed/cmd/recommend.go (24.1%)</option>
 				
@@ -439,20 +439,23 @@ func makeProfileCheckCmd() *cobra.Command <span class="cov8" title="1">{
                 Short: "プロファイルファイルの設定を検証します",
                 Args:  cobra.MaximumNArgs(1),
                 RunE: func(cmd *cobra.Command, args []string) error </span><span class="cov8" title="1">{
-                        // config.ymlのパスを取得
-                        configPath := "./config.yml"
+                        // --config フラグの値を取得（グローバルフラグ）
+                        configPath := cfgFile
+                        if configPath == "" </span><span class="cov8" title="1">{
+                                configPath = "./config.yml"
+                        }</span>
 
                         // 引数からプロファイルファイルのパスを取得
-                        profilePath := ""
+                        <span class="cov8" title="1">profilePath := ""
                         if len(args) &gt; 0 </span><span class="cov8" title="1">{
                                 profilePath = args[0]
                         }</span>
 
-                        // 進行状況メッセージ: 検証開始
-                        <span class="cov8" title="1">if profilePath != "" </span><span class="cov8" title="1">{
-                                fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています... (%s)\n", profilePath)
-                        }</span> else<span class="cov8" title="1"> {
-                                fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています...\n")
+                        // 進行状況メッセージ: 検証開始（使用するファイルパスを表示）
+                        <span class="cov8" title="1">fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを検証しています...\n")
+                        fmt.Fprintf(cmd.ErrOrStderr(), "  設定ファイル: %s\n", configPath)
+                        if profilePath != "" </span><span class="cov8" title="1">{
+                                fmt.Fprintf(cmd.ErrOrStderr(), "  プロファイル: %s\n", profilePath)
                         }</span>
 
                         // ProfileCheckRunnerを使用して検証を実行
