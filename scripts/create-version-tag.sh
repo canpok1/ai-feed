@@ -24,21 +24,17 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# 最新のバージョンタグを取得（セマンティックバージョニング形式）
-LATEST_TAG=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | head -n 1)
+# 最新のバージョンタグを取得（セマンティックバージョニング形式、プレリリースタグを除外）
+LATEST_TAG=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | { grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true; } | head -n 1)
 
-if [ -z "$LATEST_TAG" ]; then
+if [[ -z "$LATEST_TAG" ]]; then
     echo "最新のタグが見つかりません。初期バージョン v0.0.1 を使用します。"
     NEW_VERSION="v0.0.1"
 else
     echo "最新のタグ: $LATEST_TAG"
 
     # バージョン番号を解析（vプレフィックスを除去）
-    VERSION=${LATEST_TAG#v}
-    MAJOR=${VERSION%%.*}
-    REST=${VERSION#*.}
-    MINOR=${REST%%.*}
-    PATCH=${REST#*.}
+    IFS='.' read -r MAJOR MINOR PATCH <<< "${LATEST_TAG#v}"
 
     # パッチバージョンをインクリメント
     NEW_PATCH=$((PATCH + 1))
@@ -47,7 +43,7 @@ fi
 
 echo "新しいバージョン: $NEW_VERSION"
 
-if [ "$DRY_RUN" = true ]; then
+if [[ "$DRY_RUN" == "true" ]]; then
     echo "[ドライラン] タグの作成とプッシュをスキップします。"
 else
     # タグを作成
