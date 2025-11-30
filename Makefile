@@ -43,6 +43,9 @@ test-coverage:
 	@go tool cover -html=coverage.filtered.out -o public/coverage/ut-it/index.html
 	@go tool cover -func=coverage.filtered.out | awk -v thold=$(COVERAGE_THRESHOLD) '/^total:/ {gsub(/%/, "", $$3); if ($$3 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$3, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$3, thold}}'
 
+# リリース前に実行するテスト（GoReleaserから呼び出される）
+test-release: test-coverage test-e2e
+
 lint:
 	golangci-lint run ./...
 
