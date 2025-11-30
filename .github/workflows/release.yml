@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+  # version-taggingワークフローからの呼び出しを受け付ける
+  workflow_call:
 
 permissions:
   contents: write

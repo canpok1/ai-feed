@@ -16,3 +16,11 @@ jobs:
 
       - name: Create and push version tag
         run: ./scripts/create-version-tag.sh
+
+  # タグ作成後にreleaseワークフローを直接呼び出す
+  # GITHUB_TOKENでプッシュされたタグは他のワークフローをトリガーしないため
+  release:
+    needs: create-version-tag
+    uses: ./.github/workflows/release.yml
+    permissions:
+      contents: write
