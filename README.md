@@ -255,6 +255,19 @@ Windows環境では色付けされません。
 | `cache.max_entries` | 任意 | `1000` | 最大エントリ数 |
 | `cache.retention_days` | 任意 | `30` | 保持期間（日数） |
 
+#### APIキー・トークン設定について
+
+APIキーやトークンは、直接指定（`api_key`/`api_token`）と環境変数指定（`api_key_env`/`api_token_env`）の2通りの方法で設定できます。
+
+| 設定方法 | 説明 |
+|----------|------|
+| `api_key` / `api_token` | 設定ファイルに直接値を記載（非推奨） |
+| `api_key_env` / `api_token_env` | 環境変数名を指定し、実行時に環境変数から値を読み込む（推奨） |
+
+**動作ルール:**
+- 両方が指定された場合、直接指定（`api_key`/`api_token`）が優先されます
+- `api_key_env`/`api_token_env`で指定した環境変数が未設定の場合、エラーになります
+
 #### profile checkコマンドの検証ルール
 
 `profile check [file]` コマンドは以下の順序で検証を行います:
