@@ -17,12 +17,12 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-// makeSecretString creates a SecretString for testing purposes.
+// makeSecretString はテスト用にSecretStringを作成する。
 func makeSecretString(value string) entity.SecretString {
 	return entity.NewSecretString(value)
 }
 
-// createMockConfig creates a mock entity.Config for testing purposes.
+// createMockConfig はテスト用にモックのentity.Profileを作成する。
 func createMockConfig(promptConfig *entity.PromptConfig, outputConfig *entity.OutputConfig) *entity.Profile {
 	return &entity.Profile{
 		AI: &entity.AIConfig{
@@ -46,13 +46,13 @@ func TestNewRecommendRunner(t *testing.T) {
 		expectedErrorMsg string
 	}{
 		{
-			name:         "Successful creation with no viewers",
+			name:         "正常系: Viewer無しで作成成功",
 			outputConfig: &entity.OutputConfig{},
 			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:  false,
 		},
 		{
-			name: "Successful creation with SlackAPI viewer",
+			name: "正常系: SlackAPI Viewerで作成成功",
 			outputConfig: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
 					Enabled:         true,
@@ -65,7 +65,7 @@ func TestNewRecommendRunner(t *testing.T) {
 			expectError:  false,
 		},
 		{
-			name: "Successful creation with Misskey viewer",
+			name: "正常系: Misskey Viewerで作成成功",
 			outputConfig: &entity.OutputConfig{
 				Misskey: &entity.MisskeyConfig{
 					Enabled:         true,
@@ -78,7 +78,7 @@ func TestNewRecommendRunner(t *testing.T) {
 			expectError:  false,
 		},
 		{
-			name: "Error creating Misskey viewer with invalid URL",
+			name: "異常系: 無効なURLでMisskey Viewer作成エラー",
 			outputConfig: &entity.OutputConfig{
 				Misskey: &entity.MisskeyConfig{
 					Enabled:  true,
@@ -144,7 +144,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 		expectedErrorMessage        *string
 	}{
 		{
-			name: "Successful recommendation",
+			name: "正常系: 推薦成功",
 			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {
 				m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{
 					{Title: "Test Article", Link: "http://example.com/test"},
@@ -161,12 +161,12 @@ func TestRecommendRunner_Run(t *testing.T) {
 			expectedErrorMessage: nil,
 		},
 		{
-			name: "No articles found",
+			name: "異常系: 記事が見つからない",
 			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {
 				m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{}, nil).Times(1)
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				// Should not be called if no articles are found
+				// 記事が見つからない場合は呼び出されない
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Times(0)
 			},
 			params: &RecommendParams{
@@ -175,7 +175,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 			expectedErrorMessage: toStringP("no articles found in the feed"),
 		},
 		{
-			name: "Fetch error",
+			name: "異常系: フェッチエラー",
 			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {
 				m.EXPECT().Fetch(gomock.Any()).Return(nil, fmt.Errorf("mock fetch error")).Times(1)
 			},
@@ -188,7 +188,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 			expectedErrorMessage: toStringP("no articles found in the feed"),
 		},
 		{
-			name: "Recommend error",
+			name: "異常系: 推薦エラー",
 			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {
 				m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{
 					{Title: "Test Article", Link: "http://example.com/test"},
@@ -203,13 +203,13 @@ func TestRecommendRunner_Run(t *testing.T) {
 			expectedErrorMessage: toStringP("failed to recommend article: mock recommend error"),
 		},
 		{
-			name: "AI model not configured",
+			name: "正常系: AIモデル未設定",
 			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {
 				m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				// Recommend is called - config is handled by Recommender constructor now.
+				// Recommendは呼び出される - 設定はRecommenderのコンストラクタで処理される
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(&entity.Recommend{
 					Article: entity.Article{Title: "Test Article", Link: "http://example.com/test"},
 				}, nil).Times(1)
@@ -220,13 +220,13 @@ func TestRecommendRunner_Run(t *testing.T) {
 			expectedErrorMessage: nil,
 		},
 		{
-			name: "Prompt not configured",
+			name: "正常系: プロンプト未設定",
 			mockFetchClientExpectations: func(m *mock_domain.MockFetchClient) {
 				m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{
 					{Title: "Test Article", Link: "http://example.com/test"}}, nil).AnyTimes()
 			},
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
-				// Recommend is called - config is handled by Recommender constructor now.
+				// Recommendは呼び出される - 設定はRecommenderのコンストラクタで処理される
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(&entity.Recommend{
 					Article: entity.Article{Title: "Test Article", Link: "http://example.com/test"},
 				}, nil).Times(1)
@@ -258,11 +258,11 @@ func TestRecommendRunner_Run(t *testing.T) {
 			mockProfile := createMockConfig(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, &entity.OutputConfig{})
 
 			switch tt.name {
-			case "Successful recommendation", "No articles found", "Recommend error", "Fetch error":
+			case "正常系: 推薦成功", "異常系: 記事が見つからない", "異常系: 推薦エラー", "異常系: フェッチエラー":
 				stdoutBuffer := new(bytes.Buffer)
 				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, mockProfile.Output, mockProfile.Prompt, nil)
 				profile = mockProfile
-			case "AI model not configured":
+			case "正常系: AIモデル未設定":
 				stdoutBuffer := new(bytes.Buffer)
 				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, &entity.OutputConfig{}, &entity.PromptConfig{}, nil)
 				profile = &entity.Profile{
@@ -270,7 +270,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 					Prompt: mockProfile.Prompt,
 					Output: &entity.OutputConfig{},
 				}
-			case "Prompt not configured":
+			case "正常系: プロンプト未設定":
 				stdoutBuffer := new(bytes.Buffer)
 				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, &entity.OutputConfig{}, &entity.PromptConfig{}, nil)
 				profile = &entity.Profile{
@@ -299,18 +299,18 @@ func TestRecommendRunner_Run(t *testing.T) {
 	}
 }
 
-// TestRecommendRunner_Run_LogOutput tests slog output when recommendation is successful
+// TestRecommendRunner_Run_LogOutput は推薦成功時のslogログ出力をテストする
 func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// Set up a test slog handler to capture log output
+	// テスト用のslogハンドラーをセットアップしてログ出力をキャプチャ
 	var logBuffer bytes.Buffer
 	handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelInfo})
 	logger := slog.New(handler)
 	originalLogger := slog.Default()
 	slog.SetDefault(logger)
-	defer slog.SetDefault(originalLogger) // Restore original logger after test
+	defer slog.SetDefault(originalLogger) // テスト後に元のロガーを復元
 
 	mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
 	mockRecommender := mock_domain.NewMockRecommender(ctrl)
@@ -322,7 +322,7 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, mockProfile.Output, mockProfile.Prompt, nil)
 	assert.NoError(t, runErr)
 
-	// Set up test data
+	// テストデータをセットアップ
 	testArticles := []entity.Article{
 		{Title: "Test Article", Link: "https://example.com/test"},
 	}
@@ -332,18 +332,18 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 		Comment: &testComment,
 	}
 
-	// Set up mock expectations
+	// モックの期待値をセットアップ
 	mockFetchClient.EXPECT().Fetch(gomock.Any()).Return(testArticles, nil)
 	mockRecommender.EXPECT().Recommend(gomock.Any(), testArticles).Return(testRecommend, nil)
 
-	// Execute the test
+	// テストを実行
 	params := &RecommendParams{URLs: []string{"https://example.com/feed"}}
 	profile := mockProfile
 	err := runner.Run(context.Background(), params, profile)
 
 	assert.NoError(t, err)
 
-	// Verify log output
+	// ログ出力を検証
 	logOutput := logBuffer.String()
 	// ログ出力をデバッグのために表示
 	t.Logf("Log output: %s", logOutput)
@@ -535,7 +535,7 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			// Set up a test slog handler to capture log output
+			// テスト用のslogハンドラーをセットアップしてログ出力をキャプチャ
 			var logBuffer bytes.Buffer
 			handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelInfo})
 			logger := slog.New(handler)
@@ -611,7 +611,7 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 	assert.NotNil(t, runner)
 	assert.Equal(t, 0, len(runner.viewers)) // viewer数は0
 
-	// Set up test data
+	// テストデータをセットアップ
 	testArticles := []entity.Article{
 		{Title: "Test Article", Link: "https://example.com/test"},
 	}
@@ -619,11 +619,11 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 		Article: testArticles[0],
 	}
 
-	// Set up mock expectations
+	// モックの期待値をセットアップ
 	mockFetchClient.EXPECT().Fetch(gomock.Any()).Return(testArticles, nil)
 	mockRecommender.EXPECT().Recommend(gomock.Any(), testArticles).Return(testRecommend, nil)
 
-	// Execute the test - エラーにならないことを確認
+	// テストを実行 - エラーにならないことを確認
 	params := &RecommendParams{URLs: []string{"https://example.com/feed"}}
 	profile := &entity.Profile{}
 	err = runner.Run(context.Background(), params, profile)
