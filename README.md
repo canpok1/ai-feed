@@ -217,6 +217,94 @@ Windows環境では色付けされません。
 
 ## 📚 詳細な使用方法
 
+### 設定リファレンス
+
+設定値の必須/任意について理解しておくと、設定ファイルを正しく作成できます。
+
+#### 設定値の分類
+
+| 表記 | 説明 |
+|------|------|
+| **必須** | 省略するとバリデーションエラーになります |
+| **任意** | 省略可能です。デフォルト値が使用されるか、機能が無効になります |
+| **条件付き必須** | 特定の条件下で必須となります |
+
+#### 設定値一覧
+
+| 設定項目 | 必須/任意 | デフォルト値 | 説明 |
+|----------|----------|--------------|------|
+| `ai.gemini.type` | 必須 | - | 使用するGeminiモデル名 |
+| `ai.gemini.api_key` または `api_key_env` | 必須（どちらか） | - | Gemini APIキー |
+| `system_prompt` | 必須 | - | AIの性格を定義するプロンプト |
+| `comment_prompt_template` | 必須 | - | 記事紹介文生成用テンプレート |
+| `selector_prompt` | 必須 | - | 記事選択用プロンプト |
+| `fixed_message` | 任意 | 空文字列 | メッセージに追加する固定文言 |
+| `output.slack_api.enabled` | 任意 | `true` | Slack投稿の有効/無効 |
+| `output.slack_api.api_token`/`api_token_env` | 条件付き必須 | - | enabled=trueの場合必須 |
+| `output.slack_api.channel` | 条件付き必須 | - | enabled=trueの場合必須 |
+| `output.slack_api.message_template` | 条件付き必須 | - | enabled=trueの場合必須 |
+| `output.slack_api.username` | 任意 | - | Bot表示名 |
+| `output.slack_api.icon_url` | 任意 | - | アイコンURL（icon_emojiと併用不可） |
+| `output.slack_api.icon_emoji` | 任意 | - | アイコン絵文字（icon_urlと併用不可） |
+| `output.misskey.enabled` | 任意 | `true` | Misskey投稿の有効/無効 |
+| `output.misskey.api_token`/`api_token_env` | 条件付き必須 | - | enabled=trueの場合必須 |
+| `output.misskey.api_url` | 条件付き必須 | - | enabled=trueの場合必須 |
+| `output.misskey.message_template` | 条件付き必須 | - | enabled=trueの場合必須 |
+| `cache.enabled` | 任意 | `false` | キャッシュ機能の有効/無効 |
+| `cache.file_path` | 任意 | `~/.ai-feed/recommend_history.jsonl` | キャッシュファイルのパス |
+| `cache.max_entries` | 任意 | `1000` | 最大エントリ数 |
+| `cache.retention_days` | 任意 | `30` | 保持期間（日数） |
+
+#### APIキー・トークン設定について
+
+APIキーやトークンは、直接指定（`api_key`/`api_token`）と環境変数指定（`api_key_env`/`api_token_env`）の2通りの方法で設定できます。
+
+| 設定方法 | 説明 |
+|----------|------|
+| `api_key` / `api_token` | 設定ファイルに直接値を記載（非推奨） |
+| `api_key_env` / `api_token_env` | 環境変数名を指定し、実行時に環境変数から値を読み込む（推奨） |
+
+**動作ルール:**
+- 両方が指定された場合、直接指定（`api_key`/`api_token`）が優先されます
+- `api_key_env`/`api_token_env`で指定した環境変数が未設定の場合、エラーになります
+
+#### profile checkコマンドの検証ルール
+
+`profile check [file]` コマンドは以下の順序で検証を行います:
+
+1. **config.ymlの読み込み**: デフォルトプロファイル（`default_profile`）を読み込みます
+2. **プロファイルのマージ**: プロファイルファイルが指定されている場合、その設定がデフォルトプロファイルを上書きします
+3. **バリデーション実行**: マージされた最終的なプロファイルに対して検証を実行します
+
+**重要**: プロファイルファイル単体で全ての必須項目を満たす必要はありません。config.ymlのデフォルトプロファイルと合わせて必須項目が揃っていればOKです。
+
+```
+# 例: config.ymlでAI設定を定義し、プロファイルでoutput設定だけを変更する場合
+
+# config.yml
+default_profile:
+  ai:
+    gemini:
+      type: gemini-2.5-flash
+      api_key_env: GEMINI_API_KEY
+  system_prompt: "..."
+  comment_prompt_template: "..."
+  selector_prompt: "..."
+  output:
+    slack_api:
+      enabled: false
+    misskey:
+      enabled: false
+
+# my-profile.yml（AI設定は省略可能）
+output:
+  slack_api:
+    enabled: true
+    api_token_env: SLACK_TOKEN
+    channel: "#tech-news"
+    message_template: "..."
+```
+
 ### プロファイルの作成
 
 異なる設定を使い分けるためのプロファイル機能：

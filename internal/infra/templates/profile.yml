@@ -1,5 +1,8 @@
 # AI Feedのプロファイル設定ファイル
 # このファイルの設定は config.yml のデフォルトプロファイル設定を上書きします
+#
+# 設定値の必須/任意、検証ルールの詳細はREADME.mdの「設定リファレンス」を参照してください。
+# https://github.com/canpok1/ai-feed#設定リファレンス
 
 # AI設定
 ai:
@@ -81,14 +84,14 @@ output:
 
     # アイコン絵文字（省略可・icon_urlとの併用不可）
     # icon_emoji: ":robot_face:"
-  
+
   # Misskey投稿設定
   # 投稿しない場合は削除するか、enabled: false を設定してください。
   misskey:
     # 有効/無効フラグ（省略時はtrue）
     # false に設定すると一時的に無効化できます
     enabled: false
-    
+
     # Misskey のアクセストークン
     # 直接指定する場合は api_token 環境変数から読み込む場合は api_token_env
     # api_tokenとapi_token_envの両方が指定された場合、api_tokenが優先されます
@@ -97,7 +100,7 @@ output:
 
     # Misskey のサーバーのURL
     api_url: https://example.com
-    
+
     # メッセージテンプレート
     # 利用可能なパラメータ:
     #   {{COMMENT}}       - AIが生成したコメント
