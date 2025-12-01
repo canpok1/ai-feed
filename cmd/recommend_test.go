@@ -4,10 +4,17 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
+
+// newTestRecommendCmd はテスト用のcobra.Commandを作成するヘルパー関数
+func newTestRecommendCmd() *cobra.Command {
+	cmd := &cobra.Command{}
+	cmd.Flags().StringSliceP("url", "u", []string{}, "推薦対象のフィードURL")
+	cmd.Flags().StringP("source", "s", "", "URL一覧が記載されたファイルのパス")
+	return cmd
+}
 
 func TestNewRecommendParams(t *testing.T) {
 	tests := []struct {
@@ -76,10 +83,7 @@ func TestNewRecommendParams(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// ダミーのcobra.Commandを作成しフラグを設定
-			cmd := &cobra.Command{}
-			cmd.Flags().StringSliceP("url", "u", []string{}, "URL of the feed to recommend from")
-			cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
+			cmd := newTestRecommendCmd()
 
 			for _, url := range tt.urlFlags {
 				cmd.Flags().Set("url", url)
@@ -113,11 +117,9 @@ func TestNewRecommendParams(t *testing.T) {
 		})
 	}
 
-	// 統合テスト - 複数URL処理の確認
-	t.Run("Integration - Multiple URL handling", func(t *testing.T) {
-		cmd := &cobra.Command{}
-		cmd.Flags().StringSliceP("url", "u", []string{}, "URLs of the feed to recommend from")
-		cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
+	// 統合テスト: 複数URL処理
+	t.Run("統合テスト: 複数URL処理", func(t *testing.T) {
+		cmd := newTestRecommendCmd()
 
 		for _, url := range []string{"https://example1.com/feed.xml", "https://example2.com/feed.xml", "https://example3.com/feed.xml"} {
 			cmd.Flags().Set("url", url)
@@ -129,11 +131,9 @@ func TestNewRecommendParams(t *testing.T) {
 		assert.Len(t, params.URLs, 3)
 	})
 
-	// 統合テスト - URLとソースの組み合わせ
-	t.Run("Integration - URL and source combination", func(t *testing.T) {
-		cmd := &cobra.Command{}
-		cmd.Flags().StringSliceP("url", "u", []string{}, "URLs of the feed to recommend from")
-		cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
+	// 統合テスト: URLとソースの組み合わせ
+	t.Run("統合テスト: URLとソースの組み合わせ", func(t *testing.T) {
+		cmd := newTestRecommendCmd()
 
 		// ソースファイル作成
 		sourceFile := "test_integration_urls.txt"
@@ -149,14 +149,12 @@ func TestNewRecommendParams(t *testing.T) {
 		params, err := newRecommendParams(cmd)
 		assert.NoError(t, err)
 		assert.NotNil(t, params)
-		assert.Len(t, params.URLs, 3) // 1 from URL + 2 from source
+		assert.Len(t, params.URLs, 3) // URLから1件 + ソースから2件
 	})
 
-	// 部分的失敗処理テスト
-	t.Run("Partial failure handling - Mixed source content", func(t *testing.T) {
-		cmd := &cobra.Command{}
-		cmd.Flags().StringSliceP("url", "u", []string{}, "URLs of the feed to recommend from")
-		cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
+	// 正常系: 空行や空白を含むソースファイル
+	t.Run("正常系: 空行や空白を含むソースファイル", func(t *testing.T) {
+		cmd := newTestRecommendCmd()
 
 		// 空行や空白を含むソースファイルを作成
 		sourceContent := "https://valid1.com/feed.xml\n\nhttps://valid2.com/feed.xml\n   \nhttps://valid3.com/feed.xml"
@@ -172,15 +170,13 @@ func TestNewRecommendParams(t *testing.T) {
 		assert.NotNil(t, params)
 		assert.Greater(t, len(params.URLs), 0)
 		for _, url := range params.URLs {
-			assert.True(t, len(url) > 0, "URL should not be empty")
+			assert.True(t, len(url) > 0, "URLは空であってはならない")
 		}
 	})
 
-	// 記事取得成功時の動作確認
-	t.Run("Article fetch success verification", func(t *testing.T) {
-		cmd := &cobra.Command{}
-		cmd.Flags().StringSliceP("url", "u", []string{}, "URLs of the feed to recommend from")
-		cmd.Flags().StringP("source", "s", "", "Path to a file containing a list of URLs")
+	// 正常系: 単一URL指定時の動作確認
+	t.Run("正常系: 単一URL指定時の動作確認", func(t *testing.T) {
+		cmd := newTestRecommendCmd()
 
 		cmd.Flags().Set("url", "https://example.com/feed.xml")
 
