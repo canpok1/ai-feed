@@ -61,12 +61,12 @@ func TestInitLogger(t *testing.T) {
 		expectDebug bool
 	}{
 		{
-			name:        "verbose false should set INFO level",
+			name:        "正常系: verbose無効時はINFOレベル",
 			verbose:     false,
 			expectDebug: false,
 		},
 		{
-			name:        "verbose true should set DEBUG level",
+			name:        "正常系: verbose有効時はDEBUGレベル",
 			verbose:     true,
 			expectDebug: true,
 		},
@@ -106,7 +106,7 @@ func TestInitLogger(t *testing.T) {
 				assert.Empty(t, output)
 			}
 
-			// Test log format and timestamp (RFC3339) - verboseの場合のみ
+			// ログ形式とタイムスタンプ（RFC3339）の検証 - verboseの場合のみ
 			if tt.verbose && len(output) > 0 {
 				lines := strings.Split(strings.TrimSpace(output), "\n")
 				for _, line := range lines {
@@ -144,7 +144,7 @@ func TestSimpleHandler(t *testing.T) {
 		expectPattern string
 	}{
 		{
-			name:          "INFO level message at INFO threshold",
+			name:          "正常系: INFOレベルでINFO閾値出力",
 			level:         slog.LevelInfo,
 			logLevel:      slog.LevelInfo,
 			message:       "test info message",
@@ -152,7 +152,7 @@ func TestSimpleHandler(t *testing.T) {
 			expectPattern: "INFO test info message",
 		},
 		{
-			name:          "DEBUG level message at INFO threshold",
+			name:          "正常系: DEBUGレベルでINFO閾値は出力なし",
 			level:         slog.LevelInfo,
 			logLevel:      slog.LevelDebug,
 			message:       "test debug message",
@@ -160,7 +160,7 @@ func TestSimpleHandler(t *testing.T) {
 			expectPattern: "",
 		},
 		{
-			name:          "ERROR level message at INFO threshold",
+			name:          "正常系: ERRORレベルでINFO閾値出力",
 			level:         slog.LevelInfo,
 			logLevel:      slog.LevelError,
 			message:       "test error message",
@@ -214,10 +214,10 @@ func TestSimpleHandler_Handle_WithColors(t *testing.T) {
 		level     slog.Level
 		colorCode string
 	}{
-		{"DEBUG with gray", slog.LevelDebug, `\033\[90m`},
-		{"INFO with green", slog.LevelInfo, `\033\[32m`},
-		{"WARN with yellow", slog.LevelWarn, `\033\[33m`},
-		{"ERROR with red", slog.LevelError, `\033\[31m`},
+		{"DEBUGはグレー", slog.LevelDebug, `\033\[90m`},
+		{"INFOはグリーン", slog.LevelInfo, `\033\[32m`},
+		{"WARNはイエロー", slog.LevelWarn, `\033\[33m`},
+		{"ERRORはレッド", slog.LevelError, `\033\[31m`},
 	}
 
 	for _, tt := range tests {
