@@ -214,10 +214,10 @@ func TestSimpleHandler_Handle_WithColors(t *testing.T) {
 		level     slog.Level
 		colorCode string
 	}{
-		{"DEBUGはグレー", slog.LevelDebug, `\033\[90m`},
-		{"INFOはグリーン", slog.LevelInfo, `\033\[32m`},
-		{"WARNはイエロー", slog.LevelWarn, `\033\[33m`},
-		{"ERRORはレッド", slog.LevelError, `\033\[31m`},
+		{"正常系: DEBUGレベルはグレーで出力", slog.LevelDebug, `\033\[90m`},
+		{"正常系: INFOレベルはグリーンで出力", slog.LevelInfo, `\033\[32m`},
+		{"正常系: WARNレベルはイエローで出力", slog.LevelWarn, `\033\[33m`},
+		{"正常系: ERRORレベルはレッドで出力", slog.LevelError, `\033\[31m`},
 	}
 
 	for _, tt := range tests {
