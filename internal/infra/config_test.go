@@ -24,7 +24,7 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 
 	repo := NewYamlConfigRepository(filePath)
 
-	// Test Save
+	// 保存テスト
 	configToSave := &Config{
 		DefaultProfile: &Profile{
 			AI: &AIConfig{
@@ -55,19 +55,19 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 	assert.NoError(t, err)
 	assert.FileExists(t, filePath)
 
-	// Test Load
+	// 読み込みテスト
 	loadedConfig, err := repo.Load()
 	assert.NoError(t, err)
 	if diff := deep.Equal(configToSave, loadedConfig); diff != nil {
 		t.Errorf("Loaded config is not equal to saved config: %v", diff)
 	}
 
-	// Test Save when file already exists
+	// ファイルが既に存在する場合の保存テスト
 	err = repo.Save(configToSave)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "config file already exists")
 
-	// Test Load with non-existent file
+	// 存在しないファイルの読み込みテスト
 	nonExistentFilePath := filepath.Join(tmpDir, "non_existent.yaml")
 	nonExistentRepo := NewYamlConfigRepository(nonExistentFilePath)
 	_, err = nonExistentRepo.Load()
@@ -76,7 +76,7 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 }
 
 func TestYamlConfigRepository_Save_InvalidPath(t *testing.T) {
-	invalidPath := "/nonexistent_dir/test_config.yaml" // This path should not exist and cause an error
+	invalidPath := "/nonexistent_dir/test_config.yaml" // このパスは存在せずエラーになるべき
 	repo := NewYamlConfigRepository(invalidPath)
 
 	configToSave := &Config{
@@ -98,7 +98,7 @@ func TestYamlConfigRepository_Load_InvalidYaml(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "invalid_config.yaml")
 
-	// Write invalid YAML content to the file
+	// 不正なYAML内容をファイルに書き込む
 	err := os.WriteFile(filePath, []byte("invalid: - yaml"), 0644)
 	assert.NoError(t, err)
 
@@ -322,8 +322,8 @@ func TestOutputConfig_MarshalYAML(t *testing.T) {
 				assert.Contains(t, err.Error(), tt.expectedErr)
 			} else {
 				assert.NoError(t, err)
-				// Unmarshal the actual YAML back into an OutputConfig to compare
-				// since YAML marshaling order is not guaranteed.
+				// YAMLのマーシャル順序は保証されないため、
+				// 実際のYAMLをOutputConfigにアンマーシャルして比較する
 				var actualOutput OutputConfig
 				err = yaml.Unmarshal(actualYaml, &actualOutput)
 				assert.NoError(t, err)
