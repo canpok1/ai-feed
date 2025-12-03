@@ -17,17 +17,17 @@ func TestVerboseFlag(t *testing.T) {
 		expectVerbose bool
 	}{
 		{
-			name:          "no verbose flag",
+			name:          "正常系: verboseフラグなし",
 			args:          []string{"recommend", "--help"},
 			expectVerbose: false,
 		},
 		{
-			name:          "short verbose flag",
+			name:          "正常系: verbose短縮フラグ(-v)あり",
 			args:          []string{"-v", "recommend", "--help"},
 			expectVerbose: true,
 		},
 		{
-			name:          "long verbose flag",
+			name:          "正常系: verbose完全フラグ(--verbose)あり",
 			args:          []string{"--verbose", "recommend", "--help"},
 			expectVerbose: true,
 		},
@@ -35,35 +35,35 @@ func TestVerboseFlag(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Reset verbose flag
+			// verboseフラグをリセット
 			verbose = false
 
-			// Create root command
+			// ルートコマンドを作成
 			rootCmd := makeRootCmd()
 
-			// Set args
+			// 引数を設定
 			rootCmd.SetArgs(tt.args)
 
-			// Capture output to suppress help text
+			// ヘルプテキストを抑制するために出力をキャプチャ
 			var buf bytes.Buffer
 			rootCmd.SetOut(&buf)
 			rootCmd.SetErr(&buf)
 
-			// Execute command (this should set the verbose flag)
+			// コマンドを実行（verboseフラグが設定されるはず）
 			err := rootCmd.Execute()
 
-			// The help command returns an error for exit, which is expected
-			// For all cases, we expect the verbose variable to be set correctly
+			// ヘルプコマンドはエラーを返すが、これは期待どおりの動作
+			// すべてのケースで、verbose変数が正しく設定されていることを確認
 			assert.Equal(t, tt.expectVerbose, verbose)
 
-			// For help commands, we don't care about the error as it's expected
+			// ヘルプコマンドのエラーは無視
 			_ = err
 		})
 	}
 }
 
 func TestLoggerInitialization(t *testing.T) {
-	// Save original default logger
+	// オリジナルのデフォルトロガーを保存
 	originalDefault := slog.Default()
 	defer slog.SetDefault(originalDefault)
 
@@ -72,42 +72,42 @@ func TestLoggerInitialization(t *testing.T) {
 		verbose bool
 	}{
 		{
-			name:    "logger initialization with verbose false",
+			name:    "正常系: verbose=falseでのロガー初期化",
 			verbose: false,
 		},
 		{
-			name:    "logger initialization with verbose true",
+			name:    "正常系: verbose=trueでのロガー初期化",
 			verbose: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Set verbose flag
+			// verboseフラグを設定
 			verbose = tt.verbose
 
-			// Create root command
+			// ルートコマンドを作成
 			rootCmd := makeRootCmd()
 
-			// Set up PersistentPreRun
+			// PersistentPreRunを設定
 			rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
-				// This would normally call infra.InitLogger(verbose)
-				// For testing, we'll just verify the verbose flag is set correctly
+				// 通常はinfra.InitLogger(verbose)を呼び出すが、
+				// テストではverboseフラグが正しく設定されていることを検証
 				assert.Equal(t, tt.verbose, verbose)
 			}
 
-			// Set a dummy command to trigger PersistentPreRun
+			// PersistentPreRunを発火させるためにダミーコマンドを設定
 			rootCmd.SetArgs([]string{"--help"})
 
-			// Capture output
+			// 出力をキャプチャ
 			var buf bytes.Buffer
 			rootCmd.SetOut(&buf)
 			rootCmd.SetErr(&buf)
 
-			// Execute - this should trigger PersistentPreRun
+			// 実行 - PersistentPreRunが発火するはず
 			err := rootCmd.Execute()
 
-			// Help command exits with error, which is expected
+			// ヘルプコマンドはエラーで終了するが、これは期待どおりの動作
 			_ = err
 		})
 	}
@@ -116,12 +116,12 @@ func TestLoggerInitialization(t *testing.T) {
 func TestRootCommandCreation(t *testing.T) {
 	cmd := makeRootCmd()
 
-	// Test basic command properties
+	// 基本的なコマンドプロパティをテスト
 	assert.Equal(t, "ai-feed", cmd.Use)
 	assert.Contains(t, cmd.Short, "RSSフィードから記事を取得")
 	assert.True(t, cmd.SilenceUsage)
 
-	// Test flags
+	// フラグをテスト
 	configFlag := cmd.PersistentFlags().Lookup("config")
 	assert.NotNil(t, configFlag)
 	assert.Equal(t, "", configFlag.DefValue)
@@ -130,27 +130,27 @@ func TestRootCommandCreation(t *testing.T) {
 	assert.NotNil(t, verboseFlag)
 	assert.Equal(t, "false", verboseFlag.DefValue)
 
-	// Test short flag for verbose
+	// verbose短縮フラグをテスト
 	verboseFlagShort := cmd.PersistentFlags().ShorthandLookup("v")
 	assert.NotNil(t, verboseFlagShort)
 	assert.Equal(t, verboseFlag, verboseFlagShort)
 }
 
 func TestExecuteFunction(t *testing.T) {
-	// This test ensures Execute function can be called without panicking
-	// We'll redirect output to avoid printing to stdout during tests
+	// Execute関数がパニックなしで呼び出せることを確認
+	// テスト中にstdoutへの出力を避けるため、出力をリダイレクト
 
-	// Save original stdout/stderr
+	// オリジナルのos.Argsを保存
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
 
-	// Set args to just show help to avoid actually running commands
+	// 実際のコマンド実行を避けるため、ヘルプを表示する引数を設定
 	os.Args = []string{"ai-feed", "--help"}
 
-	// The Execute function should not panic
+	// Execute関数はパニックしないこと
 	assert.NotPanics(t, func() {
 		err := Execute()
-		// Help command returns an error (exit code), which is expected behavior
+		// ヘルプコマンドはエラー（終了コード）を返すが、これは期待どおりの動作
 		_ = err
 	})
 }
