@@ -57,7 +57,7 @@
 				
 				<option value="file0">github.com/canpok1/ai-feed/cmd/config.go (77.1%)</option>
 				
-				<option value="file1">github.com/canpok1/ai-feed/cmd/init.go (100.0%)</option>
+				<option value="file1">github.com/canpok1/ai-feed/cmd/init.go (27.3%)</option>
 				
 				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (75.5%)</option>
 				
@@ -361,7 +361,7 @@ func makeInitCmd() *cobra.Command <span class="cov8" title="1">{
         cmd := &amp;cobra.Command{
                 Use:   "init",
                 Short: "設定ファイル（config.yml）のテンプレートを生成します（既存ファイルは上書きしません）",
-                RunE: func(cmd *cobra.Command, args []string) error </span><span class="cov8" title="1">{
+                RunE: func(cmd *cobra.Command, args []string) error </span><span class="cov0" title="0">{
                         filePath := DefaultConfigFilePath
 
                         fmt.Fprintln(cmd.ErrOrStderr(), "設定ファイルを初期化しています...")
@@ -370,10 +370,10 @@ func makeInitCmd() *cobra.Command <span class="cov8" title="1">{
 
                         fmt.Fprintln(cmd.ErrOrStderr(), "設定テンプレートを生成しています...")
                         // テンプレートを使用してコメント付きconfig.ymlを生成
-                        if err := configRepo.SaveWithTemplate(); err != nil </span><span class="cov8" title="1">{
+                        if err := configRepo.SaveWithTemplate(); err != nil </span><span class="cov0" title="0">{
                                 return err
                         }</span>
-                        <span class="cov8" title="1">fmt.Fprintf(cmd.OutOrStdout(), "%s を生成しました\n", filePath)
+                        <span class="cov0" title="0">fmt.Fprintf(cmd.OutOrStdout(), "%s を生成しました\n", filePath)
                         return nil</span>
                 },
         }
