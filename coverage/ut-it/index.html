@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/canpok1/ai-feed/cmd/config.go (77.1%)</option>
+				<option value="file0">github.com/canpok1/ai-feed/cmd/config.go (10.4%)</option>
 				
 				<option value="file1">github.com/canpok1/ai-feed/cmd/init.go (27.3%)</option>
 				
@@ -173,7 +173,7 @@ func makeConfigCheckCmd() *cobra.Command <span class="cov8" title="1">{
                 Use:   "check",
                 Short: "設定ファイルの内容を検証します",
                 Long:  `設定ファイルに必須項目が正しく設定されているかを検証します。`,
-                RunE: func(cmd *cobra.Command, args []string) error </span><span class="cov8" title="1">{
+                RunE: func(cmd *cobra.Command, args []string) error </span><span class="cov0" title="0">{
                         slog.Debug("Starting config check command")
 
                         // --config フラグの値を取得（グローバルフラグ）
@@ -182,9 +182,9 @@ func makeConfigCheckCmd() *cobra.Command <span class="cov8" title="1">{
                                 configPath = "./config.yml"
                         }</span>
 
-                        <span class="cov8" title="1">slog.Debug("Loading config", "config_path", configPath)
+                        <span class="cov0" title="0">slog.Debug("Loading config", "config_path", configPath)
                         config, loadErr := infra.NewYamlConfigRepository(configPath).Load()
-                        if loadErr != nil </span><span class="cov8" title="1">{
+                        if loadErr != nil </span><span class="cov0" title="0">{
                                 fmt.Fprintf(cmd.ErrOrStderr(), "エラー: 設定ファイルの読み込みに失敗しました: %s\n", configPath)
                                 fmt.Fprintln(cmd.ErrOrStderr(), "config.ymlの構文を確認してください。ai-feed init で新しい設定ファイルを生成できます。")
                                 slog.Error("Failed to load config", "config_path", configPath, "error", loadErr)
@@ -192,34 +192,34 @@ func makeConfigCheckCmd() *cobra.Command <span class="cov8" title="1">{
                         }</span>
 
                         // デフォルトプロファイルをentity.Profileに変換
-                        <span class="cov8" title="1">var currentProfile *infra.Profile
-                        if config.DefaultProfile != nil </span><span class="cov8" title="1">{
+                        <span class="cov0" title="0">var currentProfile *infra.Profile
+                        if config.DefaultProfile != nil </span><span class="cov0" title="0">{
                                 currentProfile = config.DefaultProfile
                         }</span> else<span class="cov0" title="0"> {
                                 currentProfile = &amp;infra.Profile{}
                         }</span>
 
                         // プロファイルをentity.Profileに変換
-                        <span class="cov8" title="1">entityProfile, err := currentProfile.ToEntity()
+                        <span class="cov0" title="0">entityProfile, err := currentProfile.ToEntity()
                         if err != nil </span><span class="cov0" title="0">{
                                 return fmt.Errorf("failed to convert profile to entity: %w", err)
                         }</span>
 
                         // プロファイルファイルが指定されている場合は読み込んでマージ
-                        <span class="cov8" title="1">if profilePath != "" </span><span class="cov8" title="1">{
+                        <span class="cov0" title="0">if profilePath != "" </span><span class="cov0" title="0">{
                                 slog.Debug("Loading profile", "profile_path", profilePath)
                                 loadedProfile, loadProfileErr := profile.NewYamlProfileRepositoryImpl(profilePath).LoadProfile()
-                                if loadProfileErr != nil </span><span class="cov8" title="1">{
+                                if loadProfileErr != nil </span><span class="cov0" title="0">{
                                         fmt.Fprintf(cmd.ErrOrStderr(), "エラー: プロファイルファイルの読み込みに失敗しました: %s\n", profilePath)
                                         fmt.Fprintln(cmd.ErrOrStderr(), "プロファイルファイルの形式を確認してください。")
                                         slog.Error("Failed to load profile", "profile_path", profilePath, "error", loadProfileErr)
                                         return fmt.Errorf("failed to load profile from %s: %w", profilePath, loadProfileErr)
                                 }</span>
-                                <span class="cov8" title="1">entityProfile.Merge(loadedProfile)</span>
+                                <span class="cov0" title="0">entityProfile.Merge(loadedProfile)</span>
                         }
 
                         // バリデーションを実行して結果を返す
-                        <span class="cov8" title="1">return validateAndPrint(cmd, config, entityProfile, verboseFlag)</span>
+                        <span class="cov0" title="0">return validateAndPrint(cmd, config, entityProfile, verboseFlag)</span>
                 },
         }
 
@@ -231,7 +231,7 @@ func makeConfigCheckCmd() *cobra.Command <span class="cov8" title="1">{
 }
 
 // validateAndPrint はバリデーションを実行して結果を出力する
-func validateAndPrint(cmd *cobra.Command, config *infra.Config, entityProfile *entity.Profile, verboseFlag bool) error <span class="cov8" title="1">{
+func validateAndPrint(cmd *cobra.Command, config *infra.Config, entityProfile *entity.Profile, verboseFlag bool) error <span class="cov0" title="0">{
         validator := infra.NewConfigValidator(config, entityProfile)
         result, validateErr := validator.Validate()
         if validateErr != nil </span><span class="cov0" title="0">{
@@ -239,34 +239,34 @@ func validateAndPrint(cmd *cobra.Command, config *infra.Config, entityProfile *e
         }</span>
 
         // バリデーション結果を出力
-        <span class="cov8" title="1">printValidationResult(cmd, result, verboseFlag)
+        <span class="cov0" title="0">printValidationResult(cmd, result, verboseFlag)
 
         // バリデーション失敗時は終了コード1
-        if !result.Valid </span><span class="cov8" title="1">{
+        if !result.Valid </span><span class="cov0" title="0">{
                 return fmt.Errorf("設定ファイルのバリデーションに失敗しました")
         }</span>
 
-        <span class="cov8" title="1">slog.Debug("Config check command completed successfully")
+        <span class="cov0" title="0">slog.Debug("Config check command completed successfully")
         return nil</span>
 }
 
 // printValidationResult はバリデーション結果を出力する
-func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, verboseFlag bool) <span class="cov8" title="1">{
-        if result.Valid </span><span class="cov8" title="1">{
+func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, verboseFlag bool) <span class="cov0" title="0">{
+        if result.Valid </span><span class="cov0" title="0">{
                 fmt.Fprintln(cmd.OutOrStdout(), "設定に問題ありません。")
-                if verboseFlag </span><span class="cov8" title="1">{
+                if verboseFlag </span><span class="cov0" title="0">{
                         printSummary(cmd.OutOrStdout(), result.Summary)
                 }</span>
-        } else<span class="cov8" title="1"> {
+        } else<span class="cov0" title="0"> {
                 fmt.Fprintln(cmd.ErrOrStderr(), "設定に以下の問題があります：")
-                for _, err := range result.Errors </span><span class="cov8" title="1">{
+                for _, err := range result.Errors </span><span class="cov0" title="0">{
                         fmt.Fprintf(cmd.ErrOrStderr(), "- %s: %s\n", err.Field, err.Message)
                 }</span>
         }
 }
 
 // printSummary は設定のサマリー情報を出力する
-func printSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov8" title="1">{
+func printSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
         fmt.Fprintln(out, "")
         fmt.Fprintln(out, "【設定サマリー】")
         printAISummary(out, summary)
@@ -276,9 +276,9 @@ func printSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov8
 }</span>
 
 // printAISummary はAI設定のサマリーを出力する
-func printAISummary(out io.Writer, summary domain.ConfigSummary) <span class="cov8" title="1">{
+func printAISummary(out io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
         fmt.Fprintln(out, "AI設定:")
-        if summary.GeminiConfigured </span><span class="cov8" title="1">{
+        if summary.GeminiConfigured </span><span class="cov0" title="0">{
                 fmt.Fprintf(out, "  - Gemini API: 設定済み（モデル: %s）\n", summary.GeminiModel)
         }</span> else<span class="cov0" title="0"> {
                 fmt.Fprintln(out, "  - Gemini API: 未設定")
@@ -286,27 +286,27 @@ func printAISummary(out io.Writer, summary domain.ConfigSummary) <span class="co
 }
 
 // printPromptSummary はプロンプト設定のサマリーを出力する
-func printPromptSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov8" title="1">{
+func printPromptSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
         fmt.Fprintln(out, "プロンプト設定:")
-        if summary.SystemPromptConfigured </span><span class="cov8" title="1">{
+        if summary.SystemPromptConfigured </span><span class="cov0" title="0">{
                 fmt.Fprintln(out, "  - システムプロンプト: 設定済み")
         }</span> else<span class="cov0" title="0"> {
                 fmt.Fprintln(out, "  - システムプロンプト: 未設定")
         }</span>
-        <span class="cov8" title="1">if summary.CommentPromptConfigured </span><span class="cov8" title="1">{
+        <span class="cov0" title="0">if summary.CommentPromptConfigured </span><span class="cov0" title="0">{
                 fmt.Fprintln(out, "  - コメントプロンプト: 設定済み")
         }</span> else<span class="cov0" title="0"> {
                 fmt.Fprintln(out, "  - コメントプロンプト: 未設定")
         }</span>
-        <span class="cov8" title="1">if summary.FixedMessageConfigured </span><span class="cov0" title="0">{
+        <span class="cov0" title="0">if summary.FixedMessageConfigured </span><span class="cov0" title="0">{
                 fmt.Fprintln(out, "  - 固定メッセージ: 設定済み")
-        }</span> else<span class="cov8" title="1"> {
+        }</span> else<span class="cov0" title="0"> {
                 fmt.Fprintln(out, "  - 固定メッセージ: 未設定")
         }</span>
 }
 
 // printOutputSummary は出力設定のサマリーを出力する
-func printOutputSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov8" title="1">{
+func printOutputSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
         fmt.Fprintln(out, "出力設定:")
         if summary.SlackConfigured </span><span class="cov0" title="0">{
                 fmt.Fprintln(out, "  - Slack API: 有効")
@@ -316,10 +316,10 @@ func printOutputSummary(out io.Writer, summary domain.ConfigSummary) <span class
                 }</span> else<span class="cov0" title="0"> {
                         fmt.Fprintln(out, "    - メッセージテンプレート: 未設定")
                 }</span>
-        } else<span class="cov8" title="1"> {
+        } else<span class="cov0" title="0"> {
                 fmt.Fprintln(out, "  - Slack API: 無効")
         }</span>
-        <span class="cov8" title="1">if summary.MisskeyConfigured </span><span class="cov0" title="0">{
+        <span class="cov0" title="0">if summary.MisskeyConfigured </span><span class="cov0" title="0">{
                 fmt.Fprintln(out, "  - Misskey: 有効")
                 fmt.Fprintf(out, "    - API URL: %s\n", summary.MisskeyAPIURL)
                 if summary.MisskeyMessageTemplateConfigured </span><span class="cov0" title="0">{
@@ -327,20 +327,20 @@ func printOutputSummary(out io.Writer, summary domain.ConfigSummary) <span class
                 }</span> else<span class="cov0" title="0"> {
                         fmt.Fprintln(out, "    - メッセージテンプレート: 未設定")
                 }</span>
-        } else<span class="cov8" title="1"> {
+        } else<span class="cov0" title="0"> {
                 fmt.Fprintln(out, "  - Misskey: 無効")
         }</span>
 }
 
 // printCacheSummary はキャッシュ設定のサマリーを出力する
-func printCacheSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov8" title="1">{
+func printCacheSummary(out io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
         fmt.Fprintln(out, "キャッシュ設定:")
         if summary.CacheEnabled </span><span class="cov0" title="0">{
                 fmt.Fprintln(out, "  - キャッシュ: 有効")
                 fmt.Fprintf(out, "    - ファイルパス: %s\n", summary.CacheFilePath)
                 fmt.Fprintf(out, "    - 最大エントリ数: %d\n", summary.CacheMaxEntries)
                 fmt.Fprintf(out, "    - 保持期間: %d日\n", summary.CacheRetentionDays)
-        }</span> else<span class="cov8" title="1"> {
+        }</span> else<span class="cov0" title="0"> {
                 fmt.Fprintln(out, "  - キャッシュ: 無効")
         }</span>
 }
