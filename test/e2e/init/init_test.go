@@ -14,6 +14,39 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// TestInitCommand_ProgressMessages は進行状況メッセージの出力をテストする
+func TestInitCommand_ProgressMessages(t *testing.T) {
+	// バイナリをビルド
+	binaryPath := common.BuildBinary(t)
+
+	// 一時ディレクトリを作成
+	tmpDir := t.TempDir()
+
+	// 一時ディレクトリに移動
+	common.ChangeToTempDir(t, tmpDir)
+
+	// コマンドを実行
+	output, err := common.ExecuteCommand(t, binaryPath, "init")
+	assert.NoError(t, err, "エラーは発生しないはずです")
+
+	// 進行状況メッセージが出力されていることを確認
+	initMsg := "設定ファイルを初期化しています..."
+	templateMsg := "設定テンプレートを生成しています..."
+	completeMsg := "./config.yml を生成しました"
+
+	assert.Contains(t, output, initMsg, "初期化開始メッセージが含まれているはずです")
+	assert.Contains(t, output, templateMsg, "テンプレート生成メッセージが含まれているはずです")
+	assert.Contains(t, output, completeMsg, "完了メッセージが含まれているはずです")
+
+	// メッセージの出力順序を確認
+	initPos := strings.Index(output, initMsg)
+	templatePos := strings.Index(output, templateMsg)
+	completePos := strings.Index(output, completeMsg)
+
+	assert.Greater(t, templatePos, initPos, "テンプレート生成メッセージは初期化メッセージの後に出力されるはずです")
+	assert.Greater(t, completePos, templatePos, "完了メッセージはテンプレート生成メッセージの後に出力されるはずです")
+}
+
 // TestInitCommand_CreateConfigFile はai-feed initコマンドが設定ファイルを正常に作成できることを確認するテスト
 func TestInitCommand_CreateConfigFile(t *testing.T) {
 	// バイナリをビルド
