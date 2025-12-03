@@ -30,9 +30,21 @@ func TestInitCommand_ProgressMessages(t *testing.T) {
 	assert.NoError(t, err, "エラーは発生しないはずです")
 
 	// 進行状況メッセージが出力されていることを確認
-	assert.Contains(t, output, "設定ファイルを初期化しています...", "初期化開始メッセージが含まれているはずです")
-	assert.Contains(t, output, "設定テンプレートを生成しています...", "テンプレート生成メッセージが含まれているはずです")
-	assert.Contains(t, output, "./config.yml を生成しました", "完了メッセージが含まれているはずです")
+	initMsg := "設定ファイルを初期化しています..."
+	templateMsg := "設定テンプレートを生成しています..."
+	completeMsg := "./config.yml を生成しました"
+
+	assert.Contains(t, output, initMsg, "初期化開始メッセージが含まれているはずです")
+	assert.Contains(t, output, templateMsg, "テンプレート生成メッセージが含まれているはずです")
+	assert.Contains(t, output, completeMsg, "完了メッセージが含まれているはずです")
+
+	// メッセージの出力順序を確認
+	initPos := strings.Index(output, initMsg)
+	templatePos := strings.Index(output, templateMsg)
+	completePos := strings.Index(output, completeMsg)
+
+	assert.Greater(t, templatePos, initPos, "テンプレート生成メッセージは初期化メッセージの後に出力されるはずです")
+	assert.Greater(t, completePos, templatePos, "完了メッセージはテンプレート生成メッセージの後に出力されるはずです")
 }
 
 // TestInitCommand_CreateConfigFile はai-feed initコマンドが設定ファイルを正常に作成できることを確認するテスト
