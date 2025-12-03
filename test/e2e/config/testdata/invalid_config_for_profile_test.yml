@@ -1,0 +1,17 @@
+# プロファイルでオーバーライドされるダミー値を含む設定ファイル（テスト用）
+default_profile:
+  # AI設定（ダミー値を使用）
+  ai:
+    gemini:
+      type: gemini-2.5-flash
+      api_key: xxxxxx  # ダミー値（プロファイルで上書き可能）
+
+  # システムプロンプト
+  system_prompt: test system prompt
+
+  # 記事紹介文生成用のプロンプトテンプレート
+  comment_prompt_template: |
+    以下の記事の紹介文を作成してください。
+    ---
+    記事タイトル: {{TITLE}}
+    記事URL: {{URL}}
