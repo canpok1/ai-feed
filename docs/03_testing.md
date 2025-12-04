@@ -437,20 +437,20 @@ test/e2e/
 │   ├── config_test.go             # configコマンドのE2Eテスト
 │   ├── main_test.go               # パッケージセットアップ
 │   └── testdata/                  # テスト用データ
-│       ├── valid_config.yml
 │       └── ...
 ├── init/                          # initコマンドのテスト
 │   ├── init_test.go               # initコマンドのE2Eテスト
-│   └── main_test.go               # パッケージセットアップ
+│   ├── main_test.go               # パッケージセットアップ
+│   └── testdata/                  # テスト用データ（必要に応じて）
 ├── profile/                       # profileコマンドのテスト
 │   ├── profile_test.go            # profileコマンドのE2Eテスト
 │   ├── main_test.go               # パッケージセットアップ
 │   └── testdata/                  # テスト用データ
-│       ├── valid_profile.yml
 │       └── ...
 └── recommend/                     # recommendコマンドのテスト
     ├── recommend_test.go          # recommendコマンドのE2Eテスト
-    └── main_test.go               # パッケージセットアップ
+    ├── main_test.go               # パッケージセットアップ
+    └── testdata/                  # テスト用データ（必要に応じて）
 ```
 
 #### コマンドベースのサブディレクトリ設計
