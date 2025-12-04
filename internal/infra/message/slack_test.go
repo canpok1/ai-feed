@@ -99,8 +99,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockClient := new(MockSlackClient)
-			currentTT := tt // レンジ変数をキャプチャ
-			currentTT.setupMock(mockClient, currentTT.config)
+			tt.setupMock(mockClient, tt.config)
 
 			sender := NewSlackSender(tt.config, mockClient)
 			recommend := &entity.Recommend{
