@@ -8,35 +8,8 @@ PR $ARGUMENTS にレビューコメントが投稿されました。
 
 ## コメントの確認手順
 
-```
-OWNER_REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner');
-OWNER=$(echo $OWNER_REPO | cut -d'/' -f1);
-REPO=$(echo $OWNER_REPO | cut -d'/' -f2);
-PR_NUMBER=$(gh pr view --json number --jq '.number');
-
-gh api graphql -f query="
-{
-  repository(owner: \"${OWNER}\", name: \"${REPO}\") {
-    pullRequest(number: ${PR_NUMBER}) {
-      reviewThreads(first: 30) {
-        nodes {
-          id
-          isResolved
-          comments(first: 10) {
-            nodes {
-              id
-              body
-              author {
-                login
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}" --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {thread_id: .id, author: 
-.comments.nodes[0].author.login, comment: .comments.nodes[0].body}'
+```bash
+./scripts/get-pr-review-comments.sh $ARGUMENTS
 ```
 
 ## タスクファイルのフォーマット
@@ -67,5 +40,5 @@ pr_{PRの番号}_task_{2桁0埋めの1からの連番}_{タスク概要(英語)}
 ### 備考
 - レビューコメント投稿者がgemini-code-assistの場合、対応完了後にコミットとpushを行いレビューコメントをresolveすること。
     - resolveするためのコマンド。THREAD_IDはレビュースレッドIDに置き換えること。
-        - `gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "THREAD_ID"}) { thread { id isResolved } } }'`
+        - `./scripts/resolve-review-thread.sh "THREAD_ID"`
 ```
