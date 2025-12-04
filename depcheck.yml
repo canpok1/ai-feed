@@ -24,3 +24,10 @@ rules:
   - from: '^github\.com/canpok1/ai-feed/internal/infra.*$'
     to:
       - '^github\.com/canpok1/ai-feed/cmd.*$'
+
+  # cmd/runner層 → cmd層 への依存禁止（cmd/runner自身は除く）
+  # cmd はプレゼンテーション層、cmd/runner はビジネスロジック層
+  - from: '^github\.com/canpok1/ai-feed/cmd/runner.*$'
+    to:
+      - '^github\.com/canpok1/ai-feed/cmd$'
+      - '^github\.com/canpok1/ai-feed/cmd/[^r].*$'
