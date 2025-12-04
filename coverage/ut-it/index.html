@@ -886,7 +886,7 @@ type RecommendParams struct {
 type RecommendRunner struct {
         fetcher     *domain.Fetcher
         recommender domain.Recommender
-        viewers     []domain.MessageSender
+        senders     []domain.MessageSender
         cache       domain.RecommendCache
         stderr      io.Writer
         stdout      io.Writer
@@ -903,7 +903,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
                         return err
                 }</span>,
         )
-        <span class="cov8" title="1">var viewers []domain.MessageSender
+        <span class="cov8" title="1">var senders []domain.MessageSender
 
         if outputConfig != nil </span><span class="cov8" title="1">{
                 if outputConfig.SlackAPI != nil </span><span class="cov8" title="1">{
@@ -920,8 +920,8 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
                                         options = append(options, slack.OptionAPIURL(*slackConfig.APIURL))
                                 }</span>
                                 <span class="cov8" title="1">slackClient := slack.New(slackConfig.APIToken.Value(), options...)
-                                slackViewer := message.NewSlackSender(slackConfig, slackClient)
-                                viewers = append(viewers, slackViewer)</span>
+                                slackSender := message.NewSlackSender(slackConfig, slackClient)
+                                senders = append(senders, slackSender)</span>
                         }
                 }
                 <span class="cov8" title="1">if outputConfig.Misskey != nil </span><span class="cov8" title="1">{
@@ -931,11 +931,11 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
                         if !misskeyConfig.Enabled </span><span class="cov8" title="1">{
                                 slog.Info("Misskey output is disabled (enabled: false)")
                         }</span> else<span class="cov8" title="1"> {
-                                misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken.Value(), misskeyConfig.MessageTemplate)
+                                misskeySender, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken.Value(), misskeyConfig.MessageTemplate)
                                 if err != nil </span><span class="cov8" title="1">{
-                                        return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
+                                        return nil, fmt.Errorf("failed to create Misskey sender: %w", err)
                                 }</span>
-                                <span class="cov8" title="1">viewers = append(viewers, misskeyViewer)</span>
+                                <span class="cov8" title="1">senders = append(senders, misskeySender)</span>
                         }
                 }
         }
@@ -953,7 +953,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
         <span class="cov8" title="1">return &amp;RecommendRunner{
                 fetcher:     fetcher,
                 recommender: recommender,
-                viewers:     viewers,
+                senders:     senders,
                 cache:       cache,
                 stderr:      stderr,
                 stdout:      stdout,
@@ -1138,19 +1138,19 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
                 "fixed_message", fixedMessage,
         )
 
-        slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
+        slog.Debug("Sending recommendation to senders", "sender_count", len(r.senders))
 
         // 外部サービスへの投稿状況をメッセージ表示
-        if len(r.viewers) &gt; 0 </span><span class="cov8" title="1">{
+        if len(r.senders) &gt; 0 </span><span class="cov8" title="1">{
                 fmt.Fprintln(r.stdout, "\n外部サービスに投稿しています...")
         }</span> else<span class="cov8" title="1"> {
                 fmt.Fprintln(r.stdout, "\n外部サービスへの投稿は設定されていません")
         }</span>
 
-        <span class="cov8" title="1">for _, viewer := range r.viewers </span><span class="cov8" title="1">{
+        <span class="cov8" title="1">for _, sender := range r.senders </span><span class="cov8" title="1">{
                 var serviceName string
                 isKnownService := true
-                switch viewer.(type) </span>{
+                switch sender.(type) </span>{
                 case *message.SlackSender:<span class="cov0" title="0">
                         serviceName = "Slack"</span>
                 case *message.MisskeySender:<span class="cov0" title="0">
@@ -1163,13 +1163,13 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
                         fmt.Fprintf(r.stdout, "%sに投稿中...\n", serviceName)
                 }</span>
 
-                <span class="cov8" title="1">if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil </span><span class="cov0" title="0">{
+                <span class="cov8" title="1">if sendErr := sender.SendRecommend(recommend, fixedMessage); sendErr != nil </span><span class="cov0" title="0">{
                         if isKnownService </span><span class="cov0" title="0">{
-                                fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, viewErr)
+                                fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, sendErr)
                         }</span> else<span class="cov0" title="0"> {
-                                fmt.Fprintf(r.stdout, "投稿でエラーが発生しました: %v\n", viewErr)
+                                fmt.Fprintf(r.stdout, "投稿でエラーが発生しました: %v\n", sendErr)
                         }</span>
-                        <span class="cov0" title="0">errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))</span>
+                        <span class="cov0" title="0">errs = append(errs, fmt.Errorf("failed to send recommend: %w", sendErr))</span>
                 } else<span class="cov8" title="1"> {
                         if isKnownService </span><span class="cov0" title="0">{
                                 fmt.Fprintf(r.stdout, "%sに投稿しました\n", serviceName)
@@ -1180,7 +1180,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
         // 投稿エラーがある場合はキャッシュを更新せずに終了
         <span class="cov8" title="1">if len(errs) &gt; 0 </span><span class="cov0" title="0">{
                 slog.Warn("Some posts failed, not updating cache", "error_count", len(errs))
-                return fmt.Errorf("failed to view all recommends: %v", errs)
+                return fmt.Errorf("failed to send all recommends: %v", errs)
         }</span>
 
         // 全ての投稿が成功した場合のみキャッシュを更新
@@ -1194,7 +1194,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
                 fmt.Fprintln(r.stderr, "キャッシュを更新しました")
         }</span>
 
-        <span class="cov8" title="1">slog.Info("Recommendation sent successfully to all viewers")
+        <span class="cov8" title="1">slog.Info("Recommendation sent successfully to all senders")
         return nil</span>
 }
 </pre>
