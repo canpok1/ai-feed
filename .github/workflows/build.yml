@@ -33,6 +33,9 @@ jobs:
     - name: Lint
       run: make lint
 
+    - name: Depcheck
+      run: make depcheck
+
     - name: Test
       run: make test
 

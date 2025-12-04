@@ -7,6 +7,7 @@ setup:
 	go install golang.org/x/tools/cmd/goimports@v0.28.0
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
 	go install github.com/goreleaser/goreleaser/v2@v2.5.1
+	go install github.com/v-standard/go-depcheck/cmd/depcheck@v0.0.2
 
 run:
 	@go run main.go ${option}
@@ -48,6 +49,9 @@ test-release: test-coverage test-e2e
 
 lint:
 	golangci-lint run ./...
+
+depcheck:
+	go vet -vettool=$$(which depcheck) ./...
 
 fmt:
 	go fmt ./...
