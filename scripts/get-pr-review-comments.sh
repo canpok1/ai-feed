@@ -56,7 +56,10 @@ echo "" >&2
 
 # 未解決のレビューコメントを取得
 echo "未解決のレビューコメントを取得中..." >&2
-gh api graphql \
+
+# set +e で一時的にエラーでの終了を無効化
+set +e
+RESPONSE=$(gh api graphql \
   -F owner="$OWNER" \
   -F name="$REPO" \
   -F number="$PR_NUMBER" \
@@ -81,5 +84,21 @@ query($owner: String!, $name: String!, $number: Int!) {
       }
     }
   }
-}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {thread_id: .id, author: .comments.nodes[0].author.login, comment: .comments.nodes[0].body}'
+}' 2>&1)
+GH_EXIT_CODE=$?
+set -e
+
+# gh api コマンドがエラーの場合
+if [ $GH_EXIT_CODE -ne 0 ]; then
+    echo "エラー: PR番号 '$PR_NUMBER' が見つからないか、アクセス権がありません。" >&2
+    exit 1
+fi
+
+# PRが存在しない場合（nullの場合）
+if echo "$RESPONSE" | jq -e '.data.repository.pullRequest == null' > /dev/null 2>&1; then
+    echo "エラー: PR番号 '$PR_NUMBER' が見つからないか、アクセス権がありません。" >&2
+    exit 1
+fi
+
+echo "$RESPONSE" | jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {thread_id: .id, author: .comments.nodes[0].author.login, comment: .comments.nodes[0].body}'
 
