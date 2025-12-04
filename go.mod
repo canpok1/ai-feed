@@ -4,7 +4,7 @@ go 1.24.5
 
 require (
 	github.com/mmcdole/gofeed v1.3.0
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -15,7 +15,7 @@ require (
 	github.com/go-test/deep v1.1.1
 	github.com/slack-go/slack v0.17.3
 	github.com/yitsushi/go-misskey v1.1.6
-	google.golang.org/genai v1.36.0
+	google.golang.org/genai v1.37.0
 )
 
 require (

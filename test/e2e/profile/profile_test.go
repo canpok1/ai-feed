@@ -262,3 +262,35 @@ func TestProfileCommand_Check_WithConfig(t *testing.T) {
 		})
 	}
 }
+
+// TestProfileCommand_Check_ConfigFlagIgnoredBugRegression は--configフラグが無視されるバグの再発を防ぐテスト
+// issue #238: profile check コマンドで --config フラグが無視される問題の修正確認
+func TestProfileCommand_Check_ConfigFlagIgnoredBugRegression(t *testing.T) {
+	// バイナリをビルド
+	binaryPath := common.BuildBinary(t)
+
+	// プロジェクトルートを取得
+	projectRoot := common.GetProjectRoot(t)
+
+	// 一時ディレクトリを作成
+	tmpDir := t.TempDir()
+
+	// 作業ディレクトリに無効な設定ファイル（config.yml）を配置
+	// これは --config フラグが無視された場合に使用される
+	common.SetupTestDataFile(t, projectRoot, testdataDir, "invalid_config.yml", "config.yml", tmpDir)
+
+	// 有効な設定ファイルを別の場所に配置（--config フラグで指定する用）
+	validConfigPath := common.SetupTestDataFile(t, projectRoot, testdataDir, "valid_config.yml", "valid_config.yml", tmpDir)
+
+	// 一時ディレクトリに移動
+	common.ChangeToTempDir(t, tmpDir)
+
+	// --config フラグで有効な設定ファイルを指定してコマンドを実行
+	// バグがあった場合、./config.yml（無効な設定）が使用され、エラーになる
+	output, err := common.ExecuteCommand(t, binaryPath, "--config", validConfigPath, "profile", "check")
+
+	// cfgFileで指定した有効な設定ファイルが使用されるため、成功するはず
+	assert.NoError(t, err, "--configフラグで指定した有効な設定ファイルが使用されるはずです")
+	assert.Contains(t, output, "プロファイルの検証が完了しました", "検証成功メッセージが含まれているはずです")
+	assert.Contains(t, output, validConfigPath, "--configフラグで指定したパスが出力に含まれているはずです")
+}

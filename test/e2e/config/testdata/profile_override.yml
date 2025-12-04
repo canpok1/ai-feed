@@ -1,0 +1,6 @@
+# プロファイルテスト用（ダミー値を上書きする有効な設定）
+ai:
+  gemini:
+    api_key: valid-profile-api-key-12345
+prompt:
+  system_prompt: test system prompt
