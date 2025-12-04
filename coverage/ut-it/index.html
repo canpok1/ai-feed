@@ -59,7 +59,7 @@
 				
 				<option value="file1">github.com/canpok1/ai-feed/cmd/init.go (27.3%)</option>
 				
-				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (75.5%)</option>
+				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (73.5%)</option>
 				
 				<option value="file3">github.com/canpok1/ai-feed/cmd/recommend.go (24.1%)</option>
 				
@@ -459,7 +459,7 @@ func makeProfileCheckCmd() *cobra.Command <span class="cov8" title="1">{
                         }</span>
 
                         // ProfileCheckRunnerを使用して検証を実行
-                        <span class="cov8" title="1">profileRepoFn := func(path string) domain.ProfileRepository </span><span class="cov8" title="1">{
+                        <span class="cov8" title="1">profileRepoFn := func(path string) domain.ProfileRepository </span><span class="cov0" title="0">{
                                 return profile.NewYamlProfileRepositoryImpl(path)
                         }</span>
                         <span class="cov8" title="1">r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
