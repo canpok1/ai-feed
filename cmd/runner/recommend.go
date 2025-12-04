@@ -27,7 +27,7 @@ type RecommendParams struct {
 type RecommendRunner struct {
 	fetcher     *domain.Fetcher
 	recommender domain.Recommender
-	viewers     []domain.MessageSender
+	senders     []domain.MessageSender
 	cache       domain.RecommendCache
 	stderr      io.Writer
 	stdout      io.Writer
@@ -44,7 +44,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			return err
 		},
 	)
-	var viewers []domain.MessageSender
+	var senders []domain.MessageSender
 
 	if outputConfig != nil {
 		if outputConfig.SlackAPI != nil {
@@ -61,8 +61,8 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 					options = append(options, slack.OptionAPIURL(*slackConfig.APIURL))
 				}
 				slackClient := slack.New(slackConfig.APIToken.Value(), options...)
-				slackViewer := message.NewSlackSender(slackConfig, slackClient)
-				viewers = append(viewers, slackViewer)
+				slackSender := message.NewSlackSender(slackConfig, slackClient)
+				senders = append(senders, slackSender)
 			}
 		}
 		if outputConfig.Misskey != nil {
@@ -72,11 +72,11 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 			if !misskeyConfig.Enabled {
 				slog.Info("Misskey output is disabled (enabled: false)")
 			} else {
-				misskeyViewer, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken.Value(), misskeyConfig.MessageTemplate)
+				misskeySender, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken.Value(), misskeyConfig.MessageTemplate)
 				if err != nil {
-					return nil, fmt.Errorf("failed to create Misskey viewer: %w", err)
+					return nil, fmt.Errorf("failed to create Misskey sender: %w", err)
 				}
-				viewers = append(viewers, misskeyViewer)
+				senders = append(senders, misskeySender)
 			}
 		}
 	}
@@ -94,7 +94,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	return &RecommendRunner{
 		fetcher:     fetcher,
 		recommender: recommender,
-		viewers:     viewers,
+		senders:     senders,
 		cache:       cache,
 		stderr:      stderr,
 		stdout:      stdout,
@@ -279,19 +279,19 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		"fixed_message", fixedMessage,
 	)
 
-	slog.Debug("Sending recommendation to viewers", "viewer_count", len(r.viewers))
+	slog.Debug("Sending recommendation to senders", "sender_count", len(r.senders))
 
 	// 外部サービスへの投稿状況をメッセージ表示
-	if len(r.viewers) > 0 {
+	if len(r.senders) > 0 {
 		fmt.Fprintln(r.stdout, "\n外部サービスに投稿しています...")
 	} else {
 		fmt.Fprintln(r.stdout, "\n外部サービスへの投稿は設定されていません")
 	}
 
-	for _, viewer := range r.viewers {
+	for _, sender := range r.senders {
 		var serviceName string
 		isKnownService := true
-		switch viewer.(type) {
+		switch sender.(type) {
 		case *message.SlackSender:
 			serviceName = "Slack"
 		case *message.MisskeySender:
@@ -304,13 +304,13 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 			fmt.Fprintf(r.stdout, "%sに投稿中...\n", serviceName)
 		}
 
-		if viewErr := viewer.SendRecommend(recommend, fixedMessage); viewErr != nil {
+		if sendErr := sender.SendRecommend(recommend, fixedMessage); sendErr != nil {
 			if isKnownService {
-				fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, viewErr)
+				fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, sendErr)
 			} else {
-				fmt.Fprintf(r.stdout, "投稿でエラーが発生しました: %v\n", viewErr)
+				fmt.Fprintf(r.stdout, "投稿でエラーが発生しました: %v\n", sendErr)
 			}
-			errs = append(errs, fmt.Errorf("failed to view recommend: %w", viewErr))
+			errs = append(errs, fmt.Errorf("failed to send recommend: %w", sendErr))
 		} else {
 			if isKnownService {
 				fmt.Fprintf(r.stdout, "%sに投稿しました\n", serviceName)
@@ -321,7 +321,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	// 投稿エラーがある場合はキャッシュを更新せずに終了
 	if len(errs) > 0 {
 		slog.Warn("Some posts failed, not updating cache", "error_count", len(errs))
-		return fmt.Errorf("failed to view all recommends: %v", errs)
+		return fmt.Errorf("failed to send all recommends: %v", errs)
 	}
 
 	// 全ての投稿が成功した場合のみキャッシュを更新
@@ -335,6 +335,6 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 		fmt.Fprintln(r.stderr, "キャッシュを更新しました")
 	}
 
-	slog.Info("Recommendation sent successfully to all viewers")
+	slog.Info("Recommendation sent successfully to all senders")
 	return nil
 }
