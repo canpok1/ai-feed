@@ -8,41 +8,40 @@ ai-feedは、Cobraフレームワークを使用したGo CLIアプリケーシ�
 ai-feed/
 ├── cmd/                        # CLIコマンドの実装
 │   ├── runner/                 # コマンドのビジネスロジック
-│   │   ├── profile_check.go   # プロファイル検証ロジック
-│   │   ├── profile_init.go    # プロファイル初期化ロジック
-│   │   └── recommend.go       # 記事推薦ロジック
-│   ├── init.go                # initコマンド
-│   ├── profile.go             # profileコマンド
-│   ├── recommend.go           # recommendコマンド
-│   └── root.go                # ルートコマンド
+│   │   └── *.go               # (profile_check, profile_init, recommend など)
+│   ├── root.go                 # ルートコマンド
+│   └── *.go                    # (init, profile, recommend, config など)
 ├── internal/                   # 内部パッケージ
-│   ├── domain/                # ドメイン層（ビジネスロジック）
-│   │   ├── entity/            # エンティティ定義
-│   │   │   ├── config.go     # 設定エンティティ
-│   │   │   └── entity.go     # 記事などのエンティティ
-│   │   ├── mock_domain/       # ドメイン層のモック
-│   │   ├── comment.go         # コメント生成インターフェース
-│   │   ├── fetch.go           # フィード取得インターフェース
-│   │   ├── message.go         # メッセージ送信インターフェース
-│   │   ├── profile.go         # プロファイル管理インターフェース
-│   │   └── recommend.go       # 推薦ロジックインターフェース
-│   └── infra/                 # インフラストラクチャ層
-│       ├── comment/           # AI連携実装
-│       │   ├── factory.go    # コメント生成器ファクトリー
-│       │   └── gemini.go     # Google Gemini API実装
-│       ├── fetch/             # フィード取得実装
-│       │   └── rss.go        # RSS/Atomフィード取得
-│       ├── message/           # メッセージ送信実装
-│       │   ├── builder.go    # メッセージビルダー
-│       │   ├── misskey.go    # Misskey API実装
-│       │   └── slack.go      # Slack Webhook実装
-│       ├── profile/           # プロファイル管理実装
-│       │   └── repository.go # YAMLリポジトリ
-│       ├── templates/         # 設定ファイルテンプレート
-│       │   └── config.yml    # デフォルト設定
-│       ├── config.go          # 設定管理
-│       ├── logger.go          # ログ管理
-│       └── templates.go       # テンプレート管理
+│   ├── domain/                 # ドメイン層（ビジネスロジック）
+│   │   ├── entity/             # エンティティ定義
+│   │   │   └── *.go           # (config, entity, secret など)
+│   │   ├── cache/              # キャッシュ実装
+│   │   │   └── *.go           # (file_cache, nop_cache など)
+│   │   ├── mock_domain/        # ドメイン層のモック（テスト用）
+│   │   │   └── *.go           # 自動生成されるモック
+│   │   └── *.go                # インターフェース定義 (comment, fetch, message など)
+│   ├── infra/                  # インフラストラクチャ層
+│   │   ├── comment/            # AI連携実装
+│   │   │   └── *.go           # (factory, gemini など)
+│   │   ├── fetch/              # フィード取得実装
+│   │   │   └── *.go           # (rss など)
+│   │   ├── message/            # メッセージ送信実装
+│   │   │   └── *.go           # (builder, misskey, slack など)
+│   │   ├── profile/            # プロファイル管理実装
+│   │   │   └── *.go           # (repository など)
+│   │   ├── selector/           # 記事選択実装
+│   │   │   └── *.go           # (factory, gemini など)
+│   │   ├── templates/          # 設定ファイルテンプレート
+│   │   │   └── *.yml          # (config など)
+│   │   ├── mock_infra/         # インフラ層のモック（テスト用）
+│   │   │   └── *.go           # 自動生成されるモック
+│   │   └── *.go                # (config, logger, templates など)
+│   ├── testutil/               # テストユーティリティ
+│   │   └── *.go               # 共通テストヘルパー
+│   └── version/                # バージョン情報
+│       └── *.go               # バージョン定義
+├── test/                       # E2Eテスト
+│   └── e2e/                    # E2Eテストコード
 ├── docs/                       # ドキュメント
 ├── main.go                     # エントリーポイント
 ├── go.mod                      # Goモジュール定義
