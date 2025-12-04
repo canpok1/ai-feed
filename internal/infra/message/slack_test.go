@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockSlackClient is a mock of the slackClient interface.
+// MockSlackClient はslackClientインターフェースのモックです。
 type MockSlackClient struct {
 	mock.Mock
 }
@@ -36,7 +36,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 		setupMock func(*MockSlackClient, *entity.SlackAPIConfig)
 	}{
 		{
-			name: "no extra options",
+			name: "正常系: 追加オプションなし",
 			config: &entity.SlackAPIConfig{
 				APIToken:        makeSecretString("xoxb-test-token"),
 				Channel:         "#test",
@@ -50,7 +50,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "with username",
+			name: "正常系: ユーザー名あり",
 			config: &entity.SlackAPIConfig{
 				APIToken:        makeSecretString("xoxb-test-token"),
 				Channel:         "#test",
@@ -65,7 +65,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "with icon url",
+			name: "正常系: アイコンURLあり",
 			config: &entity.SlackAPIConfig{
 				APIToken:        makeSecretString("xoxb-test-token"),
 				Channel:         "#test",
@@ -80,7 +80,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "with icon emoji",
+			name: "正常系: アイコン絵文字あり",
 			config: &entity.SlackAPIConfig{
 				APIToken:        makeSecretString("xoxb-test-token"),
 				Channel:         "#test",
@@ -99,8 +99,7 @@ func TestSendRecommend_PostMessageOptions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockClient := new(MockSlackClient)
-			currentTT := tt // capture range variable
-			currentTT.setupMock(mockClient, currentTT.config)
+			tt.setupMock(mockClient, tt.config)
 
 			sender := NewSlackSender(tt.config, mockClient)
 			recommend := &entity.Recommend{
