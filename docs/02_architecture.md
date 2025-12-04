@@ -17,7 +17,7 @@ ai-feed/
 │   │   │   └── *.go           # (config, entity, secret など)
 │   │   ├── cache/              # キャッシュ実装
 │   │   │   └── *.go           # (file_cache, nop_cache など)
-│   │   ├── mock_domain/        # ドメイン層のモック（テスト用）
+│   │   ├── mock_domain/        # ドメイン層のモック（テスト用、層の純粋性維持のため分離）
 │   │   │   └── *.go           # 自動生成されるモック
 │   │   └── *.go                # インターフェース定義 (comment, fetch, message など)
 │   ├── infra/                  # インフラストラクチャ層
@@ -33,7 +33,7 @@ ai-feed/
 │   │   │   └── *.go           # (factory, gemini など)
 │   │   ├── templates/          # 設定ファイルテンプレート
 │   │   │   └── *.yml          # (config など)
-│   │   ├── mock_infra/         # インフラ層のモック（テスト用）
+│   │   ├── mock_infra/         # インフラ層のモック（テスト用、層の純粋性維持のため分離）
 │   │   │   └── *.go           # 自動生成されるモック
 │   │   └── *.go                # (config, logger, templates など)
 │   ├── testutil/               # テストユーティリティ
