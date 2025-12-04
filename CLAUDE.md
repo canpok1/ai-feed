@@ -21,6 +21,9 @@ make test
 # golangci-lintによる包括的な静的解析（重要：コミット前に必ず実行）
 make lint
 
+# go-depcheckによるアーキテクチャ依存関係チェック
+make depcheck
+
 # テストカバレッジレポート生成と閾値チェック（60%以上、将来的に70%目標）
 make test-coverage
 
