@@ -46,13 +46,13 @@ func TestNewRecommendRunner(t *testing.T) {
 		expectedErrorMsg string
 	}{
 		{
-			name:         "正常系: Viewer無しで作成成功",
+			name:         "正常系: Sender無しで作成成功",
 			outputConfig: &entity.OutputConfig{},
 			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:  false,
 		},
 		{
-			name: "正常系: SlackAPI Viewerで作成成功",
+			name: "正常系: SlackAPI Senderで作成成功",
 			outputConfig: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
 					Enabled:         true,
@@ -65,7 +65,7 @@ func TestNewRecommendRunner(t *testing.T) {
 			expectError:  false,
 		},
 		{
-			name: "正常系: Misskey Viewerで作成成功",
+			name: "正常系: Misskey Senderで作成成功",
 			outputConfig: &entity.OutputConfig{
 				Misskey: &entity.MisskeyConfig{
 					Enabled:         true,
@@ -78,7 +78,7 @@ func TestNewRecommendRunner(t *testing.T) {
 			expectError:  false,
 		},
 		{
-			name: "異常系: 無効なURLでMisskey Viewer作成エラー",
+			name: "異常系: 無効なURLでMisskey Sender作成エラー",
 			outputConfig: &entity.OutputConfig{
 				Misskey: &entity.MisskeyConfig{
 					Enabled:  true,
@@ -88,7 +88,7 @@ func TestNewRecommendRunner(t *testing.T) {
 			},
 			promptConfig:     &entity.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:      true,
-			expectedErrorMsg: "failed to create Misskey viewer",
+			expectedErrorMsg: "failed to create Misskey sender",
 		},
 	}
 
@@ -124,11 +124,11 @@ func TestNewRecommendRunner(t *testing.T) {
 				assert.NotNil(t, runner)
 				assert.NotNil(t, runner.fetcher)
 				assert.NotNil(t, runner.recommender)
-				// viewersスライスはStdSender削除により初期状態では空だが、外部連携設定により追加される
+				// sendersスライスはStdSender削除により初期状態では空だが、外部連携設定により追加される
 				if tt.outputConfig.SlackAPI != nil || tt.outputConfig.Misskey != nil {
-					assert.Greater(t, len(runner.viewers), 0)
+					assert.Greater(t, len(runner.senders), 0)
 				} else {
-					assert.Equal(t, 0, len(runner.viewers))
+					assert.Equal(t, 0, len(runner.senders))
 				}
 			}
 		})
@@ -373,7 +373,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 	tests := []struct {
 		name            string
 		outputConfig    *entity.OutputConfig
-		expectedViewers int
+		expectedSenders int
 	}{
 		{
 			name: "SlackAPI有効、Misskey有効（default）",
@@ -391,7 +391,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedViewers: 2,
+			expectedSenders: 2,
 		},
 		{
 			name: "SlackAPI有効、Misskey無効",
@@ -409,7 +409,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedViewers: 1,
+			expectedSenders: 1,
 		},
 		{
 			name: "SlackAPI無効、Misskey有効",
@@ -427,7 +427,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedViewers: 1,
+			expectedSenders: 1,
 		},
 		{
 			name: "両方無効",
@@ -445,7 +445,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
-			expectedViewers: 0,
+			expectedSenders: 0,
 		},
 	}
 
@@ -472,7 +472,7 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.NotNil(t, runner)
-			assert.Equal(t, tt.expectedViewers, len(runner.viewers))
+			assert.Equal(t, tt.expectedSenders, len(runner.senders))
 		})
 	}
 }
@@ -609,7 +609,7 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, runner)
-	assert.Equal(t, 0, len(runner.viewers)) // viewer数は0
+	assert.Equal(t, 0, len(runner.senders)) // sender数は0
 
 	// テストデータをセットアップ
 	testArticles := []entity.Article{
@@ -669,10 +669,10 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, runner)
 
-	// runner.viewers をモックに差し替える
-	mockViewer := mock_domain.NewMockMessageSender(ctrl)
-	mockViewer.EXPECT().SendRecommend(gomock.Any(), gomock.Any()).Return(nil)
-	runner.viewers = []domain.MessageSender{mockViewer}
+	// runner.senders をモックに差し替える
+	mockSender := mock_domain.NewMockMessageSender(ctrl)
+	mockSender.EXPECT().SendRecommend(gomock.Any(), gomock.Any()).Return(nil)
+	runner.senders = []domain.MessageSender{mockSender}
 
 	params := &RecommendParams{URLs: []string{"http://example.com/feed"}}
 

@@ -41,18 +41,18 @@ func TestNewMisskeySender(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			viewer, err := NewMisskeySender(tt.instanceURL, tt.accessToken, tt.messageTemplate)
+			sender, err := NewMisskeySender(tt.instanceURL, tt.accessToken, tt.messageTemplate)
 
 			if tt.expectError {
 				assert.Error(t, err)
-				assert.Nil(t, viewer)
+				assert.Nil(t, sender)
 				return
 			}
 
 			require.NoError(t, err)
-			require.NotNil(t, viewer)
+			require.NotNil(t, sender)
 
-			misskeySender, ok := viewer.(*MisskeySender)
+			misskeySender, ok := sender.(*MisskeySender)
 			require.True(t, ok, "Should be MisskeySender type")
 
 			// テンプレートが正しくパースされていることを確認
