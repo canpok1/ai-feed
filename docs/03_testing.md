@@ -423,31 +423,61 @@ configPath := CreateTestConfig(t, tmpDir, TestConfigParams{
 
 ### E2Eテストのディレクトリ構造
 
+E2Eテストは**コマンドごとのサブディレクトリ**に分割された構造を採用しています。
+
 ```
 test/e2e/
-├── .gitkeep
-├── helper.go              # 共通ヘルパー関数
-├── init_test.go           # initコマンドのE2Eテスト
-├── config_test.go         # configコマンドのE2Eテスト
-├── profile_test.go        # profileコマンドのE2Eテスト
-├── recommend_test.go      # recommendコマンドのE2Eテスト
-├── mock/                  # モックサーバー実装
-│   ├── rss.go            # RSS/Atomフィードモックサーバー
-│   ├── slack.go          # Slackモックサーバー
-│   └── misskey.go        # Misskeyモックサーバー
-└── testdata/              # テストデータ
-    ├── .gitkeep
-    ├── configs/           # テスト用設定ファイル
-    │   └── .gitkeep
-    ├── feeds/             # テスト用フィードデータ
-    │   ├── valid_rss.xml
-    │   ├── valid_atom.xml
-    │   ├── empty_feed.xml
-    │   ├── single_article_feed.xml
-    │   └── invalid_feed.xml
-    └── profiles/          # テスト用プロファイル
-        └── .gitkeep
+├── common/                        # 共通ユーティリティ
+│   ├── helper.go                  # 共通ヘルパー関数
+│   └── mock/                      # モックサーバー実装
+│       ├── rss.go                 # RSS/Atomフィードモックサーバー
+│       ├── slack.go               # Slackモックサーバー
+│       └── misskey.go             # Misskeyモックサーバー
+├── config/                        # configコマンドのテスト
+│   ├── config_test.go             # configコマンドのE2Eテスト
+│   ├── main_test.go               # パッケージセットアップ
+│   └── testdata/                  # テスト用データ
+│       ├── valid_config.yml
+│       └── ...
+├── init/                          # initコマンドのテスト
+│   ├── init_test.go               # initコマンドのE2Eテスト
+│   └── main_test.go               # パッケージセットアップ
+├── profile/                       # profileコマンドのテスト
+│   ├── profile_test.go            # profileコマンドのE2Eテスト
+│   ├── main_test.go               # パッケージセットアップ
+│   └── testdata/                  # テスト用データ
+│       ├── valid_profile.yml
+│       └── ...
+└── recommend/                     # recommendコマンドのテスト
+    ├── recommend_test.go          # recommendコマンドのE2Eテスト
+    └── main_test.go               # パッケージセットアップ
 ```
+
+#### コマンドベースのサブディレクトリ設計
+
+このディレクトリ構造には以下の設計上の理由があります：
+
+1. **パッケージの独立性**: 各コマンドのテストを独立したGoパッケージとして分離することで、テスト間の依存関係を最小化
+2. **テストデータの局所化**: 関連するテストデータ（`testdata/`）を各コマンドのテストディレクトリにまとめ、管理しやすさを向上
+3. **並列実行の効率化**: テストの並列実行時にパッケージ間の独立性を確保し、安定したテスト実行を実現
+4. **コードの見通し**: コマンドごとにテストファイルを分割することで、該当するテストを見つけやすくなる
+
+#### main_test.goの役割
+
+各コマンドのテストディレクトリには`main_test.go`が含まれています。このファイルは`TestMain`関数を定義し、以下の役割を担います：
+
+```go
+func TestMain(m *testing.M) {
+    common.SetupPackage()   // テスト実行前のセットアップ（バイナリビルドなど）
+    code := m.Run()         // テスト実行
+    common.CleanupPackage() // テスト終了後のクリーンアップ
+    os.Exit(code)
+}
+```
+
+- **バイナリの一度だけのビルド**: `sync.Once`を使用して、複数のテストパッケージが同時に実行されても一度だけビルドを行う
+- **リソースの共有**: ビルドされたバイナリパスを全テストで共有
+- **クリーンアップ**: テスト終了時に一時ファイルやリソースを削除
 
 ### recommendコマンドのE2Eテスト
 
@@ -469,20 +499,20 @@ make test-e2e
 
 recommendコマンドのE2Eテストでは、以下のモックサーバーを使用します：
 
-1. **RSSフィードモックサーバー** (`test/e2e/mock/rss.go`)
+1. **RSSフィードモックサーバー** (`test/e2e/common/mock/rss.go`)
    - `NewMockRSSHandler()`: 標準的なRSSフィードを返す
    - `NewMockAtomHandler()`: Atomフィードを返す
    - `NewMockEmptyFeedHandler()`: 空のフィードを返す
    - `NewMockInvalidFeedHandler()`: 不正なXMLを返す
    - `NewMockErrorHandler(statusCode)`: 指定したHTTPエラーを返す
 
-2. **Slackモックサーバー** (`test/e2e/mock/slack.go`)
+2. **Slackモックサーバー** (`test/e2e/common/mock/slack.go`)
    - Slack Webhookへのメッセージ送信を受信・記録
    - `ReceivedMessage()`: メッセージ受信確認
    - `GetMessages()`: 受信したメッセージ一覧取得
    - `Reset()`: 状態リセット
 
-3. **Misskeyモックサーバー** (`test/e2e/mock/misskey.go`)
+3. **Misskeyモックサーバー** (`test/e2e/common/mock/misskey.go`)
    - Misskeyのノート作成APIを模倣
    - `ReceivedNote()`: ノート受信確認
    - `GetNotes()`: 受信したノート一覧取得
