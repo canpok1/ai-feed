@@ -55,7 +55,6 @@
             "Bash(git push -f:*)",
             "Bash(git rebase:*)",
             "Bash(git reset:*)",
-            "Bash(rm -fr:*)",
             "Bash(rm -rf:*)",
             "Bash(sudo:*)",
             "Read(.env:*)",
