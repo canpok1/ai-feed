@@ -85,6 +85,7 @@ func makeConfigCheckCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&profilePath, "profile", "p", "", "プロファイルYAMLファイルのパス")
 	cmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "詳細な設定サマリーを表示")
 	cmd.SilenceUsage = true
+	cmd.SilenceErrors = true
 
 	return cmd
 }
@@ -109,15 +110,19 @@ func validateAndPrint(cmd *cobra.Command, config *infra.Config, entityProfile *e
 	return nil
 }
 
-// printValidationResult はバリデーション結果を出力する
+// printValidationResult はバリデーション結果を出力する（統一形式: 1行目=処理完了報告、2行目以降=結果報告）
 func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, verboseFlag bool) {
 	if result.Valid {
-		fmt.Fprintln(cmd.OutOrStdout(), "設定に問題ありません。")
+		// 成功時はstdoutに出力
+		fmt.Fprintln(cmd.OutOrStdout(), "設定の検証が完了しました")
+		fmt.Fprintln(cmd.OutOrStdout(), "問題ありませんでした")
 		if verboseFlag {
 			printSummary(cmd.OutOrStdout(), result.Summary)
 		}
 	} else {
-		fmt.Fprintln(cmd.ErrOrStderr(), "設定に以下の問題があります：")
+		// 失敗時はすべてstderrに出力
+		fmt.Fprintln(cmd.ErrOrStderr(), "設定の検証が完了しました")
+		fmt.Fprintln(cmd.ErrOrStderr(), "以下の問題があります：")
 		for _, err := range result.Errors {
 			fmt.Fprintf(cmd.ErrOrStderr(), "- %s: %s\n", err.Field, err.Message)
 		}

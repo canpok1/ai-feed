@@ -106,7 +106,7 @@ func TestProfileCheckCommand_NoArguments(t *testing.T) {
 	_, err := cmd.ExecuteC()
 
 	assert.Error(t, err, "Command should return validation error for empty profile")
-	assert.Contains(t, stderr.String(), "プロファイルの検証に失敗しました", "Error message should indicate validation failure")
+	assert.Contains(t, stderr.String(), "以下の問題があります", "Error message should indicate validation failure")
 	_ = stdout
 }
 
