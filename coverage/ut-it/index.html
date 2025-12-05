@@ -55,11 +55,11 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/canpok1/ai-feed/cmd/config.go (10.4%)</option>
+				<option value="file0">github.com/canpok1/ai-feed/cmd/config.go (11.1%)</option>
 				
 				<option value="file1">github.com/canpok1/ai-feed/cmd/init.go (27.3%)</option>
 				
-				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (73.5%)</option>
+				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (75.5%)</option>
 				
 				<option value="file3">github.com/canpok1/ai-feed/cmd/recommend.go (24.1%)</option>
 				
@@ -226,6 +226,7 @@ func makeConfigCheckCmd() *cobra.Command <span class="cov8" title="1">{
         <span class="cov8" title="1">cmd.Flags().StringVarP(&amp;profilePath, "profile", "p", "", "プロファイルYAMLファイルのパス")
         cmd.Flags().BoolVarP(&amp;verboseFlag, "verbose", "v", false, "詳細な設定サマリーを表示")
         cmd.SilenceUsage = true
+        cmd.SilenceErrors = true
 
         return cmd</span>
 }
@@ -250,15 +251,19 @@ func validateAndPrint(cmd *cobra.Command, config *infra.Config, entityProfile *e
         return nil</span>
 }
 
-// printValidationResult はバリデーション結果を出力する
+// printValidationResult はバリデーション結果を出力する（統一形式: 1行目=処理完了報告、2行目以降=結果報告）
 func printValidationResult(cmd *cobra.Command, result *domain.ValidationResult, verboseFlag bool) <span class="cov0" title="0">{
         if result.Valid </span><span class="cov0" title="0">{
-                fmt.Fprintln(cmd.OutOrStdout(), "設定に問題ありません。")
+                // 成功時はstdoutに出力
+                fmt.Fprintln(cmd.OutOrStdout(), "設定の検証が完了しました")
+                fmt.Fprintln(cmd.OutOrStdout(), "問題ありませんでした")
                 if verboseFlag </span><span class="cov0" title="0">{
                         printSummary(cmd.OutOrStdout(), result.Summary)
                 }</span>
         } else<span class="cov0" title="0"> {
-                fmt.Fprintln(cmd.ErrOrStderr(), "設定に以下の問題があります：")
+                // 失敗時はすべてstderrに出力
+                fmt.Fprintln(cmd.ErrOrStderr(), "設定の検証が完了しました")
+                fmt.Fprintln(cmd.ErrOrStderr(), "以下の問題があります：")
                 for _, err := range result.Errors </span><span class="cov0" title="0">{
                         fmt.Fprintf(cmd.ErrOrStderr(), "- %s: %s\n", err.Field, err.Message)
                 }</span>
@@ -465,31 +470,38 @@ func makeProfileCheckCmd() *cobra.Command <span class="cov8" title="1">{
                         <span class="cov8" title="1">r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
                         result, err := r.Run(profilePath)
                         if err != nil </span><span class="cov8" title="1">{
+                                // SilenceErrorsが有効なので、手動でエラーを出力
+                                fmt.Fprintf(cmd.ErrOrStderr(), "Error: %v\n", err)
                                 return err
                         }</span>
 
-                        // 結果の表示
+                        // 結果の表示（統一形式: 1行目=処理完了報告、2行目以降=結果報告）
                         <span class="cov8" title="1">if !result.IsValid </span><span class="cov8" title="1">{
-                                cmd.PrintErrln("プロファイルの検証に失敗しました:")
+                                // 失敗時はすべてstderrに出力
+                                fmt.Fprintln(cmd.ErrOrStderr(), "プロファイルの検証が完了しました")
+                                fmt.Fprintln(cmd.ErrOrStderr(), "以下の問題があります：")
                                 for _, errMsg := range result.Errors </span><span class="cov8" title="1">{
-                                        cmd.PrintErrf("  エラー: %s\n", errMsg)
+                                        fmt.Fprintf(cmd.ErrOrStderr(), "- %s\n", errMsg)
                                 }</span>
                                 <span class="cov8" title="1">return fmt.Errorf("プロファイルの検証に失敗しました")</span>
                         }
 
-                        <span class="cov8" title="1">if len(result.Warnings) &gt; 0 </span><span class="cov0" title="0">{
-                                cmd.PrintErrln("プロファイルの検証が警告付きで完了しました:")
+                        // 成功時はstdoutに出力
+                        <span class="cov8" title="1">fmt.Fprintln(cmd.OutOrStdout(), "プロファイルの検証が完了しました")
+                        if len(result.Warnings) &gt; 0 </span><span class="cov0" title="0">{
+                                fmt.Fprintln(cmd.ErrOrStderr(), "以下の警告があります：")
                                 for _, warning := range result.Warnings </span><span class="cov0" title="0">{
-                                        cmd.PrintErrf("  警告: %s\n", warning)
+                                        fmt.Fprintf(cmd.ErrOrStderr(), "- %s\n", warning)
                                 }</span>
                         } else<span class="cov8" title="1"> {
-                                fmt.Fprintln(cmd.OutOrStdout(), "プロファイルの検証が完了しました")
+                                fmt.Fprintln(cmd.OutOrStdout(), "問題ありませんでした")
                         }</span>
 
                         <span class="cov8" title="1">return nil</span>
                 },
         }
         <span class="cov8" title="1">cmd.SilenceUsage = true
+        cmd.SilenceErrors = true
         return cmd</span>
 }
 </pre>
