@@ -84,22 +84,24 @@ func makeProfileCheckCmd() *cobra.Command {
 				return err
 			}
 
-			// 結果の表示
+			// 結果の表示（統一形式: 1行目=処理完了報告、2行目以降=結果報告）
+			fmt.Fprintln(cmd.OutOrStdout(), "プロファイルの検証が完了しました")
+
 			if !result.IsValid {
-				cmd.PrintErrln("プロファイルの検証に失敗しました:")
+				fmt.Fprintln(cmd.ErrOrStderr(), "以下の問題があります：")
 				for _, errMsg := range result.Errors {
-					cmd.PrintErrf("  エラー: %s\n", errMsg)
+					fmt.Fprintf(cmd.ErrOrStderr(), "- %s\n", errMsg)
 				}
 				return fmt.Errorf("プロファイルの検証に失敗しました")
 			}
 
 			if len(result.Warnings) > 0 {
-				cmd.PrintErrln("プロファイルの検証が警告付きで完了しました:")
+				fmt.Fprintln(cmd.ErrOrStderr(), "以下の警告があります：")
 				for _, warning := range result.Warnings {
-					cmd.PrintErrf("  警告: %s\n", warning)
+					fmt.Fprintf(cmd.ErrOrStderr(), "- %s\n", warning)
 				}
 			} else {
-				fmt.Fprintln(cmd.OutOrStdout(), "プロファイルの検証が完了しました")
+				fmt.Fprintln(cmd.OutOrStdout(), "問題ありませんでした")
 			}
 
 			return nil

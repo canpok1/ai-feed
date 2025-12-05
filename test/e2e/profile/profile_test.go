@@ -156,7 +156,7 @@ func TestProfileCommand_Check(t *testing.T) {
 		{
 			name:              "無効なプロファイルでエラーが検出される",
 			profileFileName:   "invalid_profile.yml",
-			wantOutputContain: "プロファイルの検証に失敗しました",
+			wantOutputContain: "以下の問題があります",
 			wantErrorContains: []string{
 				"AI設定が設定されていません",
 				"出力設定が設定されていません",

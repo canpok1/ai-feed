@@ -73,19 +73,19 @@ func TestConfigCommand_Check(t *testing.T) {
 		{
 			name:              "有効な設定ファイルで検証が成功する",
 			configFileName:    "valid_config.yml",
-			wantOutputContain: "設定に問題ありません。",
+			wantOutputContain: "問題ありませんでした",
 			wantError:         false,
 		},
 		{
 			name:              "最小限の設定ファイルで検証が成功する",
 			configFileName:    "minimal_config.yml",
-			wantOutputContain: "設定に問題ありません。",
+			wantOutputContain: "問題ありませんでした",
 			wantError:         false,
 		},
 		{
 			name:              "無効な設定ファイルでエラーが検出される",
 			configFileName:    "invalid_config.yml",
-			wantOutputContain: "設定に以下の問題があります：",
+			wantOutputContain: "以下の問題があります：",
 			wantError:         true,
 			checkErrorList:    true,
 		},
@@ -153,7 +153,7 @@ func TestConfigCommand_CheckWithVerbose(t *testing.T) {
 	assert.NoError(t, err, "エラーは発生しないはずです")
 
 	// 出力メッセージの確認
-	assert.Contains(t, output, "設定に問題ありません", "成功メッセージが含まれているはずです")
+	assert.Contains(t, output, "問題ありませんでした", "成功メッセージが含まれているはずです")
 	assert.Contains(t, output, "【設定サマリー】", "設定サマリーが含まれているはずです")
 	assert.Contains(t, output, "AI設定:", "AI設定セクションが含まれているはずです")
 	assert.Contains(t, output, "Gemini API: 設定済み", "Gemini API設定状態が含まれているはずです")
@@ -175,7 +175,7 @@ func TestConfigCommand_CheckWithProfile(t *testing.T) {
 	assert.NoError(t, err, "エラーは発生しないはずです（プロファイルでダミー値が上書きされるため）")
 
 	// 出力メッセージの確認
-	assert.Contains(t, output, "設定に問題ありません", "成功メッセージが含まれているはずです")
+	assert.Contains(t, output, "問題ありませんでした", "成功メッセージが含まれているはずです")
 }
 
 // TestConfigCommand_CheckWithProfileNotFound は存在しないプロファイルを指定した場合のテスト
