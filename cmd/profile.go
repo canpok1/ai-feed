@@ -81,13 +81,15 @@ func makeProfileCheckCmd() *cobra.Command {
 			r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
 			result, err := r.Run(profilePath)
 			if err != nil {
+				// SilenceErrorsが有効なので、手動でエラーを出力
+				fmt.Fprintf(cmd.ErrOrStderr(), "Error: %v\n", err)
 				return err
 			}
 
 			// 結果の表示（統一形式: 1行目=処理完了報告、2行目以降=結果報告）
-			fmt.Fprintln(cmd.OutOrStdout(), "プロファイルの検証が完了しました")
-
 			if !result.IsValid {
+				// 失敗時はすべてstderrに出力
+				fmt.Fprintln(cmd.ErrOrStderr(), "プロファイルの検証が完了しました")
 				fmt.Fprintln(cmd.ErrOrStderr(), "以下の問題があります：")
 				for _, errMsg := range result.Errors {
 					fmt.Fprintf(cmd.ErrOrStderr(), "- %s\n", errMsg)
@@ -95,6 +97,8 @@ func makeProfileCheckCmd() *cobra.Command {
 				return fmt.Errorf("プロファイルの検証に失敗しました")
 			}
 
+			// 成功時はstdoutに出力
+			fmt.Fprintln(cmd.OutOrStdout(), "プロファイルの検証が完了しました")
 			if len(result.Warnings) > 0 {
 				fmt.Fprintln(cmd.ErrOrStderr(), "以下の警告があります：")
 				for _, warning := range result.Warnings {
@@ -108,5 +112,6 @@ func makeProfileCheckCmd() *cobra.Command {
 		},
 	}
 	cmd.SilenceUsage = true
+	cmd.SilenceErrors = true
 	return cmd
 }
