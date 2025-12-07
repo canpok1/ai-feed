@@ -12,6 +12,11 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
+// isRunningAsRoot はルート権限で実行されているかどうかを確認する
+func isRunningAsRoot() bool {
+	return os.Geteuid() == 0
+}
+
 func TestNewFileRecommendCache(t *testing.T) {
 	config := &entity.CacheConfig{
 		Enabled:       true,
@@ -421,6 +426,11 @@ func TestFileRecommendCache_normalizeURL(t *testing.T) {
 
 func TestFileRecommendCache_ErrorHandling(t *testing.T) {
 	t.Run("不正なディレクトリでの初期化エラー", func(t *testing.T) {
+		// 権限テストはルート権限では動作しないためスキップ
+		if isRunningAsRoot() {
+			t.Skip("権限テストはルート権限では動作しないためスキップします")
+		}
+
 		// 読み取り専用ディレクトリを作成
 		tmpDir := t.TempDir()
 		readOnlyDir := filepath.Join(tmpDir, "readonly")

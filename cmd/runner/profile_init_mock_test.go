@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// isRunningAsRoot はルート権限で実行されているかどうかを確認する
+func isRunningAsRoot() bool {
+	return os.Geteuid() == 0
+}
+
 func TestProfileInitRunner_Run_Integration(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -53,6 +58,11 @@ func TestProfileInitRunner_Run_Integration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// 権限テストはルート権限では動作しないためスキップ
+			if tt.name == "書き込み権限エラー" && isRunningAsRoot() {
+				t.Skip("権限テストはルート権限では動作しないためスキップします")
+			}
+
 			// 一時ディレクトリを作成
 			tempDir := t.TempDir()
 			filePath := filepath.Join(tempDir, "test_profile.yml")
