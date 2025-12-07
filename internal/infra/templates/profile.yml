@@ -11,12 +11,12 @@ ai:
   # 初回セットアップ時や開発・テスト時に便利です。
   # 本番運用時は enabled: false に変更し、Gemini設定を有効化してください。
   mock:
-    # 有効/無効フラグ
+    # 有効/無効フラグ（省略時はfalse）
     # true: モックを使用（Gemini APIキー不要）
     # false: 実際のGemini APIを使用
     enabled: true
 
-    # 記事選択モード
+    # 記事選択モード（必須）
     # first: 最初の記事を選択
     # random: ランダムに選択
     # last: 最後の記事を選択
