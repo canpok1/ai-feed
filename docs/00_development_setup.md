@@ -50,13 +50,59 @@
   ```bash
   # macOS
   brew install git
-  
+
   # Linux (Ubuntu/Debian)
   sudo apt-get install git
-  
+
   # Windows
   # https://git-scm.com/ からインストーラをダウンロード
   ```
+
+#### 4. GitHub CLI（gh）
+
+GitHub CLIは、issueやプルリクエストの操作に使用します。
+
+- **インストール方法**:
+  ```bash
+  # macOS
+  brew install gh
+
+  # Linux (Ubuntu/Debian)
+  type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+  sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+  sudo apt update
+  sudo apt install gh -y
+
+  # Windows
+  # https://cli.github.com/ からインストーラをダウンロード
+  ```
+
+- **認証方法**:
+
+  **推奨: gh auth login を使用**
+  ```bash
+  gh auth login
+  ```
+  対話的に認証を行い、tokenを安全に保存します。
+
+  **CI/CD環境: 環境変数を使用**
+  ```bash
+  export GH_TOKEN="your_token_here"
+  ```
+
+- **トークンの作成（手動で作成する場合）**:
+  1. GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)
+  2. 以下の権限を付与:
+     - `repo` (リポジトリへの完全アクセス)
+     - `read:org` (組織情報の読み取り)
+
+- **重要な注意事項**:
+  - **絶対にトークンをコードやコミットに含めないでください**
+  - .envファイルは.gitignoreに含まれており、リポジトリにコミットされません
+  - CI/CD環境ではGitHub Secretsを使用してください
+  - トークンは定期的にローテーションすることを推奨します
 
 
 ## プロジェクトのセットアップ

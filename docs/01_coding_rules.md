@@ -195,6 +195,25 @@ type Viewer interface {
 - マジックナンバーは避ける
 - 設定可能な値はconfigに移動
 
+### 9.4 ファイルフォーマット
+
+すべてのソースファイルは、ファイル末尾が改行で終わるようにする。
+
+```go
+// Good: ファイル末尾は必ず改行で終わる
+package main
+
+func main() {
+    // ...
+}
+// ← ここに改行
+```
+
+エディタ設定の例:
+- **VSCode**: `"files.insertFinalNewline": true`
+- **Vim**: `set eol`
+- **Emacs**: `(setq require-final-newline t)`
+
 ## 10. cmd/runner パッケージの設計パターン
 
 ### 10.1 ビジネスロジック分離の原則
