@@ -42,7 +42,8 @@ test-coverage:
 	@go tool cover -func=coverage.filtered.out | awk -v thold=$(COVERAGE_THRESHOLD) '/^total:/ {gsub(/%/, "", $$3); if ($$3 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$3, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$3, thold}}'
 
 # リリース前に実行するテスト（GoReleaserから呼び出される）
-test-release: test-coverage test-e2e
+# 高速なチェックから順に実行し、早期に失敗を検出する
+test-release: fmt-check lint depcheck test-coverage test-integration test-e2e
 
 lint:
 	golangci-lint run ./...
@@ -53,6 +54,12 @@ depcheck:
 fmt:
 	go fmt ./...
 	go list -f '{{.Dir}}' ./... | xargs goimports -w
+
+# フォーマット済みかどうかをチェック（CI/リリース前チェック用）
+fmt-check:
+	@echo "Checking code formatting..."
+	@test -z "$$(gofmt -l .)" || (echo "The following files are not formatted:"; gofmt -l .; exit 1)
+	@echo "All files are properly formatted."
 
 generate:
 	go generate ./...
