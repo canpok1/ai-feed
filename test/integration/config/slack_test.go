@@ -125,9 +125,7 @@ func TestSlackAPIConfig_APITokenPrecedence(t *testing.T) {
 	const envAPIToken = "api-token-from-env"
 	const directAPIToken = "direct-api-token"
 
-	err := os.Setenv(envVarName, envAPIToken)
-	require.NoError(t, err, "環境変数の設定に成功するはずです")
-	defer func() { _ = os.Unsetenv(envVarName) }()
+	t.Setenv(envVarName, envAPIToken)
 
 	enabled := true
 	messageTemplate := "{{.Article.Title}}"
@@ -295,9 +293,7 @@ func TestSlackAPIConfig_APITokenFromEnv(t *testing.T) {
 	const envVarName = "TEST_SLACK_API_TOKEN"
 	const envAPIToken = "api-token-from-env"
 
-	err := os.Setenv(envVarName, envAPIToken)
-	require.NoError(t, err, "環境変数の設定に成功するはずです")
-	defer func() { _ = os.Unsetenv(envVarName) }()
+	t.Setenv(envVarName, envAPIToken)
 
 	enabled := true
 	messageTemplate := "{{.Article.Title}}"
