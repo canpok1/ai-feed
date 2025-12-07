@@ -16,17 +16,12 @@ import (
 func TestMockConfig_SelectorModeRequired(t *testing.T) {
 	// selector_modeが空のMock設定を作成
 	enabled := true
-	profile := &infra.Profile{
-		AI: &infra.AIConfig{
-			Mock: &infra.MockConfig{
-				Enabled:      &enabled,
-				SelectorMode: "", // 空文字列
-				Comment:      "テストコメント",
-			},
-		},
-		Prompt: NewPromptConfig(),
-		Output: NewOutputConfig(),
+	mockConf := &infra.MockConfig{
+		Enabled:      &enabled,
+		SelectorMode: "", // 空文字列
+		Comment:      "テストコメント",
 	}
+	profile := NewInfraProfileWithAI(&infra.AIConfig{Mock: mockConf})
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -49,13 +44,9 @@ func TestMockConfig_ValidSelectorModes(t *testing.T) {
 	for _, mode := range validModes {
 		t.Run("mode="+mode, func(t *testing.T) {
 			// 有効なselector_modeを設定
-			profile := &infra.Profile{
-				AI: &infra.AIConfig{
-					Mock: NewMockConfigWithMode(mode),
-				},
-				Prompt: NewPromptConfig(),
-				Output: NewOutputConfig(),
-			}
+			profile := NewInfraProfileWithAI(&infra.AIConfig{
+				Mock: NewMockConfigWithMode(mode),
+			})
 
 			// infra.Profile から entity.Profile に変換
 			entityProfile, err := profile.ToEntity()
@@ -79,13 +70,9 @@ func TestMockConfig_InvalidSelectorModes(t *testing.T) {
 	for _, mode := range invalidModes {
 		t.Run("mode="+mode, func(t *testing.T) {
 			// 無効なselector_modeを設定
-			profile := &infra.Profile{
-				AI: &infra.AIConfig{
-					Mock: NewMockConfigWithMode(mode),
-				},
-				Prompt: NewPromptConfig(),
-				Output: NewOutputConfig(),
-			}
+			profile := NewInfraProfileWithAI(&infra.AIConfig{
+				Mock: NewMockConfigWithMode(mode),
+			})
 
 			// infra.Profile から entity.Profile に変換
 			entityProfile, err := profile.ToEntity()
@@ -106,14 +93,10 @@ func TestMockConfig_InvalidSelectorModes(t *testing.T) {
 // ai.mock.enabled=false の場合、selector_modeが設定されていなくてもエラーにならないこと
 func TestMockConfig_DisabledSkipsValidation(t *testing.T) {
 	// Mock設定を無効化（selector_modeは空）
-	profile := &infra.Profile{
-		AI: &infra.AIConfig{
-			Gemini: NewGeminiConfig(), // Gemini設定があるので全体バリデーションは通る
-			Mock:   NewDisabledMockConfig(),
-		},
-		Prompt: NewPromptConfig(),
-		Output: NewOutputConfig(),
-	}
+	profile := NewInfraProfileWithAI(&infra.AIConfig{
+		Gemini: NewGeminiConfig(), // Gemini設定があるので全体バリデーションは通る
+		Mock:   NewDisabledMockConfig(),
+	})
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -131,14 +114,10 @@ func TestMockConfig_DisabledSkipsValidation(t *testing.T) {
 // ai.mock.enabled=true の場合、Gemini設定がなくてもバリデーションが成功すること
 func TestMockConfig_TakesPrecedenceOverGemini(t *testing.T) {
 	// Gemini設定なし、Mock設定あり
-	profile := &infra.Profile{
-		AI: &infra.AIConfig{
-			Gemini: nil, // Gemini設定なし
-			Mock:   NewMockConfig(),
-		},
-		Prompt: NewPromptConfig(),
-		Output: NewOutputConfig(),
-	}
+	profile := NewInfraProfileWithAI(&infra.AIConfig{
+		Gemini: nil, // Gemini設定なし
+		Mock:   NewMockConfig(),
+	})
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -156,17 +135,13 @@ func TestMockConfig_TakesPrecedenceOverGemini(t *testing.T) {
 // ai.mock.enabled=true の場合、Gemini設定が不完全でもMock設定が有効ならバリデーションが成功すること
 func TestMockConfig_BothMockAndGeminiWithMockEnabled(t *testing.T) {
 	// Gemini設定が不完全（APIKeyなし）、Mock設定あり
-	profile := &infra.Profile{
-		AI: &infra.AIConfig{
-			Gemini: &infra.GeminiConfig{
-				Type:   "gemini-2.5-flash",
-				APIKey: "", // APIKeyなし
-			},
-			Mock: NewMockConfig(),
+	profile := NewInfraProfileWithAI(&infra.AIConfig{
+		Gemini: &infra.GeminiConfig{
+			Type:   "gemini-2.5-flash",
+			APIKey: "", // APIKeyなし
 		},
-		Prompt: NewPromptConfig(),
-		Output: NewOutputConfig(),
-	}
+		Mock: NewMockConfig(),
+	})
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -209,14 +184,10 @@ func TestMockConfig_ValidConversion(t *testing.T) {
 // ai.mock設定がない場合、Gemini設定が必要になること
 func TestMockConfig_NilMockConfig(t *testing.T) {
 	// Mock設定がnilのProfile（Gemini設定もなし）
-	profile := &infra.Profile{
-		AI: &infra.AIConfig{
-			Gemini: nil,
-			Mock:   nil,
-		},
-		Prompt: NewPromptConfig(),
-		Output: NewOutputConfig(),
-	}
+	profile := NewInfraProfileWithAI(&infra.AIConfig{
+		Gemini: nil,
+		Mock:   nil,
+	})
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -236,17 +207,12 @@ func TestMockConfig_NilMockConfig(t *testing.T) {
 func TestMockConfig_CommentOptional(t *testing.T) {
 	// コメントが空のMock設定を作成
 	enabled := true
-	profile := &infra.Profile{
-		AI: &infra.AIConfig{
-			Mock: &infra.MockConfig{
-				Enabled:      &enabled,
-				SelectorMode: "first",
-				Comment:      "", // 空コメント
-			},
-		},
-		Prompt: NewPromptConfig(),
-		Output: NewOutputConfig(),
+	mockConf := &infra.MockConfig{
+		Enabled:      &enabled,
+		SelectorMode: "first",
+		Comment:      "", // 空コメント
 	}
+	profile := NewInfraProfileWithAI(&infra.AIConfig{Mock: mockConf})
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()

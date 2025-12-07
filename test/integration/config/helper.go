@@ -18,6 +18,16 @@ func ValidInfraProfile() *infra.Profile {
 	}
 }
 
+// NewInfraProfileWithAI は指定したAI設定を使用してテスト用の infra.Profile を生成する
+// Prompt と Output には標準設定が使用される
+func NewInfraProfileWithAI(aiConfig *infra.AIConfig) *infra.Profile {
+	return &infra.Profile{
+		AI:     aiConfig,
+		Prompt: NewPromptConfig(),
+		Output: NewOutputConfig(),
+	}
+}
+
 // ValidEntityProfile はテスト用の有効な entity.Profile を生成する
 // すべての必須フィールドが設定された設定オブジェクトを返す
 func ValidEntityProfile() *entity.Profile {
