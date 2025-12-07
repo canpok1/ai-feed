@@ -177,3 +177,97 @@ func WithDisabledMisskey() *infra.OutputConfig {
 		Misskey: config,
 	}
 }
+
+// NewMockConfig はテスト用の有効な infra.MockConfig を生成する
+// デフォルトで有効化され、selector_mode="first"、comment="テストコメント"を設定
+func NewMockConfig() *infra.MockConfig {
+	enabled := true
+	return &infra.MockConfig{
+		Enabled:      &enabled,
+		SelectorMode: "first",
+		Comment:      "テストコメント",
+	}
+}
+
+// NewMockConfigWithMode は指定したselector_modeでテスト用の infra.MockConfig を生成する
+func NewMockConfigWithMode(mode string) *infra.MockConfig {
+	enabled := true
+	return &infra.MockConfig{
+		Enabled:      &enabled,
+		SelectorMode: mode,
+		Comment:      "テストコメント",
+	}
+}
+
+// NewDisabledMockConfig は無効化された infra.MockConfig を生成する
+func NewDisabledMockConfig() *infra.MockConfig {
+	enabled := false
+	return &infra.MockConfig{
+		Enabled:      &enabled,
+		SelectorMode: "",
+		Comment:      "",
+	}
+}
+
+// NewAIConfigWithMock はMock設定のみを含む infra.AIConfig を生成する
+// Gemini設定はnilになる
+func NewAIConfigWithMock() *infra.AIConfig {
+	return &infra.AIConfig{
+		Gemini: nil,
+		Mock:   NewMockConfig(),
+	}
+}
+
+// NewAIConfigWithBothMockAndGemini はMockとGemini両方の設定を含む infra.AIConfig を生成する
+// Mock設定が有効な場合、Gemini設定より優先される
+func NewAIConfigWithBothMockAndGemini() *infra.AIConfig {
+	return &infra.AIConfig{
+		Gemini: NewGeminiConfig(),
+		Mock:   NewMockConfig(),
+	}
+}
+
+// NewEntityMockConfig はテスト用の有効な entity.MockConfig を生成する
+// Enabled=true、SelectorMode="first"、Comment="テストコメント"を設定
+func NewEntityMockConfig() *entity.MockConfig {
+	return &entity.MockConfig{
+		Enabled:      true,
+		SelectorMode: "first",
+		Comment:      "テストコメント",
+	}
+}
+
+// NewEntityMockConfigWithMode は指定したselector_modeでテスト用の entity.MockConfig を生成する
+func NewEntityMockConfigWithMode(mode string) *entity.MockConfig {
+	return &entity.MockConfig{
+		Enabled:      true,
+		SelectorMode: mode,
+		Comment:      "テストコメント",
+	}
+}
+
+// NewEntityAIConfigWithMock はMock設定のみを含む entity.AIConfig を生成する
+func NewEntityAIConfigWithMock() *entity.AIConfig {
+	return &entity.AIConfig{
+		Gemini: nil,
+		Mock:   NewEntityMockConfig(),
+	}
+}
+
+// ValidInfraProfileWithMock はMock設定を使用したテスト用の有効な infra.Profile を生成する
+func ValidInfraProfileWithMock() *infra.Profile {
+	return &infra.Profile{
+		AI:     NewAIConfigWithMock(),
+		Prompt: NewPromptConfig(),
+		Output: NewOutputConfig(),
+	}
+}
+
+// ValidEntityProfileWithMock はMock設定を使用したテスト用の有効な entity.Profile を生成する
+func ValidEntityProfileWithMock() *entity.Profile {
+	return &entity.Profile{
+		AI:     NewEntityAIConfigWithMock(),
+		Prompt: NewEntityPromptConfig(),
+		Output: NewEntityOutputConfig(),
+	}
+}
