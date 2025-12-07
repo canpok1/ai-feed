@@ -754,9 +754,10 @@ config := common.CreateRecommendTestConfig(t, tmpDir, common.RecommendConfigPara
 // 実際のGemini APIを使用する場合
 useMockAI := false
 config := common.CreateRecommendTestConfig(t, tmpDir, common.RecommendConfigParams{
-    UseMockAI:    &useMockAI,
-    GeminiAPIKey: os.Getenv("GEMINI_API_KEY"),
-    FeedURLs:     []string{feedURL},
+    UseMockAI:       &useMockAI,
+    GeminiAPIKey:    os.Getenv("GEMINI_API_KEY"),
+    FeedURLs:        []string{feedURL},
+    SlackWebhookURL: slackURL,
 })
 ```
 
