@@ -56,9 +56,15 @@ fmt:
 	go list -f '{{.Dir}}' ./... | xargs goimports -w
 
 # フォーマット済みかどうかをチェック（CI/リリース前チェック用）
+# fmtターゲットと同じくgoimportsを使用し、全パッケージを再帰的にチェック
 fmt-check:
 	@echo "Checking code formatting..."
-	@test -z "$$(gofmt -l .)" || (echo "The following files are not formatted:"; gofmt -l .; exit 1)
+	@unformatted=$$(go list -f '{{.Dir}}' ./... | xargs goimports -l); \
+	if [ -n "$$unformatted" ]; then \
+		echo "The following files are not formatted:"; \
+		echo "$$unformatted"; \
+		exit 1; \
+	fi
 	@echo "All files are properly formatted."
 
 generate:
