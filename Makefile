@@ -28,6 +28,9 @@ clean:
 test:
 	go test ./...
 
+test-integration:
+	go test -tags=integration ./test/integration/...
+
 test-e2e:
 	@if [ -z "$$GEMINI_API_KEY" ]; then \
 		echo "エラー: GEMINI_API_KEY環境変数が設定されていません"; \
