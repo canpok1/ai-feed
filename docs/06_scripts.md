@@ -72,6 +72,23 @@ $ ./scripts/create-version-tag.sh
 
 #### 出力例
 
+現在の実装では、複数のJSONオブジェクトが改行区切りで出力されます（NDJSON形式）:
+
+```json
+{
+  "thread_id": "PRRT_kwDONTZR484BhKaH",
+  "author": "reviewer-username",
+  "comment": "この部分のエラーハンドリングを改善してください。"
+}
+{
+  "thread_id": "PRRT_kwDONTZR484BhKaI",
+  "author": "another-reviewer",
+  "comment": "テストケースを追加してください。"
+}
+```
+
+**注**: より標準的なJSON配列形式への出力に変更することも検討できます。その場合の出力イメージ:
+
 ```json
 [
   {
