@@ -11,120 +11,51 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestSlackAPI_DisabledSkipsAPITokenValidation はSlack API無効化時にapi_tokenバリデーションがスキップされることを検証する
-// enabled=falseの場合、api_tokenを省略してもエラーにならないこと
-func TestSlackAPI_DisabledSkipsAPITokenValidation(t *testing.T) {
-	config := &entity.SlackAPIConfig{
-		Enabled:  false,
-		APIToken: entity.SecretString{}, // 空のAPIToken
-		Channel:  "",
-	}
-
-	result := config.Validate()
-
-	assert.True(t, result.IsValid, "enabled=falseの場合、api_tokenが空でもバリデーションは成功するはずです")
-	assert.Empty(t, result.Errors, "エラーメッセージがないはずです")
-}
-
-// TestSlackAPI_DisabledSkipsChannelValidation はSlack API無効化時にchannelバリデーションがスキップされることを検証する
-// enabled=falseの場合、channelを省略してもエラーにならないこと
-func TestSlackAPI_DisabledSkipsChannelValidation(t *testing.T) {
-	config := &entity.SlackAPIConfig{
-		Enabled:  false,
-		APIToken: entity.SecretString{},
-		Channel:  "", // 空のChannel
-	}
-
-	result := config.Validate()
-
-	assert.True(t, result.IsValid, "enabled=falseの場合、channelが空でもバリデーションは成功するはずです")
-	assert.Empty(t, result.Errors, "エラーメッセージがないはずです")
-}
-
-// TestSlackAPI_DisabledSkipsMessageTemplateValidation はSlack API無効化時にmessage_templateバリデーションがスキップされることを検証する
-// enabled=falseの場合、message_templateを省略してもエラーにならないこと
-func TestSlackAPI_DisabledSkipsMessageTemplateValidation(t *testing.T) {
-	config := &entity.SlackAPIConfig{
-		Enabled:         false,
-		APIToken:        entity.SecretString{},
-		Channel:         "",
-		MessageTemplate: nil, // nilのMessageTemplate
-	}
-
-	result := config.Validate()
-
-	assert.True(t, result.IsValid, "enabled=falseの場合、message_templateがnilでもバリデーションは成功するはずです")
-	assert.Empty(t, result.Errors, "エラーメッセージがないはずです")
-}
-
-// TestSlackAPI_DisabledSkipsIconMutualExclusivityCheck はSlack API無効化時にicon_url/icon_emoji排他チェックがスキップされることを検証する
-// enabled=falseの場合、icon_urlとicon_emojiを同時に指定してもエラーにならないこと
-func TestSlackAPI_DisabledSkipsIconMutualExclusivityCheck(t *testing.T) {
+// TestSlackAPI_DisabledSkipsAllValidation はSlack API無効化時に全バリデーションがスキップされることを検証する
+// enabled=falseの場合、すべての必須項目を省略しても、また排他チェックに違反してもエラーにならないこと
+func TestSlackAPI_DisabledSkipsAllValidation(t *testing.T) {
 	iconURL := "https://example.com/icon.png"
 	iconEmoji := ":smile:"
+
+	// すべてのバリデーション違反を含む設定
 	config := &entity.SlackAPIConfig{
-		Enabled:   false,
-		APIToken:  entity.SecretString{},
-		Channel:   "",
-		IconURL:   &iconURL,
-		IconEmoji: &iconEmoji, // 両方設定
+		Enabled:         false,
+		APIToken:        entity.SecretString{}, // 空のAPIToken（通常はエラー）
+		Channel:         "",                    // 空のChannel（通常はエラー）
+		MessageTemplate: nil,                   // nilのMessageTemplate（通常はエラー）
+		IconURL:         &iconURL,
+		IconEmoji:       &iconEmoji, // icon_urlとicon_emojiの両方設定（通常はエラー）
 	}
 
 	result := config.Validate()
 
-	assert.True(t, result.IsValid, "enabled=falseの場合、icon_urlとicon_emojiを同時に指定してもバリデーションは成功するはずです")
+	assert.True(t, result.IsValid, "enabled=falseの場合、すべてのバリデーションがスキップされるはずです")
 	assert.Empty(t, result.Errors, "エラーメッセージがないはずです")
 }
 
-// TestMisskey_DisabledSkipsAPITokenValidation はMisskey無効化時にapi_tokenバリデーションがスキップされることを検証する
-// enabled=falseの場合、api_tokenを省略してもエラーにならないこと
-func TestMisskey_DisabledSkipsAPITokenValidation(t *testing.T) {
-	config := &entity.MisskeyConfig{
-		Enabled:  false,
-		APIToken: entity.SecretString{}, // 空のAPIToken
-		APIURL:   "",
-	}
-
-	result := config.Validate()
-
-	assert.True(t, result.IsValid, "enabled=falseの場合、api_tokenが空でもバリデーションは成功するはずです")
-	assert.Empty(t, result.Errors, "エラーメッセージがないはずです")
-}
-
-// TestMisskey_DisabledSkipsAPIURLValidation はMisskey無効化時にapi_urlバリデーションがスキップされることを検証する
-// enabled=falseの場合、不正な形式のapi_urlを指定してもエラーにならないこと
-func TestMisskey_DisabledSkipsAPIURLValidation(t *testing.T) {
-	config := &entity.MisskeyConfig{
-		Enabled:  false,
-		APIToken: entity.SecretString{},
-		APIURL:   "invalid-url-format", // 不正なURL形式
-	}
-
-	result := config.Validate()
-
-	assert.True(t, result.IsValid, "enabled=falseの場合、不正なURLでもバリデーションは成功するはずです")
-	assert.Empty(t, result.Errors, "エラーメッセージがないはずです")
-}
-
-// TestMisskey_DisabledSkipsMessageTemplateValidation はMisskey無効化時にmessage_templateバリデーションがスキップされることを検証する
-// enabled=falseの場合、message_templateを省略してもエラーにならないこと
-func TestMisskey_DisabledSkipsMessageTemplateValidation(t *testing.T) {
+// TestMisskey_DisabledSkipsAllValidation はMisskey無効化時に全バリデーションがスキップされることを検証する
+// enabled=falseの場合、すべての必須項目を省略しても、また不正なURLを指定してもエラーにならないこと
+func TestMisskey_DisabledSkipsAllValidation(t *testing.T) {
+	// すべてのバリデーション違反を含む設定
 	config := &entity.MisskeyConfig{
 		Enabled:         false,
-		APIToken:        entity.SecretString{},
-		APIURL:          "",
-		MessageTemplate: nil, // nilのMessageTemplate
+		APIToken:        entity.SecretString{}, // 空のAPIToken（通常はエラー）
+		APIURL:          "invalid-url-format",  // 不正なURL形式（通常はエラー）
+		MessageTemplate: nil,                   // nilのMessageTemplate（通常はエラー）
 	}
 
 	result := config.Validate()
 
-	assert.True(t, result.IsValid, "enabled=falseの場合、message_templateがnilでもバリデーションは成功するはずです")
+	assert.True(t, result.IsValid, "enabled=falseの場合、すべてのバリデーションがスキップされるはずです")
 	assert.Empty(t, result.Errors, "エラーメッセージがないはずです")
 }
 
 // TestBothOutputsDisabled_SkipsAllValidation は両出力無効化時に全出力バリデーションがスキップされることを検証する
 // SlackAPIとMisskeyの両方がenabled=falseの場合、すべての設定項目を省略してもエラーにならないこと
 func TestBothOutputsDisabled_SkipsAllValidation(t *testing.T) {
+	iconURL := "https://example.com/icon.png"
+	iconEmoji := ":smile:"
+
 	profile := &entity.Profile{
 		AI:     NewEntityAIConfig(),
 		Prompt: NewEntityPromptConfig(),
@@ -134,11 +65,13 @@ func TestBothOutputsDisabled_SkipsAllValidation(t *testing.T) {
 				APIToken:        entity.SecretString{},
 				Channel:         "",
 				MessageTemplate: nil,
+				IconURL:         &iconURL,
+				IconEmoji:       &iconEmoji,
 			},
 			Misskey: &entity.MisskeyConfig{
 				Enabled:         false,
 				APIToken:        entity.SecretString{},
-				APIURL:          "",
+				APIURL:          "invalid-url-format",
 				MessageTemplate: nil,
 			},
 		},
