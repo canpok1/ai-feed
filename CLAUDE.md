@@ -7,6 +7,8 @@
 詳細なビルド・開発コマンドについては [docs/00_development_setup.md](docs/00_development_setup.md) を参照してください。
 
 ### クイックリファレンス
+
+**開発コマンド**:
 ```bash
 make setup      # 開発環境セットアップ
 make test       # テスト実行
@@ -14,6 +16,18 @@ make lint       # 静的解析（コミット前に必ず実行）
 make fmt        # フォーマット
 make build      # ビルド
 make generate   # モック生成
+```
+
+**便利なスクリプト** (詳細は [docs/06_scripts.md](docs/06_scripts.md) を参照):
+```bash
+# バージョンタグの作成
+./scripts/create-version-tag.sh [--dry-run]
+
+# PR未解決コメントの確認
+./scripts/get-pr-review-comments.sh <PR番号>
+
+# レビュースレッドの解決
+./scripts/resolve-review-thread.sh <スレッドID>
 ```
 
 ## アーキテクチャ概要

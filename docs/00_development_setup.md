@@ -206,3 +206,4 @@ go mod graph
 - [テストガイド](./03_testing.md) - テストの書き方と実行方法
 - [コントリビューションガイド](./04_contributing.md) - 貢献方法とプルリクエストの作成
 - [API連携ガイド](./05_api_integration.md) - 外部API設定の詳細
+- [スクリプトガイド](./06_scripts.md) - 便利なスクリプトの使い方
