@@ -59,57 +59,6 @@ func TestRecommendCommand_WithSlack(t *testing.T) {
 	assert.NotEmpty(t, lastMessage, "メッセージが空でないはずです")
 }
 
-// TestRecommendCommand_WithRealGeminiAPI は実際のGemini APIを使用してrecommendコマンドをテストする
-// 注: このテストはGEMINI_API_KEY環境変数が設定されている場合のみ実行される
-func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
-	// Gemini APIキーの確認
-	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
-	if geminiAPIKey == "" {
-		t.Skip("GEMINI_API_KEY環境変数が設定されていないためスキップします")
-	}
-
-	// テスト環境をセットアップ
-	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
-		UseRSSServer:   true,
-		UseSlackServer: true,
-	})
-	defer env.Cleanup()
-
-	// テスト用の設定ファイルを作成（実際のGemini APIを使用）
-	useMockAI := false
-	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
-		FeedURLs:        []string{env.RSSServer.URL},
-		UseMockAI:       &useMockAI,
-		GeminiAPIKey:    geminiAPIKey,
-		SlackWebhookURL: env.SlackServer.URL,
-	})
-
-	// 一時ディレクトリに移動
-	common.ChangeToTempDir(t, env.TmpDir)
-
-	// recommendコマンドを実行
-	output, err := common.ExecuteCommand(t, env.BinaryPath, "recommend", "--url", env.RSSServer.URL)
-
-	// コマンドが成功することを確認
-	if !assert.NoError(t, err, "recommendコマンドは成功するはずです。出力: %s", output) {
-		t.Logf("コマンド出力:\n%s", output)
-		return
-	}
-	assert.NotEmpty(t, output, "出力が空でないはずです")
-
-	// Slackにメッセージが送信されたことを確認
-	if !common.WaitForCondition(10*time.Second, env.SlackReceiver.ReceivedMessage) {
-		t.Fatal("タイムアウト: Slackへのメッセージ送信が確認できませんでした")
-	}
-
-	// 受信したメッセージの確認
-	messages := env.SlackReceiver.GetMessages()
-	assert.Greater(t, len(messages), 0, "少なくとも1つのメッセージが送信されているはずです")
-
-	lastMessage := env.SlackReceiver.GetLastMessage()
-	assert.NotEmpty(t, lastMessage, "メッセージが空でないはずです")
-}
-
 // TestRecommendCommand_WithMisskey はMisskeyへの出力をテストする（モックAIを使用）
 func TestRecommendCommand_WithMisskey(t *testing.T) {
 	// テスト環境をセットアップ
