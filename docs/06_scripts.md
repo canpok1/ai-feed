@@ -73,16 +73,18 @@ $ ./scripts/create-version-tag.sh
 #### 出力例
 
 ```json
-{
-  "thread_id": "PRRT_kwDONTZR484BhKaH",
-  "author": "reviewer-username",
-  "comment": "この部分のエラーハンドリングを改善してください。"
-}
-{
-  "thread_id": "PRRT_kwDONTZR484BhKaI",
-  "author": "another-reviewer",
-  "comment": "テストケースを追加してください。"
-}
+[
+  {
+    "thread_id": "PRRT_kwDONTZR484BhKaH",
+    "author": "reviewer-username",
+    "comment": "この部分のエラーハンドリングを改善してください。"
+  },
+  {
+    "thread_id": "PRRT_kwDONTZR484BhKaI",
+    "author": "another-reviewer",
+    "comment": "テストケースを追加してください。"
+  }
+]
 ```
 
 #### 注意事項
