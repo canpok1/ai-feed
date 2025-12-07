@@ -254,6 +254,9 @@ Windows環境では色付けされません。
 | `cache.file_path` | 任意 | `~/.ai-feed/recommend_history.jsonl` | キャッシュファイルのパス |
 | `cache.max_entries` | 任意 | `1000` | 最大エントリ数 |
 | `cache.retention_days` | 任意 | `30` | 保持期間（日数） |
+| `ai.mock.enabled` | 任意 | `false` | AIモック機能の有効/無効（テスト用） |
+| `ai.mock.selector_mode` | 条件付き必須 | - | mock.enabled=trueの場合必須。`first`, `random`, `last`のいずれか |
+| `ai.mock.comment` | 任意 | - | モックが返す固定コメント |
 
 #### APIキー・トークン設定について
 

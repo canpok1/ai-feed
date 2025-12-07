@@ -762,6 +762,84 @@ recommendコマンドのE2Eテストでは、以下のモックサーバーを�
 
 設定後、プルリクエストやmainブランチへのプッシュ時に自動的にE2Eテストが実行されます。
 
+### AIモック設定によるE2Eテスト
+
+E2Eテストでは、設定ベースのAIモック機能を使用することで、外部API（Gemini API）への依存を排除し、安定したテストを実現できます。
+
+#### モック設定の概要
+
+AIモック機能は、Gemini APIの代わりにモック実装を使用して記事選択とコメント生成を行います。これにより以下のメリットがあります：
+
+- **API依存の排除**: CI/CD環境でAPIキーなしでテストを実行可能
+- **テストの高速化**: API呼び出しを待つ必要がなく、テストが高速に完了
+- **決定論的なテスト**: 固定の記事選択モードとコメントにより、予測可能な結果を得られる
+
+#### 設定パラメータ
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|------|------|------|
+| `enabled` | boolean | はい | モック機能の有効/無効 |
+| `selector_mode` | string | はい（enabled=true時） | 記事選択モード: `first`, `random`, `last` |
+| `comment` | string | いいえ | 固定で返すコメント |
+
+##### selector_modeの動作
+
+| モード | 説明 |
+|--------|------|
+| `first` | 取得した記事一覧から最初の記事を選択 |
+| `random` | 取得した記事一覧からランダムに記事を選択 |
+| `last` | 取得した記事一覧から最後の記事を選択 |
+
+#### 設定例
+
+```yaml
+default_profile:
+  ai:
+    mock:
+      enabled: true
+      selector_mode: "first"
+      comment: "これはテスト用のモックコメントです。"
+  # プロンプト設定（モック使用時も必要）
+  system_prompt: "あなたはテスト用のアシスタントです。"
+  comment_prompt_template: "記事の紹介文を作成してください。"
+  selector_prompt: "興味深い記事を選んでください。"
+```
+
+#### テストヘルパー関数
+
+E2Eテストでは、`test/e2e/common/helper.go`の`CreateRecommendTestConfig`関数を使用して、モック設定を含む設定ファイルを簡単に作成できます：
+
+```go
+// デフォルトでモックAIを使用（UseMockAIはデフォルトでtrue）
+configPath := common.CreateRecommendTestConfig(t, tmpDir, common.RecommendConfigParams{
+    FeedURLs:         []string{rssServer.URL},
+    MockSelectorMode: "first",  // デフォルト: "first"
+    MockComment:      "カスタムモックコメント",  // デフォルト: "これはテスト用のモックコメントです。"
+})
+
+// 実際のGemini APIを使用する場合
+useMockAI := false
+configPath := common.CreateRecommendTestConfig(t, tmpDir, common.RecommendConfigParams{
+    FeedURLs:     []string{rssServer.URL},
+    UseMockAI:    &useMockAI,
+    GeminiAPIKey: os.Getenv("GEMINI_API_KEY"),
+})
+```
+
+#### モック設定とGemini設定の排他関係
+
+`ai.mock.enabled: true`が設定されている場合、`ai.gemini`の設定は無視されます。バリデーション時もGemini設定の必須チェックはスキップされます。
+
+```yaml
+# モック有効時はGemini設定は不要
+default_profile:
+  ai:
+    mock:
+      enabled: true
+      selector_mode: "first"
+    # gemini設定は省略可能
+```
+
 ### E2Eテストのベストプラクティス
 
 1. **一時ディレクトリを使用する**
