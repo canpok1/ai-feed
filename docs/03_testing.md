@@ -294,18 +294,242 @@ var customErr *CustomError
 assert.ErrorAs(t, err, &customErr)
 ```
 
+## 統合テスト (Integration Test)
+
+### 統合テストの概要
+
+統合テストは、複数のコンポーネント間の連携を検証するテストです。ユニットテストでは個別のコンポーネントをモックを使用して分離してテストしますが、統合テストでは実際のコンポーネントを組み合わせて、正しく連携できることを確認します。
+
+### 目的と対象範囲
+
+統合テストの主な目的は以下のとおりです：
+
+1. **複数コンポーネント間の連携検証**
+   - リポジトリ層とドメイン層の連携
+   - 外部APIクライアントとドメインロジックの連携
+   - 設定ファイルの読み込みから処理までの一連のフロー
+
+2. **境界条件の検証**
+   - ユニットテストでモック化していた外部依存を実際に使用
+   - 実際のファイル操作やネットワーク呼び出しを伴うシナリオ
+
+3. **設定ファイル処理の検証**
+   - YAML設定ファイルの読み込み・パース・バリデーション
+   - プロファイル設定の継承・マージ処理
+
+### テストの種類と違い
+
+ai-feedプロジェクトでは3種類のテストを使い分けています：
+
+| 項目 | ユニットテスト | 統合テスト | E2Eテスト |
+|------|---------------|-----------|----------|
+| **対象範囲** | 単一の関数・メソッド | 複数コンポーネントの連携 | アプリケーション全体 |
+| **モック使用** | 依存を全てモック化 | 外部サービス以外は実装を使用 | 外部APIのみモック化 |
+| **実行速度** | 高速 | 比較的低速 | 低速 |
+| **配置場所** | `<package>/*_test.go` | `test/integration/**/*_test.go` | `test/e2e/**/*_test.go` |
+| **ビルドタグ** | なし | `integration` | `e2e` |
+| **実行コマンド** | `make test` | `make test-integration` | `make test-e2e` |
+| **目的** | ロジックの正確性 | コンポーネント間の連携 | 実際のユーザー操作の再現 |
+
+### ファイル配置ルール
+
+統合テストは `test/integration/` ディレクトリに配置します。
+
+```
+test/integration/
+├── common/                        # 共通ユーティリティ
+│   └── helper.go                  # テストヘルパー関数
+├── config/                        # 設定ファイル処理のテスト
+│   ├── config_test.go             # 設定読み込みの統合テスト
+│   ├── main_test.go               # パッケージセットアップ
+│   └── testdata/                  # テスト用設定ファイル
+│       ├── valid_config.yaml
+│       └── invalid_config.yaml
+└── infra/                         # インフラ層のテスト
+    ├── repository_test.go         # リポジトリの統合テスト
+    ├── main_test.go               # パッケージセットアップ
+    └── testdata/                  # テスト用データ
+        └── ...
+```
+
+#### ファイル命名規則
+
+- テストファイル: `*_test.go`
+- テスト関数: `Test<コンポーネント>_<シナリオ>`（例: `TestConfigLoader_ValidYAML`）
+- テストデータ: `testdata/` ディレクトリに配置
+
+### 統合テストの実行方法
+
+```bash
+# 統合テストを実行
+make test-integration
+
+# または直接実行
+go test -tags=integration -v ./test/integration/...
+
+# 特定のテストのみ実行
+go test -tags=integration -v -run TestConfigLoader ./test/integration/config/
+```
+
+通常の `go test ./...` では実行されず、`-tags=integration` を指定した時のみ実行されます。
+
+### ビルドタグの使用
+
+統合テストファイルには `//go:build integration` タグを追加します：
+
+```go
+//go:build integration
+
+package config
+
+import (
+    "testing"
+
+    "github.com/stretchr/testify/assert"
+)
+
+func TestConfigLoader_ValidYAML(t *testing.T) {
+    // 統合テストの実装
+}
+```
+
+### 統合テストの書き方
+
+#### 基本的な構造
+
+```go
+//go:build integration
+
+package config
+
+import (
+    "os"
+    "path/filepath"
+    "testing"
+
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
+    "github.com/canpok1/ai-feed/internal/infra"
+)
+
+func TestConfigLoader_LoadValidConfig(t *testing.T) {
+    // テストデータのパスを取得
+    testdataDir := filepath.Join("testdata")
+    configPath := filepath.Join(testdataDir, "valid_config.yaml")
+
+    // 実際の設定ファイルを読み込む
+    repo := infra.NewYamlConfigRepository(configPath)
+    config, err := repo.Load()
+
+    // 結果を検証
+    require.NoError(t, err)
+    assert.NotNil(t, config)
+    assert.Equal(t, "expected-value", config.DefaultProfile.AI.Gemini.Type)
+}
+
+func TestConfigLoader_InvalidConfig(t *testing.T) {
+    testdataDir := filepath.Join("testdata")
+    configPath := filepath.Join(testdataDir, "invalid_config.yaml")
+
+    repo := infra.NewYamlConfigRepository(configPath)
+    _, err := repo.Load()
+
+    assert.Error(t, err)
+    assert.Contains(t, err.Error(), "validation failed")
+}
+```
+
+#### テストデータの作成
+
+テスト用データは `testdata/` ディレクトリに配置し、テストケースごとに適切なファイルを用意します：
+
+```go
+// テストデータの作成ヘルパー
+func createTestConfig(t *testing.T, content string) string {
+    t.Helper()
+
+    tmpDir := t.TempDir()
+    configPath := filepath.Join(tmpDir, "config.yaml")
+
+    err := os.WriteFile(configPath, []byte(content), 0644)
+    require.NoError(t, err)
+
+    return configPath
+}
+
+func TestConfigLoader_DynamicConfig(t *testing.T) {
+    configContent := `
+default_profile:
+  ai:
+    gemini:
+      type: gemini-2.0-flash
+`
+    configPath := createTestConfig(t, configContent)
+
+    repo := infra.NewYamlConfigRepository(configPath)
+    config, err := repo.Load()
+
+    require.NoError(t, err)
+    assert.Equal(t, "gemini-2.0-flash", config.DefaultProfile.AI.Gemini.Type)
+}
+```
+
+### 統合テストのベストプラクティス
+
+1. **一時ディレクトリを活用する**
+   ```go
+   tmpDir := t.TempDir()  // テスト終了時に自動削除される
+   ```
+
+2. **テストデータは testdata ディレクトリに配置する**
+   - バージョン管理に含め、テストの再現性を確保
+   - 動的に生成する場合は `t.TempDir()` を使用
+
+3. **外部サービスはモックサーバーを使用する**
+   - ネットワーク依存は `httptest.NewServer` でモック化
+   - データベースはインメモリDBやテストコンテナを検討
+
+4. **テスト間の独立性を保つ**
+   - 各テストは他のテストに依存しない
+   - 共有リソースを使用する場合は適切にクリーンアップ
+
+5. **テーブル駆動テストを使用する**
+   ```go
+   tests := []struct {
+       name       string
+       configFile string
+       wantErr    bool
+   }{
+       {name: "正常系", configFile: "valid_config.yaml", wantErr: false},
+       {name: "異常系", configFile: "invalid_config.yaml", wantErr: true},
+   }
+   ```
+
+### トラブルシューティング
+
+#### 統合テストが通常のテストで実行される
+
+- ファイル先頭に `//go:build integration` タグがあることを確認
+- `go test` ではなく `go test -tags=integration` で実行
+
+#### テストデータが見つからない
+
+- `testdata/` ディレクトリへの相対パスを確認
+- `go test` はパッケージディレクトリで実行されるため、相対パスはパッケージからの相対
+
+#### テスト間で状態が共有される
+
+- グローバル変数の使用を避ける
+- 各テストで新しいインスタンスを作成する
+- `t.Cleanup()` でリソースを確実に解放する
+
 ## E2Eテスト (End-to-End Testing)
 
 ### E2Eテストの概要
 
 E2Eテストは、実際のバイナリを実行してエンドユーザーの視点で動作を検証するテストです。
 
-#### テストの種類の違い
-
-| テストの種類 | 対象範囲 | 配置場所 | ビルドタグ | 目的 |
-|------------|---------|---------|----------|------|
-| ユニットテスト | 関数・メソッド単位 | `<package>/*_test.go` | なし | 個別のロジックの正確性 |
-| E2Eテスト | アプリケーション全体 | `test/e2e/**/*_test.go` | `e2e` | 実際のユーザー操作の再現 |
+各テストの種類の違いについては、[テストの種類と違い](#テストの種類と違い)を参照してください。
 
 ### E2Eテストの実行方法
 
