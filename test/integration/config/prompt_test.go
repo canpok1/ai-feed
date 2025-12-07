@@ -11,88 +11,64 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestPromptConfig_SystemPromptRequired はsystem_promptが必須であることを検証する
-// prompt.system_prompt が省略された場合、バリデーションエラーになること
-func TestPromptConfig_SystemPromptRequired(t *testing.T) {
-	// SystemPromptが空のプロンプト設定を作成
-	profile := &infra.Profile{
-		AI: NewAIConfig(),
-		Prompt: &infra.PromptConfig{
-			SystemPrompt:          "", // 空文字列
-			CommentPromptTemplate: "以下の記事の紹介文を作成してください。\n記事タイトル: {{TITLE}}",
-			SelectorPrompt:        "以下の記事一覧から、最も興味深い記事を1つ選択してください。",
-			FixedMessage:          "",
-		},
-		Output: NewOutputConfig(),
+// TestPromptConfig_RequiredFields はプロンプト設定の必須フィールドに対するバリデーションを検証する
+func TestPromptConfig_RequiredFields(t *testing.T) {
+	basePrompt := &infra.PromptConfig{
+		SystemPrompt:          "あなたはテスト用のアシスタントです。",
+		CommentPromptTemplate: "以下の記事の紹介文を作成してください。\n記事タイトル: {{TITLE}}",
+		SelectorPrompt:        "以下の記事一覧から、最も興味深い記事を1つ選択してください。",
+		FixedMessage:          "",
 	}
 
-	// infra.Profile から entity.Profile に変換
-	entityProfile, err := profile.ToEntity()
-	require.NoError(t, err, "ToEntity()はエラーを返さないはずです")
-
-	// entity.Profile のバリデーションを実行
-	result := entityProfile.Validate()
-
-	// バリデーションが失敗し、SystemPromptに関するエラーが含まれることを確認
-	assert.False(t, result.IsValid, "SystemPromptが空の場合、バリデーションは失敗するはずです")
-	assert.Contains(t, result.Errors, "システムプロンプトが設定されていません",
-		"SystemPromptに関するエラーメッセージが含まれているはずです")
-}
-
-// TestPromptConfig_CommentPromptTemplateRequired はcomment_prompt_templateが必須であることを検証する
-// prompt.comment_prompt_template が省略された場合、バリデーションエラーになること
-func TestPromptConfig_CommentPromptTemplateRequired(t *testing.T) {
-	// CommentPromptTemplateが空のプロンプト設定を作成
-	profile := &infra.Profile{
-		AI: NewAIConfig(),
-		Prompt: &infra.PromptConfig{
-			SystemPrompt:          "あなたはテスト用のアシスタントです。",
-			CommentPromptTemplate: "", // 空文字列
-			SelectorPrompt:        "以下の記事一覧から、最も興味深い記事を1つ選択してください。",
-			FixedMessage:          "",
+	tests := []struct {
+		name          string
+		modifier      func(p *infra.PromptConfig)
+		expectedError string
+	}{
+		{
+			name: "system_prompt is required",
+			modifier: func(p *infra.PromptConfig) {
+				p.SystemPrompt = ""
+			},
+			expectedError: "システムプロンプトが設定されていません",
 		},
-		Output: NewOutputConfig(),
+		{
+			name: "comment_prompt_template is required",
+			modifier: func(p *infra.PromptConfig) {
+				p.CommentPromptTemplate = ""
+			},
+			expectedError: "コメントプロンプトテンプレートが設定されていません",
+		},
+		{
+			name: "selector_prompt is required",
+			modifier: func(p *infra.PromptConfig) {
+				p.SelectorPrompt = ""
+			},
+			expectedError: "記事選択プロンプトが設定されていません",
+		},
 	}
 
-	// infra.Profile から entity.Profile に変換
-	entityProfile, err := profile.ToEntity()
-	require.NoError(t, err, "ToEntity()はエラーを返さないはずです")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// ベースとなる設定をコピーして、テストケースごとに変更を加える
+			prompt := *basePrompt
+			tt.modifier(&prompt)
 
-	// entity.Profile のバリデーションを実行
-	result := entityProfile.Validate()
+			profile := &infra.Profile{
+				AI:     NewAIConfig(),
+				Prompt: &prompt,
+				Output: NewOutputConfig(),
+			}
 
-	// バリデーションが失敗し、CommentPromptTemplateに関するエラーが含まれることを確認
-	assert.False(t, result.IsValid, "CommentPromptTemplateが空の場合、バリデーションは失敗するはずです")
-	assert.Contains(t, result.Errors, "コメントプロンプトテンプレートが設定されていません",
-		"CommentPromptTemplateに関するエラーメッセージが含まれているはずです")
-}
+			entityProfile, err := profile.ToEntity()
+			require.NoError(t, err, "ToEntity()はエラーを返さないはずです")
 
-// TestPromptConfig_SelectorPromptRequired はselector_promptが必須であることを検証する
-// prompt.selector_prompt が省略された場合、バリデーションエラーになること
-func TestPromptConfig_SelectorPromptRequired(t *testing.T) {
-	// SelectorPromptが空のプロンプト設定を作成
-	profile := &infra.Profile{
-		AI: NewAIConfig(),
-		Prompt: &infra.PromptConfig{
-			SystemPrompt:          "あなたはテスト用のアシスタントです。",
-			CommentPromptTemplate: "以下の記事の紹介文を作成してください。\n記事タイトル: {{TITLE}}",
-			SelectorPrompt:        "", // 空文字列
-			FixedMessage:          "",
-		},
-		Output: NewOutputConfig(),
+			result := entityProfile.Validate()
+
+			assert.False(t, result.IsValid, "必須フィールドが空の場合、バリデーションは失敗するはずです")
+			assert.Contains(t, result.Errors, tt.expectedError, "必須フィールドに関するエラーメッセージが含まれているはずです")
+		})
 	}
-
-	// infra.Profile から entity.Profile に変換
-	entityProfile, err := profile.ToEntity()
-	require.NoError(t, err, "ToEntity()はエラーを返さないはずです")
-
-	// entity.Profile のバリデーションを実行
-	result := entityProfile.Validate()
-
-	// バリデーションが失敗し、SelectorPromptに関するエラーが含まれることを確認
-	assert.False(t, result.IsValid, "SelectorPromptが空の場合、バリデーションは失敗するはずです")
-	assert.Contains(t, result.Errors, "記事選択プロンプトが設定されていません",
-		"SelectorPromptに関するエラーメッセージが含まれているはずです")
 }
 
 // TestPromptConfig_FixedMessageOptional はfixed_messageがオプションであることを検証する
