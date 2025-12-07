@@ -184,9 +184,10 @@ func TestCacheConfig_TildeExpansion(t *testing.T) {
 // file_path に相対パスが指定された場合、絶対パスに変換されること
 func TestCacheConfig_RelativePathConversion(t *testing.T) {
 	enabled := true
+	relativePath := filepath.Join("relative", "path", "cache.jsonl")
 	cacheConfig := &infra.CacheConfig{
 		Enabled:       &enabled,
-		FilePath:      "relative/path/cache.jsonl", // 相対パス
+		FilePath:      relativePath, // 相対パス
 		MaxEntries:    100,
 		RetentionDays: 7,
 	}
@@ -199,16 +200,20 @@ func TestCacheConfig_RelativePathConversion(t *testing.T) {
 	assert.True(t, filepath.IsAbs(entityCache.FilePath),
 		"相対パスは絶対パスに変換されるはずです")
 
-	// パスの末尾が元の相対パスを含むことを確認
-	assert.Contains(t, entityCache.FilePath, "relative/path/cache.jsonl",
-		"変換後のパスには元のパス構造が含まれるはずです")
+	// 期待される絶対パスを構築して比較
+	cwd, err := os.Getwd()
+	require.NoError(t, err, "カレントディレクトリの取得に成功するはずです")
+	expectedPath := filepath.Join(cwd, relativePath)
+	assert.Equal(t, expectedPath, entityCache.FilePath,
+		"相対パスはカレントディレクトリを基準に絶対パスに変換されるはずです")
 }
 
 // TestCacheConfig_AbsolutePathPreserved は絶対パスがそのまま保持されることを検証する
 // file_path に絶対パスが指定された場合、そのまま使用されること
 func TestCacheConfig_AbsolutePathPreserved(t *testing.T) {
 	enabled := true
-	absolutePath := "/absolute/path/to/cache.jsonl"
+	// t.TempDir()を使用してプラットフォーム非依存の絶対パスを生成
+	absolutePath := filepath.Join(t.TempDir(), "cache.jsonl")
 	cacheConfig := &infra.CacheConfig{
 		Enabled:       &enabled,
 		FilePath:      absolutePath,
@@ -229,9 +234,11 @@ func TestCacheConfig_AbsolutePathPreserved(t *testing.T) {
 // すべてのフィールドを明示的に設定した場合、デフォルト値ではなく指定値が使用されること
 func TestCacheConfig_ExplicitOverridesDefaults(t *testing.T) {
 	enabled := true
+	// t.TempDir()を使用してプラットフォーム非依存の絶対パスを生成
+	customPath := filepath.Join(t.TempDir(), "custom", "cache.jsonl")
 	cacheConfig := &infra.CacheConfig{
 		Enabled:       &enabled,
-		FilePath:      "/custom/path/cache.jsonl",
+		FilePath:      customPath,
 		MaxEntries:    500, // デフォルト1000ではない
 		RetentionDays: 14,  // デフォルト30ではない
 	}
@@ -243,7 +250,7 @@ func TestCacheConfig_ExplicitOverridesDefaults(t *testing.T) {
 	// 明示的に設定した値が使用されることを確認
 	assert.True(t, entityCache.Enabled,
 		"明示的にtrueを設定した場合、enabledはtrueになるはずです")
-	assert.Equal(t, "/custom/path/cache.jsonl", entityCache.FilePath,
+	assert.Equal(t, customPath, entityCache.FilePath,
 		"明示的に設定したfile_pathが使用されるはずです")
 	assert.Equal(t, 500, entityCache.MaxEntries,
 		"明示的に設定したmax_entriesが使用されるはずです")
