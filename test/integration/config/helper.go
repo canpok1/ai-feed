@@ -56,7 +56,7 @@ func NewPromptConfig() *infra.PromptConfig {
 // NewSlackAPIConfig はテスト用の infra.SlackAPIConfig を生成する
 func NewSlackAPIConfig() *infra.SlackAPIConfig {
 	enabled := true
-	messageTemplate := "{{if .Comment}}{{.Comment}}\n{{end}}<{{.Article.Link}}|{{.Article.Title}}>"
+	messageTemplate := "{{COMMENT}}\n<{{URL}}|{{TITLE}}>"
 	apiURL := "http://localhost:8080/api/"
 	return &infra.SlackAPIConfig{
 		Enabled:         &enabled,
@@ -163,8 +163,7 @@ func WithMisskeyOnly() *infra.OutputConfig {
 // WithDisabledSlackAPI は無効化された SlackAPI 設定を含む infra.OutputConfig を生成する
 func WithDisabledSlackAPI() *infra.OutputConfig {
 	config := NewSlackAPIConfig()
-	enabled := false
-	config.Enabled = &enabled
+	*config.Enabled = false
 	return &infra.OutputConfig{
 		SlackAPI: config,
 	}
@@ -173,8 +172,7 @@ func WithDisabledSlackAPI() *infra.OutputConfig {
 // WithDisabledMisskey は無効化された Misskey 設定を含む infra.OutputConfig を生成する
 func WithDisabledMisskey() *infra.OutputConfig {
 	config := NewMisskeyConfig()
-	enabled := false
-	config.Enabled = &enabled
+	*config.Enabled = false
 	return &infra.OutputConfig{
 		Misskey: config,
 	}
