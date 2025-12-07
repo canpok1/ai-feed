@@ -107,6 +107,23 @@ git fetch upstream
 git rebase upstream/main
 ```
 
+#### プルリクエスト作成時のルール
+
+1. **関連Issueの記載**
+   - 対応元のGitHub issueがある場合、説明文に`fixed #<issue番号>`を記載すること
+   - 例: `fixed #123`
+   - これによりPRマージ時に自動的にissueがクローズされます
+
+2. **タイトルの規約**
+   - プルリクエストのタイトルには、issue番号を含めないこと
+   - Good: `ユーザー認証機能を追加`
+   - Bad: `#123 ユーザー認証機能を追加`
+   - 理由: GitHubが自動的にPRとissueをリンクするため冗長
+
+3. **テンプレートの活用**
+   - `.github/pull_request_template.md`に従って記載
+   - 変更内容、テスト方法、レビュー観点を明確に記述
+
 
 ### 7. コードレビュー
 
