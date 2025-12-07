@@ -22,6 +22,11 @@ func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIConfig, p
 		return nil, fmt.Errorf("prompt is nil")
 	}
 
+	// Mock設定が有効な場合はモック実装を返す
+	if model.Mock != nil && model.Mock.Enabled {
+		return newMockCommentGenerator(model.Mock.Comment), nil
+	}
+
 	// Gemini設定のバリデーション
 	if model.Gemini == nil {
 		return nil, fmt.Errorf("gemini config is nil")

@@ -55,6 +55,29 @@ func (p *Profile) ToEntity() (*entity.Profile, error) {
 
 type AIConfig struct {
 	Gemini *GeminiConfig `yaml:"gemini,omitempty"`
+	Mock   *MockConfig   `yaml:"mock,omitempty"`
+}
+
+// MockConfig はAIのモック設定
+type MockConfig struct {
+	Enabled      *bool  `yaml:"enabled,omitempty"`
+	SelectorMode string `yaml:"selector_mode,omitempty"`
+	Comment      string `yaml:"comment,omitempty"`
+}
+
+func (c *MockConfig) ToEntity() *entity.MockConfig {
+	if c == nil {
+		return nil
+	}
+	enabled := false
+	if c.Enabled != nil {
+		enabled = *c.Enabled
+	}
+	return &entity.MockConfig{
+		Enabled:      enabled,
+		SelectorMode: c.SelectorMode,
+		Comment:      c.Comment,
+	}
 }
 
 func (c *AIConfig) ToEntity() (*entity.AIConfig, error) {
@@ -68,6 +91,7 @@ func (c *AIConfig) ToEntity() (*entity.AIConfig, error) {
 	}
 	return &entity.AIConfig{
 		Gemini: geminiEntity,
+		Mock:   c.Mock.ToEntity(),
 	}, nil
 }
 

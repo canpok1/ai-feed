@@ -27,6 +27,11 @@ func (f *ArticleSelectorFactory) MakeArticleSelector(
 		return nil, fmt.Errorf("prompt config is nil")
 	}
 
+	// Mock設定が有効な場合はモック実装を返す
+	if aiConfig.Mock != nil && aiConfig.Mock.Enabled {
+		return newMockArticleSelector(aiConfig.Mock.SelectorMode)
+	}
+
 	// Gemini設定がある場合はGemini実装を返す
 	if aiConfig.Gemini != nil {
 		return newGeminiArticleSelector(aiConfig, promptConfig)

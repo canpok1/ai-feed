@@ -16,11 +16,62 @@ var templateCache sync.Map
 
 type AIConfig struct {
 	Gemini *GeminiConfig
+	Mock   *MockConfig
+}
+
+// MockConfig はAIのモック設定を保持する
+type MockConfig struct {
+	Enabled      bool
+	SelectorMode string // "first", "random", "last"
+	Comment      string // 固定で返すコメント
+}
+
+// Validate はMockConfigの内容をバリデーションする
+func (m *MockConfig) Validate() *ValidationResult {
+	builder := NewValidationBuilder()
+
+	// Enabledがfalseの場合はバリデーションをスキップ
+	if !m.Enabled {
+		return builder.Build()
+	}
+
+	// SelectorMode: "first", "random", "last"のいずれか
+	validModes := map[string]bool{"first": true, "random": true, "last": true}
+	if !validModes[m.SelectorMode] {
+		builder.AddError("Mockの記事選択モードが不正です。first, random, lastのいずれかを指定してください")
+	}
+
+	return builder.Build()
+}
+
+// Merge は他のMockConfigの非空フィールドで現在のMockConfigをマージする
+func (m *MockConfig) Merge(other *MockConfig) {
+	if other == nil {
+		return
+	}
+	m.Enabled = other.Enabled
+	mergeString(&m.SelectorMode, other.SelectorMode)
+	mergeString(&m.Comment, other.Comment)
+}
+
+// LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
+func (m MockConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.Bool("Enabled", m.Enabled),
+		slog.String("SelectorMode", m.SelectorMode),
+		slog.String("Comment", m.Comment),
+	)
 }
 
 // Validate はAIConfigの内容をバリデーションする
 func (a *AIConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
+
+	// Mock設定が有効な場合は、Gemini設定は不要
+	if a.Mock != nil && a.Mock.Enabled {
+		builder.MergeResult(a.Mock.Validate())
+		return builder.Build()
+	}
 
 	// Gemini: 必須項目（nilでない）
 	if a.Gemini == nil {
@@ -39,16 +90,19 @@ func (a *AIConfig) Merge(other *AIConfig) {
 		return
 	}
 	mergePtr(&a.Gemini, other.Gemini)
+	mergePtr(&a.Mock, other.Mock)
 }
 
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
 func (a AIConfig) LogValue() slog.Value {
+	attrs := []slog.Attr{}
 	if a.Gemini != nil {
-		return slog.GroupValue(
-			slog.Any("Gemini", *a.Gemini), // GeminiConfig.LogValue() が呼ばれる
-		)
+		attrs = append(attrs, slog.Any("Gemini", *a.Gemini))
 	}
-	return slog.GroupValue()
+	if a.Mock != nil {
+		attrs = append(attrs, slog.Any("Mock", *a.Mock))
+	}
+	return slog.GroupValue(attrs...)
 }
 
 type GeminiConfig struct {
