@@ -15,8 +15,7 @@ type mockArticleSelector struct {
 
 // newMockArticleSelector は新しいモック記事選択器を作成する
 func newMockArticleSelector(mode string) (*mockArticleSelector, error) {
-	validModes := map[string]bool{"first": true, "random": true, "last": true}
-	if !validModes[mode] {
+	if !entity.IsValidMockSelectorMode(mode) {
 		return nil, fmt.Errorf("invalid selector mode: %s (must be first, random, or last)", mode)
 	}
 	return &mockArticleSelector{mode: mode}, nil

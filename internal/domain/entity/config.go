@@ -14,6 +14,18 @@ var templateCache sync.Map
 
 // デフォルト値の定数
 
+// ValidMockSelectorModes はモック記事選択器の有効なモード一覧
+var ValidMockSelectorModes = map[string]bool{
+	"first":  true,
+	"random": true,
+	"last":   true,
+}
+
+// IsValidMockSelectorMode はモック記事選択モードが有効かどうかを検証する
+func IsValidMockSelectorMode(mode string) bool {
+	return ValidMockSelectorModes[mode]
+}
+
 type AIConfig struct {
 	Gemini *GeminiConfig
 	Mock   *MockConfig
@@ -36,8 +48,7 @@ func (m *MockConfig) Validate() *ValidationResult {
 	}
 
 	// SelectorMode: "first", "random", "last"のいずれか
-	validModes := map[string]bool{"first": true, "random": true, "last": true}
-	if !validModes[m.SelectorMode] {
+	if !IsValidMockSelectorMode(m.SelectorMode) {
 		builder.AddError("Mockの記事選択モードが不正です。first, random, lastのいずれかを指定してください")
 	}
 

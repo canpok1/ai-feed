@@ -30,6 +30,13 @@ var (
 	buildErr error
 )
 
+const (
+	// defaultMockSelectorMode はモックAIのデフォルト記事選択モード
+	defaultMockSelectorMode = "first"
+	// defaultMockComment はモックAIのデフォルトコメント
+	defaultMockComment = "これはテスト用のモックコメントです。"
+)
+
 // SetupPackage は各テストパッケージのTestMainから呼び出され、バイナリをビルドする
 // この関数は同期されており、複数のパッケージから呼ばれても一度だけビルドを行う
 func SetupPackage() {
@@ -219,11 +226,11 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 		mockEnabled := true
 		selectorMode := params.MockSelectorMode
 		if selectorMode == "" {
-			selectorMode = "first"
+			selectorMode = defaultMockSelectorMode
 		}
 		mockComment := params.MockComment
 		if mockComment == "" {
-			mockComment = "これはテスト用のモックコメントです。"
+			mockComment = defaultMockComment
 		}
 		aiConfig = &infra.AIConfig{
 			Mock: &infra.MockConfig{
