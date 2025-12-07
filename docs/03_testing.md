@@ -703,6 +703,64 @@ func TestMain(m *testing.M) {
 - **リソースの共有**: ビルドされたバイナリパスを全テストで共有
 - **クリーンアップ**: テスト終了時に一時ファイルやリソースを削除
 
+### AIモック機能
+
+E2Eテストでは、外部AI API（Gemini）への依存を排除するためのモック機能を提供しています。これにより、APIキーなしでテストを実行できます。
+
+#### モック機能の利点
+
+- **CI/CD環境での実行**: 外部APIキーなしでテストを実行可能
+- **テスト速度の向上**: 実際のAPI呼び出しがないため高速
+- **安定したテスト結果**: 外部サービスの状態に依存しない
+- **コスト削減**: API利用料金が発生しない
+
+#### 設定オプション
+
+| 設定項目 | 説明 | デフォルト値 |
+|----------|------|--------------|
+| `ai.mock.enabled` | モック機能の有効/無効 | `false` |
+| `ai.mock.selector_mode` | 記事選択モード（`first`, `random`, `last`） | `first` |
+| `ai.mock.comment` | モックが返す固定コメント | 空文字列 |
+
+#### selector_modeの動作
+
+- `first`: 記事リストの最初の記事を選択
+- `random`: 記事リストからランダムに選択
+- `last`: 記事リストの最後の記事を選択
+
+#### 設定例
+
+```yaml
+default_profile:
+  ai:
+    mock:
+      enabled: true
+      selector_mode: first
+      comment: "これはテスト用のモックコメントです。"
+  # Gemini設定は不要（モック有効時は無視される）
+```
+
+#### E2Eテストでの使用
+
+E2Eテストのヘルパー関数`CreateRecommendTestConfig`ではデフォルトでモックAIが有効化されます：
+
+```go
+// モックAIを使用（デフォルト）
+config := common.CreateRecommendTestConfig(t, tmpDir, common.RecommendConfigParams{
+    FeedURLs:        []string{feedURL},
+    SlackWebhookURL: slackURL,
+})
+
+// 実際のGemini APIを使用する場合
+useMockAI := false
+config := common.CreateRecommendTestConfig(t, tmpDir, common.RecommendConfigParams{
+    UseMockAI:       &useMockAI,
+    GeminiAPIKey:    os.Getenv("GEMINI_API_KEY"),
+    FeedURLs:        []string{feedURL},
+    SlackWebhookURL: slackURL,
+})
+```
+
 ### recommendコマンドのE2Eテスト
 
 recommendコマンドは実際のGemini APIを使用するため、特別な設定が必要です。
