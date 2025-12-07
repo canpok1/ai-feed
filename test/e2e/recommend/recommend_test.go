@@ -18,14 +18,8 @@ import (
 // testdataDir はrecommendテスト用のテストデータディレクトリパス
 const testdataDir = "test/e2e/recommend/testdata"
 
-// TestRecommendCommand_WithRealGeminiAPI は実際のGemini APIを使用してrecommendコマンドをテストする
-func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
-	// Gemini APIキーの確認
-	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
-	if geminiAPIKey == "" {
-		t.Skip("GEMINI_API_KEY環境変数が設定されていないためスキップします")
-	}
-
+// TestRecommendCommand_WithSlack はSlackへの出力をテストする（モックAIを使用）
+func TestRecommendCommand_WithSlack(t *testing.T) {
 	// テスト環境をセットアップ
 	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:   true,
@@ -33,10 +27,9 @@ func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
 	})
 	defer env.Cleanup()
 
-	// テスト用の設定ファイルを作成
+	// テスト用の設定ファイルを作成（デフォルトでモックAIを使用）
 	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
-		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 	})
 
@@ -66,14 +59,8 @@ func TestRecommendCommand_WithRealGeminiAPI(t *testing.T) {
 	assert.NotEmpty(t, lastMessage, "メッセージが空でないはずです")
 }
 
-// TestRecommendCommand_WithMisskey はMisskeyへの出力をテストする
+// TestRecommendCommand_WithMisskey はMisskeyへの出力をテストする（モックAIを使用）
 func TestRecommendCommand_WithMisskey(t *testing.T) {
-	// Gemini APIキーの確認
-	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
-	if geminiAPIKey == "" {
-		t.Skip("GEMINI_API_KEY環境変数が設定されていないためスキップします")
-	}
-
 	// テスト環境をセットアップ
 	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:     true,
@@ -81,10 +68,9 @@ func TestRecommendCommand_WithMisskey(t *testing.T) {
 	})
 	defer env.Cleanup()
 
-	// テスト用の設定ファイルを作成
+	// テスト用の設定ファイルを作成（デフォルトでモックAIを使用）
 	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:     []string{env.RSSServer.URL},
-		GeminiAPIKey: geminiAPIKey,
 		MisskeyURL:   env.MisskeyServer.URL,
 		MisskeyToken: "test-token",
 	})
@@ -115,14 +101,8 @@ func TestRecommendCommand_WithMisskey(t *testing.T) {
 	assert.NotEmpty(t, lastNote, "ノートが空でないはずです")
 }
 
-// TestRecommendCommand_MultipleOutputs は複数出力先へのテストを実施する
+// TestRecommendCommand_MultipleOutputs は複数出力先へのテストを実施する（モックAIを使用）
 func TestRecommendCommand_MultipleOutputs(t *testing.T) {
-	// Gemini APIキーの確認
-	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
-	if geminiAPIKey == "" {
-		t.Skip("GEMINI_API_KEY環境変数が設定されていないためスキップします")
-	}
-
 	// テスト環境をセットアップ
 	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:     true,
@@ -131,10 +111,9 @@ func TestRecommendCommand_MultipleOutputs(t *testing.T) {
 	})
 	defer env.Cleanup()
 
-	// テスト用の設定ファイルを作成（SlackとMisskey両方）
+	// テスト用の設定ファイルを作成（SlackとMisskey両方、デフォルトでモックAIを使用）
 	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
-		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 		MisskeyURL:      env.MisskeyServer.URL,
 		MisskeyToken:    "test-token",
@@ -172,14 +151,8 @@ func TestRecommendCommand_MultipleOutputs(t *testing.T) {
 	assert.True(t, env.MisskeyReceiver.ReceivedNote(), "Misskeyにノートが送信されているはずです")
 }
 
-// TestRecommendCommand_EmptyFeed は空フィードの場合の動作をテストする
+// TestRecommendCommand_EmptyFeed は空フィードの場合の動作をテストする（モックAIを使用）
 func TestRecommendCommand_EmptyFeed(t *testing.T) {
-	// Gemini APIキーの確認
-	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
-	if geminiAPIKey == "" {
-		t.Skip("GEMINI_API_KEY環境変数が設定されていないためスキップします")
-	}
-
 	// テスト環境をセットアップ（空フィードハンドラを使用）
 	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:   true,
@@ -188,10 +161,9 @@ func TestRecommendCommand_EmptyFeed(t *testing.T) {
 	})
 	defer env.Cleanup()
 
-	// テスト用の設定ファイルを作成
+	// テスト用の設定ファイルを作成（デフォルトでモックAIを使用）
 	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
-		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 	})
 
@@ -209,14 +181,8 @@ func TestRecommendCommand_EmptyFeed(t *testing.T) {
 	assert.False(t, env.SlackReceiver.ReceivedMessage(), "空フィードの場合、Slackにメッセージは送信されないはずです")
 }
 
-// TestRecommendCommand_InvalidFeed は不正なフィードの場合の動作をテストする
+// TestRecommendCommand_InvalidFeed は不正なフィードの場合の動作をテストする（モックAIを使用）
 func TestRecommendCommand_InvalidFeed(t *testing.T) {
-	// Gemini APIキーの確認
-	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
-	if geminiAPIKey == "" {
-		t.Skip("GEMINI_API_KEY環境変数が設定されていないためスキップします")
-	}
-
 	// テスト環境をセットアップ（不正なフィードハンドラを使用）
 	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:   true,
@@ -225,10 +191,9 @@ func TestRecommendCommand_InvalidFeed(t *testing.T) {
 	})
 	defer env.Cleanup()
 
-	// テスト用の設定ファイルを作成
+	// テスト用の設定ファイルを作成（デフォルトでモックAIを使用）
 	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
-		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 	})
 
@@ -249,14 +214,8 @@ func TestRecommendCommand_InvalidFeed(t *testing.T) {
 	assert.False(t, env.SlackReceiver.ReceivedMessage(), "不正なフィードの場合、Slackにメッセージは送信されないはずです")
 }
 
-// TestRecommendCommand_WithProfile はプロファイルを使用したrecommendコマンドをテストする
+// TestRecommendCommand_WithProfile はプロファイルを使用したrecommendコマンドをテストする（モックAIを使用）
 func TestRecommendCommand_WithProfile(t *testing.T) {
-	// Gemini APIキーの確認
-	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
-	if geminiAPIKey == "" {
-		t.Skip("GEMINI_API_KEY環境変数が設定されていないためスキップします")
-	}
-
 	// テスト環境をセットアップ
 	env := common.SetupRecommendTest(t, common.SetupRecommendTestOptions{
 		UseRSSServer:   true,
@@ -277,11 +236,10 @@ func TestRecommendCommand_WithProfile(t *testing.T) {
 	profilePath := common.SetupTestDataFile(t, projectRoot, testdataDir, "test_profile.yml", "test_profile.yml", env.TmpDir)
 	require.NotEmpty(t, profilePath, "プロファイルファイルが作成されているはずです")
 
-	// デフォルト設定ファイルを作成（プロファイルが優先される）
+	// デフォルト設定ファイルを作成（プロファイルが優先される、デフォルトでモックAIを使用）
 	// CreateRecommendTestConfigは失敗時にt.Fatalfで終了するため戻り値は無視
 	_ = common.CreateRecommendTestConfig(t, env.TmpDir, common.RecommendConfigParams{
 		FeedURLs:        []string{env.RSSServer.URL},
-		GeminiAPIKey:    geminiAPIKey,
 		SlackWebhookURL: env.SlackServer.URL,
 	})
 
