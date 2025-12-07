@@ -12,25 +12,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestMisskeyConfig_APITokenRequired はenabled=true時にapi_tokenまたはapi_token_envのどちらかが必須であることを検証する
-// 両方とも省略された場合、バリデーションエラーになること
-func TestMisskeyConfig_APITokenRequired(t *testing.T) {
-	// APITokenもAPITokenEnvも設定されていないMisskey設定を作成
+// newMisskeyTestProfile は有効なMisskey設定を含むテスト用プロファイルを生成する
+// 各テストでこのベースプロファイルを変更して条件を作り出す
+func newMisskeyTestProfile() *infra.Profile {
 	enabled := true
 	messageTemplate := "{{.Comment}}\n{{.Article.Title}}"
-	profile := &infra.Profile{
+	return &infra.Profile{
 		AI:     NewAIConfig(),
 		Prompt: NewPromptConfig(),
 		Output: &infra.OutputConfig{
 			Misskey: &infra.MisskeyConfig{
 				Enabled:         &enabled,
-				APIToken:        "",
-				APITokenEnv:     "",
+				APIToken:        "test-api-token",
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &messageTemplate,
 			},
 		},
 	}
+}
+
+// containsErrorWithSubstring はエラーリスト内に指定した部分文字列を含むエラーが存在するかを確認する
+func containsErrorWithSubstring(errors []string, substring string) bool {
+	for _, e := range errors {
+		if strings.Contains(e, substring) {
+			return true
+		}
+	}
+	return false
+}
+
+// TestMisskeyConfig_APITokenRequired はenabled=true時にapi_tokenまたはapi_token_envのどちらかが必須であることを検証する
+// 両方とも省略された場合、バリデーションエラーになること
+func TestMisskeyConfig_APITokenRequired(t *testing.T) {
+	// ベースプロファイルからAPIトークンを削除
+	profile := newMisskeyTestProfile()
+	profile.Output.Misskey.APIToken = ""
+	profile.Output.Misskey.APITokenEnv = ""
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -48,21 +65,9 @@ func TestMisskeyConfig_APITokenRequired(t *testing.T) {
 // TestMisskeyConfig_APIURLRequired はenabled=true時にapi_urlが必須であることを検証する
 // api_urlが省略された場合、バリデーションエラーになること
 func TestMisskeyConfig_APIURLRequired(t *testing.T) {
-	// APIURLが設定されていないMisskey設定を作成
-	enabled := true
-	messageTemplate := "{{.Comment}}\n{{.Article.Title}}"
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         &enabled,
-				APIToken:        "test-api-token",
-				APIURL:          "", // 空文字列
-				MessageTemplate: &messageTemplate,
-			},
-		},
-	}
+	// ベースプロファイルからAPIURLを削除
+	profile := newMisskeyTestProfile()
+	profile.Output.Misskey.APIURL = ""
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -73,14 +78,8 @@ func TestMisskeyConfig_APIURLRequired(t *testing.T) {
 
 	// バリデーションが失敗し、APIURLに関するエラーが含まれることを確認
 	assert.False(t, result.IsValid, "APIURLが空の場合、バリデーションは失敗するはずです")
-	hasAPIURLError := false
-	for _, e := range result.Errors {
-		if strings.Contains(e, "Misskey API URL") {
-			hasAPIURLError = true
-			break
-		}
-	}
-	assert.True(t, hasAPIURLError, "APIURLに関するエラーメッセージが含まれているはずです: %v", result.Errors)
+	assert.True(t, containsErrorWithSubstring(result.Errors, "Misskey API URL"),
+		"APIURLに関するエラーメッセージが含まれているはずです: %v", result.Errors)
 }
 
 // TestMisskeyConfig_URLFormatValidation はURL形式の妥当性を検証する
@@ -115,20 +114,9 @@ func TestMisskeyConfig_URLFormatValidation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			enabled := true
-			messageTemplate := "{{.Comment}}\n{{.Article.Title}}"
-			profile := &infra.Profile{
-				AI:     NewAIConfig(),
-				Prompt: NewPromptConfig(),
-				Output: &infra.OutputConfig{
-					Misskey: &infra.MisskeyConfig{
-						Enabled:         &enabled,
-						APIToken:        "test-api-token",
-						APIURL:          tt.apiURL,
-						MessageTemplate: &messageTemplate,
-					},
-				},
-			}
+			// ベースプロファイルのAPIURLを変更
+			profile := newMisskeyTestProfile()
+			profile.Output.Misskey.APIURL = tt.apiURL
 
 			// infra.Profile から entity.Profile に変換
 			entityProfile, err := profile.ToEntity()
@@ -139,24 +127,12 @@ func TestMisskeyConfig_URLFormatValidation(t *testing.T) {
 
 			if tt.wantErr {
 				assert.False(t, result.IsValid, "無効なURLの場合、バリデーションは失敗するはずです")
-				hasURLError := false
-				for _, e := range result.Errors {
-					if strings.Contains(e, "Misskey API URL") {
-						hasURLError = true
-						break
-					}
-				}
-				assert.True(t, hasURLError, "URLに関するエラーメッセージが含まれているはずです")
+				assert.True(t, containsErrorWithSubstring(result.Errors, "Misskey API URL"),
+					"URLに関するエラーメッセージが含まれているはずです")
 			} else {
 				// Misskey設定のバリデーションエラーのみをチェック
-				hasMisskeyURLError := false
-				for _, e := range result.Errors {
-					if strings.Contains(e, "Misskey API URL") {
-						hasMisskeyURLError = true
-						break
-					}
-				}
-				assert.False(t, hasMisskeyURLError, "有効なURLの場合、URL関連のエラーは発生しないはずです")
+				assert.False(t, containsErrorWithSubstring(result.Errors, "Misskey API URL"),
+					"有効なURLの場合、URL関連のエラーは発生しないはずです")
 			}
 		})
 	}
@@ -165,20 +141,9 @@ func TestMisskeyConfig_URLFormatValidation(t *testing.T) {
 // TestMisskeyConfig_MessageTemplateRequired はenabled=true時にmessage_templateが必須であることを検証する
 // message_templateが省略された場合、バリデーションエラーになること
 func TestMisskeyConfig_MessageTemplateRequired(t *testing.T) {
-	// MessageTemplateが設定されていないMisskey設定を作成
-	enabled := true
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         &enabled,
-				APIToken:        "test-api-token",
-				APIURL:          "https://misskey.example.com",
-				MessageTemplate: nil, // 未設定
-			},
-		},
-	}
+	// ベースプロファイルからMessageTemplateを削除
+	profile := newMisskeyTestProfile()
+	profile.Output.Misskey.MessageTemplate = nil
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -189,14 +154,8 @@ func TestMisskeyConfig_MessageTemplateRequired(t *testing.T) {
 
 	// バリデーションが失敗し、MessageTemplateに関するエラーが含まれることを確認
 	assert.False(t, result.IsValid, "MessageTemplateがnilの場合、バリデーションは失敗するはずです")
-	hasTemplateError := false
-	for _, e := range result.Errors {
-		if strings.Contains(e, "Misskeyメッセージテンプレート") {
-			hasTemplateError = true
-			break
-		}
-	}
-	assert.True(t, hasTemplateError, "MessageTemplateに関するエラーメッセージが含まれているはずです")
+	assert.True(t, containsErrorWithSubstring(result.Errors, "Misskeyメッセージテンプレートが設定されていません"),
+		"MessageTemplateに関するエラーメッセージが含まれているはずです")
 }
 
 // TestMisskeyConfig_APITokenPrecedence はapi_tokenとapi_token_env両方指定時の優先度を検証する
@@ -211,22 +170,10 @@ func TestMisskeyConfig_APITokenPrecedence(t *testing.T) {
 	require.NoError(t, err, "環境変数の設定に成功するはずです")
 	defer func() { _ = os.Unsetenv(envVarName) }()
 
-	// api_tokenとapi_token_envの両方を設定
-	enabled := true
-	messageTemplate := "{{.Comment}}\n{{.Article.Title}}"
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         &enabled,
-				APIToken:        directAPIToken,
-				APITokenEnv:     envVarName,
-				APIURL:          "https://misskey.example.com",
-				MessageTemplate: &messageTemplate,
-			},
-		},
-	}
+	// ベースプロファイルにapi_tokenとapi_token_envの両方を設定
+	profile := newMisskeyTestProfile()
+	profile.Output.Misskey.APIToken = directAPIToken
+	profile.Output.Misskey.APITokenEnv = envVarName
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -240,21 +187,10 @@ func TestMisskeyConfig_APITokenPrecedence(t *testing.T) {
 // TestMisskeyConfig_TemplateSyntaxError はテンプレート構文エラーの検出を検証する
 // 無効なテンプレート構文の場合、バリデーションエラーになること
 func TestMisskeyConfig_TemplateSyntaxError(t *testing.T) {
-	// 無効なテンプレート構文を設定
-	enabled := true
+	// ベースプロファイルに無効なテンプレートを設定
+	profile := newMisskeyTestProfile()
 	invalidTemplate := "{{.Comment" // 閉じタグがない
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         &enabled,
-				APIToken:        "test-api-token",
-				APIURL:          "https://misskey.example.com",
-				MessageTemplate: &invalidTemplate,
-			},
-		},
-	}
+	profile.Output.Misskey.MessageTemplate = &invalidTemplate
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -265,33 +201,16 @@ func TestMisskeyConfig_TemplateSyntaxError(t *testing.T) {
 
 	// バリデーションが失敗し、テンプレート構文に関するエラーが含まれることを確認
 	assert.False(t, result.IsValid, "無効なテンプレート構文の場合、バリデーションは失敗するはずです")
-	hasSyntaxError := false
-	for _, e := range result.Errors {
-		if strings.Contains(e, "テンプレート") && strings.Contains(e, "無効") {
-			hasSyntaxError = true
-			break
-		}
-	}
-	assert.True(t, hasSyntaxError, "テンプレート構文エラーに関するメッセージが含まれているはずです")
+	assert.True(t, containsErrorWithSubstring(result.Errors, "Misskeyメッセージテンプレートが無効です"),
+		"テンプレート構文エラーに関するメッセージが含まれているはずです")
 }
 
 // TestMisskeyConfig_EnabledDefaultValue はenabled省略時のデフォルト値（後方互換性）を検証する
 // enabledが省略された場合、trueとして扱われること
 func TestMisskeyConfig_EnabledDefaultValue(t *testing.T) {
-	// Enabledを省略したMisskey設定を作成
-	messageTemplate := "{{.Comment}}\n{{.Article.Title}}"
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         nil, // 省略（nil）
-				APIToken:        "test-api-token",
-				APIURL:          "https://misskey.example.com",
-				MessageTemplate: &messageTemplate,
-			},
-		},
-	}
+	// ベースプロファイルのEnabledをnilに設定
+	profile := newMisskeyTestProfile()
+	profile.Output.Misskey.Enabled = nil
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -305,20 +224,13 @@ func TestMisskeyConfig_EnabledDefaultValue(t *testing.T) {
 // TestMisskeyConfig_ValidationSkippedWhenDisabled はenabled=false時のバリデーションスキップを検証する
 // enabled=falseの場合、他の必須フィールドが空でもバリデーションが成功すること
 func TestMisskeyConfig_ValidationSkippedWhenDisabled(t *testing.T) {
-	// enabled=falseで、他のフィールドが空のMisskey設定を作成
+	// ベースプロファイルをenabled=falseに変更し、他のフィールドを空に
+	profile := newMisskeyTestProfile()
 	enabled := false
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         &enabled,
-				APIToken:        "",  // 空
-				APIURL:          "",  // 空
-				MessageTemplate: nil, // 未設定
-			},
-		},
-	}
+	profile.Output.Misskey.Enabled = &enabled
+	profile.Output.Misskey.APIToken = ""
+	profile.Output.Misskey.APIURL = ""
+	profile.Output.Misskey.MessageTemplate = nil
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -328,14 +240,7 @@ func TestMisskeyConfig_ValidationSkippedWhenDisabled(t *testing.T) {
 	result := entityProfile.Validate()
 
 	// Misskey関連のエラーがないことを確認
-	hasMisskeyError := false
-	for _, e := range result.Errors {
-		if strings.Contains(e, "Misskey") {
-			hasMisskeyError = true
-			break
-		}
-	}
-	assert.False(t, hasMisskeyError,
+	assert.False(t, containsErrorWithSubstring(result.Errors, "Misskey"),
 		"enabled=falseの場合、Misskey関連のバリデーションエラーは発生しないはずです")
 }
 
@@ -350,22 +255,10 @@ func TestMisskeyConfig_APITokenFromEnv(t *testing.T) {
 	require.NoError(t, err, "環境変数の設定に成功するはずです")
 	defer func() { _ = os.Unsetenv(envVarName) }()
 
-	// api_token_envのみを設定
-	enabled := true
-	messageTemplate := "{{.Comment}}\n{{.Article.Title}}"
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         &enabled,
-				APIToken:        "",
-				APITokenEnv:     envVarName,
-				APIURL:          "https://misskey.example.com",
-				MessageTemplate: &messageTemplate,
-			},
-		},
-	}
+	// ベースプロファイルでapi_token_envのみを設定
+	profile := newMisskeyTestProfile()
+	profile.Output.Misskey.APIToken = ""
+	profile.Output.Misskey.APITokenEnv = envVarName
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -385,22 +278,10 @@ func TestMisskeyConfig_EnvVarNotSet(t *testing.T) {
 	// 環境変数が設定されていないことを確認
 	_ = os.Unsetenv(envVarName)
 
-	// api_token_envのみを設定（api_tokenは空）
-	enabled := true
-	messageTemplate := "{{.Comment}}\n{{.Article.Title}}"
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         &enabled,
-				APIToken:        "",
-				APITokenEnv:     envVarName,
-				APIURL:          "https://misskey.example.com",
-				MessageTemplate: &messageTemplate,
-			},
-		},
-	}
+	// ベースプロファイルでapi_token_envのみを設定（api_tokenは空）
+	profile := newMisskeyTestProfile()
+	profile.Output.Misskey.APIToken = ""
+	profile.Output.Misskey.APITokenEnv = envVarName
 
 	// infra.Profile から entity.Profile に変換
 	_, err := profile.ToEntity()
@@ -413,21 +294,8 @@ func TestMisskeyConfig_EnvVarNotSet(t *testing.T) {
 // TestMisskeyConfig_ValidConfig は正しい設定がentity.Profileに変換できることを検証する
 // すべての必須フィールドが正しく設定されている場合、正常に変換・バリデーションが完了すること
 func TestMisskeyConfig_ValidConfig(t *testing.T) {
-	// 正しいMisskey設定を作成
-	enabled := true
-	messageTemplate := "{{.Comment}}\n{{.Article.Title}}"
-	profile := &infra.Profile{
-		AI:     NewAIConfig(),
-		Prompt: NewPromptConfig(),
-		Output: &infra.OutputConfig{
-			Misskey: &infra.MisskeyConfig{
-				Enabled:         &enabled,
-				APIToken:        "test-api-token",
-				APIURL:          "https://misskey.example.com",
-				MessageTemplate: &messageTemplate,
-			},
-		},
-	}
+	// ベースプロファイルをそのまま使用（有効な設定）
+	profile := newMisskeyTestProfile()
 
 	// infra.Profile から entity.Profile に変換
 	entityProfile, err := profile.ToEntity()
@@ -444,12 +312,6 @@ func TestMisskeyConfig_ValidConfig(t *testing.T) {
 	result := entityProfile.Validate()
 
 	// Misskey関連のエラーがないことを確認
-	hasMisskeyError := false
-	for _, e := range result.Errors {
-		if strings.Contains(e, "Misskey") {
-			hasMisskeyError = true
-			break
-		}
-	}
-	assert.False(t, hasMisskeyError, "正しい設定の場合、Misskey関連のエラーは発生しないはずです")
+	assert.False(t, containsErrorWithSubstring(result.Errors, "Misskey"),
+		"正しい設定の場合、Misskey関連のエラーは発生しないはずです")
 }
