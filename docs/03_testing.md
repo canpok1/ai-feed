@@ -317,16 +317,19 @@ assert.ErrorAs(t, err, &customErr)
    - YAML設定ファイルの読み込み・パース・バリデーション
    - プロファイル設定の継承・マージ処理
 
-### ユニットテストとの違い
+### テストの種類と違い
 
-| 項目 | ユニットテスト | 統合テスト |
-|------|---------------|-----------|
-| **対象範囲** | 単一の関数・メソッド | 複数コンポーネントの連携 |
-| **モック使用** | 依存を全てモック化 | 外部サービス以外は実装を使用 |
-| **実行速度** | 高速 | 比較的低速 |
-| **配置場所** | `<package>/*_test.go` | `test/integration/**/*_test.go` |
-| **ビルドタグ** | なし | `integration` |
-| **目的** | ロジックの正確性 | コンポーネント間の連携 |
+ai-feedプロジェクトでは3種類のテストを使い分けています：
+
+| 項目 | ユニットテスト | 統合テスト | E2Eテスト |
+|------|---------------|-----------|----------|
+| **対象範囲** | 単一の関数・メソッド | 複数コンポーネントの連携 | アプリケーション全体 |
+| **モック使用** | 依存を全てモック化 | 外部サービス以外は実装を使用 | 外部APIのみモック化 |
+| **実行速度** | 高速 | 比較的低速 | 低速 |
+| **配置場所** | `<package>/*_test.go` | `test/integration/**/*_test.go` | `test/e2e/**/*_test.go` |
+| **ビルドタグ** | なし | `integration` | `e2e` |
+| **実行コマンド** | `make test` | `make test-integration` | `make test-e2e` |
+| **目的** | ロジックの正確性 | コンポーネント間の連携 | 実際のユーザー操作の再現 |
 
 ### ファイル配置ルール
 
@@ -415,7 +418,8 @@ func TestConfigLoader_LoadValidConfig(t *testing.T) {
     configPath := filepath.Join(testdataDir, "valid_config.yaml")
 
     // 実際の設定ファイルを読み込む
-    config, err := infra.LoadConfig(configPath)
+    repo := infra.NewYamlConfigRepository(configPath)
+    config, err := repo.Load()
 
     // 結果を検証
     require.NoError(t, err)
@@ -427,7 +431,8 @@ func TestConfigLoader_InvalidConfig(t *testing.T) {
     testdataDir := filepath.Join("testdata")
     configPath := filepath.Join(testdataDir, "invalid_config.yaml")
 
-    _, err := infra.LoadConfig(configPath)
+    repo := infra.NewYamlConfigRepository(configPath)
+    _, err := repo.Load()
 
     assert.Error(t, err)
     assert.Contains(t, err.Error(), "validation failed")
@@ -461,7 +466,8 @@ default_profile:
 `
     configPath := createTestConfig(t, configContent)
 
-    config, err := infra.LoadConfig(configPath)
+    repo := infra.NewYamlConfigRepository(configPath)
+    config, err := repo.Load()
 
     require.NoError(t, err)
     assert.Equal(t, "gemini-2.0-flash", config.DefaultProfile.AI.Gemini.Type)
@@ -523,12 +529,7 @@ default_profile:
 
 E2Eテストは、実際のバイナリを実行してエンドユーザーの視点で動作を検証するテストです。
 
-#### テストの種類の違い
-
-| テストの種類 | 対象範囲 | 配置場所 | ビルドタグ | 目的 |
-|------------|---------|---------|----------|------|
-| ユニットテスト | 関数・メソッド単位 | `<package>/*_test.go` | なし | 個別のロジックの正確性 |
-| E2Eテスト | アプリケーション全体 | `test/e2e/**/*_test.go` | `e2e` | 実際のユーザー操作の再現 |
+各テストの種類の違いについては、[テストの種類と違い](#テストの種類と違い)を参照してください。
 
 ### E2Eテストの実行方法
 

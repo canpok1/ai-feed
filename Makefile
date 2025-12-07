@@ -37,6 +37,9 @@ test-e2e:
 	fi
 	go test -tags=e2e -v ./test/e2e/...
 
+test-integration:
+	go test -tags=integration -v ./test/integration/...
+
 test-coverage:
 	@go test -coverprofile=coverage.out ./...
 	@grep -v "mock_" coverage.out > coverage.filtered.out
