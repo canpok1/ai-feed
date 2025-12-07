@@ -30,6 +30,13 @@ var (
 	buildErr error
 )
 
+const (
+	// defaultMockSelectorMode はモックAIのデフォルト記事選択モード
+	defaultMockSelectorMode = "first"
+	// defaultMockComment はモックAIのデフォルトコメント
+	defaultMockComment = "これはテスト用のモックコメントです。"
+)
+
 // SetupPackage は各テストパッケージのTestMainから呼び出され、バイナリをビルドする
 // この関数は同期されており、複数のパッケージから呼ばれても一度だけビルドを行う
 func SetupPackage() {
@@ -183,7 +190,13 @@ func CreateTestConfig(t *testing.T, tmpDir string, params TestConfigParams) stri
 type RecommendConfigParams struct {
 	// FeedURLs はRSSフィードのURL一覧
 	FeedURLs []string
-	// GeminiAPIKey はGemini APIのキー
+	// UseMockAI はモックAIを使用するかどうか（デフォルト: true）
+	UseMockAI *bool
+	// MockSelectorMode はモックの記事選択モード（"first", "random", "last"）デフォルト: "first"
+	MockSelectorMode string
+	// MockComment はモックが返す固定コメント
+	MockComment string
+	// GeminiAPIKey はGemini APIのキー（UseMockAI=falseの場合に使用）
 	GeminiAPIKey string
 	// SlackWebhookURL はSlack WebhookのURL
 	SlackWebhookURL string
@@ -200,6 +213,42 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 
 	configPath := filepath.Join(tmpDir, "config.yml")
 
+	// デフォルトでモックAIを使用
+	useMockAI := true
+	if params.UseMockAI != nil {
+		useMockAI = *params.UseMockAI
+	}
+
+	// AI設定を構築
+	var aiConfig *infra.AIConfig
+	if useMockAI {
+		// モックAI設定
+		mockEnabled := true
+		selectorMode := params.MockSelectorMode
+		if selectorMode == "" {
+			selectorMode = defaultMockSelectorMode
+		}
+		mockComment := params.MockComment
+		if mockComment == "" {
+			mockComment = defaultMockComment
+		}
+		aiConfig = &infra.AIConfig{
+			Mock: &infra.MockConfig{
+				Enabled:      &mockEnabled,
+				SelectorMode: selectorMode,
+				Comment:      mockComment,
+			},
+		}
+	} else {
+		// Gemini AI設定
+		aiConfig = &infra.AIConfig{
+			Gemini: &infra.GeminiConfig{
+				Type:   "gemini-2.5-flash",
+				APIKey: params.GeminiAPIKey,
+			},
+		}
+	}
+
 	// テスト用の設定を型安全に構築
 	// infra.Configとinfra.Profileを使用して構造を定義
 	config := struct {
@@ -207,12 +256,7 @@ func CreateRecommendTestConfig(t *testing.T, tmpDir string, params RecommendConf
 	}{
 		DefaultProfile: &infra.Profile{
 			// AI設定
-			AI: &infra.AIConfig{
-				Gemini: &infra.GeminiConfig{
-					Type:   "gemini-2.5-flash",
-					APIKey: params.GeminiAPIKey,
-				},
-			},
+			AI: aiConfig,
 			// プロンプト設定
 			Prompt: &infra.PromptConfig{
 				SystemPrompt:          "あなたはテスト用のアシスタントです。",

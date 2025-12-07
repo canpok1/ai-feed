@@ -32,12 +32,6 @@ test-integration:
 	go test -tags=integration ./test/integration/...
 
 test-e2e:
-	@if [ -z "$$GEMINI_API_KEY" ]; then \
-		echo "エラー: GEMINI_API_KEY環境変数が設定されていません"; \
-		echo "e2eテストを実行するには、Gemini APIキーが必要です"; \
-		echo "設定方法: export GEMINI_API_KEY=your_api_key"; \
-		exit 1; \
-	fi
 	go test -tags=e2e -v ./test/e2e/...
 
 test-coverage:
