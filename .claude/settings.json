@@ -20,6 +20,7 @@
             "Bash(echo:*)",
             "Bash(gh issue create:*)",
             "Bash(gh issue view:*)",
+            "Bash(gh issue list:*)",
             "Bash(gh pr create:*)",
             "Bash(gh pr view:*)",
             "Bash(git add:*)",
