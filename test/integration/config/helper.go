@@ -181,12 +181,7 @@ func WithDisabledMisskey() *infra.OutputConfig {
 // NewMockConfig はテスト用の有効な infra.MockConfig を生成する
 // デフォルトで有効化され、selector_mode="first"、comment="テストコメント"を設定
 func NewMockConfig() *infra.MockConfig {
-	enabled := true
-	return &infra.MockConfig{
-		Enabled:      &enabled,
-		SelectorMode: "first",
-		Comment:      "テストコメント",
-	}
+	return NewMockConfigWithMode("first")
 }
 
 // NewMockConfigWithMode は指定したselector_modeでテスト用の infra.MockConfig を生成する
@@ -230,11 +225,7 @@ func NewAIConfigWithBothMockAndGemini() *infra.AIConfig {
 // NewEntityMockConfig はテスト用の有効な entity.MockConfig を生成する
 // Enabled=true、SelectorMode="first"、Comment="テストコメント"を設定
 func NewEntityMockConfig() *entity.MockConfig {
-	return &entity.MockConfig{
-		Enabled:      true,
-		SelectorMode: "first",
-		Comment:      "テストコメント",
-	}
+	return NewEntityMockConfigWithMode("first")
 }
 
 // NewEntityMockConfigWithMode は指定したselector_modeでテスト用の entity.MockConfig を生成する

@@ -106,15 +106,10 @@ func TestMockConfig_InvalidSelectorModes(t *testing.T) {
 // ai.mock.enabled=false の場合、selector_modeが設定されていなくてもエラーにならないこと
 func TestMockConfig_DisabledSkipsValidation(t *testing.T) {
 	// Mock設定を無効化（selector_modeは空）
-	enabled := false
 	profile := &infra.Profile{
 		AI: &infra.AIConfig{
 			Gemini: NewGeminiConfig(), // Gemini設定があるので全体バリデーションは通る
-			Mock: &infra.MockConfig{
-				Enabled:      &enabled,
-				SelectorMode: "", // 空でもエラーにならない
-				Comment:      "",
-			},
+			Mock:   NewDisabledMockConfig(),
 		},
 		Prompt: NewPromptConfig(),
 		Output: NewOutputConfig(),
