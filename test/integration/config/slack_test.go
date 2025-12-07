@@ -253,6 +253,7 @@ func TestSlackAPIConfig_EnabledDefaultTrue(t *testing.T) {
 	// バリデーションが成功することを確認
 	result := entityProfile.Validate()
 	assert.True(t, result.IsValid, "正しい設定の場合、バリデーションは成功するはずです")
+	assert.Empty(t, result.Errors, "エラーメッセージがないはずです")
 }
 
 // TestSlackAPIConfig_DisabledSkipsValidation はenabled=false時に必須フィールドのバリデーションがスキップされることを検証する
