@@ -28,6 +28,9 @@ clean:
 test:
 	go test ./...
 
+test-integration:
+	go test -tags=integration ./test/integration/...
+
 test-e2e:
 	go test -tags=e2e -v ./test/e2e/...
 
