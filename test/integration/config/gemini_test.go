@@ -36,17 +36,8 @@ func TestGeminiConfig_TypeRequired(t *testing.T) {
 
 	// バリデーションが失敗し、Typeに関するエラーが含まれることを確認
 	assert.False(t, result.IsValid, "Typeが空の場合、バリデーションは失敗するはずです")
-	assert.NotEmpty(t, result.Errors, "エラーメッセージが含まれているはずです")
-
-	// エラーメッセージにTypeに関する記述があることを確認
-	hasTypeError := false
-	for _, errMsg := range result.Errors {
-		if assert.Regexp(t, `(?i)(type|Type)`, errMsg) {
-			hasTypeError = true
-			break
-		}
-	}
-	assert.True(t, hasTypeError, "Typeに関するエラーメッセージが含まれているはずです")
+	assert.Contains(t, result.Errors, "Gemini設定のTypeが設定されていません",
+		"Typeに関するエラーメッセージが含まれているはずです")
 }
 
 // TestGeminiConfig_APIKeyRequired はapi_keyまたはapi_key_envのどちらかが必須であることを検証する
@@ -74,17 +65,8 @@ func TestGeminiConfig_APIKeyRequired(t *testing.T) {
 
 	// バリデーションが失敗し、APIKeyに関するエラーが含まれることを確認
 	assert.False(t, result.IsValid, "APIKeyが空の場合、バリデーションは失敗するはずです")
-	assert.NotEmpty(t, result.Errors, "エラーメッセージが含まれているはずです")
-
-	// エラーメッセージにAPIKeyに関する記述があることを確認
-	hasAPIKeyError := false
-	for _, errMsg := range result.Errors {
-		if assert.Regexp(t, `(?i)(api.*key|APIキー)`, errMsg) {
-			hasAPIKeyError = true
-			break
-		}
-	}
-	assert.True(t, hasAPIKeyError, "APIKeyに関するエラーメッセージが含まれているはずです")
+	assert.Contains(t, result.Errors, "Gemini APIキーが設定されていません",
+		"APIKeyに関するエラーメッセージが含まれているはずです")
 }
 
 // TestGeminiConfig_APIKeyPrecedence はapi_keyとapi_key_env両方指定時の優先度を検証する
@@ -203,17 +185,8 @@ func TestGeminiConfig_NilAIConfig(t *testing.T) {
 
 	// バリデーションが失敗することを確認
 	assert.False(t, result.IsValid, "AI設定がnilの場合、バリデーションは失敗するはずです")
-	assert.NotEmpty(t, result.Errors, "エラーメッセージが含まれているはずです")
-
-	// エラーメッセージにAI設定に関する記述があることを確認
-	hasAIError := false
-	for _, errMsg := range result.Errors {
-		if assert.Regexp(t, `(?i)(ai|AI|Gemini)`, errMsg) {
-			hasAIError = true
-			break
-		}
-	}
-	assert.True(t, hasAIError, "AI設定に関するエラーメッセージが含まれているはずです")
+	assert.Contains(t, result.Errors, "AI設定が設定されていません",
+		"AI設定に関するエラーメッセージが含まれているはずです")
 }
 
 // TestGeminiConfig_ValidConversion は正しい設定がentity.Profileに変換できることを検証する
@@ -261,5 +234,6 @@ func TestGeminiConfig_NilGeminiConfig(t *testing.T) {
 
 	// バリデーションが失敗することを確認
 	assert.False(t, result.IsValid, "Gemini設定がnilの場合、バリデーションは失敗するはずです")
-	assert.NotEmpty(t, result.Errors, "エラーメッセージが含まれているはずです")
+	assert.Contains(t, result.Errors, "Gemini設定が設定されていません",
+		"Gemini設定に関するエラーメッセージが含まれているはずです")
 }
