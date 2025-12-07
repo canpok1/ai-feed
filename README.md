@@ -235,6 +235,9 @@ Windows環境では色付けされません。
 |----------|----------|--------------|------|
 | `ai.gemini.type` | 必須 | - | 使用するGeminiモデル名 |
 | `ai.gemini.api_key` または `api_key_env` | 必須（どちらか） | - | Gemini APIキー |
+| `ai.mock.enabled` | 任意 | `false` | モックAIの有効/無効（テスト用） |
+| `ai.mock.selector_mode` | 任意 | `first` | 記事選択モード（`first`, `random`, `last`） |
+| `ai.mock.comment` | 任意 | 空文字列 | モックが返す固定コメント |
 | `system_prompt` | 必須 | - | AIの性格を定義するプロンプト |
 | `comment_prompt_template` | 必須 | - | 記事紹介文生成用テンプレート |
 | `selector_prompt` | 必須 | - | 記事選択用プロンプト |
