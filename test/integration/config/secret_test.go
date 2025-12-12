@@ -8,14 +8,10 @@ import (
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-// boolPtr はbool値へのポインタを返すヘルパー関数
-func boolPtr(b bool) *bool {
-	return &b
-}
 
 // ============================================================================
 // Gemini APIキー解決テスト
@@ -35,7 +31,7 @@ func TestGeminiSecret_SecretResolution(t *testing.T) {
 		{
 			name:         "直接指定優先: api_keyとapi_key_env両方指定時、api_keyが優先される",
 			envVarName:   "TEST_GEMINI_API_KEY_SECRET",
-			envVarValue:  stringPtr("api-key-from-env"),
+			envVarValue:  testutil.StringPtr("api-key-from-env"),
 			directAPIKey: "direct-api-key",
 			wantErr:      false,
 			wantAPIKey:   "direct-api-key",
@@ -51,7 +47,7 @@ func TestGeminiSecret_SecretResolution(t *testing.T) {
 		{
 			name:           "環境変数空文字: 環境変数が空文字の場合エラー",
 			envVarName:     "TEST_GEMINI_API_KEY_EMPTY",
-			envVarValue:    stringPtr(""),
+			envVarValue:    testutil.StringPtr(""),
 			directAPIKey:   "",
 			wantErr:        true,
 			wantErrContain: "TEST_GEMINI_API_KEY_EMPTY",
@@ -113,7 +109,7 @@ func TestSlackSecret_SecretResolution(t *testing.T) {
 		{
 			name:        "直接指定優先: api_tokenとapi_token_env両方指定時、api_tokenが優先される",
 			envVarName:  "TEST_SLACK_API_TOKEN_SECRET",
-			envVarValue: stringPtr("token-from-env"),
+			envVarValue: testutil.StringPtr("token-from-env"),
 			directToken: "direct-token",
 			wantErr:     false,
 			wantToken:   "direct-token",
@@ -129,7 +125,7 @@ func TestSlackSecret_SecretResolution(t *testing.T) {
 		{
 			name:           "環境変数空文字: 環境変数が空文字の場合エラー",
 			envVarName:     "TEST_SLACK_API_TOKEN_EMPTY",
-			envVarValue:    stringPtr(""),
+			envVarValue:    testutil.StringPtr(""),
 			directToken:    "",
 			wantErr:        true,
 			wantErrContain: "TEST_SLACK_API_TOKEN_EMPTY",
@@ -152,7 +148,7 @@ func TestSlackSecret_SecretResolution(t *testing.T) {
 				Prompt: NewPromptConfig(),
 				Output: &infra.OutputConfig{
 					SlackAPI: &infra.SlackAPIConfig{
-						Enabled:     boolPtr(true),
+						Enabled:     testutil.BoolPtr(true),
 						APIToken:    tt.directToken,
 						APITokenEnv: tt.envVarName,
 						Channel:     "#test-channel",
@@ -192,7 +188,7 @@ func TestMisskeySecret_SecretResolution(t *testing.T) {
 		{
 			name:        "直接指定優先: api_tokenとapi_token_env両方指定時、api_tokenが優先される",
 			envVarName:  "TEST_MISSKEY_API_TOKEN_SECRET",
-			envVarValue: stringPtr("token-from-env"),
+			envVarValue: testutil.StringPtr("token-from-env"),
 			directToken: "direct-token",
 			wantErr:     false,
 			wantToken:   "direct-token",
@@ -208,7 +204,7 @@ func TestMisskeySecret_SecretResolution(t *testing.T) {
 		{
 			name:           "環境変数空文字: 環境変数が空文字の場合エラー",
 			envVarName:     "TEST_MISSKEY_API_TOKEN_EMPTY",
-			envVarValue:    stringPtr(""),
+			envVarValue:    testutil.StringPtr(""),
 			directToken:    "",
 			wantErr:        true,
 			wantErrContain: "TEST_MISSKEY_API_TOKEN_EMPTY",
@@ -231,7 +227,7 @@ func TestMisskeySecret_SecretResolution(t *testing.T) {
 				Prompt: NewPromptConfig(),
 				Output: &infra.OutputConfig{
 					Misskey: &infra.MisskeyConfig{
-						Enabled:     boolPtr(true),
+						Enabled:     testutil.BoolPtr(true),
 						APIToken:    tt.directToken,
 						APITokenEnv: tt.envVarName,
 						APIURL:      "http://localhost:3000",
@@ -251,9 +247,4 @@ func TestMisskeySecret_SecretResolution(t *testing.T) {
 			}
 		})
 	}
-}
-
-// stringPtr はstring値へのポインタを返すヘルパー関数
-func stringPtr(s string) *string {
-	return &s
 }

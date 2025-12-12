@@ -11,6 +11,7 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/domain/mock_domain"
+	"github.com/canpok1/ai-feed/internal/testutil"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,10 +32,6 @@ func createMockConfig(promptConfig *entity.PromptConfig, outputConfig *entity.Ou
 		Prompt: promptConfig,
 		Output: outputConfig,
 	}
-}
-
-func toStringP(value string) *string {
-	return &value
 }
 
 func TestNewRecommendRunner(t *testing.T) {
@@ -58,7 +55,7 @@ func TestNewRecommendRunner(t *testing.T) {
 					Enabled:         true,
 					APIToken:        makeSecretString("test-token"),
 					Channel:         "#test",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
@@ -71,7 +68,7 @@ func TestNewRecommendRunner(t *testing.T) {
 					Enabled:         true,
 					APIToken:        makeSecretString("test-token"),
 					APIURL:          "https://test.misskey.io/api",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
@@ -172,7 +169,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/empty.xml"},
 			},
-			expectedErrorMessage: toStringP("no articles found in the feed"),
+			expectedErrorMessage: testutil.StringPtr("no articles found in the feed"),
 		},
 		{
 			name: "異常系: フェッチエラー",
@@ -185,7 +182,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 			params: &RecommendParams{
 				URLs: []string{"http://invalid.com/feed.xml"},
 			},
-			expectedErrorMessage: toStringP("no articles found in the feed"),
+			expectedErrorMessage: testutil.StringPtr("no articles found in the feed"),
 		},
 		{
 			name: "異常系: 推薦エラー",
@@ -200,7 +197,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
-			expectedErrorMessage: toStringP("failed to recommend article: mock recommend error"),
+			expectedErrorMessage: testutil.StringPtr("failed to recommend article: mock recommend error"),
 		},
 		{
 			name: "正常系: AIモデル未設定",
@@ -382,13 +379,13 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					Enabled:         true,
 					APIToken:        makeSecretString("test-token"),
 					Channel:         "#test",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 				Misskey: &entity.MisskeyConfig{
 					Enabled:         true,
 					APIToken:        makeSecretString("test-token"),
 					APIURL:          "https://test.misskey.io",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			expectedSenders: 2,
@@ -400,13 +397,13 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					Enabled:         true,
 					APIToken:        makeSecretString("test-token"),
 					Channel:         "#test",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 				Misskey: &entity.MisskeyConfig{
 					Enabled:         false,
 					APIToken:        makeSecretString("test-token"),
 					APIURL:          "https://test.misskey.io",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			expectedSenders: 1,
@@ -418,13 +415,13 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					Enabled:         false,
 					APIToken:        makeSecretString("test-token"),
 					Channel:         "#test",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 				Misskey: &entity.MisskeyConfig{
 					Enabled:         true,
 					APIToken:        makeSecretString("test-token"),
 					APIURL:          "https://test.misskey.io",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			expectedSenders: 1,
@@ -436,13 +433,13 @@ func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
 					Enabled:         false,
 					APIToken:        makeSecretString("test-token"),
 					Channel:         "#test",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 				Misskey: &entity.MisskeyConfig{
 					Enabled:         false,
 					APIToken:        makeSecretString("test-token"),
 					APIURL:          "https://test.misskey.io",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			expectedSenders: 0,
@@ -490,7 +487,7 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 					Enabled:         false,
 					APIToken:        makeSecretString("test-token"),
 					Channel:         "#test",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			expectedLogs: []string{"Slack API output is disabled (enabled: false)"},
@@ -502,7 +499,7 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 					Enabled:         false,
 					APIToken:        makeSecretString("test-token"),
 					APIURL:          "https://test.misskey.io",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			expectedLogs: []string{"Misskey output is disabled (enabled: false)"},
@@ -514,13 +511,13 @@ func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
 					Enabled:         false,
 					APIToken:        makeSecretString("test-token"),
 					Channel:         "#test",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 				Misskey: &entity.MisskeyConfig{
 					Enabled:         false,
 					APIToken:        makeSecretString("test-token"),
 					APIURL:          "https://test.misskey.io",
-					MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 				},
 			},
 			expectedLogs: []string{
@@ -587,13 +584,13 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 			Enabled:         false,
 			APIToken:        makeSecretString("test-token"),
 			Channel:         "#test",
-			MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+			MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 		},
 		Misskey: &entity.MisskeyConfig{
 			Enabled:         false,
 			APIToken:        makeSecretString("test-token"),
 			APIURL:          "https://test.misskey.io",
-			MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
+			MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 		},
 	}
 
@@ -655,7 +652,7 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	stdoutBuffer := new(bytes.Buffer)
 
 	// テスト用の設定値を作成
-	testOutputConfig := &entity.OutputConfig{SlackAPI: &entity.SlackAPIConfig{Enabled: true, APIToken: makeSecretString("slack-token"), Channel: "#general", MessageTemplate: toStringP("test-template")}}
+	testOutputConfig := &entity.OutputConfig{SlackAPI: &entity.SlackAPIConfig{Enabled: true, APIToken: makeSecretString("slack-token"), Channel: "#general", MessageTemplate: testutil.StringPtr("test-template")}}
 	testPromptConfig := &entity.PromptConfig{CommentPromptTemplate: "test-prompt", FixedMessage: "test-fixed-message"}
 	testCacheConfig := &entity.CacheConfig{Enabled: false, FilePath: "/tmp/test-cache"}
 	testProfile := &entity.Profile{
