@@ -1,11 +1,11 @@
 package testutil
 
-// BoolPtr returns a pointer to the given bool value
+// BoolPtr はbool値へのポインタを返すテスト用ヘルパー関数
 func BoolPtr(b bool) *bool {
 	return &b
 }
 
-// StringPtr returns a pointer to the given string value
+// StringPtr は文字列値へのポインタを返すテスト用ヘルパー関数
 func StringPtr(s string) *string {
 	return &s
 }
