@@ -15,55 +15,40 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockConfigRepository is a mock of ConfigRepository interface.
-type MockConfigRepository struct {
+// MockConfigInitRepository is a mock of ConfigInitRepository interface.
+type MockConfigInitRepository struct {
 	ctrl     *gomock.Controller
-	recorder *MockConfigRepositoryMockRecorder
+	recorder *MockConfigInitRepositoryMockRecorder
 	isgomock struct{}
 }
 
-// MockConfigRepositoryMockRecorder is the mock recorder for MockConfigRepository.
-type MockConfigRepositoryMockRecorder struct {
-	mock *MockConfigRepository
+// MockConfigInitRepositoryMockRecorder is the mock recorder for MockConfigInitRepository.
+type MockConfigInitRepositoryMockRecorder struct {
+	mock *MockConfigInitRepository
 }
 
-// NewMockConfigRepository creates a new mock instance.
-func NewMockConfigRepository(ctrl *gomock.Controller) *MockConfigRepository {
-	mock := &MockConfigRepository{ctrl: ctrl}
-	mock.recorder = &MockConfigRepositoryMockRecorder{mock}
+// NewMockConfigInitRepository creates a new mock instance.
+func NewMockConfigInitRepository(ctrl *gomock.Controller) *MockConfigInitRepository {
+	mock := &MockConfigInitRepository{ctrl: ctrl}
+	mock.recorder = &MockConfigInitRepositoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockConfigRepository) EXPECT() *MockConfigRepositoryMockRecorder {
+func (m *MockConfigInitRepository) EXPECT() *MockConfigInitRepositoryMockRecorder {
 	return m.recorder
 }
 
-// Load mocks base method.
-func (m *MockConfigRepository) Load() (any, error) {
+// SaveWithTemplate mocks base method.
+func (m *MockConfigInitRepository) SaveWithTemplate() error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Load")
-	ret0, _ := ret[0].(any)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Load indicates an expected call of Load.
-func (mr *MockConfigRepositoryMockRecorder) Load() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockConfigRepository)(nil).Load))
-}
-
-// Save mocks base method.
-func (m *MockConfigRepository) Save(config any) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", config)
+	ret := m.ctrl.Call(m, "SaveWithTemplate")
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Save indicates an expected call of Save.
-func (mr *MockConfigRepositoryMockRecorder) Save(config any) *gomock.Call {
+// SaveWithTemplate indicates an expected call of SaveWithTemplate.
+func (mr *MockConfigInitRepositoryMockRecorder) SaveWithTemplate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConfigRepository)(nil).Save), config)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveWithTemplate", reflect.TypeOf((*MockConfigInitRepository)(nil).SaveWithTemplate))
 }
