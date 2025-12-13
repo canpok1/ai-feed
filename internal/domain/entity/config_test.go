@@ -17,7 +17,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 	slog.SetDefault(logger)
 	defer slog.SetDefault(originalLogger)
 
-	t.Run("AI.Gemini is nil", func(t *testing.T) {
+	t.Run("異常系: AI.Geminiがnil", func(t *testing.T) {
 		logBuffer.Reset()
 		profileWithNilGemini := &Profile{
 			AI:     &AIConfig{Gemini: nil},
@@ -29,7 +29,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 		assert.Contains(t, output, "test nil gemini")
 	})
 
-	t.Run("AI is nil", func(t *testing.T) {
+	t.Run("異常系: AIがnil", func(t *testing.T) {
 		logBuffer.Reset()
 		profileWithNilAI := &Profile{
 			AI:     nil,
@@ -42,7 +42,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 		assert.Contains(t, output, "test nil ai")
 	})
 
-	t.Run("Output.SlackAPI and Misskey are nil", func(t *testing.T) {
+	t.Run("異常系: Output.SlackAPIとMisskeyがnil", func(t *testing.T) {
 		logBuffer.Reset()
 		var apiKey SecretString
 		apiKey.UnmarshalText([]byte("key"))
