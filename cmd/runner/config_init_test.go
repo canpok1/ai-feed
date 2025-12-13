@@ -87,10 +87,7 @@ func TestConfigInitRunner_Run(t *testing.T) {
 
 			// Then: 期待される結果を検証
 			if tt.wantErr {
-				assert.Error(t, err)
-				if tt.wantErrMsg != "" {
-					assert.Contains(t, err.Error(), tt.wantErrMsg)
-				}
+				assert.ErrorContains(t, err, tt.wantErrMsg)
 			} else {
 				assert.NoError(t, err)
 			}
