@@ -77,7 +77,7 @@
 				
 				<option value="file10">github.com/canpok1/ai-feed/internal/domain/cache/nop_cache.go (100.0%)</option>
 				
-				<option value="file11">github.com/canpok1/ai-feed/internal/domain/entity/config.go (39.7%)</option>
+				<option value="file11">github.com/canpok1/ai-feed/internal/domain/entity/config.go (45.9%)</option>
 				
 				<option value="file12">github.com/canpok1/ai-feed/internal/domain/entity/entity.go (100.0%)</option>
 				
@@ -1927,16 +1927,16 @@ func (m *MisskeyConfig) Merge(other *MisskeyConfig) <span class="cov0" title="0"
 }
 
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
-func (m MisskeyConfig) LogValue() slog.Value <span class="cov0" title="0">{
+func (m MisskeyConfig) LogValue() slog.Value <span class="cov8" title="1">{
         attrs := []slog.Attr{
                 slog.Bool("Enabled", m.Enabled),
                 slog.Any("APIToken", m.APIToken),
                 slog.String("APIURL", m.APIURL),
         }
-        if m.MessageTemplate != nil </span><span class="cov0" title="0">{
+        if m.MessageTemplate != nil </span><span class="cov8" title="1">{
                 attrs = append(attrs, slog.Int("MessageTemplateLength", len(*m.MessageTemplate)))
         }</span>
-        <span class="cov0" title="0">return slog.GroupValue(attrs...)</span>
+        <span class="cov8" title="1">return slog.GroupValue(attrs...)</span>
 }
 
 type SlackAPIConfig struct {
@@ -2024,25 +2024,25 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) <span class="cov0" title="
 }
 
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
-func (s SlackAPIConfig) LogValue() slog.Value <span class="cov0" title="0">{
+func (s SlackAPIConfig) LogValue() slog.Value <span class="cov8" title="1">{
         attrs := []slog.Attr{
                 slog.Bool("Enabled", s.Enabled),
                 slog.Any("APIToken", s.APIToken),
                 slog.String("Channel", s.Channel),
         }
-        if s.MessageTemplate != nil </span><span class="cov0" title="0">{
+        if s.MessageTemplate != nil </span><span class="cov8" title="1">{
                 attrs = append(attrs, slog.Int("MessageTemplateLength", len(*s.MessageTemplate)))
         }</span>
-        <span class="cov0" title="0">if s.Username != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if s.Username != nil </span><span class="cov0" title="0">{
                 attrs = append(attrs, slog.String("Username", *s.Username))
         }</span>
-        <span class="cov0" title="0">if s.IconURL != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if s.IconURL != nil </span><span class="cov0" title="0">{
                 attrs = append(attrs, slog.String("IconURL", *s.IconURL))
         }</span>
-        <span class="cov0" title="0">if s.IconEmoji != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if s.IconEmoji != nil </span><span class="cov0" title="0">{
                 attrs = append(attrs, slog.String("IconEmoji", *s.IconEmoji))
         }</span>
-        <span class="cov0" title="0">return slog.GroupValue(attrs...)</span>
+        <span class="cov8" title="1">return slog.GroupValue(attrs...)</span>
 }
 
 type CacheConfig struct {
@@ -2211,10 +2211,10 @@ func (o *OutputConfig) Merge(other *OutputConfig) <span class="cov0" title="0">{
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
 func (o OutputConfig) LogValue() slog.Value <span class="cov8" title="1">{
         attrs := []slog.Attr{}
-        if o.SlackAPI != nil </span><span class="cov0" title="0">{
+        if o.SlackAPI != nil </span><span class="cov8" title="1">{
                 attrs = append(attrs, slog.Any("SlackAPI", *o.SlackAPI)) // SlackAPIConfig.LogValue() が呼ばれる
         }</span>
-        <span class="cov8" title="1">if o.Misskey != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if o.Misskey != nil </span><span class="cov8" title="1">{
                 attrs = append(attrs, slog.Any("Misskey", *o.Misskey)) // MisskeyConfig.LogValue() が呼ばれる
         }</span>
         <span class="cov8" title="1">return slog.GroupValue(attrs...)</span>
