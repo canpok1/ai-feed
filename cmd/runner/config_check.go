@@ -7,7 +7,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
-	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO(#333): cmd/runner を internal/app に移動後、infra依存を解消する
 )
 
 // ConfigCheckParams はconfig checkコマンドの実行パラメータを表す構造体
