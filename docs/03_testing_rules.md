@@ -12,6 +12,166 @@ ai-feedプロジェクトにおけるテストの書き方と実行方法につ�
 - **go.uber.org/mock (gomock)**: モックの生成と管理
 - **標準testingパッケージ**: Goの標準テストフレームワーク
 
+## 層別テスト戦略
+
+4層アーキテクチャに対応したテスト戦略を定義しています。各層の特性に応じて、適切なテスト種類とカバレッジ目標を設定します。
+
+### テスト戦略の概要
+
+| 層 | 主なテスト種類 | カバレッジ目標 | 理由 |
+|---|---|---|---|
+| **cmd (Presentation)** | E2Eテスト | 設定なし | フラグ解析のみで、E2Eで十分に担保可能 |
+| **app (Application)** | 統合テスト | 設定なし | オーケストレーションは実際のコンポーネント連携で検証すべき |
+| **domain (Domain)** | ユニットテスト | 80%以上 | ビジネスルールの正確性が最重要、純粋なロジックでテストしやすい |
+| **infra (Infrastructure)** | ユニット + 統合テスト | 60%以上 | 外部依存のモック化が複雑なため |
+
+### 1. cmd層（Presentation Layer）のテスト
+
+**方針**: E2Eテストで担保し、ユニットテストは最小限
+
+cmd層はフラグ解析とApplication層への委譲のみを行うため、個別のユニットテストよりもE2Eテストでの検証が効果的です。
+
+```go
+// cmd層のテストは基本的に不要
+// E2Eテスト（test/e2e/）で以下を検証：
+// - コマンドライン引数の解析
+// - エラーメッセージの表示
+// - 終了コード
+```
+
+**テスト対象**:
+- ❌ ユニットテスト: 原則不要（カバレッジ目標なし）
+- ✅ E2Eテスト: コマンド全体の動作を検証
+
+### 2. app層（Application Layer）のテスト
+
+**方針**: 統合テストでオーケストレーションを検証
+
+app層は複数コンポーネントの協調動作（オーケストレーション）を担うため、モックではなく実際のinfra層実装と組み合わせた統合テストで検証します。
+
+```go
+//go:build integration
+
+// test/integration/app/recommend_test.go
+// ※簡潔さのため、import文やセットアップコード（config, ctx, params等）は省略しています
+func TestRecommendUseCase_Execute(t *testing.T) {
+    // 実際のinfra層実装を使用
+    fetcher := fetch.NewRSSFetcher(http.DefaultClient)
+
+    // 外部APIのみモックサーバーを使用
+    slackHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusOK)
+    })
+    mockSlackServer := httptest.NewServer(slackHandler)
+    defer mockSlackServer.Close()
+
+    slackSender := message.NewSlackSender(config, slack.New("token", slack.OptionAPIURL(mockSlackServer.URL+"/")))
+
+    // 実際のコンポーネントでUseCaseを構築
+    useCase := app.NewRecommendUseCase(fetcher, recommender, []domain.MessageSender{slackSender})
+
+    // 統合テスト実行
+    err := useCase.Execute(ctx, params)
+    assert.NoError(t, err)
+}
+```
+
+**テスト対象**:
+- ✅ 複数コンポーネントの協調動作
+- ✅ 設定の読み込み・マージ・検証の一連のフロー
+- ✅ エラーハンドリング（実際のエラー伝播）
+
+**ユニットテストについて**:
+- ❌ オーケストレーションのモックテストは原則不要
+- ⚠️ 複雑な条件分岐がある場合のみ、個別にユニットテストを追加
+
+### 3. domain層（Domain Layer）のテスト
+
+**方針**: 高カバレッジのユニットテストでビジネスルールを厳密に検証
+
+domain層は外部依存がなく純粋なロジックのため、テストが容易です。ビジネスルールの正確性を保証するため、最も高いカバレッジを維持します。
+
+```go
+// internal/domain/entity/article_test.go
+func TestArticle_Validate(t *testing.T) {
+    tests := []struct {
+        name    string
+        article entity.Article
+        wantErr bool
+    }{
+        {
+            name:    "正常系: 有効な記事",
+            article: entity.Article{Title: "Test", Link: "https://example.com"},
+            wantErr: false,
+        },
+        {
+            name:    "異常系: リンクが空",
+            article: entity.Article{Title: "Test", Link: ""},
+            wantErr: true,
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := tt.article.Validate()
+            if tt.wantErr {
+                assert.Error(t, err)
+            } else {
+                assert.NoError(t, err)
+            }
+        })
+    }
+}
+```
+
+**テスト対象**:
+- ✅ エンティティのバリデーション
+- ✅ 値オブジェクトの等価性・変換
+- ✅ ドメインサービスのロジック
+- ✅ 境界値・エッジケース
+
+### 4. infra層（Infrastructure Layer）のテスト
+
+**方針**: ユニットテスト + 統合テストの組み合わせ
+
+infra層は外部システムとの連携を担うため、モックを使用したユニットテストと、実際の外部システムを使用した統合テストを組み合わせます。
+
+```go
+// internal/infra/message/slack_test.go（ユニットテスト）
+func TestSlackSender_SendRecommend(t *testing.T) {
+    // httptest.NewServerでSlack APIをモック
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+    }))
+    defer server.Close()
+
+    sender := NewSlackSender(config, slack.New("token", slack.OptionAPIURL(server.URL+"/")))
+    err := sender.SendRecommend(recommend, "message")
+    assert.NoError(t, err)
+}
+```
+
+**テスト対象**:
+- ✅ domain層インターフェースの実装
+- ✅ 外部APIのリクエスト/レスポンス処理
+- ✅ ファイルI/O処理
+- ✅ エラーハンドリング（ネットワークエラー等）
+
+### カバレッジ確認コマンド
+
+```bash
+# 層別カバレッジの確認
+go test -cover ./internal/domain/...   # 目標: 80%以上
+go test -cover ./internal/app/...      # 統合テストで検証（カバレッジ目標なし）
+go test -cover ./internal/infra/...    # 目標: 60%以上
+go test -cover ./cmd/...               # 目標: 設定なし
+
+# 全体カバレッジレポート
+go test -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
+```
+
 ## テストの実行
 
 ### 基本的なテスト実行
@@ -22,7 +182,7 @@ make test
 
 # 特定のパッケージのテスト実行
 go test ./internal/domain/...
-go test ./cmd/runner/...
+go test ./internal/app/...
 
 # 詳細な出力でテスト実行
 go test -v ./...
@@ -96,33 +256,33 @@ func TestFunctionName(t *testing.T) {
 }
 ```
 
-### 実際の例（cmd/runner/recommend_test.go より）
+### 実際の例（internal/app/recommend_test.go より）
 
 ```go
-func TestNewRecommendRunner(t *testing.T) {
+func TestNewRecommendUseCase(t *testing.T) {
     tests := []struct {
         name             string
-        outputConfig     *infra.OutputConfig
-        promptConfig     *infra.PromptConfig
+        outputConfig     *entity.OutputConfig
+        promptConfig     *entity.PromptConfig
         expectError      bool
         expectedErrorMsg string
     }{
         {
-            name:         "Successful creation with no viewers",
-            outputConfig: &infra.OutputConfig{},
-            promptConfig: &infra.PromptConfig{CommentPromptTemplate: "test-template"},
+            name:         "正常系: senderなしで作成",
+            outputConfig: &entity.OutputConfig{},
+            promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
             expectError:  false,
         },
         {
-            name: "Successful creation with SlackAPI viewer",
-            outputConfig: &infra.OutputConfig{
-                SlackAPI: &infra.SlackAPIConfig{
-                    APIToken:        "test-token",
+            name: "正常系: SlackAPI senderありで作成",
+            outputConfig: &entity.OutputConfig{
+                SlackAPI: &entity.SlackAPIConfig{
+                    APIToken:        entity.NewSecret("test-token"),
                     Channel:         "#test",
                     MessageTemplate: stringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
                 },
             },
-            promptConfig: &infra.PromptConfig{CommentPromptTemplate: "test-template"},
+            promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
             expectError:  false,
         },
     }
@@ -135,7 +295,7 @@ func TestNewRecommendRunner(t *testing.T) {
             mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
             mockRecommender := mock_domain.NewMockRecommender(ctrl)
 
-            runner, err := NewRecommendRunner(
+            useCase, err := NewRecommendUseCase(
                 mockFetchClient,
                 mockRecommender,
                 tt.outputConfig,
@@ -147,7 +307,7 @@ func TestNewRecommendRunner(t *testing.T) {
                 assert.Contains(t, err.Error(), tt.expectedErrorMsg)
             } else {
                 assert.NoError(t, err)
-                assert.NotNil(t, runner)
+                assert.NotNil(t, useCase)
             }
         })
     }
@@ -178,42 +338,28 @@ mockgen -source=internal/domain/fetch.go -destination=internal/domain/mock_domai
 
 ### モックの使用例
 
+モックは主にdomain層やinfra層のユニットテストで使用します。
+**注意**: app層のテストでは統合テストを推奨しているため、モックの使用は限定的です。
+
 ```go
-func TestRecommendRunner_Run(t *testing.T) {
-    ctrl := gomock.NewController(t)
-    defer ctrl.Finish()
+// infra層のテスト例（internal/infra/message/slack_test.go）
+func TestSlackSender_SendRecommend(t *testing.T) {
+    // 外部APIのモックサーバーを作成
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+    }))
+    defer server.Close()
 
-    // モックの作成
-    mockFetcher := mock_domain.NewMockFetcher(ctrl)
-    mockRecommender := mock_domain.NewMockRecommender(ctrl)
-    mockViewer := mock_domain.NewMockViewer(ctrl)
-
-    // 期待値の設定
-    mockFetcher.EXPECT().
-        Fetch(gomock.Any(), []string{"https://example.com/feed"}).
-        Return([]entity.Article{
-            {Title: "Test Article", Link: "https://example.com/1"},
-        }, nil)
-
-    mockRecommender.EXPECT().
-        Recommend(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-        Return(&entity.Recommend{
-            Article: entity.Article{Title: "Test Article"},
-            Comment: "Test comment",
-        }, nil)
-
-    mockViewer.EXPECT().
-        SendRecommend(gomock.Any(), gomock.Any()).
-        Return(nil)
+    // テスト対象のインスタンスを作成
+    sender := NewSlackSender(config, slack.New("token", slack.OptionAPIURL(server.URL+"/")))
 
     // テスト実行
-    runner := &RecommendRunner{
-        fetcher:     mockFetcher,
-        recommender: mockRecommender,
-        viewers:     []domain.Viewer{mockViewer},
+    recommend := &entity.Recommend{
+        Article: entity.Article{Title: "Test Article", Link: "https://example.com/1"},
+        Comment: stringPtr("Test comment"),
     }
-
-    err := runner.Run(context.Background(), params, profile)
+    err := sender.SendRecommend(recommend, "message")
     assert.NoError(t, err)
 }
 ```
@@ -330,6 +476,7 @@ ai-feedプロジェクトでは3種類のテストを使い分けています：
 | **ビルドタグ** | なし | `integration` | `e2e` |
 | **実行コマンド** | `make test` | `make test-integration` | `make test-e2e` |
 | **目的** | ロジックの正確性 | コンポーネント間の連携 | 実際のユーザー操作の再現 |
+| **主な対象層** | domain, infra | app, infra | cmd（Presentation層全体） |
 
 ### ファイル配置ルール
 
