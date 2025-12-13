@@ -8,7 +8,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
-	"github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO: cmd/runner を internal/app に移動後、infra依存を解消する
+	"github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO(#333): cmd/runner を internal/app に移動後、infra依存を解消する
 )
 
 // ProfileCheckResult はプロファイル検証の結果を表す構造体

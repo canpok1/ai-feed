@@ -25,6 +25,12 @@ rules:
     to:
       - '^github\.com/canpok1/ai-feed/cmd.*$'
 
+  # app層 → infra層 への依存禁止
+  # クリーンアーキテクチャにおいて app層は domain層のインターフェースのみに依存すべき
+  - from: '^github\.com/canpok1/ai-feed/internal/app.*$'
+    to:
+      - '^github\.com/canpok1/ai-feed/internal/infra.*$'
+
   # cmd/runner層 → cmd層 への依存禁止（cmd/runner自身は除く）
   # cmd はプレゼンテーション層、cmd/runner はビジネスロジック層
   - from: '^github\.com/canpok1/ai-feed/cmd/runner.*$'
