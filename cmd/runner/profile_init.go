@@ -14,11 +14,17 @@ type ProfileInitRunner struct {
 }
 
 // NewProfileInitRunner はProfileInitRunnerの新しいインスタンスを作成する
-func NewProfileInitRunner(templateRepo domain.ProfileTemplateRepository, stderr io.Writer) *ProfileInitRunner {
+func NewProfileInitRunner(templateRepo domain.ProfileTemplateRepository, stderr io.Writer) (*ProfileInitRunner, error) {
+	if templateRepo == nil {
+		return nil, fmt.Errorf("templateRepo cannot be nil")
+	}
+	if stderr == nil {
+		return nil, fmt.Errorf("stderr cannot be nil")
+	}
 	return &ProfileInitRunner{
 		templateRepo: templateRepo,
 		stderr:       stderr,
-	}
+	}, nil
 }
 
 // Run はprofile initコマンドのビジネスロジックを実行する

@@ -17,37 +17,40 @@ import (
 func TestNewProfileInitRunner(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name         string
-		templateRepo func(ctrl *gomock.Controller) *mock_domain.MockProfileTemplateRepository
-		wantNil      bool
-	}{
-		{
-			name: "正常系: Runnerが正常に作成される",
-			templateRepo: func(ctrl *gomock.Controller) *mock_domain.MockProfileTemplateRepository {
-				return mock_domain.NewMockProfileTemplateRepository(ctrl)
-			},
-			wantNil: false,
-		},
-	}
+	t.Run("正常系: Runnerが正常に作成される", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		mockRepo := mock_domain.NewMockProfileTemplateRepository(ctrl)
+		stderr := &bytes.Buffer{}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+		runner, err := NewProfileInitRunner(mockRepo, stderr)
 
-			ctrl := gomock.NewController(t)
-			mockRepo := tt.templateRepo(ctrl)
-			stderr := &bytes.Buffer{}
+		assert.NoError(t, err)
+		assert.NotNil(t, runner)
+	})
 
-			runner := NewProfileInitRunner(mockRepo, stderr)
+	t.Run("異常系: templateRepoがnilの場合はエラー", func(t *testing.T) {
+		t.Parallel()
+		stderr := &bytes.Buffer{}
 
-			if tt.wantNil {
-				assert.Nil(t, runner)
-			} else {
-				assert.NotNil(t, runner)
-			}
-		})
-	}
+		runner, err := NewProfileInitRunner(nil, stderr)
+
+		assert.Error(t, err)
+		assert.Nil(t, runner)
+		assert.Contains(t, err.Error(), "templateRepo cannot be nil")
+	})
+
+	t.Run("異常系: stderrがnilの場合はエラー", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		mockRepo := mock_domain.NewMockProfileTemplateRepository(ctrl)
+
+		runner, err := NewProfileInitRunner(mockRepo, nil)
+
+		assert.Error(t, err)
+		assert.Nil(t, runner)
+		assert.Contains(t, err.Error(), "stderr cannot be nil")
+	})
 }
 
 func TestProfileInitRunner_Run(t *testing.T) {
@@ -98,7 +101,8 @@ func TestProfileInitRunner_Run(t *testing.T) {
 			mockRepo := tt.setupMock(ctrl)
 			stderr := &bytes.Buffer{}
 
-			runner := NewProfileInitRunner(mockRepo, stderr)
+			runner, runnerErr := NewProfileInitRunner(mockRepo, stderr)
+			require.NoError(t, runnerErr)
 			err := runner.Run()
 
 			if tt.wantErr {
@@ -181,7 +185,8 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 			// ProfileInitRunnerを作成して実行
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
-			runner := NewProfileInitRunner(profileRepo, stderr)
+			runner, runnerErr := NewProfileInitRunner(profileRepo, stderr)
+			require.NoError(t, runnerErr)
 			err := runner.Run()
 
 			// エラーの確認
