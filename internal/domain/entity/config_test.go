@@ -17,7 +17,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 	slog.SetDefault(logger)
 	defer slog.SetDefault(originalLogger)
 
-	t.Run("AI.Gemini is nil", func(t *testing.T) {
+	t.Run("異常系: AI.Geminiがnil", func(t *testing.T) {
 		logBuffer.Reset()
 		profileWithNilGemini := &Profile{
 			AI:     &AIConfig{Gemini: nil},
@@ -29,7 +29,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 		assert.Contains(t, output, "test nil gemini")
 	})
 
-	t.Run("AI is nil", func(t *testing.T) {
+	t.Run("異常系: AIがnil", func(t *testing.T) {
 		logBuffer.Reset()
 		profileWithNilAI := &Profile{
 			AI:     nil,
@@ -42,7 +42,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 		assert.Contains(t, output, "test nil ai")
 	})
 
-	t.Run("Output.SlackAPI and Misskey are nil", func(t *testing.T) {
+	t.Run("異常系: Output.SlackAPIとMisskeyがnil", func(t *testing.T) {
 		logBuffer.Reset()
 		var apiKey SecretString
 		apiKey.UnmarshalText([]byte("key"))
@@ -57,6 +57,56 @@ func TestLogValue_WithNilFields(t *testing.T) {
 		// APIKeyがマスクされていることを確認
 		assert.Contains(t, output, "[REDACTED]")
 		assert.NotContains(t, output, "key")
+	})
+
+	t.Run("異常系: Output.SlackAPIがnil", func(t *testing.T) {
+		logBuffer.Reset()
+		var apiKey SecretString
+		apiKey.UnmarshalText([]byte("key"))
+		var misskeyToken SecretString
+		misskeyToken.UnmarshalText([]byte("misskey-token"))
+		messageTemplate := "{{.Article.Title}}"
+		profileWithNilSlackAPI := &Profile{
+			AI:     &AIConfig{Gemini: &GeminiConfig{Type: "test", APIKey: apiKey}},
+			Prompt: &PromptConfig{FixedMessage: "test"},
+			Output: &OutputConfig{
+				SlackAPI: nil,
+				Misskey: &MisskeyConfig{
+					Enabled:         true,
+					APIToken:        misskeyToken,
+					APIURL:          "https://misskey.example.com",
+					MessageTemplate: &messageTemplate,
+				},
+			},
+		}
+		slog.Debug("test nil slackapi", slog.Any("profile", *profileWithNilSlackAPI))
+		output := logBuffer.String()
+		assert.Contains(t, output, "test nil slackapi")
+	})
+
+	t.Run("異常系: Output.Misskeyがnil", func(t *testing.T) {
+		logBuffer.Reset()
+		var apiKey SecretString
+		apiKey.UnmarshalText([]byte("key"))
+		var slackToken SecretString
+		slackToken.UnmarshalText([]byte("slack-token"))
+		messageTemplate := "{{.Article.Title}}"
+		profileWithNilMisskey := &Profile{
+			AI:     &AIConfig{Gemini: &GeminiConfig{Type: "test", APIKey: apiKey}},
+			Prompt: &PromptConfig{FixedMessage: "test"},
+			Output: &OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:         true,
+					APIToken:        slackToken,
+					Channel:         "#test",
+					MessageTemplate: &messageTemplate,
+				},
+				Misskey: nil,
+			},
+		}
+		slog.Debug("test nil misskey", slog.Any("profile", *profileWithNilMisskey))
+		output := logBuffer.String()
+		assert.Contains(t, output, "test nil misskey")
 	})
 }
 
