@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/canpok1/ai-feed/internal/infra/profile"
+	"github.com/canpok1/ai-feed/internal/domain"
 )
 
 // ProfileInitRunner はprofile initコマンドのビジネスロジックを実行する構造体
 type ProfileInitRunner struct {
-	yamlRepo *profile.YamlProfileRepository
-	stderr   io.Writer
+	templateRepo domain.ProfileTemplateRepository
+	stderr       io.Writer
 }
 
 // NewProfileInitRunner はProfileInitRunnerの新しいインスタンスを作成する
-func NewProfileInitRunner(yamlRepo *profile.YamlProfileRepository, stderr io.Writer) *ProfileInitRunner {
+func NewProfileInitRunner(templateRepo domain.ProfileTemplateRepository, stderr io.Writer) *ProfileInitRunner {
 	return &ProfileInitRunner{
-		yamlRepo: yamlRepo,
-		stderr:   stderr,
+		templateRepo: templateRepo,
+		stderr:       stderr,
 	}
 }
 
@@ -27,7 +27,7 @@ func (r *ProfileInitRunner) Run() error {
 	fmt.Fprintln(r.stderr, "設定テンプレートを生成しています...")
 
 	// テンプレートファイルを直接生成（明確で直接的）
-	err := r.yamlRepo.SaveProfileTemplate()
+	err := r.templateRepo.SaveProfileTemplate()
 	if err != nil {
 		return fmt.Errorf("failed to create profile file: %w", err)
 	}

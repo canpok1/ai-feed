@@ -13,6 +13,8 @@ import (
 )
 
 func TestProfileCheckRunner_Run(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		setup       func(t *testing.T, tmpDir string) (configPath string, profilePath string)
@@ -21,7 +23,7 @@ func TestProfileCheckRunner_Run(t *testing.T) {
 		errContains string
 	}{
 		{
-			name: "config.ymlのみで検証成功",
+			name: "正常系: config.ymlのみで検証成功",
 			setup: func(t *testing.T, tmpDir string) (string, string) {
 				configPath := filepath.Join(tmpDir, "config.yml")
 				configContent := `
@@ -51,7 +53,7 @@ default_profile:
 			},
 		},
 		{
-			name: "プロファイルファイル指定で検証成功",
+			name: "正常系: プロファイルファイル指定で検証成功",
 			setup: func(t *testing.T, tmpDir string) (string, string) {
 				configPath := filepath.Join(tmpDir, "config.yml")
 				configContent := `
@@ -88,7 +90,7 @@ output:
 			},
 		},
 		{
-			name: "必須フィールド不足でエラー",
+			name: "異常系: 必須フィールド不足でバリデーションエラー",
 			setup: func(t *testing.T, tmpDir string) (string, string) {
 				configPath := filepath.Join(tmpDir, "config.yml")
 				configContent := `
@@ -113,7 +115,7 @@ default_profile:
 			},
 		},
 		{
-			name: "存在しないプロファイルファイル",
+			name: "異常系: 存在しないプロファイルファイル",
 			setup: func(t *testing.T, tmpDir string) (string, string) {
 				configPath := filepath.Join(tmpDir, "config.yml")
 				configContent := `
@@ -132,7 +134,7 @@ default_profile:
 			errContains: "プロファイルファイルが見つかりません",
 		},
 		{
-			name: "config.ymlが存在しない場合でも検証成功",
+			name: "正常系: config.ymlが存在しない場合でも検証成功",
 			setup: func(t *testing.T, tmpDir string) (string, string) {
 				configPath := filepath.Join(tmpDir, "nonexistent_config.yml")
 				profilePath := filepath.Join(tmpDir, "profile.yml")
@@ -162,7 +164,7 @@ output:
 			},
 		},
 		{
-			name: "不正なYAML形式のプロファイル",
+			name: "異常系: 不正なYAML形式のプロファイル",
 			setup: func(t *testing.T, tmpDir string) (string, string) {
 				configPath := filepath.Join(tmpDir, "config.yml")
 				configContent := `
@@ -191,6 +193,8 @@ invalid yaml content
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			// テスト用の一時ディレクトリを作成
 			tmpDir := t.TempDir()
 
