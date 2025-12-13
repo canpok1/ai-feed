@@ -1,203 +1,178 @@
-# golangci-lint設定ファイル
+# golangci-lint設定ファイル (v2形式)
 # コード品質測定ツールの設定
 
+version: "2"
+
 run:
-  # タイムアウト設定（デフォルトは1分）
-  timeout: 5m
-
-  # 並列実行数（0はCPUコア数と同じ）
-  concurrency: 0
-
-  # テスト対象のディレクトリ
-  tests: true
-
   # ビルドタグ
   build-tags:
     - integration
+  # テスト対象
+  tests: true
 
 # 出力設定
 output:
-  # 出力フォーマット: colored-line-number|line-number|json|tab|checkstyle|code-climate
   formats:
-    - format: colored-line-number
-
-  # 結果の表示順序
-  sort-results: true
+    text:
+      path: stdout
 
 # リンター設定
 linters:
   # すべてのリンターを無効化してから必要なものだけ有効化
-  disable-all: true
-
+  default: none
   enable:
-    # エラーチェック漏れの検出
-    - errcheck
-
-    # セキュリティ脆弱性の検出
-    - gosec
-
-    # 循環的複雑度のチェック
-    - gocyclo
-
     # コード重複の検出
     - dupl
-
+    # エラーチェック漏れの検出
+    - errcheck
+    # エラー命名規則のチェック
+    - errname
+    # エラーハンドリングのチェック
+    - errorlint
+    # コードスタイルのチェック
+    - gocritic
+    # 循環的複雑度のチェック
+    - gocyclo
+    # モジュールディレクティブのチェック
+    - gomoddirectives
+    # モジュール依存関係のガード
+    - gomodguard
+    # セキュリティ脆弱性の検出
+    - gosec
+    # 基本的な静的解析
+    - govet
     # 無効な代入の検出
     - ineffassign
-
+    # ミススペルのチェック
+    - misspell
+    # 静的解析（gosimple、styleckeck統合）
+    - staticcheck
     # 不要な型変換の検出
     - unconvert
 
-    # コードスタイルのチェック
-    - gocritic
+  # 各リンターの詳細設定
+  settings:
+    # コード重複の設定
+    dupl:
+      # 重複とみなすトークン数の閾値
+      threshold: 100
 
-    # 基本的な静的解析
-    - govet
-    - staticcheck
+    # エラーチェックの設定
+    errcheck:
+      # エラーチェックを除外する関数
+      exclude-functions:
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - fmt.Println
+        - (io.Writer).Write
+        - os.Remove
 
-    # 未使用の変数・定数・関数の検出
-    # - unused  # 既存コードの修正が必要なため一旦除外
+    # エラーハンドリングの設定
+    errorlint:
+      # %wを使ったエラーラップのチェック
+      errorf: true
+      # 型アサーションのチェック（段階的導入のため一旦無効化）
+      asserts: false
+      # エラー比較のチェック
+      comparison: true
 
-    # コードの簡素化提案
-    - gosimple
+    # コードスタイルチェックの設定
+    gocritic:
+      # 無効化するチェック（段階的導入のため）
+      disabled-checks:
+        - commentedOutCode
+        - whyNoLint
+        - hugeParam  # 既存コードの大規模修正が必要なため一旦除外
+        - octalLiteral  # Go 1.13以前の形式で広範囲に使用されているため一旦除外
+        - emptyStringTest  # コードスタイルの問題のため一旦除外
+        - unlambda  # コードスタイルの問題のため一旦除外
+        - unnamedResult  # コードスタイルの問題のため一旦除外
+        - appendCombine  # コードスタイルの問題のため一旦除外
+        - paramTypeCombine  # コードスタイルの問題のため一旦除外
+        - elseif  # コードスタイルの問題のため一旦除外
+      # 有効化するチェック
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
 
-    # 型アサーションのチェック
-    - typecheck
+    # 循環的複雑度の閾値設定
+    gocyclo:
+      # 関数の複雑度の上限（推奨: 10-15、段階的導入のため30に設定）
+      min-complexity: 30
 
-    # フォーマットのチェック
-    - gofmt
-    # - goimports  # 既存コードで広範囲に使用されているため一旦除外
+    # セキュリティチェックの設定
+    gosec:
+      # 除外するルール
+      # TODO: 段階的にセキュリティチェックを有効化する
+      excludes:
+        - G301  # ディレクトリパーミッション（0755 -> 0750への変更を検討）
+        - G302  # ファイルパーミッション（0666/0644 -> 0600への変更を検討）
+        - G304  # ファイル読み込み（filepath.Clean()の使用を検討）
+        - G404  # 弱い乱数生成（推薦機能で使用、セキュリティクリティカルではない）
+        - G104  # エラーハンドリング（errcheckと重複）
+      # 信頼度レベル: low, medium, high
+      confidence: medium
 
-    # ミススペルのチェック
-    - misspell
+    # nilチェックの設定（参考用、現在無効）
+    nilnil:
+      # nilとnilの比較を検出
+      checked-types:
+        - ptr
+        - func
+        - iface
+        - map
+        - chan
 
-    # コメントのチェック
-    # - godot  # 既存コードの修正が必要なため一旦除外
+  # 除外設定
+  exclusions:
+    # 生成されたファイルの除外設定
+    generated: lax
+    # 除外パターン
+    rules:
+      # テストファイルでの一部チェックを無効化
+      - linters:
+          - dupl
+          - errcheck
+          - gosec
+        path: _test\.go
+      # 生成されたファイルを除外
+      - linters:
+          - all
+        path: mock_.*\.go
+      # main関数でのエラーチェック除外
+      - linters:
+          - errcheck
+        path: main\.go
+        text: Error return value is not checked
+    # 除外パス
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 
-    # nilチェックの検出
-    # - nilnil  # 既存コードの修正が必要なため一旦除外
-
-    # エラーハンドリングのチェック
-    - errname
-    - errorlint
-
-    # パフォーマンス改善の提案
-    # - prealloc  # 既存コードの修正が必要なため一旦除外
-
-    # 構造体タグのバリデーション
-    - gomoddirectives
-    - gomodguard
-
-# 各リンターの詳細設定
-linters-settings:
-  # 循環的複雑度の閾値設定
-  gocyclo:
-    # 関数の複雑度の上限（推奨: 10-15、段階的導入のため30に設定）
-    min-complexity: 30
-
-  # コード重複の設定
-  dupl:
-    # 重複とみなすトークン数の閾値
-    threshold: 100
-
-  # セキュリティチェックの設定
-  gosec:
-    # 除外するルール
-    # TODO: 段階的にセキュリティチェックを有効化する
-    # - G301, G302: ファイル/ディレクトリパーミッション（次期対応予定）
-    # - G304: ファイル読み込み（次期対応予定）
-    excludes:
-      - G301  # ディレクトリパーミッション（0755 -> 0750への変更を検討）
-      - G302  # ファイルパーミッション（0666/0644 -> 0600への変更を検討）
-      - G304  # ファイル読み込み（filepath.Clean()の使用を検討）
-      - G404  # 弱い乱数生成（推薦機能で使用、セキュリティクリティカルではない）
-      - G104  # エラーハンドリング（errcheckと重複）
-    # 信頼度レベル: low, medium, high
-    confidence: medium
-
-  # エラーチェックの設定
-  errcheck:
-    # エラーチェックを除外する関数
-    exclude-functions:
-      - fmt.Fprintf
-      - fmt.Fprintln
-      - fmt.Println
-      - (io.Writer).Write
-      - os.Remove
-
-  # コードスタイルチェックの設定
-  gocritic:
-    # 有効化するチェック
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-
-    # 無効化するチェック（段階的導入のため）
-    disabled-checks:
-      - commentedOutCode
-      - whyNoLint
-      - hugeParam  # 既存コードの大規模修正が必要なため一旦除外
-      - octalLiteral  # Go 1.13以前の形式で広範囲に使用されているため一旦除外
-      - emptyStringTest  # コードスタイルの問題のため一旦除外
-      - unlambda  # コードスタイルの問題のため一旦除外
-      - unnamedResult  # コードスタイルの問題のため一旦除外
-      - appendCombine  # コードスタイルの問題のため一旦除外
-      - paramTypeCombine  # コードスタイルの問題のため一旦除外
-      - elseif  # コードスタイルの問題のため一旦除外
-
-  # インポート順序のチェック
-  goimports:
-    # ローカルパッケージのプレフィックス
-    local-prefixes: github.com/canpok1/ai-feed
-
-  # nilチェックの設定
-  nilnil:
-    # nilとnilの比較を検出
-    checked-types:
-      - ptr
-      - func
-      - iface
-      - map
-      - chan
-
-  # エラーハンドリングの設定
-  errorlint:
-    # %wを使ったエラーラップのチェック
-    errorf: true
-    # エラー比較のチェック
-    comparison: true
-    # 型アサーションのチェック（段階的導入のため一旦無効化）
-    asserts: false
-
-# 除外設定
+# Issues設定
 issues:
-  # 除外するパターン
-  exclude-rules:
-    # テストファイルでの一部チェックを無効化
-    - path: _test\.go
-      linters:
-        - dupl
-        - gosec
-        - errcheck
-
-    # 生成されたファイルを除外
-    - path: mock_.*\.go
-      linters:
-        - all
-
-    # main関数でのエラーチェック除外
-    - path: main\.go
-      linters:
-        - errcheck
-      text: "Error return value is not checked"
-
-  # デフォルトの除外ルールを使用しない
-  exclude-use-default: false
-
   # 同じ問題の最大表示回数（0は無制限）
   max-issues-per-linter: 0
   max-same-issues: 0
-
   # 新しい問題のみ報告（falseですべての問題を報告）
   new: false
+
+# フォーマッター設定
+formatters:
+  enable:
+    # コードフォーマットのチェック
+    - gofmt
+  settings:
+    # インポート順序のチェック（参考用）
+    goimports:
+      # ローカルパッケージのプレフィックス
+      local-prefixes:
+        - github.com/canpok1/ai-feed
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

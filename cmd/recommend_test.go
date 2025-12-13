@@ -90,12 +90,13 @@ func TestNewRecommendParams(t *testing.T) {
 			}
 			if tt.sourceFlag != "" {
 				// sourceFlagが設定されている場合、一時ソースファイルを作成
-				if tt.sourceFlag == "tmp_source.txt" {
+				switch tt.sourceFlag {
+				case "tmp_source.txt":
 					content := "http://example.com/from_file.xml\nhttp://another.com/from_file.xml"
 					err := os.WriteFile(tt.sourceFlag, []byte(content), 0644)
 					assert.NoError(t, err)
 					defer os.Remove(tt.sourceFlag)
-				} else if tt.sourceFlag == "empty_source.txt" {
+				case "empty_source.txt":
 					err := os.WriteFile(tt.sourceFlag, []byte(""), 0644)
 					assert.NoError(t, err)
 					defer os.Remove(tt.sourceFlag)
