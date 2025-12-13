@@ -11,6 +11,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestProfileInitRunner_EdgeCases エッジケースのテスト
@@ -70,7 +71,8 @@ func TestProfileInitRunner_EdgeCases(t *testing.T) {
 
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
-			runner := NewProfileInitRunner(profileRepo, stderr)
+			runner, runnerErr := NewProfileInitRunner(profileRepo, stderr)
+			require.NoError(t, runnerErr)
 			err := runner.Run()
 
 			if tt.wantErr {
@@ -110,7 +112,11 @@ func TestProfileInitRunner_ConcurrentExecution(t *testing.T) {
 			filePath := filepath.Join(tmpDir, fmt.Sprintf("profile_%d.yml", index))
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
-			runner := NewProfileInitRunner(profileRepo, stderr)
+			runner, err := NewProfileInitRunner(profileRepo, stderr)
+			if err != nil {
+				results <- err
+				return
+			}
 			results <- runner.Run()
 		}(i)
 	}

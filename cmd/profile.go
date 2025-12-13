@@ -34,10 +34,12 @@ func makeProfileInitCmd() *cobra.Command {
 			fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを初期化しています... (%s)\n", filePath)
 
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			r := runner.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
-			err := r.Run()
+			r, err := runner.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to create runner: %w", err)
+			}
+			if runErr := r.Run(); runErr != nil {
+				return runErr
 			}
 			// 完了メッセージ（stdout）
 			cmd.Printf("プロファイルファイルを作成しました: %s\n", filePath)

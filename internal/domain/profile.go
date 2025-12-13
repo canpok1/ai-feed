@@ -8,3 +8,8 @@ import (
 type ProfileRepository interface {
 	LoadProfile() (*entity.Profile, error)
 }
+
+// ProfileTemplateRepository はプロファイルテンプレートの保存を担当するインターフェース
+type ProfileTemplateRepository interface {
+	SaveProfileTemplate() error
+}

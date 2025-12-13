@@ -10,6 +10,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // isRunningAsRoot はルート権限で実行されているかどうかを確認する
@@ -75,7 +76,8 @@ func TestProfileInitRunner_Run_Integration(t *testing.T) {
 			// ProfileInitRunnerを作成
 			yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
-			runner := NewProfileInitRunner(yamlRepo, stderr)
+			runner, runnerErr := NewProfileInitRunner(yamlRepo, stderr)
+			require.NoError(t, runnerErr)
 
 			// 実行
 			err := runner.Run()
@@ -113,7 +115,11 @@ func TestProfileInitRunner_ConcurrentIntegration(t *testing.T) {
 			filePath := filepath.Join(tempDir, "concurrent_profile.yml")
 			yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
-			runner := NewProfileInitRunner(yamlRepo, stderr)
+			runner, err := NewProfileInitRunner(yamlRepo, stderr)
+			if err != nil {
+				results <- err
+				return
+			}
 			results <- runner.Run()
 		}()
 	}
@@ -146,7 +152,10 @@ func BenchmarkProfileInitRunner_Run(b *testing.B) {
 		filePath := filepath.Join(tempDir, "bench_profile_"+strconv.Itoa(i)+".yml")
 		yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 		stderr := &bytes.Buffer{}
-		runner := NewProfileInitRunner(yamlRepo, stderr)
+		runner, err := NewProfileInitRunner(yamlRepo, stderr)
+		if err != nil {
+			b.Fatalf("failed to create runner: %v", err)
+		}
 		b.StartTimer()
 
 		_ = runner.Run()
@@ -165,7 +174,10 @@ func BenchmarkProfileInitRunner_ConcurrentRun(b *testing.B) {
 			filePath := filepath.Join(tempDir, "concurrent_bench_"+strconv.FormatInt(id, 10)+".yml")
 			yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
-			runner := NewProfileInitRunner(yamlRepo, stderr)
+			runner, err := NewProfileInitRunner(yamlRepo, stderr)
+			if err != nil {
+				b.Fatalf("failed to create runner: %v", err)
+			}
 			_ = runner.Run()
 		}
 	})
