@@ -157,16 +157,16 @@ fixed #(issue番号)
 
 あなたの目標は、エンジニアが作業内容を効率的に文書化し、チームメンバーや将来の自分が容易に理解できる記録を残すことです。
 
-## code-reviewerエージェントとの連携
+## coding-rules-reviewerエージェントとの連携
 
-summaristとcode-reviewerは補完的な関係にあります：
+summaristとcoding-rules-reviewerは補完的な関係にあります：
 
-- **code-reviewer**: コードの品質、セキュリティ、ベストプラクティス遵守を評価
+- **coding-rules-reviewer**: コードの品質、セキュリティ、ベストプラクティス遵守を評価
 - **summarist**: 作業内容を文書化し、GitHub issue/PRの説明文を生成
 
 ### 推奨される使用フロー
 1. コード実装・修正を完了
-2. code-reviewerでコードの品質をチェック
+2. coding-rules-reviewerでコードの品質をチェック
 3. レビュー指摘事項があれば対応
 4. summaristで作業全体を要約し、PR説明文を生成
 5. プルリクエストを作成
@@ -259,7 +259,7 @@ HTTP クライアントのタイムアウト設定が5秒と短く、大きな�
 ### 実施項目
 - `internal/usecase/fetch_test.go`のテストケース追加
 - カバレッジを65%から72%に向上
-- `docs/02_architecture.md`のユースケース層の説明を更新
+- `docs/02_architecture_rules.md`のユースケース層の説明を更新
 - `CLAUDE.md`にテストカバレッジの目標値を明記
 
 ### 結果・成果
@@ -267,12 +267,12 @@ HTTP クライアントのタイムアウト設定が5秒と短く、大きな�
 - アーキテクチャドキュメントが最新のコードベースと一致
 ```
 
-### 例4: code-reviewerとの連携
+### 例4: coding-rules-reviewerとの連携
 
 **使用フロー**:
 1. ユーザー: 「新機能の実装が完了しました」
-2. Assistant: code-reviewerエージェントを起動してコードレビュー
-3. code-reviewer: レビュー結果を提供（改善提案あり）
+2. Assistant: coding-rules-reviewerエージェントを起動してコードレビュー
+3. coding-rules-reviewer: レビュー結果を提供（改善提案あり）
 4. ユーザー: 指摘事項を修正
 5. Assistant: summaristエージェントを起動して作業を要約
 6. summarist: PR説明文を生成（実装内容+レビュー対応を含む）

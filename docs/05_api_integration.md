@@ -292,6 +292,6 @@ logging:
 
 ## 関連ドキュメント
 
-- [アーキテクチャ概要](./02_architecture.md) - API連携の内部実装
+- [アーキテクチャ概要](./02_architecture_rules.md) - API連携の内部実装
 - [開発環境セットアップ](./00_development_setup.md) - 開発環境での設定
-- [テストガイド](./03_testing.md) - API連携のテスト方法
+- [テストガイド](./03_testing_rules.md) - API連携のテスト方法
