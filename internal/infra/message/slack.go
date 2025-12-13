@@ -77,3 +77,8 @@ func (s *SlackSender) postMessage(msg string) error {
 	)
 	return err
 }
+
+// ServiceName はサービス名を返す
+func (s *SlackSender) ServiceName() string {
+	return "Slack"
+}

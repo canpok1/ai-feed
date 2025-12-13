@@ -9,14 +9,17 @@ import (
 	"math/rand/v2"
 
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/domain/cache"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
-	"github.com/canpok1/ai-feed/internal/infra/message"
-	"github.com/slack-go/slack"
 )
 
 // ErrNoArticlesFound は記事が見つからなかった場合のsentinel error
 var ErrNoArticlesFound = errors.New("no articles found in the feed")
+
+// MessageSenderFactory はMessageSenderを作成するためのファクトリ関数型
+type MessageSenderFactory func(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error)
+
+// RecommendCacheFactory はRecommendCacheを作成するためのファクトリ関数型
+type RecommendCacheFactory func(cacheConfig *entity.CacheConfig) (domain.RecommendCache, error)
 
 // RecommendParams はrecommendコマンドの実行パラメータを表す構造体
 type RecommendParams struct {
@@ -34,61 +37,42 @@ type RecommendRunner struct {
 }
 
 // NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
-func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recommender, stderr io.Writer, stdout io.Writer, outputConfig *entity.OutputConfig, promptConfig *entity.PromptConfig, cacheConfig *entity.CacheConfig) (*RecommendRunner, error) {
+func NewRecommendRunner(
+	fetchClient domain.FetchClient,
+	recommender domain.Recommender,
+	stderr io.Writer,
+	stdout io.Writer,
+	outputConfig *entity.OutputConfig,
+	promptConfig *entity.PromptConfig,
+	cacheConfig *entity.CacheConfig,
+	senderFactory MessageSenderFactory,
+	cacheFactory RecommendCacheFactory,
+) (*RecommendRunner, error) {
 	fetcher := domain.NewFetcher(
 		fetchClient,
-		func(url string, err error) error {
+		func(url string, fetchErr error) error {
 			fmt.Fprintf(stderr, "エラー: フィードの取得に失敗しました: %s\n", url)
 			fmt.Fprintln(stderr, "フィードのURLが正しいか確認してください。サイトが一時的に利用できない可能性もあります。")
-			slog.Error("Failed to fetch feed", "url", url, "error", err)
-			return err
+			slog.Error("Failed to fetch feed", "url", url, "error", fetchErr)
+			return fetchErr
 		},
 	)
-	var senders []domain.MessageSender
 
-	if outputConfig != nil {
-		if outputConfig.SlackAPI != nil {
-			// entity.SlackAPIConfigは既にToEntity()変換済みなので直接使用
-			slackConfig := outputConfig.SlackAPI
-			// enabledフラグのチェック
-			if !slackConfig.Enabled {
-				slog.Info("Slack API output is disabled (enabled: false)")
-			} else {
-				// Slackクライアントのオプションを設定
-				options := []slack.Option{}
-				if slackConfig.APIURL != nil && *slackConfig.APIURL != "" {
-					// テスト用：カスタムAPIエンドポイントを設定
-					options = append(options, slack.OptionAPIURL(*slackConfig.APIURL))
-				}
-				slackClient := slack.New(slackConfig.APIToken.Value(), options...)
-				slackSender := message.NewSlackSender(slackConfig, slackClient)
-				senders = append(senders, slackSender)
-			}
-		}
-		if outputConfig.Misskey != nil {
-			// entity.MisskeyConfigは既にToEntity()変換済みなので直接使用
-			misskeyConfig := outputConfig.Misskey
-			// enabledフラグのチェック
-			if !misskeyConfig.Enabled {
-				slog.Info("Misskey output is disabled (enabled: false)")
-			} else {
-				misskeySender, err := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken.Value(), misskeyConfig.MessageTemplate)
-				if err != nil {
-					return nil, fmt.Errorf("failed to create Misskey sender: %w", err)
-				}
-				senders = append(senders, misskeySender)
-			}
-		}
+	// ファクトリ関数を使用してMessageSenderを作成
+	senders, senderErr := senderFactory(outputConfig)
+	if senderErr != nil {
+		return nil, fmt.Errorf("failed to create message senders: %w", senderErr)
 	}
 
-	// キャッシュインスタンスの作成と初期化
-	articleCache, err := createCache(cacheConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create cache: %w", err)
+	// ファクトリ関数を使用してキャッシュを作成
+	articleCache, cacheErr := cacheFactory(cacheConfig)
+	if cacheErr != nil {
+		return nil, fmt.Errorf("failed to create cache: %w", cacheErr)
 	}
 
-	if err := articleCache.Initialize(); err != nil {
-		return nil, fmt.Errorf("failed to initialize cache: %w", err)
+	initErr := articleCache.Initialize()
+	if initErr != nil {
+		return nil, fmt.Errorf("failed to initialize cache: %w", initErr)
 	}
 
 	return &RecommendRunner{
@@ -99,15 +83,6 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 		stderr:      stderr,
 		stdout:      stdout,
 	}, nil
-}
-
-// createCache は設定に基づいてキャッシュインスタンスを作成する
-func createCache(config *entity.CacheConfig) (domain.RecommendCache, error) {
-	if config == nil || !config.Enabled {
-		return cache.NewNopCache(), nil
-	}
-
-	return cache.NewFileRecommendCache(config), nil
 }
 
 // selectRandomFeed は利用可能なfeed URLからランダムに1つを選択する
@@ -289,32 +264,14 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 	}
 
 	for _, sender := range r.senders {
-		var serviceName string
-		isKnownService := true
-		switch sender.(type) {
-		case *message.SlackSender:
-			serviceName = "Slack"
-		case *message.MisskeySender:
-			serviceName = "Misskey"
-		default:
-			isKnownService = false
-		}
-
-		if isKnownService {
-			fmt.Fprintf(r.stdout, "%sに投稿中...\n", serviceName)
-		}
+		serviceName := sender.ServiceName()
+		fmt.Fprintf(r.stdout, "%sに投稿中...\n", serviceName)
 
 		if sendErr := sender.SendRecommend(recommend, fixedMessage); sendErr != nil {
-			if isKnownService {
-				fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, sendErr)
-			} else {
-				fmt.Fprintf(r.stdout, "投稿でエラーが発生しました: %v\n", sendErr)
-			}
+			fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, sendErr)
 			errs = append(errs, fmt.Errorf("failed to send recommend: %w", sendErr))
 		} else {
-			if isKnownService {
-				fmt.Fprintf(r.stdout, "%sに投稿しました\n", serviceName)
-			}
+			fmt.Fprintf(r.stdout, "%sに投稿しました\n", serviceName)
 		}
 	}
 
