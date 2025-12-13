@@ -4,6 +4,8 @@
 version: "2"
 
 run:
+  # タイムアウト設定（デフォルトは1分）
+  timeout: 5m
   # ビルドタグ
   build-tags:
     - integration
@@ -15,6 +17,8 @@ output:
   formats:
     text:
       path: stdout
+  # 結果の表示順序
+  sort-results: true
 
 # リンター設定
 linters:
