@@ -32,7 +32,7 @@ make generate   # モック生成
 
 ## アーキテクチャ概要
 
-アプリケーションの詳細なアーキテクチャについては [docs/02_architecture.md](docs/02_architecture.md) を参照してください。
+アプリケーションの詳細なアーキテクチャについては [docs/02_architecture_rules.md](docs/02_architecture_rules.md) を参照してください。
 
 ## コーディングルール
 
@@ -46,14 +46,18 @@ make generate   # モック生成
 - **作業開始前に必ずdocs配下のドキュメントを確認してプロジェクトのルールを把握すること**
 - 特に重要なドキュメント:
   - [docs/01_coding_rules.md](docs/01_coding_rules.md): コーディング規約
-  - [docs/02_architecture.md](docs/02_architecture.md): アーキテクチャとディレクトリ構成
-  - [docs/03_testing.md](docs/03_testing.md): テストの書き方
+  - [docs/02_architecture_rules.md](docs/02_architecture_rules.md): アーキテクチャとディレクトリ構成
+  - [docs/03_testing_rules.md](docs/03_testing_rules.md): テストの書き方
   - [docs/04_contributing.md](docs/04_contributing.md): プルリクエストの作成方法
 - 各タスクに関連するドキュメントを事前に読み、ルールに従って作業を進めること
 
 ### コードレビュープロセス
-- **ソースコード修正後は必ずcode-reviewerエージェントで自己レビューを実施すること**
-- 対象となる修正:
+- **ソースコード修正後は必ずレビューエージェントで自己レビューを実施すること**
+- 使用するレビューエージェント:
+  - `coding-rules-reviewer`: コーディングルール（docs/01_coding_rules.md）への準拠を確認
+  - `architecture-rules-reviewer`: アーキテクチャルール（docs/02_architecture_rules.md）への準拠を確認
+  - `testing-rules-reviewer`: テストルール（docs/03_testing_rules.md）への準拠を確認
+- レビュー対象となる修正:
   - 新機能の実装
   - バグ修正
   - リファクタリング

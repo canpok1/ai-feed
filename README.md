@@ -387,8 +387,8 @@ ai-feed profile check my-profile.yml
 本プロジェクトの開発に参加したい方は、以下のドキュメントを参照してください：
 
 - [開発環境セットアップ](./docs/00_development_setup.md) - 開発環境の構築方法
-- [アーキテクチャ概要](./docs/02_architecture.md) - プロジェクトの設計と構造
-- [テストガイド](./docs/03_testing.md) - テストの書き方と実行方法
+- [アーキテクチャ概要](./docs/02_architecture_rules.md) - プロジェクトの設計と構造
+- [テストガイド](./docs/03_testing_rules.md) - テストの書き方と実行方法
 - [コントリビューションガイド](./docs/04_contributing.md) - 貢献方法とプルリクエスト作成
 - [API連携ガイド](./docs/05_api_integration.md) - 外部API設定の詳細
 - [コーディングルール](./docs/01_coding_rules.md) - コーディング規約
