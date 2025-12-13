@@ -133,10 +133,18 @@ func TestNewRecommendRunner(t *testing.T) {
 }
 
 func TestRecommendRunner_Run(t *testing.T) {
+	// createDefaultProfile はテスト用のデフォルトProfileを作成する。
+	createDefaultProfile := func() *entity.Profile {
+		return createMockConfig(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, &entity.OutputConfig{})
+	}
+
 	tests := []struct {
 		name                        string
 		mockFetchClientExpectations func(m *mock_domain.MockFetchClient)
 		mockRecommenderExpectations func(m *mock_domain.MockRecommender)
+		setupProfile                func() *entity.Profile // runner.Run()の引数として使用
+		outputConfig                *entity.OutputConfig   // NewRecommendRunnerの引数として使用
+		promptConfig                *entity.PromptConfig   // NewRecommendRunnerの引数として使用
 		params                      *RecommendParams
 		expectedErrorMessage        *string
 	}{
@@ -152,6 +160,9 @@ func TestRecommendRunner_Run(t *testing.T) {
 					Article: entity.Article{Title: "Recommended Article", Link: "http://example.com/recommended"},
 				}, nil).Times(1)
 			},
+			setupProfile: createDefaultProfile,
+			outputConfig: &entity.OutputConfig{},
+			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
@@ -166,6 +177,9 @@ func TestRecommendRunner_Run(t *testing.T) {
 				// 記事が見つからない場合は呼び出されない
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Times(0)
 			},
+			setupProfile: createDefaultProfile,
+			outputConfig: &entity.OutputConfig{},
+			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/empty.xml"},
 			},
@@ -179,6 +193,9 @@ func TestRecommendRunner_Run(t *testing.T) {
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Times(0)
 			},
+			setupProfile: createDefaultProfile,
+			outputConfig: &entity.OutputConfig{},
+			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
 			params: &RecommendParams{
 				URLs: []string{"http://invalid.com/feed.xml"},
 			},
@@ -194,6 +211,9 @@ func TestRecommendRunner_Run(t *testing.T) {
 			mockRecommenderExpectations: func(m *mock_domain.MockRecommender) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
 			},
+			setupProfile: createDefaultProfile,
+			outputConfig: &entity.OutputConfig{},
+			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
@@ -211,6 +231,16 @@ func TestRecommendRunner_Run(t *testing.T) {
 					Article: entity.Article{Title: "Test Article", Link: "http://example.com/test"},
 				}, nil).Times(1)
 			},
+			setupProfile: func() *entity.Profile {
+				mockProfile := createDefaultProfile()
+				return &entity.Profile{
+					AI:     nil,
+					Prompt: mockProfile.Prompt,
+					Output: &entity.OutputConfig{},
+				}
+			},
+			outputConfig: &entity.OutputConfig{},
+			promptConfig: &entity.PromptConfig{},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
@@ -228,6 +258,16 @@ func TestRecommendRunner_Run(t *testing.T) {
 					Article: entity.Article{Title: "Test Article", Link: "http://example.com/test"},
 				}, nil).Times(1)
 			},
+			setupProfile: func() *entity.Profile {
+				mockProfile := createDefaultProfile()
+				return &entity.Profile{
+					AI:     mockProfile.AI,
+					Prompt: nil,
+					Output: &entity.OutputConfig{},
+				}
+			},
+			outputConfig: &entity.OutputConfig{},
+			promptConfig: &entity.PromptConfig{},
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
@@ -247,35 +287,10 @@ func TestRecommendRunner_Run(t *testing.T) {
 			tt.mockRecommenderExpectations(mockRecommender)
 
 			stderrBuffer := new(bytes.Buffer)
+			stdoutBuffer := new(bytes.Buffer)
 
-			var runner *RecommendRunner
-			var runErr error
-
-			var profile *entity.Profile
-			mockProfile := createMockConfig(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, &entity.OutputConfig{})
-
-			switch tt.name {
-			case "正常系: 推薦成功", "異常系: 記事が見つからない", "異常系: 推薦エラー", "異常系: フェッチエラー":
-				stdoutBuffer := new(bytes.Buffer)
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, mockProfile.Output, mockProfile.Prompt, nil)
-				profile = mockProfile
-			case "正常系: AIモデル未設定":
-				stdoutBuffer := new(bytes.Buffer)
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, &entity.OutputConfig{}, &entity.PromptConfig{}, nil)
-				profile = &entity.Profile{
-					AI:     nil,
-					Prompt: mockProfile.Prompt,
-					Output: &entity.OutputConfig{},
-				}
-			case "正常系: プロンプト未設定":
-				stdoutBuffer := new(bytes.Buffer)
-				runner, runErr = NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, &entity.OutputConfig{}, &entity.PromptConfig{}, nil)
-				profile = &entity.Profile{
-					AI:     mockProfile.AI,
-					Prompt: nil,
-					Output: &entity.OutputConfig{},
-				}
-			}
+			profile := tt.setupProfile()
+			runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, tt.outputConfig, tt.promptConfig, nil)
 
 			ctx := context.Background()
 
