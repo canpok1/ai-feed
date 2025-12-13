@@ -133,9 +133,13 @@ func TestNewRecommendRunner(t *testing.T) {
 }
 
 func TestRecommendRunner_Run(t *testing.T) {
+	// デフォルト設定を変数として定義し、複数のテストケースで再利用
+	defaultOutputConfig := &entity.OutputConfig{}
+	defaultPromptConfig := &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"}
+
 	// createDefaultProfile はテスト用のデフォルトProfileを作成する。
 	createDefaultProfile := func() *entity.Profile {
-		return createMockConfig(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"}, &entity.OutputConfig{})
+		return createMockConfig(defaultPromptConfig, defaultOutputConfig)
 	}
 
 	tests := []struct {
@@ -161,8 +165,8 @@ func TestRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			setupProfile: createDefaultProfile,
-			outputConfig: &entity.OutputConfig{},
-			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
+			outputConfig: defaultOutputConfig,
+			promptConfig: defaultPromptConfig,
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
@@ -178,8 +182,8 @@ func TestRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Times(0)
 			},
 			setupProfile: createDefaultProfile,
-			outputConfig: &entity.OutputConfig{},
-			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
+			outputConfig: defaultOutputConfig,
+			promptConfig: defaultPromptConfig,
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/empty.xml"},
 			},
@@ -194,8 +198,8 @@ func TestRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Times(0)
 			},
 			setupProfile: createDefaultProfile,
-			outputConfig: &entity.OutputConfig{},
-			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
+			outputConfig: defaultOutputConfig,
+			promptConfig: defaultPromptConfig,
 			params: &RecommendParams{
 				URLs: []string{"http://invalid.com/feed.xml"},
 			},
@@ -212,8 +216,8 @@ func TestRecommendRunner_Run(t *testing.T) {
 				m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mock recommend error")).Times(1)
 			},
 			setupProfile: createDefaultProfile,
-			outputConfig: &entity.OutputConfig{},
-			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-prompt-template"},
+			outputConfig: defaultOutputConfig,
+			promptConfig: defaultPromptConfig,
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
@@ -232,15 +236,12 @@ func TestRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			setupProfile: func() *entity.Profile {
-				mockProfile := createDefaultProfile()
-				return &entity.Profile{
-					AI:     nil,
-					Prompt: mockProfile.Prompt,
-					Output: &entity.OutputConfig{},
-				}
+				profile := createDefaultProfile()
+				profile.AI = nil
+				return profile
 			},
-			outputConfig: &entity.OutputConfig{},
-			promptConfig: &entity.PromptConfig{},
+			outputConfig: defaultOutputConfig,
+			promptConfig: defaultPromptConfig,
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
@@ -259,15 +260,12 @@ func TestRecommendRunner_Run(t *testing.T) {
 				}, nil).Times(1)
 			},
 			setupProfile: func() *entity.Profile {
-				mockProfile := createDefaultProfile()
-				return &entity.Profile{
-					AI:     mockProfile.AI,
-					Prompt: nil,
-					Output: &entity.OutputConfig{},
-				}
+				profile := createDefaultProfile()
+				profile.Prompt = nil
+				return profile
 			},
-			outputConfig: &entity.OutputConfig{},
-			promptConfig: &entity.PromptConfig{},
+			outputConfig: defaultOutputConfig,
+			promptConfig: defaultPromptConfig,
 			params: &RecommendParams{
 				URLs: []string{"http://example.com/feed.xml"},
 			},
