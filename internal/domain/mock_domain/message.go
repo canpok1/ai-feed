@@ -53,3 +53,17 @@ func (mr *MockMessageSenderMockRecorder) SendRecommend(arg0, arg1 any) *gomock.C
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRecommend", reflect.TypeOf((*MockMessageSender)(nil).SendRecommend), arg0, arg1)
 }
+
+// ServiceName mocks base method.
+func (m *MockMessageSender) ServiceName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// ServiceName indicates an expected call of ServiceName.
+func (mr *MockMessageSenderMockRecorder) ServiceName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceName", reflect.TypeOf((*MockMessageSender)(nil).ServiceName))
+}
