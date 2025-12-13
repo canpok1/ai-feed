@@ -59,7 +59,7 @@
 				
 				<option value="file1">github.com/canpok1/ai-feed/cmd/init.go (27.3%)</option>
 				
-				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (75.5%)</option>
+				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (74.1%)</option>
 				
 				<option value="file3">github.com/canpok1/ai-feed/cmd/recommend.go (18.1%)</option>
 				
@@ -281,10 +281,12 @@ func makeProfileInitCmd() *cobra.Command <span class="cov8" title="1">{
                         fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを初期化しています... (%s)\n", filePath)
 
                         profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-                        r := runner.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
-                        err := r.Run()
+                        r, err := runner.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
                         if err != nil </span><span class="cov0" title="0">{
-                                return err
+                                return fmt.Errorf("failed to create runner: %w", err)
+                        }</span>
+                        <span class="cov0" title="0">if runErr := r.Run(); runErr != nil </span><span class="cov0" title="0">{
+                                return runErr
                         }</span>
                         // 完了メッセージ（stdout）
                         <span class="cov0" title="0">cmd.Printf("プロファイルファイルを作成しました: %s\n", filePath)
@@ -1003,22 +1005,28 @@ import (
         "fmt"
         "io"
 
-        "github.com/canpok1/ai-feed/internal/infra/profile"
+        "github.com/canpok1/ai-feed/internal/domain"
 )
 
 // ProfileInitRunner はprofile initコマンドのビジネスロジックを実行する構造体
 type ProfileInitRunner struct {
-        yamlRepo *profile.YamlProfileRepository
-        stderr   io.Writer
+        templateRepo domain.ProfileTemplateRepository
+        stderr       io.Writer
 }
 
 // NewProfileInitRunner はProfileInitRunnerの新しいインスタンスを作成する
-func NewProfileInitRunner(yamlRepo *profile.YamlProfileRepository, stderr io.Writer) *ProfileInitRunner <span class="cov8" title="1">{
-        return &amp;ProfileInitRunner{
-                yamlRepo: yamlRepo,
-                stderr:   stderr,
-        }
-}</span>
+func NewProfileInitRunner(templateRepo domain.ProfileTemplateRepository, stderr io.Writer) (*ProfileInitRunner, error) <span class="cov8" title="1">{
+        if templateRepo == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("templateRepo cannot be nil")
+        }</span>
+        <span class="cov8" title="1">if stderr == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("stderr cannot be nil")
+        }</span>
+        <span class="cov8" title="1">return &amp;ProfileInitRunner{
+                templateRepo: templateRepo,
+                stderr:       stderr,
+        }, nil</span>
+}
 
 // Run はprofile initコマンドのビジネスロジックを実行する
 func (r *ProfileInitRunner) Run() error <span class="cov8" title="1">{
@@ -1026,7 +1034,7 @@ func (r *ProfileInitRunner) Run() error <span class="cov8" title="1">{
         fmt.Fprintln(r.stderr, "設定テンプレートを生成しています...")
 
         // テンプレートファイルを直接生成（明確で直接的）
-        err := r.yamlRepo.SaveProfileTemplate()
+        err := r.templateRepo.SaveProfileTemplate()
         if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to create profile file: %w", err)
         }</span>
