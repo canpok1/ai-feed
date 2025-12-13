@@ -7,11 +7,14 @@ import (
 
 	"github.com/canpok1/ai-feed/cmd/runner"
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/domain/cache"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/comment"
+	"github.com/canpok1/ai-feed/internal/infra/message"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/canpok1/ai-feed/internal/infra/selector"
+	"github.com/slack-go/slack"
 
 	"github.com/spf13/cobra"
 )
@@ -103,7 +106,27 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				}
 			}
 
-			recommendRunner, runnerErr := runner.NewRecommendRunner(fetchClient, recommender, cmd.ErrOrStderr(), cmd.OutOrStdout(), currentProfile.Output, currentProfile.Prompt, cacheEntity)
+			// MessageSenderファクトリ関数（インフラ層の実装をラップ）
+			senderFactory := func(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error) {
+				return createMessageSenders(outputConfig)
+			}
+
+			// RecommendCacheファクトリ関数（インフラ層の実装をラップ）
+			cacheFactory := func(cacheConfig *entity.CacheConfig) (domain.RecommendCache, error) {
+				return createRecommendCache(cacheConfig)
+			}
+
+			recommendRunner, runnerErr := runner.NewRecommendRunner(
+				fetchClient,
+				recommender,
+				cmd.ErrOrStderr(),
+				cmd.OutOrStdout(),
+				currentProfile.Output,
+				currentProfile.Prompt,
+				cacheEntity,
+				senderFactory,
+				cacheFactory,
+			)
 			if runnerErr != nil {
 				return fmt.Errorf("failed to create runner: %w", runnerErr)
 			}
@@ -170,4 +193,54 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 	return &runner.RecommendParams{
 		URLs: urls,
 	}, nil
+}
+
+// createMessageSenders はOutputConfigに基づいてMessageSenderのリストを作成する
+func createMessageSenders(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error) {
+	var senders []domain.MessageSender
+
+	if outputConfig == nil {
+		return senders, nil
+	}
+
+	if outputConfig.SlackAPI != nil {
+		slackConfig := outputConfig.SlackAPI
+		if !slackConfig.Enabled {
+			slog.Info("Slack API output is disabled (enabled: false)")
+		} else {
+			// Slackクライアントのオプションを設定
+			options := []slack.Option{}
+			if slackConfig.APIURL != nil && *slackConfig.APIURL != "" {
+				// テスト用：カスタムAPIエンドポイントを設定
+				options = append(options, slack.OptionAPIURL(*slackConfig.APIURL))
+			}
+			slackClient := slack.New(slackConfig.APIToken.Value(), options...)
+			slackSender := message.NewSlackSender(slackConfig, slackClient)
+			senders = append(senders, slackSender)
+		}
+	}
+
+	if outputConfig.Misskey != nil {
+		misskeyConfig := outputConfig.Misskey
+		if !misskeyConfig.Enabled {
+			slog.Info("Misskey output is disabled (enabled: false)")
+		} else {
+			misskeySender, senderErr := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken.Value(), misskeyConfig.MessageTemplate)
+			if senderErr != nil {
+				return nil, fmt.Errorf("failed to create Misskey sender: %w", senderErr)
+			}
+			senders = append(senders, misskeySender)
+		}
+	}
+
+	return senders, nil
+}
+
+// createRecommendCache はCacheConfigに基づいてRecommendCacheを作成する
+func createRecommendCache(cacheConfig *entity.CacheConfig) (domain.RecommendCache, error) {
+	if cacheConfig == nil || !cacheConfig.Enabled {
+		return cache.NewNopCache(), nil
+	}
+
+	return cache.NewFileRecommendCache(cacheConfig), nil
 }
