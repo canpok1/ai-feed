@@ -171,8 +171,8 @@ type RecommendUseCase struct {
 
 func (u *RecommendUseCase) Execute(ctx context.Context, params RecommendParams) error {
     // 1. パラメータのバリデーション
-    // 2. ビジネスロジックの実行（domain層経由）
-    // 3. 結果の通知（domain層インターフェース経由）
+    // 2. fetcherで記事を取得し、recommenderで推薦を生成
+    // 3. sendersで推薦結果を通知
 }
 ```
 
