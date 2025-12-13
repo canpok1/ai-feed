@@ -90,3 +90,8 @@ func (v *MisskeySender) SendRecommend(recommend *entity.Recommend, fixedMessage 
 
 	return nil
 }
+
+// ServiceName はサービス名を返す
+func (v *MisskeySender) ServiceName() string {
+	return "Misskey"
+}

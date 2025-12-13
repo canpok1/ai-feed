@@ -23,6 +23,25 @@ func makeSecretString(value string) entity.SecretString {
 	return entity.NewSecretString(value)
 }
 
+// testMessageSenderFactory はテスト用のMessageSenderFactoryを返す
+func testMessageSenderFactory(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error) {
+	// テスト用に空のスライスを返す（Sendersはモックでオーバーライドされることがほとんど）
+	return []domain.MessageSender{}, nil
+}
+
+// testRecommendCacheFactory はテスト用のRecommendCacheFactoryを返す
+func testRecommendCacheFactory(cacheConfig *entity.CacheConfig) (domain.RecommendCache, error) {
+	return &mockNopCache{}, nil
+}
+
+// mockNopCache はテスト用のノーオペレーションキャッシュ
+type mockNopCache struct{}
+
+func (c *mockNopCache) Initialize() error                { return nil }
+func (c *mockNopCache) IsCached(url string) bool         { return false }
+func (c *mockNopCache) AddEntry(url, title string) error { return nil }
+func (c *mockNopCache) Close() error                     { return nil }
+
 // createMockConfig はテスト用にモックのentity.Profileを作成する。
 func createMockConfig(promptConfig *entity.PromptConfig, outputConfig *entity.OutputConfig) *entity.Profile {
 	return &entity.Profile{
@@ -74,19 +93,8 @@ func TestNewRecommendRunner(t *testing.T) {
 			promptConfig: &entity.PromptConfig{CommentPromptTemplate: "test-template"},
 			expectError:  false,
 		},
-		{
-			name: "異常系: 無効なURLでMisskey Sender作成エラー",
-			outputConfig: &entity.OutputConfig{
-				Misskey: &entity.MisskeyConfig{
-					Enabled:  true,
-					APIToken: makeSecretString("test-token"),
-					APIURL:   "invalid-url",
-				},
-			},
-			promptConfig:     &entity.PromptConfig{CommentPromptTemplate: "test-template"},
-			expectError:      true,
-			expectedErrorMsg: "failed to create Misskey sender",
-		},
+		// 異常系: ファクトリエラーのテストはcmd層で実施
+		// runner層ではファクトリがDIされるため、ファクトリ内部のエラーはrunner層のテスト対象外
 	}
 
 	for _, tt := range tests {
@@ -108,6 +116,8 @@ func TestNewRecommendRunner(t *testing.T) {
 				tt.outputConfig,
 				tt.promptConfig,
 				nil, // cacheConfig
+				testMessageSenderFactory,
+				testRecommendCacheFactory,
 			)
 
 			if tt.expectError {
@@ -121,12 +131,9 @@ func TestNewRecommendRunner(t *testing.T) {
 				assert.NotNil(t, runner)
 				assert.NotNil(t, runner.fetcher)
 				assert.NotNil(t, runner.recommender)
-				// sendersスライスはStdSender削除により初期状態では空だが、外部連携設定により追加される
-				if tt.outputConfig.SlackAPI != nil || tt.outputConfig.Misskey != nil {
-					assert.Greater(t, len(runner.senders), 0)
-				} else {
-					assert.Equal(t, 0, len(runner.senders))
-				}
+				// ファクトリパターン導入により、sendersはファクトリ関数から作成される
+				// テスト用ファクトリは空のsendersを返すため、数のチェックはスキップ
+				assert.NotNil(t, runner.senders)
 			}
 		})
 	}
@@ -288,7 +295,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 			stdoutBuffer := new(bytes.Buffer)
 
 			profile := tt.setupProfile()
-			runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, tt.outputConfig, tt.promptConfig, nil)
+			runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, tt.outputConfig, tt.promptConfig, nil, testMessageSenderFactory, testRecommendCacheFactory)
 
 			ctx := context.Background()
 
@@ -329,7 +336,7 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	mockProfile := createMockConfig(&entity.PromptConfig{CommentPromptTemplate: "test-prompt-template", FixedMessage: "Test Fixed Message"}, &entity.OutputConfig{})
 
 	stdoutBuffer := new(bytes.Buffer)
-	runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, mockProfile.Output, mockProfile.Prompt, nil)
+	runner, runErr := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, mockProfile.Output, mockProfile.Prompt, nil, testMessageSenderFactory, testRecommendCacheFactory)
 	assert.NoError(t, runErr)
 
 	// テストデータをセットアップ
@@ -379,209 +386,6 @@ func TestRecommendRunner_Run_LogOutput(t *testing.T) {
 	assert.Equal(t, "Test Fixed Message", logEntry["fixed_message"])
 }
 
-func TestNewRecommendRunner_EnabledFlags(t *testing.T) {
-	tests := []struct {
-		name            string
-		outputConfig    *entity.OutputConfig
-		expectedSenders int
-	}{
-		{
-			name: "SlackAPI有効、Misskey有効（default）",
-			outputConfig: &entity.OutputConfig{
-				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:         true,
-					APIToken:        makeSecretString("test-token"),
-					Channel:         "#test",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-				Misskey: &entity.MisskeyConfig{
-					Enabled:         true,
-					APIToken:        makeSecretString("test-token"),
-					APIURL:          "https://test.misskey.io",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-			},
-			expectedSenders: 2,
-		},
-		{
-			name: "SlackAPI有効、Misskey無効",
-			outputConfig: &entity.OutputConfig{
-				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:         true,
-					APIToken:        makeSecretString("test-token"),
-					Channel:         "#test",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-				Misskey: &entity.MisskeyConfig{
-					Enabled:         false,
-					APIToken:        makeSecretString("test-token"),
-					APIURL:          "https://test.misskey.io",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-			},
-			expectedSenders: 1,
-		},
-		{
-			name: "SlackAPI無効、Misskey有効",
-			outputConfig: &entity.OutputConfig{
-				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:         false,
-					APIToken:        makeSecretString("test-token"),
-					Channel:         "#test",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-				Misskey: &entity.MisskeyConfig{
-					Enabled:         true,
-					APIToken:        makeSecretString("test-token"),
-					APIURL:          "https://test.misskey.io",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-			},
-			expectedSenders: 1,
-		},
-		{
-			name: "両方無効",
-			outputConfig: &entity.OutputConfig{
-				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:         false,
-					APIToken:        makeSecretString("test-token"),
-					Channel:         "#test",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-				Misskey: &entity.MisskeyConfig{
-					Enabled:         false,
-					APIToken:        makeSecretString("test-token"),
-					APIURL:          "https://test.misskey.io",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-			},
-			expectedSenders: 0,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
-			mockRecommender := mock_domain.NewMockRecommender(ctrl)
-
-			stderrBuffer := new(bytes.Buffer)
-
-			stdoutBuffer := new(bytes.Buffer)
-			runner, err := NewRecommendRunner(
-				mockFetchClient,
-				mockRecommender,
-				stderrBuffer,
-				stdoutBuffer,
-				tt.outputConfig,
-				&entity.PromptConfig{},
-				nil, // cacheConfig
-			)
-
-			assert.NoError(t, err)
-			assert.NotNil(t, runner)
-			assert.Equal(t, tt.expectedSenders, len(runner.senders))
-		})
-	}
-}
-
-func TestRecommendRunner_Run_EnabledFlagsLogging(t *testing.T) {
-	tests := []struct {
-		name         string
-		outputConfig *entity.OutputConfig
-		expectedLogs []string
-	}{
-		{
-			name: "Slack無効ログ確認",
-			outputConfig: &entity.OutputConfig{
-				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:         false,
-					APIToken:        makeSecretString("test-token"),
-					Channel:         "#test",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-			},
-			expectedLogs: []string{"Slack API output is disabled (enabled: false)"},
-		},
-		{
-			name: "Misskey無効ログ確認",
-			outputConfig: &entity.OutputConfig{
-				Misskey: &entity.MisskeyConfig{
-					Enabled:         false,
-					APIToken:        makeSecretString("test-token"),
-					APIURL:          "https://test.misskey.io",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-			},
-			expectedLogs: []string{"Misskey output is disabled (enabled: false)"},
-		},
-		{
-			name: "両方無効ログ確認",
-			outputConfig: &entity.OutputConfig{
-				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:         false,
-					APIToken:        makeSecretString("test-token"),
-					Channel:         "#test",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-				Misskey: &entity.MisskeyConfig{
-					Enabled:         false,
-					APIToken:        makeSecretString("test-token"),
-					APIURL:          "https://test.misskey.io",
-					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
-				},
-			},
-			expectedLogs: []string{
-				"Slack API output is disabled (enabled: false)",
-				"Misskey output is disabled (enabled: false)",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// テスト用のslogハンドラーをセットアップしてログ出力をキャプチャ
-			var logBuffer bytes.Buffer
-			handler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelInfo})
-			logger := slog.New(handler)
-			originalLogger := slog.Default()
-			slog.SetDefault(logger)
-			defer slog.SetDefault(originalLogger)
-
-			mockFetchClient := mock_domain.NewMockFetchClient(ctrl)
-			mockRecommender := mock_domain.NewMockRecommender(ctrl)
-
-			stderrBuffer := new(bytes.Buffer)
-
-			// Runner作成時にログが出力される
-			stdoutBuffer := new(bytes.Buffer)
-			runner, err := NewRecommendRunner(
-				mockFetchClient,
-				mockRecommender,
-				stderrBuffer,
-				stdoutBuffer,
-				tt.outputConfig,
-				&entity.PromptConfig{},
-				nil, // cacheConfig
-			)
-
-			assert.NoError(t, err)
-			assert.NotNil(t, runner)
-
-			// ログ出力を確認
-			logOutput := logBuffer.String()
-			for _, expectedLog := range tt.expectedLogs {
-				assert.Contains(t, logOutput, expectedLog)
-			}
-		})
-	}
-}
-
 func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -615,11 +419,13 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 		outputConfig,
 		&entity.PromptConfig{},
 		nil, // cacheConfig
+		testMessageSenderFactory,
+		testRecommendCacheFactory,
 	)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, runner)
-	assert.Equal(t, 0, len(runner.senders)) // sender数は0
+	assert.Equal(t, 0, len(runner.senders)) // テスト用ファクトリは空のsendersを返す
 
 	// テストデータをセットアップ
 	testArticles := []entity.Article{
@@ -675,13 +481,14 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	}
 
 	// NewRecommendRunner の引数として渡す
-	runner, err := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, testOutputConfig, testPromptConfig, testCacheConfig)
+	runner, err := NewRecommendRunner(mockFetchClient, mockRecommender, stderrBuffer, stdoutBuffer, testOutputConfig, testPromptConfig, testCacheConfig, testMessageSenderFactory, testRecommendCacheFactory)
 	require.NoError(t, err)
 	require.NotNil(t, runner)
 
 	// runner.senders をモックに差し替える
 	mockSender := mock_domain.NewMockMessageSender(ctrl)
 	mockSender.EXPECT().SendRecommend(gomock.Any(), gomock.Any()).Return(nil)
+	mockSender.EXPECT().ServiceName().Return("MockService").AnyTimes()
 	runner.senders = []domain.MessageSender{mockSender}
 
 	params := &RecommendParams{URLs: []string{"http://example.com/feed"}}
