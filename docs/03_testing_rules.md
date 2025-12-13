@@ -334,42 +334,31 @@ mockgen -source=internal/domain/fetch.go -destination=internal/domain/mock_domai
 
 ### モックの使用例
 
+モックは主にdomain層やinfra層のユニットテストで使用します。
+**注意**: app層のテストでは統合テストを推奨しているため、モックの使用は限定的です。
+
 ```go
-func TestRecommendUseCase_Execute(t *testing.T) {
+// infra層のテスト例（internal/infra/message/slack_test.go）
+func TestSlackSender_SendRecommend(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
 
-    // モックの作成
-    mockFetcher := mock_domain.NewMockFetchClient(ctrl)
-    mockRecommender := mock_domain.NewMockRecommender(ctrl)
-    mockSender := mock_domain.NewMockMessageSender(ctrl)
+    // 外部APIのモックサーバーを作成
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+    }))
+    defer server.Close()
 
-    // 期待値の設定
-    mockFetcher.EXPECT().
-        Fetch("https://example.com/feed").
-        Return([]entity.Article{
-            {Title: "Test Article", Link: "https://example.com/1"},
-        }, nil)
-
-    mockRecommender.EXPECT().
-        Recommend(gomock.Any(), gomock.Any()).
-        Return(&entity.Recommend{
-            Article: entity.Article{Title: "Test Article"},
-            Comment: stringPtr("Test comment"),
-        }, nil)
-
-    mockSender.EXPECT().
-        SendRecommend(gomock.Any(), gomock.Any()).
-        Return(nil)
+    // テスト対象のインスタンスを作成
+    sender := NewSlackSender(config, slack.New("token", slack.OptionAPIURL(server.URL+"/")))
 
     // テスト実行
-    useCase := &RecommendUseCase{
-        fetcher:     mockFetcher,
-        recommender: mockRecommender,
-        senders:     []domain.MessageSender{mockSender},
+    recommend := &entity.Recommend{
+        Article: entity.Article{Title: "Test Article", Link: "https://example.com/1"},
+        Comment: stringPtr("Test comment"),
     }
-
-    err := useCase.Execute(context.Background(), params)
+    err := sender.SendRecommend(recommend, "message")
     assert.NoError(t, err)
 }
 ```

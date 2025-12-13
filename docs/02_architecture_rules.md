@@ -148,9 +148,7 @@ func makeRecommendCmd() *cobra.Command {
 
 **責務**:
 - ユースケースの実装（各コマンドの処理フロー）
-- 設定ファイルの読み込み・マージ・検証の調整
-- 依存オブジェクトの組み立て（DIワイヤリング）
-- domain層とinfra層の協調
+- ビジネスロジックのオーケストレーション（domain層インターフェース経由）
 - トランザクション的な処理の管理
 - ユーザーへの進行状況フィードバック
 
@@ -440,18 +438,27 @@ func runRecommend(ctx context.Context, params *app.RecommendParams) error {
 
 ### UseCase パターン
 
-各コマンドのビジネスロジックは`internal/app`パッケージにUseCaseとして分離されています：
+各コマンドのビジネスロジックは`internal/app`パッケージにUseCaseとして分離されています。
+cmd層（Composition Root）でinfra層のインスタンスを生成し、UseCaseに注入します：
 
 ```go
-// コマンド定義（cmd/recommend.go）
+// コマンド定義（cmd/recommend.go）- Composition Root
 func makeRecommendCmd() *cobra.Command {
     return &cobra.Command{
         RunE: func(cmd *cobra.Command, args []string) error {
-            // パラメータ解析のみ
+            // 1. パラメータ解析
             params := parseRecommendFlags(cmd)
 
-            // UseCase実行（DIはUseCase内部で行う）
-            useCase := app.NewRecommendUseCase()
+            // 2. 設定読み込み（infra層を使用）
+            config := loadConfig(params.ConfigPath)
+
+            // 3. infra層のインスタンス生成（cmd層の責務）
+            fetcher := fetch.NewRSSFetcher(http.DefaultClient)
+            recommender := comment.NewGeminiRecommender(config.AI)
+            senders := createSenders(config.Output)
+
+            // 4. UseCaseに依存を注入して実行
+            useCase := app.NewRecommendUseCase(fetcher, recommender, senders)
             return useCase.Execute(cmd.Context(), params)
         },
     }
@@ -459,16 +466,14 @@ func makeRecommendCmd() *cobra.Command {
 
 // ユースケース（internal/app/recommend.go）
 type RecommendUseCase struct {
-    fetcher     domain.FetchClient
-    recommender domain.Recommender
-    senders     []domain.MessageSender
+    fetcher     domain.FetchClient      // domainインターフェースのみ
+    recommender domain.Recommender      // domainインターフェースのみ
+    senders     []domain.MessageSender  // domainインターフェースのみ
 }
 
 func (u *RecommendUseCase) Execute(ctx context.Context, params *RecommendParams) error {
-    // 1. 設定読み込み・マージ
-    // 2. バリデーション
-    // 3. ビジネスロジック実行
-    // 4. 結果通知
+    // ビジネスロジックのオーケストレーション
+    // （infra層への直接依存なし）
 }
 ```
 
