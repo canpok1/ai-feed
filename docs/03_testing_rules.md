@@ -21,7 +21,7 @@ ai-feedプロジェクトにおけるテストの書き方と実行方法につ�
 | 層 | 主なテスト種類 | カバレッジ目標 | 理由 |
 |---|---|---|---|
 | **cmd (Presentation)** | E2Eテスト | 設定なし | フラグ解析のみで、E2Eで十分に担保可能 |
-| **app (Application)** | ユニットテスト + モック | 70%以上 | ユースケースのオーケストレーション処理の網羅が重要 |
+| **app (Application)** | 統合テスト | 設定なし | オーケストレーションは実際のコンポーネント連携で検証すべき |
 | **domain (Domain)** | ユニットテスト | 80%以上 | ビジネスルールの正確性が最重要、純粋なロジックでテストしやすい |
 | **infra (Infrastructure)** | ユニット + 統合テスト | 60%以上 | 外部依存のモック化が複雑なため |
 
@@ -45,38 +45,41 @@ cmd層はフラグ解析とApplication層への委譲のみを行うため、個
 
 ### 2. app層（Application Layer）のテスト
 
-**方針**: ユニットテストでユースケースのフローを検証
+**方針**: 統合テストでオーケストレーションを検証
 
-app層はdomain層とinfra層を組み合わせてユースケースを実現します。モックを使用して各依存を差し替え、オーケストレーションロジックをテストします。
+app層は複数コンポーネントの協調動作（オーケストレーション）を担うため、モックではなく実際のinfra層実装と組み合わせた統合テストで検証します。
 
 ```go
-// internal/app/recommend_test.go
+//go:build integration
+
+// test/integration/app/recommend_test.go
 func TestRecommendUseCase_Execute(t *testing.T) {
-    ctrl := gomock.NewController(t)
-    defer ctrl.Finish()
+    // 実際のinfra層実装を使用
+    fetcher := fetch.NewRSSFetcher(http.DefaultClient)
 
-    // domain層インターフェースのモック
-    mockFetcher := mock_domain.NewMockFetchClient(ctrl)
-    mockRecommender := mock_domain.NewMockRecommender(ctrl)
-    mockSender := mock_domain.NewMockMessageSender(ctrl)
+    // 外部APIのみモックサーバーを使用
+    mockSlackServer := httptest.NewServer(slackHandler)
+    defer mockSlackServer.Close()
 
-    // 期待値の設定
-    mockFetcher.EXPECT().Fetch(gomock.Any()).Return(articles, nil)
-    mockRecommender.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(recommend, nil)
-    mockSender.EXPECT().SendRecommend(gomock.Any(), gomock.Any()).Return(nil)
+    slackSender := message.NewSlackSender(config, slack.New("token", slack.OptionAPIURL(mockSlackServer.URL+"/")))
 
-    // テスト実行
-    useCase := NewRecommendUseCase(mockFetcher, mockRecommender, []domain.MessageSender{mockSender})
+    // 実際のコンポーネントでUseCaseを構築
+    useCase := app.NewRecommendUseCase(fetcher, recommender, []domain.MessageSender{slackSender})
+
+    // 統合テスト実行
     err := useCase.Execute(ctx, params)
     assert.NoError(t, err)
 }
 ```
 
 **テスト対象**:
-- ✅ ユースケースの正常系フロー
-- ✅ エラーハンドリング（各依存からのエラー伝播）
-- ✅ 設定のマージ・バリデーション処理
-- ✅ 複数依存の協調動作
+- ✅ 複数コンポーネントの協調動作
+- ✅ 設定の読み込み・マージ・検証の一連のフロー
+- ✅ エラーハンドリング（実際のエラー伝播）
+
+**ユニットテストについて**:
+- ❌ オーケストレーションのモックテストは原則不要
+- ⚠️ 複雑な条件分岐がある場合のみ、個別にユニットテストを追加
 
 ### 3. domain層（Domain Layer）のテスト
 
@@ -156,7 +159,7 @@ func TestSlackSender_SendRecommend(t *testing.T) {
 ```bash
 # 層別カバレッジの確認
 go test -cover ./internal/domain/...   # 目標: 80%以上
-go test -cover ./internal/app/...      # 目標: 70%以上
+go test -cover ./internal/app/...      # 統合テストで検証（カバレッジ目標なし）
 go test -cover ./internal/infra/...    # 目標: 60%以上
 go test -cover ./cmd/...               # 目標: 設定なし
 
@@ -483,7 +486,7 @@ ai-feedプロジェクトでは3種類のテストを使い分けています：
 | **ビルドタグ** | なし | `integration` | `e2e` |
 | **実行コマンド** | `make test` | `make test-integration` | `make test-e2e` |
 | **目的** | ロジックの正確性 | コンポーネント間の連携 | 実際のユーザー操作の再現 |
-| **主な対象層** | domain, app, infra | infra | cmd（Presentation層全体） |
+| **主な対象層** | domain, infra | app, infra | cmd（Presentation層全体） |
 
 ### ファイル配置ルール
 
