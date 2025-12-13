@@ -18,22 +18,24 @@ type ConfigCheckParams struct {
 
 // ConfigCheckRunner はconfig checkコマンドのビジネスロジックを実行する構造体
 type ConfigCheckRunner struct {
-	configPath string
-	stdout     io.Writer
-	stderr     io.Writer
+	configPath    string
+	stdout        io.Writer
+	stderr        io.Writer
+	profileRepoFn func(string) domain.ProfileRepository
 }
 
 // NewConfigCheckRunner はConfigCheckRunnerの新しいインスタンスを作成する
-func NewConfigCheckRunner(configPath string, stdout io.Writer, stderr io.Writer) *ConfigCheckRunner {
+func NewConfigCheckRunner(configPath string, stdout io.Writer, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ConfigCheckRunner {
 	return &ConfigCheckRunner{
-		configPath: configPath,
-		stdout:     stdout,
-		stderr:     stderr,
+		configPath:    configPath,
+		stdout:        stdout,
+		stderr:        stderr,
+		profileRepoFn: profileRepoFn,
 	}
 }
 
 // Run はconfig checkコマンドのビジネスロジックを実行する
-func (r *ConfigCheckRunner) Run(params *ConfigCheckParams, profileRepoFn func(string) domain.ProfileRepository) error {
+func (r *ConfigCheckRunner) Run(params *ConfigCheckParams) error {
 	slog.Debug("Starting config check command")
 
 	// 設定ファイルの読み込み
@@ -61,7 +63,7 @@ func (r *ConfigCheckRunner) Run(params *ConfigCheckParams, profileRepoFn func(st
 	// プロファイルファイルが指定されている場合は読み込んでマージ
 	if params.ProfilePath != "" {
 		slog.Debug("Loading profile", "profile_path", params.ProfilePath)
-		profileRepo := profileRepoFn(params.ProfilePath)
+		profileRepo := r.profileRepoFn(params.ProfilePath)
 		loadedProfile, loadProfileErr := profileRepo.LoadProfile()
 		if loadProfileErr != nil {
 			fmt.Fprintf(r.stderr, "エラー: プロファイルファイルの読み込みに失敗しました: %s\n", params.ProfilePath)

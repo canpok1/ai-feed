@@ -32,7 +32,12 @@ func TestNewConfigCheckRunner(t *testing.T) {
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
 
-			runner := NewConfigCheckRunner(tt.configPath, stdout, stderr)
+			// ProfileRepositoryのファクトリ関数
+			profileRepoFn := func(path string) domain.ProfileRepository {
+				return profile.NewYamlProfileRepositoryImpl(path)
+			}
+
+			runner := NewConfigCheckRunner(tt.configPath, stdout, stderr, profileRepoFn)
 
 			require.NotNil(t, runner)
 			assert.Equal(t, tt.configPath, runner.configPath)
@@ -44,12 +49,12 @@ func TestNewConfigCheckRunner(t *testing.T) {
 
 func TestConfigCheckRunner_Run(t *testing.T) {
 	tests := []struct {
-		name            string
-		setup           func(t *testing.T, tmpDir string) (configPath string, profilePath string, verboseFlag bool)
-		wantErr         bool
-		errContains     string
-		wantStdoutConta string
-		wantStderrConta string
+		name               string
+		setup              func(t *testing.T, tmpDir string) (configPath string, profilePath string, verboseFlag bool)
+		wantErr            bool
+		errContains        string
+		wantStdoutContains string
+		wantStderrContains string
 	}{
 		{
 			name: "正常系: config.ymlのみで検証成功",
@@ -74,8 +79,8 @@ default_profile:
 				require.NoError(t, err)
 				return configPath, "", false
 			},
-			wantErr:         false,
-			wantStdoutConta: "設定の検証が完了しました",
+			wantErr:            false,
+			wantStdoutContains: "設定の検証が完了しました",
 		},
 		{
 			name: "正常系: プロファイルファイル指定で検証成功",
@@ -107,8 +112,8 @@ output:
 
 				return configPath, profilePath, false
 			},
-			wantErr:         false,
-			wantStdoutConta: "設定の検証が完了しました",
+			wantErr:            false,
+			wantStdoutContains: "設定の検証が完了しました",
 		},
 		{
 			name: "正常系: verbose=trueでサマリー表示",
@@ -133,8 +138,8 @@ default_profile:
 				require.NoError(t, err)
 				return configPath, "", true
 			},
-			wantErr:         false,
-			wantStdoutConta: "【設定サマリー】",
+			wantErr:            false,
+			wantStdoutContains: "【設定サマリー】",
 		},
 		{
 			name: "異常系: 必須フィールド不足でエラー",
@@ -148,9 +153,9 @@ default_profile:
 				require.NoError(t, err)
 				return configPath, "", false
 			},
-			wantErr:         true,
-			wantStderrConta: "以下の問題があります",
-			errContains:     "設定ファイルのバリデーションに失敗しました",
+			wantErr:            true,
+			wantStderrContains: "以下の問題があります",
+			errContains:        "設定ファイルのバリデーションに失敗しました",
 		},
 		{
 			name: "異常系: プロファイルファイルが存在しない",
@@ -167,18 +172,18 @@ default_profile:
 				require.NoError(t, err)
 				return configPath, filepath.Join(tmpDir, "not-exist.yml"), false
 			},
-			wantErr:         true,
-			wantStderrConta: "プロファイルファイルの読み込みに失敗しました",
-			errContains:     "failed to load profile",
+			wantErr:            true,
+			wantStderrContains: "プロファイルファイルの読み込みに失敗しました",
+			errContains:        "failed to load profile",
 		},
 		{
 			name: "異常系: 設定ファイルが存在しない",
 			setup: func(t *testing.T, tmpDir string) (string, string, bool) {
 				return filepath.Join(tmpDir, "not-exist.yml"), "", false
 			},
-			wantErr:         true,
-			wantStderrConta: "設定ファイルの読み込みに失敗しました",
-			errContains:     "failed to load config",
+			wantErr:            true,
+			wantStderrContains: "設定ファイルの読み込みに失敗しました",
+			errContains:        "failed to load config",
 		},
 	}
 
@@ -195,13 +200,13 @@ default_profile:
 				return profile.NewYamlProfileRepositoryImpl(path)
 			}
 
-			runner := NewConfigCheckRunner(configPath, stdout, stderr)
+			runner := NewConfigCheckRunner(configPath, stdout, stderr, profileRepoFn)
 			params := &ConfigCheckParams{
 				ProfilePath: profilePath,
 				VerboseFlag: verboseFlag,
 			}
 
-			err := runner.Run(params, profileRepoFn)
+			err := runner.Run(params)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -212,12 +217,12 @@ default_profile:
 				require.NoError(t, err)
 			}
 
-			if tt.wantStdoutConta != "" {
-				assert.Contains(t, stdout.String(), tt.wantStdoutConta)
+			if tt.wantStdoutContains != "" {
+				assert.Contains(t, stdout.String(), tt.wantStdoutContains)
 			}
 
-			if tt.wantStderrConta != "" {
-				assert.Contains(t, stderr.String(), tt.wantStderrConta)
+			if tt.wantStderrContains != "" {
+				assert.Contains(t, stderr.String(), tt.wantStderrContains)
 			}
 		})
 	}

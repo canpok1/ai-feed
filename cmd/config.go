@@ -40,13 +40,13 @@ func makeConfigCheckCmd() *cobra.Command {
 			}
 
 			// ConfigCheckRunnerを作成して実行
-			configCheckRunner := runner.NewConfigCheckRunner(configPath, cmd.OutOrStdout(), cmd.ErrOrStderr())
+			configCheckRunner := runner.NewConfigCheckRunner(configPath, cmd.OutOrStdout(), cmd.ErrOrStderr(), profileRepoFn)
 			params := &runner.ConfigCheckParams{
 				ProfilePath: profilePath,
 				VerboseFlag: verboseFlag,
 			}
 
-			return configCheckRunner.Run(params, profileRepoFn)
+			return configCheckRunner.Run(params)
 		},
 	}
 
