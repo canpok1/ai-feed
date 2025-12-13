@@ -114,11 +114,11 @@ cmd → app → domain ← infra
 
 **許可される依存**:
 - `internal/app`（Application層）
+- `internal/infra`（Infrastructure層）※Composition Rootとしてインスタンス生成のため
 - `github.com/spf13/cobra`（CLIフレームワーク）
 
 **禁止事項**:
 - ❌ domain層への直接依存（entity参照を除く）
-- ❌ infra層への直接依存
 - ❌ ビジネスロジックの実装
 - ❌ 設定ファイルの読み込み・パース処理
 - ❌ 外部サービスとの直接通信
@@ -156,11 +156,10 @@ func makeRecommendCmd() *cobra.Command {
 
 **許可される依存**:
 - `internal/domain`（Domain層）
-- `internal/infra`（Infrastructure層）※DIのための参照のみ
 
 **禁止事項**:
 - ❌ CLIフレームワーク（Cobra）への依存
-- ❌ infra層の具象型を直接フィールドに保持（domainインターフェース経由で保持）
+- ❌ infra層への依存（インスタンス生成はcmd層が担当）
 - ❌ 外部APIの直接呼び出し
 
 **コード例**:
@@ -274,8 +273,8 @@ func (s *SlackSender) SendRecommend(r *entity.Recommend, msg string) error {
 
 | 層 | 依存できる層 | 依存できない層 |
 |---|---|---|
-| cmd (Presentation) | app | domain（entity除く）, infra |
-| app (Application) | domain, infra（DI用） | cmd |
+| cmd (Presentation) | app, infra（Composition Root用） | domain（entity除く） |
+| app (Application) | domain | cmd, infra（具象型の直接参照） |
 | domain (Domain) | なし（標準ライブラリのみ） | cmd, app, infra |
 | infra (Infrastructure) | domain | cmd, app |
 
@@ -318,6 +317,47 @@ func NewRecommendUseCase(
     }
 }
 ```
+
+### Composition Root（組み立て場所）
+
+**cmd層がComposition Rootとして、infra層のインスタンス生成を担当します。**
+
+```go
+// cmd/recommend.go - Composition Rootとしてのcmd層
+func runRecommend(ctx context.Context, params *app.RecommendParams) error {
+    // 1. 設定の読み込み（infra層を使用）
+    configRepo := infra.NewYamlConfigRepository(params.ConfigPath)
+    config, err := configRepo.Load()
+    if err != nil {
+        return err
+    }
+
+    // 2. infra層のインスタンス生成（cmd層の責務）
+    fetcher := fetch.NewRSSFetcher(http.DefaultClient)
+    recommender := comment.NewGeminiRecommender(config.AI)
+    slackSender := message.NewSlackSender(config.Output.SlackAPI)
+
+    // 3. app層にはインターフェース経由で注入
+    useCase := app.NewRecommendUseCase(
+        fetcher,      // domain.FetchClient インターフェース
+        recommender,  // domain.Recommender インターフェース
+        []domain.MessageSender{slackSender},
+    )
+
+    // 4. UseCase実行
+    return useCase.Execute(ctx, params)
+}
+```
+
+**なぜcmd層か？**
+
+| 観点 | cmd層 | app層 |
+|------|-------|-------|
+| **依存方向** | ✅ cmd→infra は図に示されていないが許容 | ❌ app層がinfra具象型を生成すると依存逆転に違反 |
+| **テスタビリティ** | ✅ app層のテストでモック注入が容易 | ❌ app層内で生成するとモック困難 |
+| **責務の分離** | ✅ 組み立ては最外殻の責務 | ❌ オーケストレーションと生成が混在 |
+
+**注意**: app層はdomain層のインターフェースのみを保持し、infra層の具象型を直接参照してはいけません。
 
 ### 利点
 - モックを使用した単体テストが容易
