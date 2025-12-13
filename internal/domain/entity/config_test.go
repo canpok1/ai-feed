@@ -58,6 +58,56 @@ func TestLogValue_WithNilFields(t *testing.T) {
 		assert.Contains(t, output, "[REDACTED]")
 		assert.NotContains(t, output, "key")
 	})
+
+	t.Run("異常系: Output.SlackAPIがnil", func(t *testing.T) {
+		logBuffer.Reset()
+		var apiKey SecretString
+		apiKey.UnmarshalText([]byte("key"))
+		var misskeyToken SecretString
+		misskeyToken.UnmarshalText([]byte("misskey-token"))
+		messageTemplate := "{{.Article.Title}}"
+		profileWithNilSlackAPI := &Profile{
+			AI:     &AIConfig{Gemini: &GeminiConfig{Type: "test", APIKey: apiKey}},
+			Prompt: &PromptConfig{FixedMessage: "test"},
+			Output: &OutputConfig{
+				SlackAPI: nil,
+				Misskey: &MisskeyConfig{
+					Enabled:         true,
+					APIToken:        misskeyToken,
+					APIURL:          "https://misskey.example.com",
+					MessageTemplate: &messageTemplate,
+				},
+			},
+		}
+		slog.Debug("test nil slackapi", slog.Any("profile", *profileWithNilSlackAPI))
+		output := logBuffer.String()
+		assert.Contains(t, output, "test nil slackapi")
+	})
+
+	t.Run("異常系: Output.Misskeyがnil", func(t *testing.T) {
+		logBuffer.Reset()
+		var apiKey SecretString
+		apiKey.UnmarshalText([]byte("key"))
+		var slackToken SecretString
+		slackToken.UnmarshalText([]byte("slack-token"))
+		messageTemplate := "{{.Article.Title}}"
+		profileWithNilMisskey := &Profile{
+			AI:     &AIConfig{Gemini: &GeminiConfig{Type: "test", APIKey: apiKey}},
+			Prompt: &PromptConfig{FixedMessage: "test"},
+			Output: &OutputConfig{
+				SlackAPI: &SlackAPIConfig{
+					Enabled:         true,
+					APIToken:        slackToken,
+					Channel:         "#test",
+					MessageTemplate: &messageTemplate,
+				},
+				Misskey: nil,
+			},
+		}
+		slog.Debug("test nil misskey", slog.Any("profile", *profileWithNilMisskey))
+		output := logBuffer.String()
+		assert.Contains(t, output, "test nil misskey")
+	})
 }
 
 func TestGeminiConfig_Validate(t *testing.T) {
