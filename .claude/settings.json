@@ -19,6 +19,7 @@
             "Bash(cp:*)",
             "Bash(done)",
             "Bash(echo:*)",
+            "Bash(for:*)",
             "Bash(gh issue create:*)",
             "Bash(gh issue list:*)",
             "Bash(gh issue view:*)",
@@ -46,6 +47,7 @@
             "Bash(test:*)",
             "Bash(touch:*)",
             "Bash(tree:*)",
+            "Bash(while:*)",
             "WebSearch",
             "mcp__serena"
         ],
