@@ -5,7 +5,7 @@ COVERAGE_THRESHOLD=60
 setup:
 	go install go.uber.org/mock/mockgen@v0.6.0
 	go install golang.org/x/tools/cmd/goimports@v0.28.0
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.5.0
 	go install github.com/goreleaser/goreleaser/v2@v2.5.1
 	go install github.com/v-standard/go-depcheck/cmd/depcheck@v0.0.2
 

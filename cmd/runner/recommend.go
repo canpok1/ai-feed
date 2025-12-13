@@ -82,12 +82,12 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 	}
 
 	// キャッシュインスタンスの作成と初期化
-	cache, err := createCache(cacheConfig)
+	articleCache, err := createCache(cacheConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create cache: %w", err)
 	}
 
-	if err := cache.Initialize(); err != nil {
+	if err := articleCache.Initialize(); err != nil {
 		return nil, fmt.Errorf("failed to initialize cache: %w", err)
 	}
 
@@ -95,7 +95,7 @@ func NewRecommendRunner(fetchClient domain.FetchClient, recommender domain.Recom
 		fetcher:     fetcher,
 		recommender: recommender,
 		senders:     senders,
-		cache:       cache,
+		cache:       articleCache,
 		stderr:      stderr,
 		stdout:      stdout,
 	}, nil

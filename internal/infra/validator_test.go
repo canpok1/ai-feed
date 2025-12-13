@@ -751,7 +751,7 @@ func TestIsDummyValue(t *testing.T) {
 			config := &infra.Config{
 				DefaultProfile: &infra.Profile{},
 			}
-			profile := &entity.Profile{
+			testProfile := &entity.Profile{
 				AI: &entity.AIConfig{
 					Gemini: &entity.GeminiConfig{
 						Type:   "gemini-1.5-flash",
@@ -764,7 +764,7 @@ func TestIsDummyValue(t *testing.T) {
 				},
 			}
 
-			validator := infra.NewConfigValidator(config, profile)
+			validator := infra.NewConfigValidator(config, testProfile)
 			result, err := validator.Validate()
 			assert.NoError(t, err)
 

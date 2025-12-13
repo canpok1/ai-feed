@@ -396,23 +396,23 @@ func TestGeminiConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 				t.Setenv(tt.envVar, tt.envValue)
 			}
 
-			entity, err := tt.config.ToEntity()
+			got, err := tt.config.ToEntity()
 
 			if tt.expectedError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedError)
-				assert.Nil(t, entity)
+				assert.Nil(t, got)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, entity)
-				assert.Equal(t, tt.config.Type, entity.Type)
+				assert.NotNil(t, got)
+				assert.Equal(t, tt.config.Type, got.Type)
 
 				if tt.config.APIKey != "" {
 					// 直接指定が優先される
-					assert.Equal(t, tt.config.APIKey, entity.APIKey.Value())
+					assert.Equal(t, tt.config.APIKey, got.APIKey.Value())
 				} else {
 					// 環境変数から取得
-					assert.Equal(t, tt.envValue, entity.APIKey.Value())
+					assert.Equal(t, tt.envValue, got.APIKey.Value())
 				}
 			}
 		})
@@ -479,27 +479,27 @@ func TestSlackAPIConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 				t.Setenv(tt.envVar, tt.envValue)
 			}
 
-			entity, err := tt.config.ToEntity()
+			got, err := tt.config.ToEntity()
 
 			if tt.expectedError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedError)
-				assert.Nil(t, entity)
+				assert.Nil(t, got)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, entity)
-				assert.Equal(t, tt.config.Channel, entity.Channel)
-				assert.Equal(t, tt.config.MessageTemplate, entity.MessageTemplate)
+				assert.NotNil(t, got)
+				assert.Equal(t, tt.config.Channel, got.Channel)
+				assert.Equal(t, tt.config.MessageTemplate, got.MessageTemplate)
 
 				// Enabledフィールドの後方互換性チェック（省略時=true）
-				assert.True(t, entity.Enabled, "Enabled should default to true for backward compatibility")
+				assert.True(t, got.Enabled, "Enabled should default to true for backward compatibility")
 
 				if tt.config.APIToken != "" {
 					// 直接指定が優先される
-					assert.Equal(t, tt.config.APIToken, entity.APIToken.Value())
+					assert.Equal(t, tt.config.APIToken, got.APIToken.Value())
 				} else {
 					// 環境変数から取得
-					assert.Equal(t, tt.envValue, entity.APIToken.Value())
+					assert.Equal(t, tt.envValue, got.APIToken.Value())
 				}
 			}
 		})
@@ -566,26 +566,26 @@ func TestMisskeyConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 				t.Setenv(tt.envVar, tt.envValue)
 			}
 
-			entity, err := tt.config.ToEntity()
+			got, err := tt.config.ToEntity()
 
 			if tt.expectedError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedError)
-				assert.Nil(t, entity)
+				assert.Nil(t, got)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, entity)
-				assert.Equal(t, tt.config.APIURL, entity.APIURL)
+				assert.NotNil(t, got)
+				assert.Equal(t, tt.config.APIURL, got.APIURL)
 
 				// Enabledフィールドの後方互換性チェック（省略時=true）
-				assert.True(t, entity.Enabled, "Enabled should default to true for backward compatibility")
+				assert.True(t, got.Enabled, "Enabled should default to true for backward compatibility")
 
 				if tt.config.APIToken != "" {
 					// 直接指定が優先される
-					assert.Equal(t, tt.config.APIToken, entity.APIToken.Value())
+					assert.Equal(t, tt.config.APIToken, got.APIToken.Value())
 				} else {
 					// 環境変数から取得
-					assert.Equal(t, tt.envValue, entity.APIToken.Value())
+					assert.Equal(t, tt.envValue, got.APIToken.Value())
 				}
 			}
 		})
@@ -628,11 +628,11 @@ func TestSlackAPIConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			entity, err := tt.config.ToEntity()
+			got, err := tt.config.ToEntity()
 
 			assert.NoError(t, err)
-			assert.NotNil(t, entity)
-			assert.Equal(t, tt.expectEnabled, entity.Enabled)
+			assert.NotNil(t, got)
+			assert.Equal(t, tt.expectEnabled, got.Enabled)
 		})
 	}
 }
@@ -673,11 +673,11 @@ func TestMisskeyConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			entity, err := tt.config.ToEntity()
+			got, err := tt.config.ToEntity()
 
 			assert.NoError(t, err)
-			assert.NotNil(t, entity)
-			assert.Equal(t, tt.expectEnabled, entity.Enabled)
+			assert.NotNil(t, got)
+			assert.Equal(t, tt.expectEnabled, got.Enabled)
 		})
 	}
 }
@@ -903,24 +903,24 @@ func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			entity, err := tt.config.ToEntity()
+			got, err := tt.config.ToEntity()
 
 			if tt.expectedErr != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedErr)
-				assert.Nil(t, entity)
+				assert.Nil(t, got)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, entity)
+				assert.NotNil(t, got)
 
 				// SlackAPIのEnabledフィールドチェック
-				if entity.SlackAPI != nil {
-					assert.Equal(t, tt.expectedSlackEnabled, entity.SlackAPI.Enabled)
+				if got.SlackAPI != nil {
+					assert.Equal(t, tt.expectedSlackEnabled, got.SlackAPI.Enabled)
 				}
 
 				// MisskeyのEnabledフィールドチェック
-				if entity.Misskey != nil {
-					assert.Equal(t, tt.expectedMisskeyEnabled, entity.Misskey.Enabled)
+				if got.Misskey != nil {
+					assert.Equal(t, tt.expectedMisskeyEnabled, got.Misskey.Enabled)
 				}
 			}
 		})
@@ -985,15 +985,15 @@ func TestOutputConfig_EnabledFalseWithValidationErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			entity, err := tt.config.ToEntity()
+			got, err := tt.config.ToEntity()
 
 			if tt.expectedErr != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedErr)
-				assert.Nil(t, entity)
+				assert.Nil(t, got)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, entity)
+				assert.NotNil(t, got)
 			}
 		})
 	}
