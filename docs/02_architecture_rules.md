@@ -170,10 +170,9 @@ type RecommendUseCase struct {
 }
 
 func (u *RecommendUseCase) Execute(ctx context.Context, params RecommendParams) error {
-    // 1. 設定の読み込み・マージ
-    // 2. バリデーション
-    // 3. ビジネスロジックの実行（domain層経由）
-    // 4. 結果の通知（domain層インターフェース経由）
+    // 1. パラメータのバリデーション
+    // 2. ビジネスロジックの実行（domain層経由）
+    // 3. 結果の通知（domain層インターフェース経由）
 }
 ```
 

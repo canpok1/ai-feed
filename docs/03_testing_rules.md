@@ -53,11 +53,15 @@ app層は複数コンポーネントの協調動作（オーケストレーシ�
 //go:build integration
 
 // test/integration/app/recommend_test.go
+// ※簡潔さのため、import文やセットアップコード（config, ctx, params等）は省略しています
 func TestRecommendUseCase_Execute(t *testing.T) {
     // 実際のinfra層実装を使用
     fetcher := fetch.NewRSSFetcher(http.DefaultClient)
 
     // 外部APIのみモックサーバーを使用
+    slackHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusOK)
+    })
     mockSlackServer := httptest.NewServer(slackHandler)
     defer mockSlackServer.Close()
 
@@ -340,9 +344,6 @@ mockgen -source=internal/domain/fetch.go -destination=internal/domain/mock_domai
 ```go
 // infra層のテスト例（internal/infra/message/slack_test.go）
 func TestSlackSender_SendRecommend(t *testing.T) {
-    ctrl := gomock.NewController(t)
-    defer ctrl.Finish()
-
     // 外部APIのモックサーバーを作成
     server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusOK)
