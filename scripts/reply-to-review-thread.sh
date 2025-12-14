@@ -9,7 +9,7 @@
 #   EOF
 #
 # 例:
-#   echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh PRRT_kwDONTZR484BhKaJ
+#   echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaJ"
 #
 # 注意事項:
 #   - スレッドIDはGitHub GraphQL APIのNode ID形式で指定してください
@@ -31,8 +31,8 @@ usage() {
     echo "使用方法: echo \"コメント内容\" | $0 <スレッドID>" >&2
     echo "" >&2
     echo "例:" >&2
-    echo "  echo \"ご指摘ありがとうございます。\" | $0 PRRT_kwDONTZR484BhKaJ" >&2
-    echo "  $0 PRRT_kwDONTZR484BhKaJ <<EOF" >&2
+    echo "  echo \"ご指摘ありがとうございます。\" | $0 \"PRRT_kwDONTZR484BhKaJ\"" >&2
+    echo "  $0 \"PRRT_kwDONTZR484BhKaJ\" <<EOF" >&2
     echo "  複数行のコメント" >&2
     echo "  EOF" >&2
     exit 1
@@ -125,6 +125,7 @@ echo "" >&2
 echo "返信を投稿中..." >&2
 
 # 返信を投稿
+set +e
 RESULT=$(gh api graphql \
   -F pullRequestReviewThreadId="$THREAD_ID" \
   -F body="$COMMENT_WITH_MENTION" \
@@ -140,17 +141,25 @@ mutation($pullRequestReviewThreadId: ID!, $body: String!) {
       }
     }
   }
-}')
+}' 2>&1)
+GH_POST_EXIT_CODE=$?
+set -e
 
 # 結果を確認
+if [ "$GH_POST_EXIT_CODE" -ne 0 ]; then
+    echo "" >&2
+    echo "✗ 返信の投稿に失敗しました。" >&2
+    echo "エラー詳細:" >&2
+    echo "$RESULT" >&2
+    exit 1
+fi
+
 COMMENT_ID=$(echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment.id // empty')
 
 if [[ -n "$COMMENT_ID" ]]; then
     echo "" >&2
     echo "✓ 返信を投稿しました。" >&2
-    echo "コメントID: $(echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment.id')" >&2
-    echo "投稿者: @$(echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment.author.login')" >&2
-    echo "作成日時: $(echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment.createdAt')" >&2
+    echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment | "コメントID: \(.id)\n投稿者: @\(.author.login)\n作成日時: \(.createdAt)"' >&2
     exit 0
 else
     echo "" >&2
