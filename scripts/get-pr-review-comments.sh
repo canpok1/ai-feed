@@ -9,7 +9,7 @@
 #
 # 注意事項:
 #   - 最大30件のレビュースレッドを取得します
-#   - 各スレッドの最初の10件のコメントを取得します
+#   - 各スレッドの最後の10件のコメントを取得します
 
 set -euo pipefail
 
@@ -71,7 +71,7 @@ query($owner: String!, $name: String!, $number: Int!) {
         nodes {
           id
           isResolved
-          comments(first: 10) {
+          comments(last: 10) {
             nodes {
               id
               body
@@ -100,5 +100,5 @@ if echo "$RESPONSE" | jq -e '.data.repository.pullRequest == null' > /dev/null 2
     exit 1
 fi
 
-echo "$RESPONSE" | jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {thread_id: .id, author: .comments.nodes[0].author.login, comment: .comments.nodes[0].body}'
+echo "$RESPONSE" | jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {thread_id: .id, author: .comments.nodes[-1].author.login, comment: .comments.nodes[-1].body}'
 
