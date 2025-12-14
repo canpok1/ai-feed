@@ -7,9 +7,9 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/domain/cache"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/infra/cache"
 	"github.com/canpok1/ai-feed/internal/infra/comment"
 	"github.com/canpok1/ai-feed/internal/infra/message"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
