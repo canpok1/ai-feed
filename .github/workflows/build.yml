@@ -39,12 +39,19 @@ jobs:
     - name: Test Coverage Check
       run: make test-coverage
 
-    - name: Upload Coverage Report
+    - name: Upload Unit Test Coverage Report
       if: always()
       uses: actions/upload-artifact@v6
       with:
-        name: coverage-report-ut-it
-        path: public/coverage/ut-it
+        name: coverage-report-ut
+        path: public/coverage/ut
+
+    - name: Upload Integration Test Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: coverage-report-it
+        path: public/coverage/it
 
     - name: Build
       run: make build
@@ -57,11 +64,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Download coverage reports
+      - name: Download Unit Test Coverage Report
         uses: actions/download-artifact@v7
         with:
-          name: coverage-report-ut-it
-          path: public/coverage/ut-it
+          name: coverage-report-ut
+          path: public/coverage/ut
+
+      - name: Download Integration Test Coverage Report
+        uses: actions/download-artifact@v7
+        with:
+          name: coverage-report-it
+          path: public/coverage/it
 
       - name: Deploy to gh-pages
         if: github.ref == 'refs/heads/main'

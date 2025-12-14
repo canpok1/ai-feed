@@ -35,6 +35,8 @@ clean:
 	rm -f ${BINARY_NAME}
 	rm -rf ./dist
 	rm -f coverage.out coverage.filtered.out coverage.func.out coverage.html
+	rm -f coverage.ut.out coverage.ut.filtered.out coverage.ut.func.out
+	rm -f coverage.it.out coverage.it.filtered.out coverage.it.func.out
 	rm -rf public/coverage
 
 test:
@@ -46,11 +48,26 @@ test-integration:
 test-e2e:
 	go test -tags=e2e -v ./test/e2e/...
 
-test-coverage:
+# ユニットテストのカバレッジレポート生成
+test-coverage-ut:
+	@go test -coverprofile=coverage.ut.out -coverpkg=./internal/... ./...
+	@grep -v "mock_" coverage.ut.out > coverage.ut.filtered.out
+	@mkdir -p public/coverage/ut
+	@go tool cover -html=coverage.ut.filtered.out -o public/coverage/ut/index.html
+	@go tool cover -func=coverage.ut.filtered.out > coverage.ut.func.out
+
+# 結合テストのカバレッジレポート生成
+test-coverage-it:
+	@go test -tags=integration -coverprofile=coverage.it.out -coverpkg=./internal/... ./test/integration/...
+	@grep -v "mock_" coverage.it.out > coverage.it.filtered.out
+	@mkdir -p public/coverage/it
+	@go tool cover -html=coverage.it.filtered.out -o public/coverage/it/index.html
+	@go tool cover -func=coverage.it.filtered.out > coverage.it.func.out
+
+# ユニットテスト+結合テストの統合カバレッジレポート生成（層別カバレッジチェック含む）
+test-coverage: test-coverage-ut test-coverage-it
 	@go test -tags=integration -coverprofile=coverage.out -coverpkg=./internal/... ./... ./test/integration/...
 	@grep -v "mock_" coverage.out > coverage.filtered.out
-	@mkdir -p public/coverage/ut-it
-	@go tool cover -html=coverage.filtered.out -o public/coverage/ut-it/index.html
 	@go tool cover -func=coverage.filtered.out > coverage.func.out
 	@echo "=== Layer Coverage Check (per docs/03_testing_rules.md) ==="
 	$(call check_layer_coverage,domain,COVERAGE_THRESHOLD_DOMAIN)
