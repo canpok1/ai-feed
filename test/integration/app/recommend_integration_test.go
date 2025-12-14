@@ -418,16 +418,8 @@ func TestRecommendRunner_Integration_WithFileCache(t *testing.T) {
 	require.NoError(t, err)
 
 	err = runner2.Run(context.Background(), params, profile)
-	// 2回目の実行では、1件目の記事がキャッシュ済みなので2件目が選択される、
-	// または全てキャッシュ済みなら正常終了（エラーなし）
-	// テストフィードには2記事あるため、2件目が選択される可能性がある
-	if err == nil {
-		// 2件目の記事が選択された場合
-		assert.Equal(t, 1, slackSender2.GetReceivedCount(), "2回目: 別の記事でメッセージが送信されるべき")
-	} else {
-		// 全てキャッシュ済みの場合（ただしこのテストでは2件目があるのでこのケースは発生しない）
-		t.Logf("2回目の実行でエラー: %v", err)
-	}
+	require.NoError(t, err, "2回目の実行は成功するはずです")
+	assert.Equal(t, 1, slackSender2.GetReceivedCount(), "2回目: 別の記事でメッセージが送信されるべき")
 }
 
 func TestRecommendRunner_Integration_ConcurrentMultiSender(t *testing.T) {
