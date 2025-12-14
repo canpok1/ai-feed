@@ -52,11 +52,7 @@ fi
 fetch_thread_details() {
     local thread_id="$1"
 
-    set +e
-    local response
-    response=$(gh api graphql \
-      -f threadId="$thread_id" \
-      -f query='
+    read -r -d '' query <<'GRAPHQL' || true
 query($threadId: ID!) {
   node(id: $threadId) {
     ... on PullRequestReviewThread {
@@ -78,7 +74,12 @@ query($threadId: ID!) {
       }
     }
   }
-}' 2>&1)
+}
+GRAPHQL
+
+    set +e
+    local response
+    response=$(gh api graphql -f threadId="$thread_id" -f query="$query" 2>&1)
     local exit_code=$?
     set -e
 
