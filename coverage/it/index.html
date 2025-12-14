@@ -63,25 +63,25 @@
 				
 				<option value="file3">github.com/canpok1/ai-feed/internal/app/profile_init.go (80.0%)</option>
 				
-				<option value="file4">github.com/canpok1/ai-feed/internal/app/recommend.go (90.8%)</option>
+				<option value="file4">github.com/canpok1/ai-feed/internal/app/recommend.go (91.7%)</option>
 				
-				<option value="file5">github.com/canpok1/ai-feed/internal/domain/cache/file_cache.go (65.0%)</option>
+				<option value="file5">github.com/canpok1/ai-feed/internal/domain/entity/config.go (58.9%)</option>
 				
-				<option value="file6">github.com/canpok1/ai-feed/internal/domain/cache/nop_cache.go (100.0%)</option>
+				<option value="file6">github.com/canpok1/ai-feed/internal/domain/entity/entity.go (0.0%)</option>
 				
-				<option value="file7">github.com/canpok1/ai-feed/internal/domain/entity/config.go (58.9%)</option>
+				<option value="file7">github.com/canpok1/ai-feed/internal/domain/entity/secret.go (37.5%)</option>
 				
-				<option value="file8">github.com/canpok1/ai-feed/internal/domain/entity/entity.go (0.0%)</option>
+				<option value="file8">github.com/canpok1/ai-feed/internal/domain/entity/template_alias.go (61.0%)</option>
 				
-				<option value="file9">github.com/canpok1/ai-feed/internal/domain/entity/secret.go (37.5%)</option>
+				<option value="file9">github.com/canpok1/ai-feed/internal/domain/entity/validation_utils.go (90.0%)</option>
 				
-				<option value="file10">github.com/canpok1/ai-feed/internal/domain/entity/template_alias.go (61.0%)</option>
+				<option value="file10">github.com/canpok1/ai-feed/internal/domain/fetch.go (78.9%)</option>
 				
-				<option value="file11">github.com/canpok1/ai-feed/internal/domain/entity/validation_utils.go (90.0%)</option>
+				<option value="file11">github.com/canpok1/ai-feed/internal/domain/recommend.go (0.0%)</option>
 				
-				<option value="file12">github.com/canpok1/ai-feed/internal/domain/fetch.go (78.9%)</option>
+				<option value="file12">github.com/canpok1/ai-feed/internal/infra/cache/file_cache.go (65.0%)</option>
 				
-				<option value="file13">github.com/canpok1/ai-feed/internal/domain/recommend.go (0.0%)</option>
+				<option value="file13">github.com/canpok1/ai-feed/internal/infra/cache/nop_cache.go (100.0%)</option>
 				
 				<option value="file14">github.com/canpok1/ai-feed/internal/infra/config.go (77.2%)</option>
 				
@@ -607,7 +607,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
                 // 進行状況メッセージ: フィード選択
                 if attempt == 1 </span><span class="cov8" title="1">{
                         fmt.Fprintln(r.stderr, "フィードを選択しています...")
-                }</span> else<span class="cov0" title="0"> {
+                }</span> else<span class="cov8" title="1"> {
                         fmt.Fprintf(r.stderr, "別のフィードで再試行しています... (%d/%d)\n", attempt, len(params.URLs))
                 }</span>
 
@@ -781,366 +781,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 }
 </pre>
 		
-		<pre class="file" id="file5" style="display: none">package cache
-
-import (
-        "bufio"
-        "encoding/json"
-        "fmt"
-        "log/slog"
-        "os"
-        "path/filepath"
-        "strings"
-        "time"
-
-        "github.com/canpok1/ai-feed/internal/domain"
-        "github.com/canpok1/ai-feed/internal/domain/entity"
-)
-
-// FileRecommendCache implements RecommendCache interface using JSON Lines file format
-type FileRecommendCache struct {
-        filePath string
-        lockPath string
-        urlSet   map[string]bool
-        entries  []domain.RecommendEntry
-        config   *entity.CacheConfig
-        lockFile *os.File
-}
-
-// NewFileRecommendCache creates a new FileRecommendCache instance
-func NewFileRecommendCache(config *entity.CacheConfig) *FileRecommendCache <span class="cov8" title="1">{
-        lockPath := config.FilePath + ".lock"
-        return &amp;FileRecommendCache{
-                filePath: config.FilePath,
-                lockPath: lockPath,
-                urlSet:   make(map[string]bool),
-                entries:  make([]domain.RecommendEntry, 0),
-                config:   config,
-        }
-}</span>
-
-// Initialize initializes the cache, loads existing data and acquires necessary locks
-func (c *FileRecommendCache) Initialize() error <span class="cov8" title="1">{
-        slog.Debug("Initializing file recommend cache", "file_path", c.filePath)
-
-        // Create directory first (needed for lock file)
-        if err := c.createDirectoryIfNotExists(); err != nil </span><span class="cov0" title="0">{
-                return fmt.Errorf("failed to create directory: %w", err)
-        }</span>
-
-        // Acquire lock after directory creation
-        <span class="cov8" title="1">if err := c.acquireLock(); err != nil </span><span class="cov0" title="0">{
-                return fmt.Errorf("failed to acquire lock: %w", err)
-        }</span>
-
-        // Load existing cache data
-        <span class="cov8" title="1">if err := c.loadFromFile(); err != nil </span><span class="cov0" title="0">{
-                // Release lock on error (ignore release error as load already failed)
-                _ = c.releaseLock()
-                return fmt.Errorf("failed to load cache data: %w", err)
-        }</span>
-
-        // Cleanup old entries
-        <span class="cov8" title="1">c.cleanup()
-
-        slog.Debug("File recommend cache initialized successfully",
-                "entries_count", len(c.entries),
-                "unique_urls", len(c.urlSet))
-
-        return nil</span>
-}
-
-// IsCached checks if the given URL is already cached (duplicate check)
-func (c *FileRecommendCache) IsCached(url string) bool <span class="cov8" title="1">{
-        normalizedURL := c.normalizeURL(url)
-        return c.urlSet[normalizedURL]
-}</span>
-
-// AddEntry adds a new entry to the cache with the given URL and title
-func (c *FileRecommendCache) AddEntry(url, title string) error <span class="cov8" title="1">{
-        normalizedURL := c.normalizeURL(url)
-
-        // Check if already exists
-        if c.urlSet[normalizedURL] </span><span class="cov0" title="0">{
-                slog.Debug("URL already in cache, skipping", "url", normalizedURL)
-                return nil
-        }</span>
-
-        // Create new entry
-        <span class="cov8" title="1">entry := domain.RecommendEntry{
-                URL:      normalizedURL,
-                Title:    title,
-                PostedAt: time.Now(),
-        }
-
-        // Add to in-memory structures
-        c.entries = append(c.entries, entry)
-        c.urlSet[normalizedURL] = true
-
-        // Cleanup if necessary (FIFO when max_entries exceeded)
-        c.cleanupByMaxEntries()
-
-        // Save to file
-        if err := c.saveToFile(); err != nil </span><span class="cov0" title="0">{
-                return fmt.Errorf("failed to save cache: %w", err)
-        }</span>
-
-        <span class="cov8" title="1">slog.Debug("Added entry to cache", "url", normalizedURL, "title", title)
-        return nil</span>
-}
-
-// Close closes the cache, releases locks and performs cleanup
-func (c *FileRecommendCache) Close() error <span class="cov8" title="1">{
-        if c.lockFile != nil </span><span class="cov8" title="1">{
-                if err := c.releaseLock(); err != nil </span><span class="cov0" title="0">{
-                        return fmt.Errorf("failed to release lock: %w", err)
-                }</span>
-                <span class="cov8" title="1">slog.Debug("File recommend cache closed successfully")</span>
-        }
-        <span class="cov8" title="1">return nil</span>
-}
-
-// createDirectoryIfNotExists creates the cache directory if it doesn't exist
-func (c *FileRecommendCache) createDirectoryIfNotExists() error <span class="cov8" title="1">{
-        dir := filepath.Dir(c.filePath)
-        if _, err := os.Stat(dir); os.IsNotExist(err) </span><span class="cov0" title="0">{
-                slog.Debug("Creating cache directory", "dir", dir)
-                if err := os.MkdirAll(dir, 0755); err != nil </span><span class="cov0" title="0">{
-                        return domain.ErrCacheDirectoryCreate
-                }</span>
-        }
-        <span class="cov8" title="1">return nil</span>
-}
-
-// loadFromFile loads cache entries from the JSON Lines file
-func (c *FileRecommendCache) loadFromFile() error <span class="cov8" title="1">{
-        // Check if file exists
-        if _, err := os.Stat(c.filePath); os.IsNotExist(err) </span><span class="cov8" title="1">{
-                slog.Debug("Cache file does not exist, starting with empty cache", "file_path", c.filePath)
-                return nil
-        }</span>
-
-        <span class="cov8" title="1">file, err := os.Open(c.filePath)
-        if err != nil </span><span class="cov0" title="0">{
-                if os.IsPermission(err) </span><span class="cov0" title="0">{
-                        return domain.ErrCachePermission
-                }</span>
-                <span class="cov0" title="0">return fmt.Errorf("failed to open cache file: %w", err)</span>
-        }
-        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = file.Close() }</span>()
-
-        <span class="cov8" title="1">scanner := bufio.NewScanner(file)
-        validEntries := make([]domain.RecommendEntry, 0)
-
-        for scanner.Scan() </span><span class="cov8" title="1">{
-                line := strings.TrimSpace(scanner.Text())
-                if line == "" </span><span class="cov0" title="0">{
-                        continue</span>
-                }
-
-                <span class="cov8" title="1">var entry domain.RecommendEntry
-                if err := json.Unmarshal([]byte(line), &amp;entry); err != nil </span><span class="cov0" title="0">{
-                        // Skip invalid lines (old format compatibility)
-                        slog.Warn("Skipping invalid cache entry line", "error", err.Error())
-                        continue</span>
-                }
-
-                <span class="cov8" title="1">validEntries = append(validEntries, entry)
-                normalizedURL := c.normalizeURL(entry.URL)
-                c.urlSet[normalizedURL] = true</span>
-        }
-
-        <span class="cov8" title="1">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
-                return domain.ErrCacheCorrupted
-        }</span>
-
-        <span class="cov8" title="1">c.entries = validEntries
-        slog.Debug("Loaded cache entries from file", "count", len(validEntries))
-        return nil</span>
-}
-
-// saveToFile saves all cache entries to the JSON Lines file
-func (c *FileRecommendCache) saveToFile() error <span class="cov8" title="1">{
-        // Create temporary file for atomic write
-        tempPath := c.filePath + ".tmp"
-        file, err := os.Create(tempPath)
-        if err != nil </span><span class="cov0" title="0">{
-                if os.IsPermission(err) </span><span class="cov0" title="0">{
-                        return domain.ErrCachePermission
-                }</span>
-                <span class="cov0" title="0">return fmt.Errorf("failed to create temporary cache file: %w", err)</span>
-        }
-
-        <span class="cov8" title="1">var success bool
-        defer func() </span><span class="cov8" title="1">{
-                // On error, close the file (if not already closed) and remove the temp file.
-                // On success, the file is already closed and the temp file is renamed, so this is a no-op.
-                _ = file.Close()
-                if !success </span><span class="cov0" title="0">{
-                        os.Remove(tempPath)
-                }</span>
-        }()
-
-        // Write entries as JSON Lines
-        <span class="cov8" title="1">for _, entry := range c.entries </span><span class="cov8" title="1">{
-                data, err := json.Marshal(entry)
-                if err != nil </span><span class="cov0" title="0">{
-                        return fmt.Errorf("failed to marshal cache entry: %w", err)
-                }</span>
-                <span class="cov8" title="1">if _, err := file.WriteString(string(data) + "\n"); err != nil </span><span class="cov0" title="0">{
-                        return fmt.Errorf("failed to write cache entry: %w", err)
-                }</span>
-        }
-
-        // Sync to disk
-        <span class="cov8" title="1">if err := file.Sync(); err != nil </span><span class="cov0" title="0">{
-                return fmt.Errorf("failed to sync cache file: %w", err)
-        }</span>
-
-        // Must close before rename.
-        <span class="cov8" title="1">if err := file.Close(); err != nil </span><span class="cov0" title="0">{
-                return fmt.Errorf("failed to close temporary cache file: %w", err)
-        }</span>
-
-        // Atomic replace
-        <span class="cov8" title="1">if err := os.Rename(tempPath, c.filePath); err != nil </span><span class="cov0" title="0">{
-                return fmt.Errorf("failed to replace cache file: %w", err)
-        }</span>
-
-        <span class="cov8" title="1">success = true
-        slog.Debug("Saved cache entries to file", "count", len(c.entries))
-        return nil</span>
-}
-
-// acquireLock acquires the cache file lock
-func (c *FileRecommendCache) acquireLock() error <span class="cov8" title="1">{
-        // Ensure lock file directory exists
-        lockDir := filepath.Dir(c.lockPath)
-        if _, err := os.Stat(lockDir); os.IsNotExist(err) </span><span class="cov0" title="0">{
-                slog.Debug("Creating lock file directory", "dir", lockDir)
-                if err := os.MkdirAll(lockDir, 0755); err != nil </span><span class="cov0" title="0">{
-                        return fmt.Errorf("failed to create lock file directory: %w", err)
-                }</span>
-        }
-
-        <span class="cov8" title="1">lockFile, err := os.OpenFile(c.lockPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
-        if err != nil </span><span class="cov0" title="0">{
-                if os.IsExist(err) </span><span class="cov0" title="0">{
-                        return fmt.Errorf("%w: lock file exists at %s. If no other ai-feed process is running, manually delete the lock file", domain.ErrCacheLocked, c.lockPath)
-                }</span>
-                <span class="cov0" title="0">return fmt.Errorf("failed to create lock file: %w", err)</span>
-        }
-
-        <span class="cov8" title="1">c.lockFile = lockFile
-        slog.Debug("Acquired cache lock", "lock_path", c.lockPath)
-        return nil</span>
-}
-
-// releaseLock releases the cache file lock
-func (c *FileRecommendCache) releaseLock() error <span class="cov8" title="1">{
-        if c.lockFile != nil </span><span class="cov8" title="1">{
-                _ = c.lockFile.Close()
-                if err := os.Remove(c.lockPath); err != nil &amp;&amp; !os.IsNotExist(err) </span><span class="cov0" title="0">{
-                        slog.Warn("Failed to remove lock file", "lock_path", c.lockPath, "error", err.Error())
-                        return err
-                }</span>
-                <span class="cov8" title="1">c.lockFile = nil
-                slog.Debug("Released cache lock", "lock_path", c.lockPath)</span>
-        }
-        <span class="cov8" title="1">return nil</span>
-}
-
-// cleanup removes old entries based on retention_days
-func (c *FileRecommendCache) cleanup() <span class="cov8" title="1">{
-        if c.config.RetentionDays &lt;= 0 </span><span class="cov0" title="0">{
-                return
-        }</span>
-
-        <span class="cov8" title="1">cutoffTime := time.Now().AddDate(0, 0, -c.config.RetentionDays)
-        validEntries := make([]domain.RecommendEntry, 0)
-        removedCount := 0
-
-        for _, entry := range c.entries </span><span class="cov8" title="1">{
-                if entry.PostedAt.After(cutoffTime) </span><span class="cov8" title="1">{
-                        validEntries = append(validEntries, entry)
-                }</span> else<span class="cov0" title="0"> {
-                        // Remove expired entry from URL set
-                        normalizedURL := c.normalizeURL(entry.URL)
-                        delete(c.urlSet, normalizedURL)
-                        removedCount++
-                }</span>
-        }
-
-        <span class="cov8" title="1">if removedCount &gt; 0 </span><span class="cov0" title="0">{
-                c.entries = validEntries
-                slog.Debug("Cleaned up old cache entries", "removed_count", removedCount, "remaining_count", len(validEntries))
-        }</span>
-}
-
-// cleanupByMaxEntries removes old entries when max_entries is exceeded (FIFO)
-func (c *FileRecommendCache) cleanupByMaxEntries() <span class="cov8" title="1">{
-        if c.config.MaxEntries &lt;= 0 || len(c.entries) &lt;= c.config.MaxEntries </span><span class="cov8" title="1">{
-                return
-        }</span>
-
-        // Calculate how many entries to remove
-        <span class="cov0" title="0">excessCount := len(c.entries) - c.config.MaxEntries
-
-        // Remove oldest entries (FIFO) and their corresponding URLs from urlSet
-        removedEntries := c.entries[:excessCount]
-        for _, entry := range removedEntries </span><span class="cov0" title="0">{
-                normalizedURL := c.normalizeURL(entry.URL)
-                delete(c.urlSet, normalizedURL)
-        }</span>
-        <span class="cov0" title="0">c.entries = c.entries[excessCount:]
-
-        slog.Debug("Cleaned up excess cache entries", "removed_count", len(removedEntries), "remaining_count", len(c.entries))</span>
-}
-
-// normalizeURL normalizes URL by removing trailing slash
-func (c *FileRecommendCache) normalizeURL(url string) string <span class="cov8" title="1">{
-        return strings.TrimSuffix(url, "/")
-}</span>
-</pre>
-		
-		<pre class="file" id="file6" style="display: none">package cache
-
-import "github.com/canpok1/ai-feed/internal/domain"
-
-// NopCache is a no-operation implementation of RecommendCache interface.
-// It implements the Null Object pattern, doing nothing for all operations.
-type NopCache struct{}
-
-// NewNopCache creates a new NopCache instance
-func NewNopCache() *NopCache <span class="cov8" title="1">{
-        return &amp;NopCache{}
-}</span>
-
-// Initialize does nothing for NopCache
-func (n *NopCache) Initialize() error <span class="cov8" title="1">{
-        return nil
-}</span>
-
-// IsCached always returns false for NopCache
-func (n *NopCache) IsCached(url string) bool <span class="cov8" title="1">{
-        return false
-}</span>
-
-// AddEntry does nothing for NopCache
-func (n *NopCache) AddEntry(url, title string) error <span class="cov8" title="1">{
-        return nil
-}</span>
-
-// Close does nothing for NopCache
-func (n *NopCache) Close() error <span class="cov8" title="1">{
-        return nil
-}</span>
-
-// Verify that NopCache implements RecommendCache interface
-var _ domain.RecommendCache = (*NopCache)(nil)
-</pre>
-		
-		<pre class="file" id="file7" style="display: none">package entity
+		<pre class="file" id="file5" style="display: none">package entity
 
 import (
         "bytes"
@@ -1761,7 +1402,7 @@ type ValidationResult struct {
 }
 </pre>
 		
-		<pre class="file" id="file8" style="display: none">package entity
+		<pre class="file" id="file6" style="display: none">package entity
 
 import (
         "time"
@@ -1823,7 +1464,7 @@ func (r *Recommend) Validate() *ValidationResult <span class="cov0" title="0">{
 }
 </pre>
 		
-		<pre class="file" id="file9" style="display: none">package entity
+		<pre class="file" id="file7" style="display: none">package entity
 
 import "log/slog"
 
@@ -1870,7 +1511,7 @@ func (s SecretString) MarshalText() ([]byte, error) <span class="cov0" title="0"
 }</span>
 </pre>
 		
-		<pre class="file" id="file10" style="display: none">package entity
+		<pre class="file" id="file8" style="display: none">package entity
 
 import (
         "fmt"
@@ -2027,7 +1668,7 @@ func (c *TemplateAliasConverter) getValidAliases() []string <span class="cov0" t
 }
 </pre>
 		
-		<pre class="file" id="file11" style="display: none">package entity
+		<pre class="file" id="file9" style="display: none">package entity
 
 import (
         "fmt"
@@ -2103,7 +1744,7 @@ func ValidateURL(urlStr, fieldName string) error <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file12" style="display: none">package domain
+		<pre class="file" id="file10" style="display: none">package domain
 
 import (
         "log/slog"
@@ -2163,7 +1804,7 @@ func (f *Fetcher) Fetch(urls []string, limit int) ([]entity.Article, error) <spa
 }
 </pre>
 		
-		<pre class="file" id="file13" style="display: none">package domain
+		<pre class="file" id="file11" style="display: none">package domain
 
 import (
         "context"
@@ -2291,6 +1932,365 @@ func generateComment(
         }</span>
         <span class="cov0" title="0">return &amp;c, nil</span>
 }
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package cache
+
+import (
+        "bufio"
+        "encoding/json"
+        "fmt"
+        "log/slog"
+        "os"
+        "path/filepath"
+        "strings"
+        "time"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// FileRecommendCache implements RecommendCache interface using JSON Lines file format
+type FileRecommendCache struct {
+        filePath string
+        lockPath string
+        urlSet   map[string]bool
+        entries  []domain.RecommendEntry
+        config   *entity.CacheConfig
+        lockFile *os.File
+}
+
+// NewFileRecommendCache creates a new FileRecommendCache instance
+func NewFileRecommendCache(config *entity.CacheConfig) *FileRecommendCache <span class="cov8" title="1">{
+        lockPath := config.FilePath + ".lock"
+        return &amp;FileRecommendCache{
+                filePath: config.FilePath,
+                lockPath: lockPath,
+                urlSet:   make(map[string]bool),
+                entries:  make([]domain.RecommendEntry, 0),
+                config:   config,
+        }
+}</span>
+
+// Initialize initializes the cache, loads existing data and acquires necessary locks
+func (c *FileRecommendCache) Initialize() error <span class="cov8" title="1">{
+        slog.Debug("Initializing file recommend cache", "file_path", c.filePath)
+
+        // Create directory first (needed for lock file)
+        if err := c.createDirectoryIfNotExists(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to create directory: %w", err)
+        }</span>
+
+        // Acquire lock after directory creation
+        <span class="cov8" title="1">if err := c.acquireLock(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to acquire lock: %w", err)
+        }</span>
+
+        // Load existing cache data
+        <span class="cov8" title="1">if err := c.loadFromFile(); err != nil </span><span class="cov0" title="0">{
+                // Release lock on error (ignore release error as load already failed)
+                _ = c.releaseLock()
+                return fmt.Errorf("failed to load cache data: %w", err)
+        }</span>
+
+        // Cleanup old entries
+        <span class="cov8" title="1">c.cleanup()
+
+        slog.Debug("File recommend cache initialized successfully",
+                "entries_count", len(c.entries),
+                "unique_urls", len(c.urlSet))
+
+        return nil</span>
+}
+
+// IsCached checks if the given URL is already cached (duplicate check)
+func (c *FileRecommendCache) IsCached(url string) bool <span class="cov8" title="1">{
+        normalizedURL := c.normalizeURL(url)
+        return c.urlSet[normalizedURL]
+}</span>
+
+// AddEntry adds a new entry to the cache with the given URL and title
+func (c *FileRecommendCache) AddEntry(url, title string) error <span class="cov8" title="1">{
+        normalizedURL := c.normalizeURL(url)
+
+        // Check if already exists
+        if c.urlSet[normalizedURL] </span><span class="cov0" title="0">{
+                slog.Debug("URL already in cache, skipping", "url", normalizedURL)
+                return nil
+        }</span>
+
+        // Create new entry
+        <span class="cov8" title="1">entry := domain.RecommendEntry{
+                URL:      normalizedURL,
+                Title:    title,
+                PostedAt: time.Now(),
+        }
+
+        // Add to in-memory structures
+        c.entries = append(c.entries, entry)
+        c.urlSet[normalizedURL] = true
+
+        // Cleanup if necessary (FIFO when max_entries exceeded)
+        c.cleanupByMaxEntries()
+
+        // Save to file
+        if err := c.saveToFile(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to save cache: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">slog.Debug("Added entry to cache", "url", normalizedURL, "title", title)
+        return nil</span>
+}
+
+// Close closes the cache, releases locks and performs cleanup
+func (c *FileRecommendCache) Close() error <span class="cov8" title="1">{
+        if c.lockFile != nil </span><span class="cov8" title="1">{
+                if err := c.releaseLock(); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to release lock: %w", err)
+                }</span>
+                <span class="cov8" title="1">slog.Debug("File recommend cache closed successfully")</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// createDirectoryIfNotExists creates the cache directory if it doesn't exist
+func (c *FileRecommendCache) createDirectoryIfNotExists() error <span class="cov8" title="1">{
+        dir := filepath.Dir(c.filePath)
+        if _, err := os.Stat(dir); os.IsNotExist(err) </span><span class="cov0" title="0">{
+                slog.Debug("Creating cache directory", "dir", dir)
+                if err := os.MkdirAll(dir, 0755); err != nil </span><span class="cov0" title="0">{
+                        return domain.ErrCacheDirectoryCreate
+                }</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// loadFromFile loads cache entries from the JSON Lines file
+func (c *FileRecommendCache) loadFromFile() error <span class="cov8" title="1">{
+        // Check if file exists
+        if _, err := os.Stat(c.filePath); os.IsNotExist(err) </span><span class="cov8" title="1">{
+                slog.Debug("Cache file does not exist, starting with empty cache", "file_path", c.filePath)
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">file, err := os.Open(c.filePath)
+        if err != nil </span><span class="cov0" title="0">{
+                if os.IsPermission(err) </span><span class="cov0" title="0">{
+                        return domain.ErrCachePermission
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("failed to open cache file: %w", err)</span>
+        }
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = file.Close() }</span>()
+
+        <span class="cov8" title="1">scanner := bufio.NewScanner(file)
+        validEntries := make([]domain.RecommendEntry, 0)
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := strings.TrimSpace(scanner.Text())
+                if line == "" </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">var entry domain.RecommendEntry
+                if err := json.Unmarshal([]byte(line), &amp;entry); err != nil </span><span class="cov0" title="0">{
+                        // Skip invalid lines (old format compatibility)
+                        slog.Warn("Skipping invalid cache entry line", "error", err.Error())
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">validEntries = append(validEntries, entry)
+                normalizedURL := c.normalizeURL(entry.URL)
+                c.urlSet[normalizedURL] = true</span>
+        }
+
+        <span class="cov8" title="1">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
+                return domain.ErrCacheCorrupted
+        }</span>
+
+        <span class="cov8" title="1">c.entries = validEntries
+        slog.Debug("Loaded cache entries from file", "count", len(validEntries))
+        return nil</span>
+}
+
+// saveToFile saves all cache entries to the JSON Lines file
+func (c *FileRecommendCache) saveToFile() error <span class="cov8" title="1">{
+        // Create temporary file for atomic write
+        tempPath := c.filePath + ".tmp"
+        file, err := os.Create(tempPath)
+        if err != nil </span><span class="cov0" title="0">{
+                if os.IsPermission(err) </span><span class="cov0" title="0">{
+                        return domain.ErrCachePermission
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("failed to create temporary cache file: %w", err)</span>
+        }
+
+        <span class="cov8" title="1">var success bool
+        defer func() </span><span class="cov8" title="1">{
+                // On error, close the file (if not already closed) and remove the temp file.
+                // On success, the file is already closed and the temp file is renamed, so this is a no-op.
+                _ = file.Close()
+                if !success </span><span class="cov0" title="0">{
+                        os.Remove(tempPath)
+                }</span>
+        }()
+
+        // Write entries as JSON Lines
+        <span class="cov8" title="1">for _, entry := range c.entries </span><span class="cov8" title="1">{
+                data, err := json.Marshal(entry)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to marshal cache entry: %w", err)
+                }</span>
+                <span class="cov8" title="1">if _, err := file.WriteString(string(data) + "\n"); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to write cache entry: %w", err)
+                }</span>
+        }
+
+        // Sync to disk
+        <span class="cov8" title="1">if err := file.Sync(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to sync cache file: %w", err)
+        }</span>
+
+        // Must close before rename.
+        <span class="cov8" title="1">if err := file.Close(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to close temporary cache file: %w", err)
+        }</span>
+
+        // Atomic replace
+        <span class="cov8" title="1">if err := os.Rename(tempPath, c.filePath); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to replace cache file: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">success = true
+        slog.Debug("Saved cache entries to file", "count", len(c.entries))
+        return nil</span>
+}
+
+// acquireLock acquires the cache file lock
+func (c *FileRecommendCache) acquireLock() error <span class="cov8" title="1">{
+        // Ensure lock file directory exists
+        lockDir := filepath.Dir(c.lockPath)
+        if _, err := os.Stat(lockDir); os.IsNotExist(err) </span><span class="cov0" title="0">{
+                slog.Debug("Creating lock file directory", "dir", lockDir)
+                if err := os.MkdirAll(lockDir, 0755); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to create lock file directory: %w", err)
+                }</span>
+        }
+
+        <span class="cov8" title="1">lockFile, err := os.OpenFile(c.lockPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
+        if err != nil </span><span class="cov0" title="0">{
+                if os.IsExist(err) </span><span class="cov0" title="0">{
+                        return fmt.Errorf("%w: lock file exists at %s. If no other ai-feed process is running, manually delete the lock file", domain.ErrCacheLocked, c.lockPath)
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("failed to create lock file: %w", err)</span>
+        }
+
+        <span class="cov8" title="1">c.lockFile = lockFile
+        slog.Debug("Acquired cache lock", "lock_path", c.lockPath)
+        return nil</span>
+}
+
+// releaseLock releases the cache file lock
+func (c *FileRecommendCache) releaseLock() error <span class="cov8" title="1">{
+        if c.lockFile != nil </span><span class="cov8" title="1">{
+                _ = c.lockFile.Close()
+                if err := os.Remove(c.lockPath); err != nil &amp;&amp; !os.IsNotExist(err) </span><span class="cov0" title="0">{
+                        slog.Warn("Failed to remove lock file", "lock_path", c.lockPath, "error", err.Error())
+                        return err
+                }</span>
+                <span class="cov8" title="1">c.lockFile = nil
+                slog.Debug("Released cache lock", "lock_path", c.lockPath)</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// cleanup removes old entries based on retention_days
+func (c *FileRecommendCache) cleanup() <span class="cov8" title="1">{
+        if c.config.RetentionDays &lt;= 0 </span><span class="cov0" title="0">{
+                return
+        }</span>
+
+        <span class="cov8" title="1">cutoffTime := time.Now().AddDate(0, 0, -c.config.RetentionDays)
+        validEntries := make([]domain.RecommendEntry, 0)
+        removedCount := 0
+
+        for _, entry := range c.entries </span><span class="cov8" title="1">{
+                if entry.PostedAt.After(cutoffTime) </span><span class="cov8" title="1">{
+                        validEntries = append(validEntries, entry)
+                }</span> else<span class="cov0" title="0"> {
+                        // Remove expired entry from URL set
+                        normalizedURL := c.normalizeURL(entry.URL)
+                        delete(c.urlSet, normalizedURL)
+                        removedCount++
+                }</span>
+        }
+
+        <span class="cov8" title="1">if removedCount &gt; 0 </span><span class="cov0" title="0">{
+                c.entries = validEntries
+                slog.Debug("Cleaned up old cache entries", "removed_count", removedCount, "remaining_count", len(validEntries))
+        }</span>
+}
+
+// cleanupByMaxEntries removes old entries when max_entries is exceeded (FIFO)
+func (c *FileRecommendCache) cleanupByMaxEntries() <span class="cov8" title="1">{
+        if c.config.MaxEntries &lt;= 0 || len(c.entries) &lt;= c.config.MaxEntries </span><span class="cov8" title="1">{
+                return
+        }</span>
+
+        // Calculate how many entries to remove
+        <span class="cov0" title="0">excessCount := len(c.entries) - c.config.MaxEntries
+
+        // Remove oldest entries (FIFO) and their corresponding URLs from urlSet
+        removedEntries := c.entries[:excessCount]
+        for _, entry := range removedEntries </span><span class="cov0" title="0">{
+                normalizedURL := c.normalizeURL(entry.URL)
+                delete(c.urlSet, normalizedURL)
+        }</span>
+        <span class="cov0" title="0">c.entries = c.entries[excessCount:]
+
+        slog.Debug("Cleaned up excess cache entries", "removed_count", len(removedEntries), "remaining_count", len(c.entries))</span>
+}
+
+// normalizeURL normalizes URL by removing trailing slash
+func (c *FileRecommendCache) normalizeURL(url string) string <span class="cov8" title="1">{
+        return strings.TrimSuffix(url, "/")
+}</span>
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package cache
+
+import "github.com/canpok1/ai-feed/internal/domain"
+
+// NopCache is a no-operation implementation of RecommendCache interface.
+// It implements the Null Object pattern, doing nothing for all operations.
+type NopCache struct{}
+
+// NewNopCache creates a new NopCache instance
+func NewNopCache() *NopCache <span class="cov8" title="1">{
+        return &amp;NopCache{}
+}</span>
+
+// Initialize does nothing for NopCache
+func (n *NopCache) Initialize() error <span class="cov8" title="1">{
+        return nil
+}</span>
+
+// IsCached always returns false for NopCache
+func (n *NopCache) IsCached(url string) bool <span class="cov8" title="1">{
+        return false
+}</span>
+
+// AddEntry does nothing for NopCache
+func (n *NopCache) AddEntry(url, title string) error <span class="cov8" title="1">{
+        return nil
+}</span>
+
+// Close does nothing for NopCache
+func (n *NopCache) Close() error <span class="cov8" title="1">{
+        return nil
+}</span>
+
+// Verify that NopCache implements RecommendCache interface
+var _ domain.RecommendCache = (*NopCache)(nil)
 </pre>
 		
 		<pre class="file" id="file14" style="display: none">package infra
