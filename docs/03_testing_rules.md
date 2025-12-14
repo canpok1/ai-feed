@@ -104,6 +104,7 @@ func TestRecommendRunner_Run(t *testing.T) {
 //go:build integration
 
 // test/integration/app/profile_init_integration_test.go
+// ※簡潔さのため、テストの実行ループやリポジトリのセットアップ等は省略しています
 func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
     tests := []struct {
         name    string
