@@ -69,7 +69,7 @@
 				
 				<option value="file6">github.com/canpok1/ai-feed/internal/domain/cache/nop_cache.go (100.0%)</option>
 				
-				<option value="file7">github.com/canpok1/ai-feed/internal/domain/entity/config.go (56.0%)</option>
+				<option value="file7">github.com/canpok1/ai-feed/internal/domain/entity/config.go (95.2%)</option>
 				
 				<option value="file8">github.com/canpok1/ai-feed/internal/domain/entity/entity.go (100.0%)</option>
 				
@@ -1201,28 +1201,28 @@ type MockConfig struct {
 }
 
 // Validate はMockConfigの内容をバリデーションする
-func (m *MockConfig) Validate() *ValidationResult <span class="cov0" title="0">{
+func (m *MockConfig) Validate() *ValidationResult <span class="cov8" title="1">{
         builder := NewValidationBuilder()
 
         // Enabledがfalseの場合はバリデーションをスキップ
-        if !m.Enabled </span><span class="cov0" title="0">{
+        if !m.Enabled </span><span class="cov8" title="1">{
                 return builder.Build()
         }</span>
 
         // SelectorMode: "first", "random", "last"のいずれか
-        <span class="cov0" title="0">if !IsValidMockSelectorMode(m.SelectorMode) </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if !IsValidMockSelectorMode(m.SelectorMode) </span><span class="cov8" title="1">{
                 builder.AddError("Mockの記事選択モードが不正です。first, random, lastのいずれかを指定してください")
         }</span>
 
-        <span class="cov0" title="0">return builder.Build()</span>
+        <span class="cov8" title="1">return builder.Build()</span>
 }
 
 // Merge は他のMockConfigの非空フィールドで現在のMockConfigをマージする
-func (m *MockConfig) Merge(other *MockConfig) <span class="cov0" title="0">{
-        if other == nil </span><span class="cov0" title="0">{
+func (m *MockConfig) Merge(other *MockConfig) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
-        <span class="cov0" title="0">m.Enabled = other.Enabled
+        <span class="cov8" title="1">m.Enabled = other.Enabled
         mergeString(&amp;m.SelectorMode, other.SelectorMode)
         mergeString(&amp;m.Comment, other.Comment)</span>
 }
@@ -1241,13 +1241,13 @@ func (a *AIConfig) Validate() *ValidationResult <span class="cov8" title="1">{
         builder := NewValidationBuilder()
 
         // Mock設定が有効な場合は、Gemini設定は不要
-        if a.Mock != nil &amp;&amp; a.Mock.Enabled </span><span class="cov0" title="0">{
+        if a.Mock != nil &amp;&amp; a.Mock.Enabled </span><span class="cov8" title="1">{
                 builder.MergeResult(a.Mock.Validate())
                 return builder.Build()
         }</span>
 
         // Gemini: 必須項目（nilでない）
-        <span class="cov8" title="1">if a.Gemini == nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if a.Gemini == nil </span><span class="cov8" title="1">{
                 builder.AddError("Gemini設定が設定されていません")
         }</span> else<span class="cov8" title="1"> {
                 // GeminiConfig.Validate()を呼び出して、結果を集約
@@ -1259,7 +1259,7 @@ func (a *AIConfig) Validate() *ValidationResult <span class="cov8" title="1">{
 
 // Merge は他のAIConfigの非nil フィールドで現在のAIConfigをマージする
 func (a *AIConfig) Merge(other *AIConfig) <span class="cov8" title="1">{
-        if other == nil </span><span class="cov0" title="0">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
         <span class="cov8" title="1">mergePtr(&amp;a.Gemini, other.Gemini)
@@ -1302,7 +1302,7 @@ func (g *GeminiConfig) Validate() *ValidationResult <span class="cov8" title="1"
 
 // Merge は他のGeminiConfigの非空フィールドで現在のGeminiConfigをマージする
 func (g *GeminiConfig) Merge(other *GeminiConfig) <span class="cov8" title="1">{
-        if other == nil </span><span class="cov0" title="0">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
         <span class="cov8" title="1">mergeString(&amp;g.Type, other.Type)
@@ -1351,7 +1351,7 @@ func (p *PromptConfig) Validate() *ValidationResult <span class="cov8" title="1"
 }
 
 // BuildCommentPrompt はtext/templateを使用してコメントプロンプトを生成する
-func (c *PromptConfig) BuildCommentPrompt(article *Article) (string, error) <span class="cov0" title="0">{
+func (c *PromptConfig) BuildCommentPrompt(article *Article) (string, error) <span class="cov8" title="1">{
         // 後方互換性のため、古い形式のプレースホルダーを新形式に変換
         templateStr := c.CommentPromptTemplate
         templateStr = strings.ReplaceAll(templateStr, "{{title}}", "{{.Title}}")
@@ -1365,40 +1365,40 @@ func (c *PromptConfig) BuildCommentPrompt(article *Article) (string, error) <spa
                 // 別名変換でエラーが発生した場合は、エラーを伝播する
                 return "", fmt.Errorf("テンプレート変換エラー: %w", err)
         }</span>
-        <span class="cov0" title="0">templateStr = convertedTemplate
+        <span class="cov8" title="1">templateStr = convertedTemplate
 
         // キャッシュからテンプレートを取得
         var tmpl *template.Template
-        if cached, ok := templateCache.Load(templateStr); ok </span><span class="cov0" title="0">{
+        if cached, ok := templateCache.Load(templateStr); ok </span><span class="cov8" title="1">{
                 tmpl = cached.(*template.Template)
-        }</span> else<span class="cov0" title="0"> {
+        }</span> else<span class="cov8" title="1"> {
                 // キャッシュにない場合はパースして保存
                 var err error
                 tmpl, err = template.New("comment").Parse(templateStr)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         // テンプレートの解析に失敗した場合は、エラーを返す
                         return "", fmt.Errorf("テンプレート解析エラー: %w", err)
                 }</span>
                 // パース成功したテンプレートをキャッシュに保存
-                <span class="cov0" title="0">templateCache.Store(templateStr, tmpl)</span>
+                <span class="cov8" title="1">templateCache.Store(templateStr, tmpl)</span>
         }
 
-        <span class="cov0" title="0">var buf bytes.Buffer
+        <span class="cov8" title="1">var buf bytes.Buffer
         err = tmpl.Execute(&amp;buf, article)
         if err != nil </span><span class="cov0" title="0">{
                 // テンプレートの実行に失敗した場合も、エラーを返す
                 return "", fmt.Errorf("テンプレート実行エラー: %w", err)
         }</span>
 
-        <span class="cov0" title="0">return buf.String(), nil</span>
+        <span class="cov8" title="1">return buf.String(), nil</span>
 }
 
 // Merge は他のPromptConfigの非空フィールドで現在のPromptConfigをマージする
-func (p *PromptConfig) Merge(other *PromptConfig) <span class="cov0" title="0">{
-        if other == nil </span><span class="cov0" title="0">{
+func (p *PromptConfig) Merge(other *PromptConfig) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
-        <span class="cov0" title="0">mergeString(&amp;p.SystemPrompt, other.SystemPrompt)
+        <span class="cov8" title="1">mergeString(&amp;p.SystemPrompt, other.SystemPrompt)
         mergeString(&amp;p.CommentPromptTemplate, other.CommentPromptTemplate)
         mergeString(&amp;p.SelectorPrompt, other.SelectorPrompt)
         mergeString(&amp;p.FixedMessage, other.FixedMessage)</span>
@@ -1464,17 +1464,17 @@ func (m *MisskeyConfig) validateMisskeyMessageTemplate(templateStr string) error
 }
 
 // Merge は他のMisskeyConfigの非空フィールドで現在のMisskeyConfigをマージする
-func (m *MisskeyConfig) Merge(other *MisskeyConfig) <span class="cov0" title="0">{
-        if other == nil </span><span class="cov0" title="0">{
+func (m *MisskeyConfig) Merge(other *MisskeyConfig) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
         // bool フィールドはゼロ値チェックが困難なため、常に上書き
-        <span class="cov0" title="0">m.Enabled = other.Enabled
-        if !other.APIToken.IsEmpty() </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">m.Enabled = other.Enabled
+        if !other.APIToken.IsEmpty() </span><span class="cov8" title="1">{
                 m.APIToken = other.APIToken
         }</span>
-        <span class="cov0" title="0">mergeString(&amp;m.APIURL, other.APIURL)
-        if other.MessageTemplate != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">mergeString(&amp;m.APIURL, other.APIURL)
+        if other.MessageTemplate != nil </span><span class="cov8" title="1">{
                 m.MessageTemplate = other.MessageTemplate
         }</span>
 }
@@ -1509,7 +1509,7 @@ func (s *SlackAPIConfig) Validate() *ValidationResult <span class="cov8" title="
         builder := NewValidationBuilder()
 
         // Enabledがfalseの場合はバリデーションをスキップ
-        if !s.Enabled </span><span class="cov0" title="0">{
+        if !s.Enabled </span><span class="cov8" title="1">{
                 return builder.Build()
         }</span>
 
@@ -1533,7 +1533,7 @@ func (s *SlackAPIConfig) Validate() *ValidationResult <span class="cov8" title="
         }
 
         // IconURL and IconEmoji cannot be set at the same time
-        <span class="cov8" title="1">if s.IconURL != nil &amp;&amp; *s.IconURL != "" &amp;&amp; s.IconEmoji != nil &amp;&amp; *s.IconEmoji != "" </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if s.IconURL != nil &amp;&amp; *s.IconURL != "" &amp;&amp; s.IconEmoji != nil &amp;&amp; *s.IconEmoji != "" </span><span class="cov8" title="1">{
                 builder.AddError("Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。")
         }</span>
 
@@ -1552,26 +1552,26 @@ func (s *SlackAPIConfig) validateSlackMessageTemplate(templateStr string) error 
 }
 
 // Merge は他のSlackAPIConfigの非空フィールドで現在のSlackAPIConfigをマージする
-func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) <span class="cov0" title="0">{
-        if other == nil </span><span class="cov0" title="0">{
+func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
         // bool フィールドはゼロ値チェックが困難なため、常に上書き
-        <span class="cov0" title="0">s.Enabled = other.Enabled
-        if !other.APIToken.IsEmpty() </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">s.Enabled = other.Enabled
+        if !other.APIToken.IsEmpty() </span><span class="cov8" title="1">{
                 s.APIToken = other.APIToken
         }</span>
-        <span class="cov0" title="0">mergeString(&amp;s.Channel, other.Channel)
-        if other.MessageTemplate != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">mergeString(&amp;s.Channel, other.Channel)
+        if other.MessageTemplate != nil </span><span class="cov8" title="1">{
                 s.MessageTemplate = other.MessageTemplate
         }</span>
-        <span class="cov0" title="0">if other.Username != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if other.Username != nil </span><span class="cov8" title="1">{
                 s.Username = other.Username
         }</span>
-        <span class="cov0" title="0">if other.IconURL != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if other.IconURL != nil </span><span class="cov8" title="1">{
                 s.IconURL = other.IconURL
         }</span>
-        <span class="cov0" title="0">if other.IconEmoji != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if other.IconEmoji != nil </span><span class="cov8" title="1">{
                 s.IconEmoji = other.IconEmoji
         }</span>
 }
@@ -1610,7 +1610,7 @@ func (c *CacheConfig) Validate() *ValidationResult <span class="cov8" title="1">
         builder := NewValidationBuilder()
 
         // FilePath: 必須項目（空文字列でない）
-        if err := ValidateRequired(c.FilePath, "キャッシュファイルパス"); err != nil </span><span class="cov0" title="0">{
+        if err := ValidateRequired(c.FilePath, "キャッシュファイルパス"); err != nil </span><span class="cov8" title="1">{
                 builder.AddError(err.Error())
         }</span>
 
@@ -1621,17 +1621,17 @@ func (c *CacheConfig) Validate() *ValidationResult <span class="cov8" title="1">
 }
 
 // Merge は他のCacheConfigの非ゼロ値フィールドで現在のCacheConfigをマージする
-func (c *CacheConfig) Merge(other *CacheConfig) <span class="cov0" title="0">{
-        if other == nil </span><span class="cov0" title="0">{
+func (c *CacheConfig) Merge(other *CacheConfig) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
         // bool フィールドはゼロ値チェックが困難なため、常に上書き
-        <span class="cov0" title="0">c.Enabled = other.Enabled
+        <span class="cov8" title="1">c.Enabled = other.Enabled
         mergeString(&amp;c.FilePath, other.FilePath)
-        if other.MaxEntries &gt; 0 </span><span class="cov0" title="0">{
+        if other.MaxEntries &gt; 0 </span><span class="cov8" title="1">{
                 c.MaxEntries = other.MaxEntries
         }</span>
-        <span class="cov0" title="0">if other.RetentionDays &gt; 0 </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if other.RetentionDays &gt; 0 </span><span class="cov8" title="1">{
                 c.RetentionDays = other.RetentionDays
         }</span>
 }
@@ -1682,7 +1682,7 @@ func (p *Profile) Validate() *ValidationResult <span class="cov8" title="1">{
 
 // Merge は他のProfileの非nil フィールドで現在のProfileをマージする
 func (p *Profile) Merge(other *Profile) <span class="cov8" title="1">{
-        if other == nil </span><span class="cov0" title="0">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
         <span class="cov8" title="1">mergePtr(&amp;p.AI, other.AI)
@@ -1721,7 +1721,7 @@ func mergePtr[T any, P interface {
         merger[P]
 }](target *P, source P) <span class="cov8" title="1">{
         if source != nil </span><span class="cov8" title="1">{
-                if *target == nil </span><span class="cov0" title="0">{
+                if *target == nil </span><span class="cov8" title="1">{
                         *target = new(T)
                 }</span>
                 <span class="cov8" title="1">(*target).Merge(source)</span>
@@ -1730,7 +1730,7 @@ func mergePtr[T any, P interface {
 
 // mergeString は文字列フィールドのマージを行うヘルパー関数
 func mergeString(target *string, source string) <span class="cov8" title="1">{
-        if source != "" </span><span class="cov0" title="0">{
+        if source != "" </span><span class="cov8" title="1">{
                 *target = source
         }</span>
 }
@@ -1753,11 +1753,11 @@ func (o *OutputConfig) Validate() *ValidationResult <span class="cov8" title="1"
 }
 
 // Merge は他のOutputConfigの非nil フィールドで現在のOutputConfigをマージする
-func (o *OutputConfig) Merge(other *OutputConfig) <span class="cov0" title="0">{
-        if other == nil </span><span class="cov0" title="0">{
+func (o *OutputConfig) Merge(other *OutputConfig) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov8" title="1">{
                 return
         }</span>
-        <span class="cov0" title="0">mergePtr(&amp;o.SlackAPI, other.SlackAPI)
+        <span class="cov8" title="1">mergePtr(&amp;o.SlackAPI, other.SlackAPI)
         mergePtr(&amp;o.Misskey, other.Misskey)</span>
 }
 
