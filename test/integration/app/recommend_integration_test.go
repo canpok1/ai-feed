@@ -141,6 +141,35 @@ func testCacheFactory(c domain.RecommendCache) app.RecommendCacheFactory {
 	}
 }
 
+// testRunnerSetup はRecommendRunnerとその依存関係をセットアップするためのヘルパー構造体
+type testRunnerSetup struct {
+	fetchClient  domain.FetchClient
+	recommender  domain.Recommender
+	senders      []domain.MessageSender
+	cache        domain.RecommendCache
+	cacheConfig  *entity.CacheConfig
+	stderrBuffer *bytes.Buffer
+	stdoutBuffer *bytes.Buffer
+}
+
+// newTestRunner はtestRunnerSetupから初期化済みのRecommendRunnerを作成する
+func newTestRunner(t *testing.T, setup *testRunnerSetup) *app.RecommendRunner {
+	t.Helper()
+	runner, err := app.NewRecommendRunner(
+		setup.fetchClient,
+		setup.recommender,
+		setup.stderrBuffer,
+		setup.stdoutBuffer,
+		&entity.OutputConfig{},
+		&entity.PromptConfig{CommentPromptTemplate: "test-template"},
+		setup.cacheConfig,
+		testSenderFactory(setup.senders),
+		testCacheFactory(setup.cache),
+	)
+	require.NoError(t, err)
+	return runner
+}
+
 func TestRecommendRunner_Integration_HappyPath(t *testing.T) {
 	t.Parallel()
 
@@ -148,33 +177,18 @@ func TestRecommendRunner_Integration_HappyPath(t *testing.T) {
 	feedServer := httptest.NewServer(mockRSSHandler())
 	defer feedServer.Close()
 
-	// 実際のFetchClient（infra層）を使用
-	fetchClient := fetch.NewFetchClient()
-
-	// モックRecommenderを使用
-	recommender := newMockRecommender("This is a test comment")
-
-	// モックMessageSenderを使用
 	slackSender := newMockMessageSender("Slack")
-
-	// NopCacheを使用（キャッシュなし）
-	nopCache := cache.NewNopCache()
-
-	stderrBuffer := new(bytes.Buffer)
 	stdoutBuffer := new(bytes.Buffer)
 
-	runner, err := app.NewRecommendRunner(
-		fetchClient,
-		recommender,
-		stderrBuffer,
-		stdoutBuffer,
-		&entity.OutputConfig{},
-		&entity.PromptConfig{CommentPromptTemplate: "test-template"},
-		nil,
-		testSenderFactory([]domain.MessageSender{slackSender}),
-		testCacheFactory(nopCache),
-	)
-	require.NoError(t, err)
+	runner := newTestRunner(t, &testRunnerSetup{
+		fetchClient:  fetch.NewFetchClient(),
+		recommender:  newMockRecommender("This is a test comment"),
+		senders:      []domain.MessageSender{slackSender},
+		cache:        cache.NewNopCache(),
+		cacheConfig:  nil,
+		stderrBuffer: new(bytes.Buffer),
+		stdoutBuffer: stdoutBuffer,
+	})
 
 	params := &app.RecommendParams{
 		URLs: []string{feedServer.URL},
@@ -182,7 +196,7 @@ func TestRecommendRunner_Integration_HappyPath(t *testing.T) {
 	profile := &entity.Profile{}
 
 	// 実行
-	err = runner.Run(context.Background(), params, profile)
+	err := runner.Run(context.Background(), params, profile)
 
 	// 検証
 	assert.NoError(t, err)
@@ -594,33 +608,19 @@ func TestRecommendRunner_Integration_AllCachedArticles(t *testing.T) {
 		RetentionDays: 7,
 	}
 
-	// 実際のFetchClient（infra層）を使用
 	fetchClient := fetch.NewFetchClient()
-
-	// モックRecommenderを使用
 	recommender := newMockRecommender("Test comment")
-
-	// モックMessageSenderを使用
 	slackSender := newMockMessageSender("Slack")
 
-	// 実際のFileCacheを使用
-	fileCache := cache.NewFileRecommendCache(cacheConfig)
-
-	stderrBuffer := new(bytes.Buffer)
-	stdoutBuffer := new(bytes.Buffer)
-
-	runner, err := app.NewRecommendRunner(
-		fetchClient,
-		recommender,
-		stderrBuffer,
-		stdoutBuffer,
-		&entity.OutputConfig{},
-		&entity.PromptConfig{CommentPromptTemplate: "test-template"},
-		cacheConfig,
-		testSenderFactory([]domain.MessageSender{slackSender}),
-		testCacheFactory(fileCache),
-	)
-	require.NoError(t, err)
+	runner := newTestRunner(t, &testRunnerSetup{
+		fetchClient:  fetchClient,
+		recommender:  recommender,
+		senders:      []domain.MessageSender{slackSender},
+		cache:        cache.NewFileRecommendCache(cacheConfig),
+		cacheConfig:  cacheConfig,
+		stderrBuffer: new(bytes.Buffer),
+		stdoutBuffer: new(bytes.Buffer),
+	})
 
 	params := &app.RecommendParams{
 		URLs: []string{feedServer.URL},
@@ -628,51 +628,40 @@ func TestRecommendRunner_Integration_AllCachedArticles(t *testing.T) {
 	profile := &entity.Profile{}
 
 	// 1回目: 1件目の記事を処理
-	err = runner.Run(context.Background(), params, profile)
+	err := runner.Run(context.Background(), params, profile)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, slackSender.GetReceivedCount())
 
 	// 2回目: 2件目の記事を処理（新しいキャッシュインスタンスを使用）
-	fileCache2 := cache.NewFileRecommendCache(cacheConfig)
 	slackSender2 := newMockMessageSender("Slack")
-	stderrBuffer2 := new(bytes.Buffer)
-	stdoutBuffer2 := new(bytes.Buffer)
 
-	runner2, err := app.NewRecommendRunner(
-		fetchClient,
-		recommender,
-		stderrBuffer2,
-		stdoutBuffer2,
-		&entity.OutputConfig{},
-		&entity.PromptConfig{CommentPromptTemplate: "test-template"},
-		cacheConfig,
-		testSenderFactory([]domain.MessageSender{slackSender2}),
-		testCacheFactory(fileCache2),
-	)
-	require.NoError(t, err)
+	runner2 := newTestRunner(t, &testRunnerSetup{
+		fetchClient:  fetchClient,
+		recommender:  recommender,
+		senders:      []domain.MessageSender{slackSender2},
+		cache:        cache.NewFileRecommendCache(cacheConfig),
+		cacheConfig:  cacheConfig,
+		stderrBuffer: new(bytes.Buffer),
+		stdoutBuffer: new(bytes.Buffer),
+	})
 
 	err = runner2.Run(context.Background(), params, profile)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, slackSender2.GetReceivedCount())
 
 	// 3回目: 全ての記事がキャッシュ済み
-	fileCache3 := cache.NewFileRecommendCache(cacheConfig)
 	slackSender3 := newMockMessageSender("Slack")
-	stderrBuffer3 := new(bytes.Buffer)
 	stdoutBuffer3 := new(bytes.Buffer)
 
-	runner3, err := app.NewRecommendRunner(
-		fetchClient,
-		recommender,
-		stderrBuffer3,
-		stdoutBuffer3,
-		&entity.OutputConfig{},
-		&entity.PromptConfig{CommentPromptTemplate: "test-template"},
-		cacheConfig,
-		testSenderFactory([]domain.MessageSender{slackSender3}),
-		testCacheFactory(fileCache3),
-	)
-	require.NoError(t, err)
+	runner3 := newTestRunner(t, &testRunnerSetup{
+		fetchClient:  fetchClient,
+		recommender:  recommender,
+		senders:      []domain.MessageSender{slackSender3},
+		cache:        cache.NewFileRecommendCache(cacheConfig),
+		cacheConfig:  cacheConfig,
+		stderrBuffer: new(bytes.Buffer),
+		stdoutBuffer: stdoutBuffer3,
+	})
 
 	err = runner3.Run(context.Background(), params, profile)
 	// 全ての記事がキャッシュ済みの場合はエラーなしで正常終了
