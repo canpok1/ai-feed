@@ -1,4 +1,4 @@
-package runner
+package app
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,10 +38,13 @@ func TestNewConfigCheckRunner(t *testing.T) {
 				return profile.NewYamlProfileRepositoryImpl(path)
 			}
 
-			runner := NewConfigCheckRunner(tt.configPath, stdout, stderr, profileRepoFn)
+			// 依存性の注入
+			configRepo := infra.NewYamlConfigRepository(tt.configPath)
+			validatorFactory := infra.NewConfigValidatorFactory()
+
+			runner := NewConfigCheckRunner(configRepo, validatorFactory, stdout, stderr, profileRepoFn)
 
 			require.NotNil(t, runner)
-			assert.Equal(t, tt.configPath, runner.configPath)
 			assert.Equal(t, stdout, runner.stdout)
 			assert.Equal(t, stderr, runner.stderr)
 		})
@@ -200,7 +204,11 @@ default_profile:
 				return profile.NewYamlProfileRepositoryImpl(path)
 			}
 
-			runner := NewConfigCheckRunner(configPath, stdout, stderr, profileRepoFn)
+			// 依存性の注入
+			configRepo := infra.NewYamlConfigRepository(configPath)
+			validatorFactory := infra.NewConfigValidatorFactory()
+
+			runner := NewConfigCheckRunner(configRepo, validatorFactory, stdout, stderr, profileRepoFn)
 			params := &ConfigCheckParams{
 				ProfilePath: profilePath,
 				VerboseFlag: verboseFlag,

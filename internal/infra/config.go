@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"gopkg.in/yaml.v3"
 )
@@ -352,8 +353,39 @@ func (r *YamlConfigRepository) Save(config *Config) error {
 	return nil
 }
 
-func (r *YamlConfigRepository) Load() (*Config, error) {
+// LoadRaw は設定ファイルを infra.Config 形式で読み込む（内部用）
+func (r *YamlConfigRepository) LoadRaw() (*Config, error) {
 	return LoadYAML[Config](r.filePath)
+}
+
+// Load は設定ファイルを読み込んで domain.LoadedConfig 形式で返す（domain.ConfigRepository実装）
+func (r *YamlConfigRepository) Load() (*domain.LoadedConfig, error) {
+	infraConfig, err := r.LoadRaw()
+	if err != nil {
+		return nil, err
+	}
+
+	// infra.Config を domain.LoadedConfig に変換
+	result := &domain.LoadedConfig{}
+
+	if infraConfig.DefaultProfile != nil {
+		profile, err := infraConfig.DefaultProfile.ToEntity()
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert default profile: %w", err)
+		}
+		result.DefaultProfile = profile
+	}
+
+	if infraConfig.Cache != nil {
+		result.Cache = &entity.CacheConfig{
+			Enabled:       resolveCacheEnabled(infraConfig.Cache.Enabled),
+			FilePath:      infraConfig.Cache.FilePath,
+			MaxEntries:    infraConfig.Cache.MaxEntries,
+			RetentionDays: infraConfig.Cache.RetentionDays,
+		}
+	}
+
+	return result, nil
 }
 
 type CacheConfig struct {

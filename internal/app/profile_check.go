@@ -1,4 +1,4 @@
-package runner
+package app
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
-	"github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO(#333): cmd/runner を internal/app に移動後、infra依存を解消する
 )
 
 // ProfileCheckResult はプロファイル検証の結果を表す構造体
@@ -20,15 +19,15 @@ type ProfileCheckResult struct {
 
 // ProfileCheckRunner はprofile checkコマンドのビジネスロジックを実行する構造体
 type ProfileCheckRunner struct {
-	configPath    string
+	configRepo    domain.ConfigRepository
 	stderr        io.Writer
 	profileRepoFn func(string) domain.ProfileRepository
 }
 
 // NewProfileCheckRunner はProfileCheckRunnerの新しいインスタンスを作成する
-func NewProfileCheckRunner(configPath string, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ProfileCheckRunner {
+func NewProfileCheckRunner(configRepo domain.ConfigRepository, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ProfileCheckRunner {
 	return &ProfileCheckRunner{
-		configPath:    configPath,
+		configRepo:    configRepo,
 		stderr:        stderr,
 		profileRepoFn: profileRepoFn,
 	}
@@ -39,30 +38,18 @@ func NewProfileCheckRunner(configPath string, stderr io.Writer, profileRepoFn fu
 // profilePathが指定されている場合は、指定されたプロファイルをconfig.ymlとマージして検証
 func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error) {
 	// config.ymlの読み込み
-	var config *infra.Config
 	var currentProfile *entity.Profile
 
-	configRepo := infra.NewYamlConfigRepository(r.configPath)
-	loadedConfig, err := configRepo.Load()
-	if err != nil {
-		// ファイルが存在しない場合は警告を表示しない
-		if _, statErr := os.Stat(r.configPath); !os.IsNotExist(statErr) {
-			// ファイルが存在するが読み込み・パースに失敗した場合は警告を表示
-			fmt.Fprintf(r.stderr, "警告: %s の読み込みまたは解析に失敗しました。空のデフォルトプロファイルで継続します。\n", r.configPath)
-			slog.Warn("Failed to load or parse config file, continuing with empty default profile", "config_path", r.configPath, "error", err)
-		}
-	} else {
-		config = loadedConfig
-	}
-
-	// デフォルトプロファイルの初期化
-	if config != nil && config.DefaultProfile != nil {
-		var err error
-		currentProfile, err = config.DefaultProfile.ToEntity()
-		if err != nil {
-			return nil, fmt.Errorf("failed to process default profile: %w", err)
-		}
-	} else {
+	loadedConfig, err := r.configRepo.Load()
+	switch {
+	case err != nil:
+		// ファイルが存在しない場合は警告を表示しない（LoadedConfigがnilを返すため）
+		fmt.Fprintf(r.stderr, "警告: 設定ファイルの読み込みまたは解析に失敗しました。空のデフォルトプロファイルで継続します。\n")
+		slog.Warn("Failed to load or parse config file, continuing with empty default profile", "error", err)
+		currentProfile = &entity.Profile{}
+	case loadedConfig.DefaultProfile != nil:
+		currentProfile = loadedConfig.DefaultProfile
+	default:
 		// 存在しない場合は空のプロファイルを使用
 		currentProfile = &entity.Profile{}
 	}

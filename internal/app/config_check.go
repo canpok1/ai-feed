@@ -1,4 +1,4 @@
-package runner
+package app
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
-	"github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO(#333): cmd/runner を internal/app に移動後、infra依存を解消する
 )
 
 // ConfigCheckParams はconfig checkコマンドの実行パラメータを表す構造体
@@ -18,19 +17,27 @@ type ConfigCheckParams struct {
 
 // ConfigCheckRunner はconfig checkコマンドのビジネスロジックを実行する構造体
 type ConfigCheckRunner struct {
-	configPath    string
-	stdout        io.Writer
-	stderr        io.Writer
-	profileRepoFn func(string) domain.ProfileRepository
+	configRepo       domain.ConfigRepository
+	validatorFactory domain.ValidatorFactory
+	stdout           io.Writer
+	stderr           io.Writer
+	profileRepoFn    func(string) domain.ProfileRepository
 }
 
 // NewConfigCheckRunner はConfigCheckRunnerの新しいインスタンスを作成する
-func NewConfigCheckRunner(configPath string, stdout io.Writer, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ConfigCheckRunner {
+func NewConfigCheckRunner(
+	configRepo domain.ConfigRepository,
+	validatorFactory domain.ValidatorFactory,
+	stdout io.Writer,
+	stderr io.Writer,
+	profileRepoFn func(string) domain.ProfileRepository,
+) *ConfigCheckRunner {
 	return &ConfigCheckRunner{
-		configPath:    configPath,
-		stdout:        stdout,
-		stderr:        stderr,
-		profileRepoFn: profileRepoFn,
+		configRepo:       configRepo,
+		validatorFactory: validatorFactory,
+		stdout:           stdout,
+		stderr:           stderr,
+		profileRepoFn:    profileRepoFn,
 	}
 }
 
@@ -39,12 +46,12 @@ func (r *ConfigCheckRunner) Run(params *ConfigCheckParams) error {
 	slog.Debug("Starting config check command")
 
 	// 設定ファイルの読み込み
-	slog.Debug("Loading config", "config_path", r.configPath)
-	config, configLoadErr := infra.NewYamlConfigRepository(r.configPath).Load()
+	slog.Debug("Loading config")
+	config, configLoadErr := r.configRepo.Load()
 	if configLoadErr != nil {
-		fmt.Fprintf(r.stderr, "エラー: 設定ファイルの読み込みに失敗しました: %s\n", r.configPath)
+		fmt.Fprintln(r.stderr, "エラー: 設定ファイルの読み込みに失敗しました")
 		fmt.Fprintln(r.stderr, "config.ymlの構文を確認してください。ai-feed init で新しい設定ファイルを生成できます。")
-		slog.Error("Failed to load config", "config_path", r.configPath, "error", configLoadErr)
+		slog.Error("Failed to load config", "error", configLoadErr)
 		return fmt.Errorf("failed to load config: %w", configLoadErr)
 	}
 
@@ -53,11 +60,7 @@ func (r *ConfigCheckRunner) Run(params *ConfigCheckParams) error {
 	if config.DefaultProfile == nil {
 		currentProfile = &entity.Profile{}
 	} else {
-		p, err := config.DefaultProfile.ToEntity()
-		if err != nil {
-			return fmt.Errorf("failed to convert profile to entity: %w", err)
-		}
-		currentProfile = p
+		currentProfile = config.DefaultProfile
 	}
 
 	// プロファイルファイルが指定されている場合は読み込んでマージ
@@ -75,7 +78,7 @@ func (r *ConfigCheckRunner) Run(params *ConfigCheckParams) error {
 	}
 
 	// バリデーションを実行
-	validator := infra.NewConfigValidator(config, currentProfile)
+	validator := r.validatorFactory.Create(config, currentProfile)
 	result, validateErr := validator.Validate()
 	if validateErr != nil {
 		return fmt.Errorf("failed to validate config: %w", validateErr)

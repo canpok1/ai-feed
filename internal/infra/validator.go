@@ -8,6 +8,34 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 )
 
+// ConfigValidatorFactory はConfigValidatorを生成するファクトリー
+type ConfigValidatorFactory struct{}
+
+// NewConfigValidatorFactory はConfigValidatorFactoryを生成する
+func NewConfigValidatorFactory() *ConfigValidatorFactory {
+	return &ConfigValidatorFactory{}
+}
+
+// Create は domain.ValidatorFactory インターフェースの実装
+func (f *ConfigValidatorFactory) Create(config *domain.LoadedConfig, profile *entity.Profile) domain.Validator {
+	// domain.LoadedConfig を infra.Config に変換
+	infraConfig := &Config{}
+
+	// DefaultProfileはprofileパラメータに既にマージ済みなので、ここでは設定しない
+
+	if config.Cache != nil {
+		enabled := config.Cache.Enabled
+		infraConfig.Cache = &CacheConfig{
+			Enabled:       &enabled,
+			FilePath:      config.Cache.FilePath,
+			MaxEntries:    config.Cache.MaxEntries,
+			RetentionDays: config.Cache.RetentionDays,
+		}
+	}
+
+	return NewConfigValidator(infraConfig, profile)
+}
+
 // ConfigValidator は設定のバリデーションを行う
 type ConfigValidator struct {
 	config  *Config

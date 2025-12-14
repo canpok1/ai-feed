@@ -55,8 +55,8 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 	assert.NoError(t, err)
 	assert.FileExists(t, filePath)
 
-	// 読み込みテスト
-	loadedConfig, err := repo.Load()
+	// 読み込みテスト（LoadRawを使用してinfra.Config形式で比較）
+	loadedConfig, err := repo.LoadRaw()
 	assert.NoError(t, err)
 	if diff := deep.Equal(configToSave, loadedConfig); diff != nil {
 		t.Errorf("Loaded config is not equal to saved config: %v", diff)
@@ -67,10 +67,10 @@ func TestYamlConfigRepository_SaveAndLoad(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "config file already exists")
 
-	// 存在しないファイルの読み込みテスト
+	// 存在しないファイルの読み込みテスト（LoadRaw使用）
 	nonExistentFilePath := filepath.Join(tmpDir, "non_existent.yaml")
 	nonExistentRepo := NewYamlConfigRepository(nonExistentFilePath)
-	_, err = nonExistentRepo.Load()
+	_, err = nonExistentRepo.LoadRaw()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no such file or directory")
 }
