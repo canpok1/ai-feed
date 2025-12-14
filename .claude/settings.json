@@ -42,6 +42,7 @@
             "Bash(mkdir:*)",
             "Bash(mv:*)",
             "Bash(./scripts/get-pr-review-comments.sh:*)",
+            "Bash(./scripts/reply-to-review-thread.sh:*)",
             "Bash(./scripts/resolve-review-thread.sh:*)",
             "Bash(tail:*)",
             "Bash(test:*)",

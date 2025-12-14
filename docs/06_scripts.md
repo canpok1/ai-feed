@@ -147,6 +147,62 @@ $ ./scripts/create-version-tag.sh
 - スレッドIDは引用符で囲んで指定すること
 - 既にresolve済みのスレッドに対しても実行可能
 
+### reply-to-review-thread.sh
+
+レビュースレッドに返信を投稿するスクリプトです。
+
+#### 機能
+- 指定したスレッドIDのレビュースレッドに返信を投稿
+- コメント投稿者への@メンションを自動的に追加
+- 標準入力からコメント本文を読み取り
+- GitHub GraphQL APIを使用
+
+#### 前提条件
+- GitHub CLI（`gh`）がインストール済みで認証済みであること
+- `jq`コマンドがインストール済みであること
+- スレッドにコメントを投稿する権限があること
+
+#### 使用方法
+
+```bash
+# パイプ経由でコメントを投稿
+echo "コメント内容" | ./scripts/reply-to-review-thread.sh <スレッドID>
+
+# ヒアドキュメントで複数行コメントを投稿
+./scripts/reply-to-review-thread.sh <スレッドID> <<EOF
+複数行の
+コメント内容
+EOF
+
+# 例
+echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+```
+
+#### 出力例
+
+```bash
+コメント本文を読み取り中...
+リポジトリ情報を取得中...
+リポジトリ: owner/ai-feed
+スレッドID: PRRT_kwDONTZR484BhKaH
+
+スレッド情報を取得中...
+コメント投稿者: @reviewer-username
+
+返信を投稿中...
+
+✓ 返信を投稿しました。
+コメントID: PRRC_kwDONTZR484BhKaJ
+投稿者: @your-username
+作成日時: 2025-12-13T10:30:00Z
+```
+
+#### 注意事項
+- スレッドIDは `get-pr-review-comments.sh` の出力から取得可能
+- コメント投稿者への@メンションは自動的に追加されるため、手動で記述する必要はありません
+- 標準入力からコメントを読み取るため、空のコメントは投稿できません
+- スレッドIDはGitHub GraphQL APIのNode ID形式（例: `PRRT_kwDO...`）で指定
+
 ## 典型的なワークフロー
 
 ### プルリクエストレビュー対応
@@ -159,7 +215,12 @@ $ ./scripts/create-version-tag.sh
 2. **指摘事項の修正**
    - コードを修正してコミット・プッシュ
 
-3. **スレッドの解決**
+3. **レビュースレッドへの返信**（オプション）
+   ```bash
+   echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+   ```
+
+4. **スレッドの解決**
    ```bash
    ./scripts/resolve-review-thread.sh "PRRT_kwDONTZR484BhKaH"
    ```
