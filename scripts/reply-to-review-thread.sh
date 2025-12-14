@@ -127,8 +127,8 @@ echo "返信を投稿中..." >&2
 # 返信を投稿
 set +e
 RESULT=$(gh api graphql \
-  -F pullRequestReviewThreadId="$THREAD_ID" \
-  -F body="$COMMENT_WITH_MENTION" \
+  -f pullRequestReviewThreadId="$THREAD_ID" \
+  -f body="$COMMENT_WITH_MENTION" \
   -f query='
 mutation($pullRequestReviewThreadId: ID!, $body: String!) {
   addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: $pullRequestReviewThreadId, body: $body}) {
