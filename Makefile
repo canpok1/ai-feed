@@ -14,6 +14,15 @@ if [ $$(awk "BEGIN {print ($${layer_cov} < $($(2)))}") -eq 1 ]; then \
 fi
 endef
 
+# カバレッジレポート生成の共通ロジック
+# 引数: $(1)=type (ut/it)
+define generate_coverage_report
+@grep -v "mock_" coverage.$(1).out > coverage.$(1).filtered.out
+@mkdir -p public/coverage/$(1)
+@go tool cover -html=coverage.$(1).filtered.out -o public/coverage/$(1)/index.html
+@go tool cover -func=coverage.$(1).filtered.out > coverage.$(1).func.out
+endef
+
 setup:
 	go install go.uber.org/mock/mockgen@v0.6.0
 	go install golang.org/x/tools/cmd/goimports@v0.28.0
@@ -34,7 +43,7 @@ clean:
 	go clean
 	rm -f ${BINARY_NAME}
 	rm -rf ./dist
-	rm -f coverage.out coverage.filtered.out coverage.func.out coverage.html
+	rm -f coverage*.out coverage*.func.out coverage.html
 	rm -rf public/coverage
 
 test:
@@ -46,11 +55,22 @@ test-integration:
 test-e2e:
 	go test -tags=e2e -v ./test/e2e/...
 
-test-coverage:
-	@go test -tags=integration -coverprofile=coverage.out -coverpkg=./internal/... ./... ./test/integration/...
+# ユニットテストのカバレッジレポート生成
+test-coverage-ut:
+	@go test -coverprofile=coverage.ut.out -coverpkg=./internal/... ./...
+	$(call generate_coverage_report,ut)
+
+# 結合テストのカバレッジレポート生成
+test-coverage-it:
+	@go test -tags=integration -coverprofile=coverage.it.out -coverpkg=./internal/... ./test/integration/...
+	$(call generate_coverage_report,it)
+
+# ユニットテスト+結合テストの統合カバレッジレポート生成（層別カバレッジチェック含む）
+test-coverage: test-coverage-ut test-coverage-it
+	@echo "mode: set" > coverage.out
+	@tail -n +2 coverage.ut.out >> coverage.out
+	@tail -n +2 coverage.it.out >> coverage.out
 	@grep -v "mock_" coverage.out > coverage.filtered.out
-	@mkdir -p public/coverage/ut-it
-	@go tool cover -html=coverage.filtered.out -o public/coverage/ut-it/index.html
 	@go tool cover -func=coverage.filtered.out > coverage.func.out
 	@echo "=== Layer Coverage Check (per docs/03_testing_rules.md) ==="
 	$(call check_layer_coverage,domain,COVERAGE_THRESHOLD_DOMAIN)
