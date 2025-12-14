@@ -179,7 +179,9 @@ fixed #(issue番号)
 | coding-rules-reviewer | コードの品質、命名規則、エラーハンドリングの確認 |
 | architecture-rules-reviewer | レイヤリング、依存関係、設計パターンの確認 |
 | testing-rules-reviewer | テストカバレッジ、テストパターンの確認 |
-| document-specialist | 作業内容の文書化、PR/Issue説明文の生成 |
+| document-specialist | 作業内容の文書化、PR/Issue説明文の生成、文書化ルールへの準拠確認 |
+
+**補足**: `document-specialist`は、作業内容を要約・文書化する機能に加えて、作成された文書が本ドキュメント（`docs/07_document_rules.md`）で定義された文書化基準に従っているかをレビューする機能も持ちます。これにより、一貫性のある高品質な文書を保証します。
 
 ## 5. 実践的な例
 
