@@ -60,6 +60,8 @@ app層は複数コンポーネントの協調動作（オーケストレーシ�
 
 ```go
 // internal/app/recommend_test.go
+// ※この例は`app`層のユニットテストであり、ルールに反する可能性があります。統合テストへの変更を検討してください。
+// ※簡潔さのため、テストの実行ループやモックのセットアップ等は省略しています
 func TestRecommendRunner_Run(t *testing.T) {
     tests := []struct {
         name                 string
