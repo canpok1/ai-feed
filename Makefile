@@ -3,6 +3,17 @@ VERSION?=dev
 COVERAGE_THRESHOLD_DOMAIN=80
 COVERAGE_THRESHOLD_INFRA=60
 
+# 層別カバレッジチェックの共通ロジック
+# 引数: $(1)=層名(domain/infra), $(2)=しきい値変数名(COVERAGE_THRESHOLD_DOMAIN/COVERAGE_THRESHOLD_INFRA)
+define check_layer_coverage
+@layer_cov=$$(awk '/internal\/$(1)\// {gsub(/%/, "", $$NF); sum+=$$NF; count++} END {if(count>0) printf "%.1f", sum/count; else print "0"}' coverage.func.out); \
+echo "$(1) layer: $${layer_cov}% (threshold: $($(2))%)"; \
+if [ $$(awk "BEGIN {print ($${layer_cov} < $($(2)))}") -eq 1 ]; then \
+	echo "ERROR: $(1) layer coverage $${layer_cov}% is below threshold $($(2))%"; \
+	exit 1; \
+fi
+endef
+
 setup:
 	go install go.uber.org/mock/mockgen@v0.6.0
 	go install golang.org/x/tools/cmd/goimports@v0.28.0
@@ -42,20 +53,8 @@ test-coverage:
 	@go tool cover -html=coverage.filtered.out -o public/coverage/ut-it/index.html
 	@go tool cover -func=coverage.filtered.out > coverage.func.out
 	@echo "=== Layer Coverage Check (per docs/03_testing_rules.md) ==="
-	@# domain層のカバレッジチェック（80%以上）
-	@domain_cov=$$(awk '/internal\/domain/ {gsub(/%/, "", $$NF); sum+=$$NF; count++} END {if(count>0) printf "%.1f", sum/count; else print "0"}' coverage.func.out); \
-	echo "domain layer: $${domain_cov}% (threshold: $(COVERAGE_THRESHOLD_DOMAIN)%)"; \
-	if [ $$(echo "$${domain_cov} < $(COVERAGE_THRESHOLD_DOMAIN)" | bc -l) -eq 1 ]; then \
-		echo "ERROR: domain layer coverage $${domain_cov}% is below threshold $(COVERAGE_THRESHOLD_DOMAIN)%"; \
-		exit 1; \
-	fi
-	@# infra層のカバレッジチェック（60%以上）
-	@infra_cov=$$(awk '/internal\/infra/ {gsub(/%/, "", $$NF); sum+=$$NF; count++} END {if(count>0) printf "%.1f", sum/count; else print "0"}' coverage.func.out); \
-	echo "infra layer: $${infra_cov}% (threshold: $(COVERAGE_THRESHOLD_INFRA)%)"; \
-	if [ $$(echo "$${infra_cov} < $(COVERAGE_THRESHOLD_INFRA)" | bc -l) -eq 1 ]; then \
-		echo "ERROR: infra layer coverage $${infra_cov}% is below threshold $(COVERAGE_THRESHOLD_INFRA)%"; \
-		exit 1; \
-	fi
+	$(call check_layer_coverage,domain,COVERAGE_THRESHOLD_DOMAIN)
+	$(call check_layer_coverage,infra,COVERAGE_THRESHOLD_INFRA)
 	@echo "=== All layer coverage checks passed ==="
 
 # リリース前に実行するテスト（GoReleaserから呼び出される）

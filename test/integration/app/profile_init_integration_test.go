@@ -4,6 +4,7 @@ package app
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -45,20 +46,22 @@ func TestProfileInitRunner_ConcurrentIntegration(t *testing.T) {
 
 	// 結果を収集
 	successCount := 0
-	existsErrorCount := 0
-
+	var errs []error
 	for i := 0; i < goroutines; i++ {
 		err := <-results
 		if err == nil {
 			successCount++
-		} else if assert.Contains(t, err.Error(), "profile file already exists") {
-			existsErrorCount++
+		} else {
+			errs = append(errs, err)
 		}
 	}
 
 	// 1つだけ成功、残りはファイル既存エラーであることを確認
 	assert.Equal(t, 1, successCount, "Exactly one goroutine should succeed")
-	assert.Equal(t, goroutines-1, existsErrorCount, "Other goroutines should get file exists error")
+	require.Len(t, errs, goroutines-1, "Other goroutines should get file exists error")
+	for _, err := range errs {
+		assert.ErrorContains(t, err, "profile file already exists")
+	}
 }
 
 // BenchmarkProfileInitRunner_Run ベンチマークテスト（統合）
@@ -154,7 +157,12 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 			},
 			wantErr:          true,
 			expectedErrorMsg: "no such file or directory",
-			verify:           nil,
+			verify: func(t *testing.T, filePath string) {
+				// ファイルが作成されていないことを確認
+				_, err := os.Stat(filePath)
+				assert.Error(t, err)
+				assert.ErrorIs(t, err, fs.ErrNotExist)
+			},
 		},
 		{
 			name: "異常系: 書き込み権限がない場合はエラー",
@@ -188,7 +196,7 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 				// ファイルが作成されていないことを確認
 				_, err := os.Stat(filePath)
 				assert.Error(t, err)
-				assert.True(t, os.IsNotExist(err))
+				assert.ErrorIs(t, err, fs.ErrNotExist)
 			},
 		},
 	}
@@ -211,9 +219,16 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 			// Then: 結果の検証
 			if tt.wantErr {
 				assert.Error(t, err, "エラーが発生すべき")
-				if tt.expectedErrorMsg != "" {
-					assert.Contains(t, err.Error(), tt.expectedErrorMsg,
-						"エラーメッセージに期待される文字列が含まれるべき")
+				switch tt.name {
+				case "異常系: ディレクトリが存在しない場合はエラー":
+					assert.ErrorIs(t, err, fs.ErrNotExist)
+				case "異常系: 書き込み権限がない場合はエラー":
+					assert.ErrorIs(t, err, fs.ErrPermission)
+				default:
+					if tt.expectedErrorMsg != "" {
+						assert.Contains(t, err.Error(), tt.expectedErrorMsg,
+							"エラーメッセージに期待される文字列が含まれるべき")
+					}
 				}
 			} else {
 				assert.NoError(t, err, "エラーが発生してはいけない")
