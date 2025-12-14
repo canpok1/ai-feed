@@ -65,9 +65,10 @@ make generate   # モック生成
 - レビュー後の指摘事項は必ず修正してからコミットすること
 
 ### 文書化プロセス
-- **プルリクエスト作成時は必ずsummaristエージェントで作業内容を要約すること**
-- **GitHub issue作成時も必ずsummaristエージェントで内容を整理すること**
-- summaristが生成する内容:
+- **プルリクエスト作成時は必ずdocument-specialistエージェントで作業内容を要約すること**
+- **GitHub issue作成時も必ずdocument-specialistエージェントで内容を整理すること**
+- 詳細な文書化ルールは [docs/07_document_rules.md](docs/07_document_rules.md) を参照
+- document-specialistが生成する内容:
   - プルリクエスト: .github/pull_request_template.md準拠の説明文
   - GitHub issue: 問題・詳細・期待される結果を含む説明文
   - 作業記録: シンプルで明確な要約
