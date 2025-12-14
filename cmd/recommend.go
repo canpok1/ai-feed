@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/canpok1/ai-feed/cmd/runner"
+	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/cache"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
@@ -116,7 +116,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				return createRecommendCache(cacheConfig)
 			}
 
-			recommendRunner, runnerErr := runner.NewRecommendRunner(
+			recommendRunner, runnerErr := app.NewRecommendRunner(
 				fetchClient,
 				recommender,
 				cmd.ErrOrStderr(),
@@ -138,7 +138,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 			err = recommendRunner.Run(cmd.Context(), params, currentProfile)
 			if err != nil {
 				// 記事が見つからない場合は友好的なメッセージを表示してエラーではない扱いにする
-				if errors.Is(err, runner.ErrNoArticlesFound) {
+				if errors.Is(err, app.ErrNoArticlesFound) {
 					fmt.Fprintln(cmd.OutOrStdout(), "記事が見つかりませんでした。")
 					fmt.Fprintln(cmd.ErrOrStderr(), "全てのフィードで記事を取得できませんでした。ネットワーク接続を確認してください。")
 					return nil
@@ -159,7 +159,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 	return cmd
 }
 
-func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
+func newRecommendParams(cmd *cobra.Command) (*app.RecommendParams, error) {
 	urlList, err := cmd.Flags().GetStringSlice("url")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get url flag: %w", err)
@@ -190,7 +190,7 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) {
 		return nil, fmt.Errorf("--url または --source のいずれかを指定してください")
 	}
 
-	return &runner.RecommendParams{
+	return &app.RecommendParams{
 		URLs: urls,
 	}, nil
 }

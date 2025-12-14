@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/canpok1/ai-feed/cmd/runner"
+	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/spf13/cobra"
 )
@@ -13,7 +13,7 @@ func makeInitCmd() *cobra.Command {
 		Use:   "init",
 		Short: "設定ファイル（config.yml）のテンプレートを生成します（既存ファイルは上書きしません）",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			filePath := runner.DefaultConfigFilePath
+			filePath := app.DefaultConfigFilePath
 
 			// 進行状況メッセージ: 初期化開始
 			fmt.Fprintln(cmd.ErrOrStderr(), "設定ファイルを初期化しています...")
@@ -22,7 +22,7 @@ func makeInitCmd() *cobra.Command {
 			configRepo := infra.NewYamlConfigRepository(filePath)
 
 			// ConfigInitRunnerを使用してビジネスロジックを実行
-			r := runner.NewConfigInitRunner(configRepo, cmd.ErrOrStderr())
+			r := app.NewConfigInitRunner(configRepo, cmd.ErrOrStderr())
 			if err := r.Run(); err != nil {
 				return err
 			}

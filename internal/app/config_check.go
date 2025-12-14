@@ -1,4 +1,4 @@
-package runner
+package app
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
-	"github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO(#333): cmd/runner を internal/app に移動後、infra依存を解消する
+	"github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO: app層からinfra層への依存を解消する（ConfigRepository, Validatorの注入）
 )
 
 // ConfigCheckParams はconfig checkコマンドの実行パラメータを表す構造体

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/canpok1/ai-feed/cmd/runner"
+	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
@@ -34,7 +34,7 @@ func makeProfileInitCmd() *cobra.Command {
 			fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを初期化しています... (%s)\n", filePath)
 
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			r, err := runner.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
+			r, err := app.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
 			if err != nil {
 				return fmt.Errorf("failed to create runner: %w", err)
 			}
@@ -80,7 +80,7 @@ func makeProfileCheckCmd() *cobra.Command {
 			profileRepoFn := func(path string) domain.ProfileRepository {
 				return profile.NewYamlProfileRepositoryImpl(path)
 			}
-			r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
+			r := app.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
 			result, err := r.Run(profilePath)
 			if err != nil {
 				// SilenceErrorsが有効なので、手動でエラーを出力

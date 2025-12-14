@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/canpok1/ai-feed/cmd/runner"
+	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
@@ -40,8 +40,8 @@ func makeConfigCheckCmd() *cobra.Command {
 			}
 
 			// ConfigCheckRunnerを作成して実行
-			configCheckRunner := runner.NewConfigCheckRunner(configPath, cmd.OutOrStdout(), cmd.ErrOrStderr(), profileRepoFn)
-			params := &runner.ConfigCheckParams{
+			configCheckRunner := app.NewConfigCheckRunner(configPath, cmd.OutOrStdout(), cmd.ErrOrStderr(), profileRepoFn)
+			params := &app.ConfigCheckParams{
 				ProfilePath: profilePath,
 				VerboseFlag: verboseFlag,
 			}
