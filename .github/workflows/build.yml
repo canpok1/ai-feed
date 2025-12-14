@@ -36,9 +36,6 @@ jobs:
     - name: Depcheck
       run: make depcheck
 
-    - name: Test
-      run: make test
-
     - name: Test Coverage Check
       run: make test-coverage
 
