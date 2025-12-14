@@ -21,7 +21,7 @@ ai-feedプロジェクトにおけるテストの書き方と実行方法につ�
 | 層 | 主なテスト種類 | カバレッジ目標 | 理由 |
 |---|---|---|---|
 | **cmd (Presentation)** | E2Eテスト | 設定なし | フラグ解析のみで、E2Eで十分に担保可能 |
-| **app (Application)** | 統合テスト | 設定なし | オーケストレーションは実際のコンポーネント連携で検証すべき |
+| **app (Application)** | ユニット + 統合テスト | 設定なし | 複雑な条件分岐はユニットテスト、infra層連携は統合テストで検証 |
 | **domain (Domain)** | ユニットテスト | 80%以上 | ビジネスルールの正確性が最重要、純粋なロジックでテストしやすい |
 | **infra (Infrastructure)** | ユニット + 統合テスト | 60%以上 | 外部依存のモック化が複雑なため |
 
@@ -45,45 +45,108 @@ cmd層はフラグ解析とApplication層への委譲のみを行うため、個
 
 ### 2. app層（Application Layer）のテスト
 
-**方針**: 統合テストでオーケストレーションを検証
+**方針**: ユニットテストと統合テストを組み合わせて検証
 
-app層は複数コンポーネントの協調動作（オーケストレーション）を担うため、モックではなく実際のinfra層実装と組み合わせた統合テストで検証します。
+app層は複数コンポーネントの協調動作（オーケストレーション）を担います。複雑な条件分岐やエラーハンドリングはモックを使ったユニットテストで効率的に検証し、infra層との連携やファイルシステム操作は統合テストで検証します。
+
+#### テスト種類の使い分け
+
+| テスト種類 | 用途 | 配置場所 |
+|-----------|------|---------|
+| **ユニットテスト** | 複雑な条件分岐、パラメータバリデーション、エラーハンドリング | `internal/app/*_test.go` |
+| **統合テスト** | infra層との連携、ファイルシステム操作、並行処理、権限エラー | `test/integration/app/*_test.go` |
+
+#### ユニットテストの例
+
+```go
+// internal/app/recommend_test.go
+func TestRecommendRunner_Run(t *testing.T) {
+    tests := []struct {
+        name                 string
+        mockFetchExpectations func(m *mock_domain.MockFetchClient)
+        mockRecommendExpectations func(m *mock_domain.MockRecommender)
+        expectedErrorMessage *string
+    }{
+        {
+            name: "正常系: 推薦成功",
+            mockFetchExpectations: func(m *mock_domain.MockFetchClient) {
+                m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{
+                    {Title: "Test Article", Link: "http://example.com/test"},
+                }, nil)
+            },
+            mockRecommendExpectations: func(m *mock_domain.MockRecommender) {
+                m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Return(&entity.Recommend{
+                    Article: entity.Article{Title: "Recommended", Link: "http://example.com/rec"},
+                }, nil)
+            },
+            expectedErrorMessage: nil,
+        },
+        {
+            name: "異常系: 記事が見つからない",
+            mockFetchExpectations: func(m *mock_domain.MockFetchClient) {
+                m.EXPECT().Fetch(gomock.Any()).Return([]entity.Article{}, nil)
+            },
+            mockRecommendExpectations: func(m *mock_domain.MockRecommender) {
+                m.EXPECT().Recommend(gomock.Any(), gomock.Any()).Times(0)
+            },
+            expectedErrorMessage: stringPtr("no articles found"),
+        },
+    }
+    // テーブル駆動テストで実行
+}
+```
+
+#### 統合テストの例
 
 ```go
 //go:build integration
 
-// test/integration/app/recommend_test.go
-// ※簡潔さのため、import文やセットアップコード（config, ctx, params等）は省略しています
-func TestRecommendUseCase_Execute(t *testing.T) {
-    // 実際のinfra層実装を使用
-    fetcher := fetch.NewRSSFetcher(http.DefaultClient)
-
-    // 外部APIのみモックサーバーを使用
-    slackHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        w.WriteHeader(http.StatusOK)
-    })
-    mockSlackServer := httptest.NewServer(slackHandler)
-    defer mockSlackServer.Close()
-
-    slackSender := message.NewSlackSender(config, slack.New("token", slack.OptionAPIURL(mockSlackServer.URL+"/")))
-
-    // 実際のコンポーネントでUseCaseを構築
-    useCase := app.NewRecommendUseCase(fetcher, recommender, []domain.MessageSender{slackSender})
-
-    // 統合テスト実行
-    err := useCase.Execute(ctx, params)
-    assert.NoError(t, err)
+// test/integration/app/profile_init_integration_test.go
+func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
+    tests := []struct {
+        name    string
+        setup   func(t *testing.T, tmpDir string) string
+        wantErr bool
+        verify  func(t *testing.T, filePath string)
+    }{
+        {
+            name: "正常系: 新規ファイル作成成功",
+            setup: func(t *testing.T, tmpDir string) string {
+                return filepath.Join(tmpDir, "test_profile.yml")
+            },
+            wantErr: false,
+            verify: func(t *testing.T, filePath string) {
+                _, err := os.Stat(filePath)
+                require.NoError(t, err)
+            },
+        },
+        {
+            name: "異常系: 書き込み権限がない場合はエラー",
+            setup: func(t *testing.T, tmpDir string) string {
+                dir := filepath.Join(tmpDir, "readonly")
+                os.MkdirAll(dir, 0755)
+                os.Chmod(dir, 0555)
+                t.Cleanup(func() { os.Chmod(dir, 0755) })
+                return filepath.Join(dir, "profile.yml")
+            },
+            wantErr: true,
+        },
+    }
+    // 実際のファイルシステムを使って検証
 }
 ```
 
-**テスト対象**:
-- ✅ 複数コンポーネントの協調動作
-- ✅ 設定の読み込み・マージ・検証の一連のフロー
-- ✅ エラーハンドリング（実際のエラー伝播）
+**ユニットテストの対象**:
+- ✅ 複雑な条件分岐（記事なし、フェッチエラー、推薦エラー等）
+- ✅ パラメータバリデーション
+- ✅ ログ出力の検証
+- ✅ 設定値のマスキング処理
 
-**ユニットテストについて**:
-- ❌ オーケストレーションのモックテストは原則不要
-- ⚠️ 複雑な条件分岐がある場合のみ、個別にユニットテストを追加
+**統合テストの対象**:
+- ✅ 実際のファイルシステムを使った読み書き
+- ✅ 並行処理時の排他制御
+- ✅ 権限エラーなどOS依存の動作
+- ✅ infra層実装との連携フロー
 
 ### 3. domain層（Domain Layer）のテスト
 
