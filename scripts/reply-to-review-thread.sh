@@ -83,7 +83,7 @@ query($threadId: ID!) {
   node(id: $threadId) {
     ... on PullRequestReviewThread {
       id
-      comments(first: 1) {
+      comments(last: 1) {
         nodes {
           author {
             login
@@ -109,7 +109,7 @@ if echo "$THREAD_INFO" | jq -e '.data.node == null' > /dev/null 2>&1; then
 fi
 
 # コメント投稿者のユーザー名を取得
-AUTHOR_LOGIN=$(echo "$THREAD_INFO" | jq -r '.data.node.comments.nodes[0].author.login // empty')
+AUTHOR_LOGIN=$(echo "$THREAD_INFO" | jq -r '.data.node.comments.nodes[-1].author.login // empty')
 
 if [[ -z "$AUTHOR_LOGIN" ]]; then
     echo "エラー: コメント投稿者の情報を取得できませんでした。" >&2
