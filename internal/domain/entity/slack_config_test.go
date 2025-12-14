@@ -6,10 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func slackStringPtr(s string) *string {
-	return &s
-}
-
 // TestSlackAPIConfig_Validate はSlackAPIConfigのValidateメソッドをテストする
 func TestSlackAPIConfig_Validate(t *testing.T) {
 	// ヘルパー関数: SecretStringを作成
@@ -119,8 +115,8 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
-				IconURL:         slackStringPtr("https://example.com/icon.png"),
-				IconEmoji:       slackStringPtr(":robot:"),
+				IconURL:         stringPtr("https://example.com/icon.png"),
+				IconEmoji:       stringPtr(":robot:"),
 			},
 			wantErr: true,
 			errors:  []string{"Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。"},
@@ -132,7 +128,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
-				IconURL:         slackStringPtr("https://example.com/icon.png"),
+				IconURL:         stringPtr("https://example.com/icon.png"),
 			},
 			wantErr: false,
 		},
@@ -143,7 +139,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
-				IconEmoji:       slackStringPtr(":robot:"),
+				IconEmoji:       stringPtr(":robot:"),
 			},
 			wantErr: false,
 		},

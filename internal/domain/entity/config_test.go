@@ -1053,8 +1053,7 @@ func TestGeminiConfig_Merge(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.target.Merge(tt.source)
-			assert.Equal(t, tt.expected.Type, tt.target.Type)
-			assert.Equal(t, tt.expected.APIKey.Value(), tt.target.APIKey.Value())
+			assert.Equal(t, tt.expected, tt.target)
 		})
 	}
 }
