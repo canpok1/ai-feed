@@ -49,6 +49,10 @@
             "Bash(touch:*)",
             "Bash(tree:*)",
             "Bash(while:*)",
+            "SlashCommand(/plan-issue)",
+            "SlashCommand(/plan-pr)",
+            "SlashCommand(/review)",
+            "SlashCommand(/run)",
             "WebSearch",
             "mcp__serena"
         ],
