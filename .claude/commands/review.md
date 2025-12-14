@@ -13,6 +13,7 @@ github issue $ARGUMENTS の対応を行ったのでレビューを行い、改�
    - coding-rules-reviewer: コーディングルール（docs/01_coding_rules.md）への準拠を確認
    - architecture-rules-reviewer: アーキテクチャルール（docs/02_architecture_rules.md）への準拠を確認
    - testing-rules-reviewer: テストルール（docs/03_testing_rules.md）への準拠を確認
+   - document-specialist: 文書化ルール（docs/07_document_rules.md）への準拠を確認
 4. レビューでの指摘点を元に1ファイル1タスクとして tmp/todo フォルダにファイルを作成する。
 
 ## タスクファイルのフォーマット
