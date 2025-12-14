@@ -24,6 +24,44 @@ define generate_coverage_report
 @go tool cover -func=coverage.$(1).filtered.out > coverage.$(1).func.out
 endef
 
+# GitHub Actionsジョブサマリー用のカバレッジレポート生成ロジック
+# 引数: なし（coverage.func.outファイルとGITHUB_STEP_SUMMARY環境変数を使用）
+define generate_coverage_summary
+@if [ -z "$(GITHUB_STEP_SUMMARY)" ]; then \
+	echo "GITHUB_STEP_SUMMARY is not set. Skipping coverage summary (GitHub Actions only)."; \
+	exit 0; \
+fi
+@echo "## 📊 カバレッジレポート" >> $(GITHUB_STEP_SUMMARY)
+@echo "" >> $(GITHUB_STEP_SUMMARY)
+@echo "### 層別カバレッジ" >> $(GITHUB_STEP_SUMMARY)
+@echo "" >> $(GITHUB_STEP_SUMMARY)
+@echo "| 層 | カバレッジ | 目標 | 状態 |" >> $(GITHUB_STEP_SUMMARY)
+@echo "|---|---|---|---|" >> $(GITHUB_STEP_SUMMARY)
+@for layer in app domain infra cmd; do \
+	cov=$$(awk "/internal\/$${layer}\// {gsub(/%/, \"\", \$$NF); sum+=\$$NF; count++} END {if(count>0) printf \"%.1f\", sum/count; else print \"0\"}" coverage.func.out); \
+	case $${layer} in \
+		domain) threshold=$(COVERAGE_THRESHOLD_DOMAIN); target="$(COVERAGE_THRESHOLD_DOMAIN)%"; ;; \
+		infra) threshold=$(COVERAGE_THRESHOLD_INFRA); target="$(COVERAGE_THRESHOLD_INFRA)%"; ;; \
+		app) threshold=$(COVERAGE_THRESHOLD_APP); target="$(COVERAGE_THRESHOLD_APP)%"; ;; \
+		*) threshold=0; target="-"; ;; \
+	esac; \
+	if [ "$${target}" = "-" ]; then \
+		status="➖"; \
+	elif [ $$(awk "BEGIN {print ($${cov} >= $${threshold})}") -eq 1 ]; then \
+		status="✅"; \
+	else \
+		status="❌"; \
+	fi; \
+	echo "| $${layer} | $${cov}% | $${target} | $${status} |" >> $(GITHUB_STEP_SUMMARY); \
+done
+@echo "" >> $(GITHUB_STEP_SUMMARY)
+@echo "### レポートリンク" >> $(GITHUB_STEP_SUMMARY)
+@echo "" >> $(GITHUB_STEP_SUMMARY)
+@echo "- [ユニットテストカバレッジ](../../../actions/artifacts) (coverage-report-ut)" >> $(GITHUB_STEP_SUMMARY)
+@echo "- [統合テストカバレッジ](../../../actions/artifacts) (coverage-report-it)" >> $(GITHUB_STEP_SUMMARY)
+@echo "" >> $(GITHUB_STEP_SUMMARY)
+endef
+
 setup:
 	go install go.uber.org/mock/mockgen@v0.6.0
 	go install golang.org/x/tools/cmd/goimports@v0.28.0
@@ -83,39 +121,7 @@ test-coverage: test-coverage-ut test-coverage-it
 # test-coverageの後に実行し、$GITHUB_STEP_SUMMARYに追記する
 # ローカル実行時（GITHUB_STEP_SUMMARY未定義）はスキップする
 coverage-summary:
-	@if [ -z "$(GITHUB_STEP_SUMMARY)" ]; then \
-		echo "GITHUB_STEP_SUMMARY is not set. Skipping coverage summary (GitHub Actions only)."; \
-		exit 0; \
-	fi
-	@echo "## 📊 カバレッジレポート" >> $(GITHUB_STEP_SUMMARY)
-	@echo "" >> $(GITHUB_STEP_SUMMARY)
-	@echo "### 層別カバレッジ" >> $(GITHUB_STEP_SUMMARY)
-	@echo "" >> $(GITHUB_STEP_SUMMARY)
-	@echo "| 層 | カバレッジ | 目標 | 状態 |" >> $(GITHUB_STEP_SUMMARY)
-	@echo "|---|---|---|---|" >> $(GITHUB_STEP_SUMMARY)
-	@for layer in cmd app domain infra; do \
-		cov=$$(awk "/internal\/$${layer}\// {gsub(/%/, \"\", \$$NF); sum+=\$$NF; count++} END {if(count>0) printf \"%.1f\", sum/count; else print \"0\"}" coverage.func.out); \
-		case $${layer} in \
-			domain) threshold=$(COVERAGE_THRESHOLD_DOMAIN); target="$(COVERAGE_THRESHOLD_DOMAIN)%"; ;; \
-			infra) threshold=$(COVERAGE_THRESHOLD_INFRA); target="$(COVERAGE_THRESHOLD_INFRA)%"; ;; \
-			app) threshold=$(COVERAGE_THRESHOLD_APP); target="$(COVERAGE_THRESHOLD_APP)%"; ;; \
-			*) threshold=0; target="-"; ;; \
-		esac; \
-		if [ "$${target}" = "-" ]; then \
-			status="➖"; \
-		elif [ $$(awk "BEGIN {print ($${cov} >= $${threshold})}") -eq 1 ]; then \
-			status="✅"; \
-		else \
-			status="❌"; \
-		fi; \
-		echo "| $${layer} | $${cov}% | $${target} | $${status} |" >> $(GITHUB_STEP_SUMMARY); \
-	done
-	@echo "" >> $(GITHUB_STEP_SUMMARY)
-	@echo "### レポートリンク" >> $(GITHUB_STEP_SUMMARY)
-	@echo "" >> $(GITHUB_STEP_SUMMARY)
-	@echo "- [ユニットテストカバレッジ](../../../actions/artifacts) (coverage-report-ut)" >> $(GITHUB_STEP_SUMMARY)
-	@echo "- [統合テストカバレッジ](../../../actions/artifacts) (coverage-report-it)" >> $(GITHUB_STEP_SUMMARY)
-	@echo "" >> $(GITHUB_STEP_SUMMARY)
+	$(call generate_coverage_summary)
 
 # リリース前に実行するテスト（GoReleaserから呼び出される）
 # 高速なチェックから順に実行し、早期に失敗を検出する
