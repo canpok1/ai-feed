@@ -13,8 +13,8 @@ import (
 
 	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/domain"
-	"github.com/canpok1/ai-feed/internal/infra/cache"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/canpok1/ai-feed/internal/infra/cache"
 	"github.com/canpok1/ai-feed/internal/infra/fetch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
