@@ -223,8 +223,15 @@ func TestProfileMerge_BasicMerge(t *testing.T) {
     defaultProfile.Merge(fileProfile)
 
     // マージ結果を検証
-    assert.Equal(t, "default-type", defaultProfile.AI.Gemini.Type)
-    assert.Equal(t, "file-key", defaultProfile.AI.Gemini.APIKey.Value())
+    expectedProfile := &entity.Profile{
+        AI: &entity.AIConfig{
+            Gemini: &entity.GeminiConfig{
+                Type:   "default-type",
+                APIKey: entity.NewSecret("file-key"),
+            },
+        },
+    }
+    assert.Equal(t, expectedProfile, defaultProfile)
 }
 ```
 
