@@ -109,6 +109,62 @@ $ ./scripts/create-version-tag.sh
 - 各スレッドの最初の10件のコメントを取得
 - PR番号は数値で指定
 
+### get-pr-review-thread-details.sh
+
+レビュースレッドの詳細情報を取得するスクリプトです。
+
+#### 機能
+- 指定したスレッドIDのレビュースレッド詳細を表示
+- スレッド内の全コメントを時系列順で表示
+- 複数のスレッドIDを同時に指定可能
+- ファイルパス、行番号、解決状態を含む完全な情報を出力
+
+#### 前提条件
+- GitHub CLI（`gh`）がインストール済みで認証済みであること
+- `jq`コマンドがインストール済みであること
+
+#### 使用方法
+
+```bash
+# 単一スレッドの詳細を取得
+./scripts/get-pr-review-thread-details.sh <スレッドID>
+
+# 複数スレッドの詳細を取得
+./scripts/get-pr-review-thread-details.sh <スレッドID1> <スレッドID2> ...
+
+# 例
+./scripts/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH"
+./scripts/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH" "PRRT_kwDONTZR484BhKaI"
+```
+
+#### 出力例
+
+```
+═══════════════════════════════════════════════════════════════════════════════
+スレッドID: PRRT_kwDONTZR484BhKaH
+解決状態: ✗ 未解決
+ファイル: internal/app/recommend.go
+行番号: 42-45
+───────────────────────────────────────────────────────────────────────────────
+コメント一覧（時系列順）:
+
+[1] reviewer-username - 2025-12-10T10:30:00Z
+
+    このエラーハンドリングを改善してください。
+    具体的には、エラーメッセージにより多くのコンテキストを含めることを推奨します。
+
+[2] developer-username - 2025-12-10T11:00:00Z
+
+    ご指摘ありがとうございます。修正しました。
+
+═══════════════════════════════════════════════════════════════════════════════
+```
+
+#### 注意事項
+- スレッドIDは `get-pr-review-comments.sh` の出力から取得可能
+- 各スレッドから最大100件のコメントを取得
+- スレッドIDはGitHub GraphQL APIのNode ID形式（例: `PRRT_kwDO...`）で指定
+
 ### resolve-review-thread.sh
 
 レビュースレッドを解決済み（resolved）にするスクリプトです。
@@ -212,15 +268,20 @@ echo "ご指摘ありがとうございます。修正しました。" | ./scrip
    ./scripts/get-pr-review-comments.sh 123
    ```
 
-2. **指摘事項の修正**
+2. **スレッドの詳細確認**（必要に応じて）
+   ```bash
+   ./scripts/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH"
+   ```
+
+3. **指摘事項の修正**
    - コードを修正してコミット・プッシュ
 
-3. **レビュースレッドへの返信**（オプション）
+4. **レビュースレッドへの返信**（オプション）
    ```bash
    echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH"
    ```
 
-4. **スレッドの解決**
+5. **スレッドの解決**
    ```bash
    ./scripts/resolve-review-thread.sh "PRRT_kwDONTZR484BhKaH"
    ```

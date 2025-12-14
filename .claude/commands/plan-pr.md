@@ -10,7 +10,11 @@ PR $ARGUMENTS にレビューコメントが投稿されました。
     ```bash
     ./scripts/get-pr-review-comments.sh $ARGUMENTS
     ```
-2. コメント1件ごとに、内容を確認して以下を行う。
+2. 必要に応じてスレッドの詳細を確認する（コンテキストが必要な場合）
+    ```bash
+    ./scripts/get-pr-review-thread-details.sh "THREAD_ID"
+    ```
+3. コメント1件ごとに、内容を確認して以下を行う。
     - レビュワーからの意見を表すもの、かつ対応が必要だと判断した場合
         - 「レビューコメントを元に対応する」という内容のタスクファイルを tmp/todo フォルダ配下に作成する
     - レビュワーからの意見を表すもの、かつ対応が不要だと判断した場合
@@ -55,6 +59,8 @@ pr_{PRの番号}_task_{2桁0埋めの1からの連番}_{タスク概要(英語)}
 
 ### 備考
 - コメントの返信やresolveは以下を参考にする
+    - スレッドの詳細を確認するコマンド。THREAD_IDはレビュースレッドIDに置き換えること。
+        - `./scripts/get-pr-review-thread-details.sh "THREAD_ID"`
     - 返信するためのコマンド。THREAD_IDはレビュースレッドIDに置き換えること。
         - `echo "コメント内容" | ./scripts/reply-to-review-thread.sh "THREAD_ID"`
     - resolveするためのコマンド。THREAD_IDはレビュースレッドIDに置き換えること。
