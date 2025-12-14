@@ -21,90 +21,6 @@ func isRunningAsRoot() bool {
 	return os.Geteuid() == 0
 }
 
-func TestProfileInitRunner_Run_Integration(t *testing.T) {
-	tests := []struct {
-		name          string
-		setupFile     func(string) error
-		expectedError string
-	}{
-		{
-			name: "保存成功",
-			setupFile: func(filePath string) error {
-				// ファイルが存在しない状態にする
-				return nil
-			},
-			expectedError: "",
-		},
-		{
-			name: "ファイル既存エラー",
-			setupFile: func(filePath string) error {
-				// 既にファイルが存在する状態を作る
-				return os.WriteFile(filePath, []byte("existing content"), 0644)
-			},
-			expectedError: "profile file already exists",
-		},
-		{
-			name: "書き込み権限エラー",
-			setupFile: func(filePath string) error {
-				// ディレクトリを読み取り専用にして書き込み権限エラーを発生させる
-				dir := filepath.Dir(filePath)
-				if err := os.MkdirAll(dir, 0755); err != nil {
-					return err
-				}
-				if err := os.Chmod(dir, 0555); err != nil {
-					return err
-				}
-				return nil
-			},
-			expectedError: "permission denied",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// 権限テストはルート権限では動作しないためスキップ
-			if tt.name == "書き込み権限エラー" && isRunningAsRoot() {
-				t.Skip("権限テストはルート権限では動作しないためスキップします")
-			}
-
-			// 一時ディレクトリを作成
-			tempDir := t.TempDir()
-			filePath := filepath.Join(tempDir, "test_profile.yml")
-
-			// テスト用のファイル状態をセットアップ
-			if err := tt.setupFile(filePath); err != nil {
-				t.Fatalf("Failed to setup test file: %v", err)
-			}
-
-			// ProfileInitRunnerを作成
-			yamlRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-			stderr := &bytes.Buffer{}
-			runner, runnerErr := app.NewProfileInitRunner(yamlRepo, stderr)
-			require.NoError(t, runnerErr)
-
-			// 実行
-			err := runner.Run()
-
-			// 権限テストの後にディレクトリの権限を戻す
-			if tt.name == "書き込み権限エラー" {
-				dir := filepath.Dir(filePath)
-				os.Chmod(dir, 0755) // 権限を戻す
-			}
-
-			// 検証
-			if tt.expectedError != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.expectedError)
-			} else {
-				assert.NoError(t, err)
-				// ファイルが作成されていることを確認
-				_, statErr := os.Stat(filePath)
-				assert.NoError(t, statErr, "Profile file should be created")
-			}
-		})
-	}
-}
-
 func TestProfileInitRunner_ConcurrentIntegration(t *testing.T) {
 	const goroutines = 5
 	tempDir := t.TempDir()
@@ -190,25 +106,27 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		setup   func(t *testing.T, tmpDir string) string
-		wantErr bool
-		verify  func(t *testing.T, filePath string)
+		name             string
+		setup            func(t *testing.T, tmpDir string) string
+		wantErr          bool
+		expectedErrorMsg string
+		verify           func(t *testing.T, filePath string)
 	}{
 		{
 			name: "正常系: 新規ファイル作成成功",
 			setup: func(t *testing.T, tmpDir string) string {
 				return filepath.Join(tmpDir, "test_profile.yml")
 			},
-			wantErr: false,
+			wantErr:          false,
+			expectedErrorMsg: "",
 			verify: func(t *testing.T, filePath string) {
 				// ファイルが作成されたことを確認
 				_, err := os.Stat(filePath)
-				assert.NoError(t, err, "プロファイルファイルが作成されているべき")
+				require.NoError(t, err, "プロファイルファイルが作成されているべき - これ以降の検証は無意味")
 
 				// ファイルの内容を確認
 				content, err := os.ReadFile(filePath)
-				require.NoError(t, err)
+				require.NoError(t, err, "ファイル読み込みに失敗した場合、以降の検証は無意味")
 				assert.Contains(t, string(content), "# AI Feedのプロファイル設定ファイル", "テンプレートコメントが含まれているべき")
 			},
 		},
@@ -220,11 +138,12 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 				require.NoError(t, err)
 				return filePath
 			},
-			wantErr: true,
+			wantErr:          true,
+			expectedErrorMsg: "profile file already exists",
 			verify: func(t *testing.T, filePath string) {
 				// ファイルが変更されていないことを確認
 				content, err := os.ReadFile(filePath)
-				require.NoError(t, err)
+				require.NoError(t, err, "ファイル読み込みに失敗した場合、以降の検証は無意味")
 				assert.Contains(t, string(content), "existing content", "既存の内容は変更されないべき")
 			},
 		},
@@ -233,8 +152,44 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 			setup: func(t *testing.T, tmpDir string) string {
 				return filepath.Join(tmpDir, "nonexistent", "profile.yml")
 			},
-			wantErr: true,
-			verify:  nil,
+			wantErr:          true,
+			expectedErrorMsg: "no such file or directory",
+			verify:           nil,
+		},
+		{
+			name: "異常系: 書き込み権限がない場合はエラー",
+			setup: func(t *testing.T, tmpDir string) string {
+				// NOTE: ルート権限での実行時は権限制限が機能しないため、
+				// このテストはスキップされる
+				if isRunningAsRoot() {
+					t.Skip("権限テストはルート権限では動作しないためスキップします")
+				}
+
+				// 読み取り専用ディレクトリを作成
+				dir := filepath.Join(tmpDir, "readonly")
+				err := os.MkdirAll(dir, 0755)
+				require.NoError(t, err)
+
+				// ディレクトリを読み取り専用に変更(書き込み不可)
+				err = os.Chmod(dir, 0555)
+				require.NoError(t, err)
+
+				// NOTE: クリーンアップで権限を戻さないと、
+				// t.TempDir()の自動削除が失敗する
+				t.Cleanup(func() {
+					os.Chmod(dir, 0755)
+				})
+
+				return filepath.Join(dir, "profile.yml")
+			},
+			wantErr:          true,
+			expectedErrorMsg: "permission denied",
+			verify: func(t *testing.T, filePath string) {
+				// ファイルが作成されていないことを確認
+				_, err := os.Stat(filePath)
+				assert.Error(t, err)
+				assert.True(t, os.IsNotExist(err))
+			},
 		},
 	}
 
@@ -242,27 +197,29 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			// テスト用の一時ディレクトリを作成
+			// Given: テスト環境のセットアップ
 			tmpDir := t.TempDir()
-
-			// テストのセットアップ
 			filePath := tt.setup(t, tmpDir)
-
-			// ProfileInitRunnerを作成して実行
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
 			runner, runnerErr := app.NewProfileInitRunner(profileRepo, stderr)
-			require.NoError(t, runnerErr)
+			require.NoError(t, runnerErr, "Runnerの作成に失敗してはいけない")
+
+			// When: テスト対象の実行
 			err := runner.Run()
 
-			// エラーの確認
+			// Then: 結果の検証
 			if tt.wantErr {
-				assert.Error(t, err)
+				assert.Error(t, err, "エラーが発生すべき")
+				if tt.expectedErrorMsg != "" {
+					assert.Contains(t, err.Error(), tt.expectedErrorMsg,
+						"エラーメッセージに期待される文字列が含まれるべき")
+				}
 			} else {
-				assert.NoError(t, err)
+				assert.NoError(t, err, "エラーが発生してはいけない")
 			}
 
-			// 追加の検証
+			// Then: 追加の検証
 			if tt.verify != nil {
 				tt.verify(t, filePath)
 			}
