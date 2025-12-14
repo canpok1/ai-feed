@@ -6,6 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func slackStringPtr(s string) *string {
+	return &s
+}
+
 // TestSlackAPIConfig_Validate はSlackAPIConfigのValidateメソッドをテストする
 func TestSlackAPIConfig_Validate(t *testing.T) {
 	// ヘルパー関数: SecretStringを作成
@@ -100,6 +104,48 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 				"Slackチャンネルが設定されていません",
 				"Slackメッセージテンプレートが設定されていません。config.yml または profile.yml で message_template を設定してください。\n設定例:\nslack_api:\n  message_template: |\n    {{if .Comment}}{{.Comment}}\n    {{end}}{{.Article.Title}}\n    {{.Article.Link}}",
 			},
+		},
+		{
+			name: "正常系_Enabled_false",
+			config: &SlackAPIConfig{
+				Enabled: false,
+			},
+			wantErr: false,
+		},
+		{
+			name: "異常系_IconURLとIconEmojiが両方設定",
+			config: &SlackAPIConfig{
+				Enabled:         true,
+				APIToken:        makeSecretString("xoxb-valid-token"),
+				Channel:         "#test",
+				MessageTemplate: &validTemplate,
+				IconURL:         slackStringPtr("https://example.com/icon.png"),
+				IconEmoji:       slackStringPtr(":robot:"),
+			},
+			wantErr: true,
+			errors:  []string{"Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。"},
+		},
+		{
+			name: "正常系_IconURLのみ設定",
+			config: &SlackAPIConfig{
+				Enabled:         true,
+				APIToken:        makeSecretString("xoxb-valid-token"),
+				Channel:         "#test",
+				MessageTemplate: &validTemplate,
+				IconURL:         slackStringPtr("https://example.com/icon.png"),
+			},
+			wantErr: false,
+		},
+		{
+			name: "正常系_IconEmojiのみ設定",
+			config: &SlackAPIConfig{
+				Enabled:         true,
+				APIToken:        makeSecretString("xoxb-valid-token"),
+				Channel:         "#test",
+				MessageTemplate: &validTemplate,
+				IconEmoji:       slackStringPtr(":robot:"),
+			},
+			wantErr: false,
 		},
 	}
 
