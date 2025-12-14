@@ -1,6 +1,7 @@
 BINARY_NAME=ai-feed
 VERSION?=dev
-COVERAGE_THRESHOLD=60
+COVERAGE_THRESHOLD_DOMAIN=80
+COVERAGE_THRESHOLD_INFRA=60
 
 setup:
 	go install go.uber.org/mock/mockgen@v0.6.0
@@ -22,7 +23,7 @@ clean:
 	go clean
 	rm -f ${BINARY_NAME}
 	rm -rf ./dist
-	rm -f coverage.out coverage.filtered.out coverage.html
+	rm -f coverage.out coverage.filtered.out coverage.func.out coverage.html
 	rm -rf public/coverage
 
 test:
@@ -39,7 +40,23 @@ test-coverage:
 	@grep -v "mock_" coverage.out > coverage.filtered.out
 	@mkdir -p public/coverage/ut-it
 	@go tool cover -html=coverage.filtered.out -o public/coverage/ut-it/index.html
-	@go tool cover -func=coverage.filtered.out | awk -v thold=$(COVERAGE_THRESHOLD) '/^total:/ {gsub(/%/, "", $$3); if ($$3 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$3, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$3, thold}}'
+	@go tool cover -func=coverage.filtered.out > coverage.func.out
+	@echo "=== Layer Coverage Check (per docs/03_testing_rules.md) ==="
+	@# domain層のカバレッジチェック（80%以上）
+	@domain_cov=$$(awk '/internal\/domain/ {gsub(/%/, "", $$NF); sum+=$$NF; count++} END {if(count>0) printf "%.1f", sum/count; else print "0"}' coverage.func.out); \
+	echo "domain layer: $${domain_cov}% (threshold: $(COVERAGE_THRESHOLD_DOMAIN)%)"; \
+	if [ $$(echo "$${domain_cov} < $(COVERAGE_THRESHOLD_DOMAIN)" | bc -l) -eq 1 ]; then \
+		echo "ERROR: domain layer coverage $${domain_cov}% is below threshold $(COVERAGE_THRESHOLD_DOMAIN)%"; \
+		exit 1; \
+	fi
+	@# infra層のカバレッジチェック（60%以上）
+	@infra_cov=$$(awk '/internal\/infra/ {gsub(/%/, "", $$NF); sum+=$$NF; count++} END {if(count>0) printf "%.1f", sum/count; else print "0"}' coverage.func.out); \
+	echo "infra layer: $${infra_cov}% (threshold: $(COVERAGE_THRESHOLD_INFRA)%)"; \
+	if [ $$(echo "$${infra_cov} < $(COVERAGE_THRESHOLD_INFRA)" | bc -l) -eq 1 ]; then \
+		echo "ERROR: infra layer coverage $${infra_cov}% is below threshold $(COVERAGE_THRESHOLD_INFRA)%"; \
+		exit 1; \
+	fi
+	@echo "=== All layer coverage checks passed ==="
 
 # リリース前に実行するテスト（GoReleaserから呼び出される）
 # 高速なチェックから順に実行し、早期に失敗を検出する
