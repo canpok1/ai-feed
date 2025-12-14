@@ -55,27 +55,27 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/canpok1/ai-feed/cmd/config.go (57.9%)</option>
+				<option value="file0">github.com/canpok1/ai-feed/cmd/config.go (52.4%)</option>
 				
 				<option value="file1">github.com/canpok1/ai-feed/cmd/init.go (27.3%)</option>
 				
-				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (74.1%)</option>
+				<option value="file2">github.com/canpok1/ai-feed/cmd/profile.go (74.5%)</option>
 				
-				<option value="file3">github.com/canpok1/ai-feed/cmd/recommend.go (18.1%)</option>
+				<option value="file3">github.com/canpok1/ai-feed/cmd/recommend.go (19.4%)</option>
 				
 				<option value="file4">github.com/canpok1/ai-feed/cmd/root.go (93.3%)</option>
 				
-				<option value="file5">github.com/canpok1/ai-feed/cmd/runner/config_check.go (79.1%)</option>
+				<option value="file5">github.com/canpok1/ai-feed/cmd/version.go (100.0%)</option>
 				
-				<option value="file6">github.com/canpok1/ai-feed/cmd/runner/config_init.go (100.0%)</option>
+				<option value="file6">github.com/canpok1/ai-feed/internal/app/config_check.go (79.5%)</option>
 				
-				<option value="file7">github.com/canpok1/ai-feed/cmd/runner/profile_check.go (86.2%)</option>
+				<option value="file7">github.com/canpok1/ai-feed/internal/app/config_init.go (100.0%)</option>
 				
-				<option value="file8">github.com/canpok1/ai-feed/cmd/runner/profile_init.go (100.0%)</option>
+				<option value="file8">github.com/canpok1/ai-feed/internal/app/profile_check.go (90.9%)</option>
 				
-				<option value="file9">github.com/canpok1/ai-feed/cmd/runner/recommend.go (83.3%)</option>
+				<option value="file9">github.com/canpok1/ai-feed/internal/app/profile_init.go (100.0%)</option>
 				
-				<option value="file10">github.com/canpok1/ai-feed/cmd/version.go (100.0%)</option>
+				<option value="file10">github.com/canpok1/ai-feed/internal/app/recommend.go (83.3%)</option>
 				
 				<option value="file11">github.com/canpok1/ai-feed/internal/domain/cache/file_cache.go (79.6%)</option>
 				
@@ -101,7 +101,7 @@
 				
 				<option value="file22">github.com/canpok1/ai-feed/internal/infra/comment/mock.go (100.0%)</option>
 				
-				<option value="file23">github.com/canpok1/ai-feed/internal/infra/config.go (74.2%)</option>
+				<option value="file23">github.com/canpok1/ai-feed/internal/infra/config.go (74.9%)</option>
 				
 				<option value="file24">github.com/canpok1/ai-feed/internal/infra/fetch/rss.go (0.0%)</option>
 				
@@ -125,7 +125,7 @@
 				
 				<option value="file34">github.com/canpok1/ai-feed/internal/infra/templates.go (100.0%)</option>
 				
-				<option value="file35">github.com/canpok1/ai-feed/internal/infra/validator.go (84.5%)</option>
+				<option value="file35">github.com/canpok1/ai-feed/internal/infra/validator.go (83.5%)</option>
 				
 				<option value="file36">github.com/canpok1/ai-feed/internal/testutil/helpers.go (0.0%)</option>
 				
@@ -148,8 +148,9 @@
 		<pre class="file" id="file0" style="display: none">package cmd
 
 import (
-        "github.com/canpok1/ai-feed/cmd/runner"
+        "github.com/canpok1/ai-feed/internal/app"
         "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/infra"
         "github.com/canpok1/ai-feed/internal/infra/profile"
         "github.com/spf13/cobra"
 )
@@ -186,9 +187,19 @@ func makeConfigCheckCmd() *cobra.Command <span class="cov8" title="1">{
                                 return profile.NewYamlProfileRepositoryImpl(path)
                         }</span>
 
+                        // 依存性の注入（cmd層がComposition Root）
+                        <span class="cov0" title="0">configRepo := infra.NewYamlConfigRepository(configPath)
+                        validatorFactory := infra.NewConfigValidatorFactory()
+
                         // ConfigCheckRunnerを作成して実行
-                        <span class="cov0" title="0">configCheckRunner := runner.NewConfigCheckRunner(configPath, cmd.OutOrStdout(), cmd.ErrOrStderr(), profileRepoFn)
-                        params := &amp;runner.ConfigCheckParams{
+                        configCheckRunner := app.NewConfigCheckRunner(
+                                configRepo,
+                                validatorFactory,
+                                cmd.OutOrStdout(),
+                                cmd.ErrOrStderr(),
+                                profileRepoFn,
+                        )
+                        params := &amp;app.ConfigCheckParams{
                                 ProfilePath: profilePath,
                                 VerboseFlag: verboseFlag,
                         }
@@ -211,7 +222,7 @@ func makeConfigCheckCmd() *cobra.Command <span class="cov8" title="1">{
 import (
         "fmt"
 
-        "github.com/canpok1/ai-feed/cmd/runner"
+        "github.com/canpok1/ai-feed/internal/app"
         "github.com/canpok1/ai-feed/internal/infra"
         "github.com/spf13/cobra"
 )
@@ -221,7 +232,7 @@ func makeInitCmd() *cobra.Command <span class="cov8" title="1">{
                 Use:   "init",
                 Short: "設定ファイル（config.yml）のテンプレートを生成します（既存ファイルは上書きしません）",
                 RunE: func(cmd *cobra.Command, args []string) error </span><span class="cov0" title="0">{
-                        filePath := runner.DefaultConfigFilePath
+                        filePath := app.DefaultConfigFilePath
 
                         // 進行状況メッセージ: 初期化開始
                         fmt.Fprintln(cmd.ErrOrStderr(), "設定ファイルを初期化しています...")
@@ -230,7 +241,7 @@ func makeInitCmd() *cobra.Command <span class="cov8" title="1">{
                         configRepo := infra.NewYamlConfigRepository(filePath)
 
                         // ConfigInitRunnerを使用してビジネスロジックを実行
-                        r := runner.NewConfigInitRunner(configRepo, cmd.ErrOrStderr())
+                        r := app.NewConfigInitRunner(configRepo, cmd.ErrOrStderr())
                         if err := r.Run(); err != nil </span><span class="cov0" title="0">{
                                 return err
                         }</span>
@@ -250,8 +261,9 @@ func makeInitCmd() *cobra.Command <span class="cov8" title="1">{
 import (
         "fmt"
 
-        "github.com/canpok1/ai-feed/cmd/runner"
+        "github.com/canpok1/ai-feed/internal/app"
         "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/infra"
         "github.com/canpok1/ai-feed/internal/infra/profile"
         "github.com/spf13/cobra"
 )
@@ -281,7 +293,7 @@ func makeProfileInitCmd() *cobra.Command <span class="cov8" title="1">{
                         fmt.Fprintf(cmd.ErrOrStderr(), "プロファイルを初期化しています... (%s)\n", filePath)
 
                         profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
-                        r, err := runner.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
+                        r, err := app.NewProfileInitRunner(profileRepo, cmd.ErrOrStderr())
                         if err != nil </span><span class="cov0" title="0">{
                                 return fmt.Errorf("failed to create runner: %w", err)
                         }</span>
@@ -327,7 +339,11 @@ func makeProfileCheckCmd() *cobra.Command <span class="cov8" title="1">{
                         <span class="cov8" title="1">profileRepoFn := func(path string) domain.ProfileRepository </span><span class="cov0" title="0">{
                                 return profile.NewYamlProfileRepositoryImpl(path)
                         }</span>
-                        <span class="cov8" title="1">r := runner.NewProfileCheckRunner(configPath, cmd.ErrOrStderr(), profileRepoFn)
+
+                        // 依存性の注入（cmd層がComposition Root）
+                        <span class="cov8" title="1">configRepo := infra.NewYamlConfigRepository(configPath)
+
+                        r := app.NewProfileCheckRunner(configRepo, cmd.ErrOrStderr(), profileRepoFn)
                         result, err := r.Run(profilePath)
                         if err != nil </span><span class="cov8" title="1">{
                                 // SilenceErrorsが有効なので、手動でエラーを出力
@@ -373,7 +389,7 @@ import (
         "fmt"
         "log/slog"
 
-        "github.com/canpok1/ai-feed/cmd/runner"
+        "github.com/canpok1/ai-feed/internal/app"
         "github.com/canpok1/ai-feed/internal/domain"
         "github.com/canpok1/ai-feed/internal/domain/cache"
         "github.com/canpok1/ai-feed/internal/domain/entity"
@@ -413,15 +429,11 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command <span class
                                 return fmt.Errorf("failed to get profile flag: %w", err)
                         }</span>
 
-                        // デフォルトプロファイルをentity.Profileに変換
+                        // デフォルトプロファイルを取得
                         <span class="cov0" title="0">var currentProfile *entity.Profile
                         if config.DefaultProfile != nil </span><span class="cov0" title="0">{
-                                var err error
-                                currentProfile, err = config.DefaultProfile.ToEntity()
-                                if err != nil </span><span class="cov0" title="0">{
-                                        return fmt.Errorf("failed to process default profile: %w", err)
-                                }</span>
-                        } else<span class="cov0" title="0"> {
+                                currentProfile = config.DefaultProfile
+                        }</span> else<span class="cov0" title="0"> {
                                 currentProfile = &amp;entity.Profile{}
                         }</span>
 
@@ -464,18 +476,11 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command <span class
                                 currentProfile.Prompt,
                         )
 
-                        // キャッシュ設定の取得（Config.Cacheから）
-                        var cacheEntity *entity.CacheConfig
-                        if config.Cache != nil </span><span class="cov0" title="0">{
-                                var err error
-                                cacheEntity, err = config.Cache.ToEntity()
-                                if err != nil </span><span class="cov0" title="0">{
-                                        return fmt.Errorf("failed to process cache config: %w", err)
-                                }</span>
-                        }
+                        // キャッシュ設定の取得
+                        cacheEntity := config.Cache
 
                         // MessageSenderファクトリ関数（インフラ層の実装をラップ）
-                        <span class="cov0" title="0">senderFactory := func(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error) </span><span class="cov0" title="0">{
+                        senderFactory := func(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error) </span><span class="cov0" title="0">{
                                 return createMessageSenders(outputConfig)
                         }</span>
 
@@ -484,7 +489,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command <span class
                                 return createRecommendCache(cacheConfig)
                         }</span>
 
-                        <span class="cov0" title="0">recommendRunner, runnerErr := runner.NewRecommendRunner(
+                        <span class="cov0" title="0">recommendRunner, runnerErr := app.NewRecommendRunner(
                                 fetchClient,
                                 recommender,
                                 cmd.ErrOrStderr(),
@@ -506,7 +511,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command <span class
                         <span class="cov0" title="0">err = recommendRunner.Run(cmd.Context(), params, currentProfile)
                         if err != nil </span><span class="cov0" title="0">{
                                 // 記事が見つからない場合は友好的なメッセージを表示してエラーではない扱いにする
-                                if errors.Is(err, runner.ErrNoArticlesFound) </span><span class="cov0" title="0">{
+                                if errors.Is(err, app.ErrNoArticlesFound) </span><span class="cov0" title="0">{
                                         fmt.Fprintln(cmd.OutOrStdout(), "記事が見つかりませんでした。")
                                         fmt.Fprintln(cmd.ErrOrStderr(), "全てのフィードで記事を取得できませんでした。ネットワーク接続を確認してください。")
                                         return nil
@@ -527,7 +532,7 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command <span class
         return cmd</span>
 }
 
-func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) <span class="cov8" title="1">{
+func newRecommendParams(cmd *cobra.Command) (*app.RecommendParams, error) <span class="cov8" title="1">{
         urlList, err := cmd.Flags().GetStringSlice("url")
         if err != nil </span><span class="cov0" title="0">{
                 return nil, fmt.Errorf("failed to get url flag: %w", err)
@@ -558,7 +563,7 @@ func newRecommendParams(cmd *cobra.Command) (*runner.RecommendParams, error) <sp
                 return nil, fmt.Errorf("--url または --source のいずれかを指定してください")
         }</span>
 
-        <span class="cov8" title="1">return &amp;runner.RecommendParams{
+        <span class="cov8" title="1">return &amp;app.RecommendParams{
                 URLs: urls,
         }, nil</span>
 }
@@ -661,7 +666,42 @@ func Execute() error <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file5" style="display: none">package runner
+		<pre class="file" id="file5" style="display: none">package cmd
+
+import (
+        "runtime/debug"
+
+        versionpkg "github.com/canpok1/ai-feed/internal/version"
+        "github.com/spf13/cobra"
+)
+
+// version はビルド時にldflags で埋め込まれるバージョン情報
+var version = "dev"
+
+// readBuildInfo はdebug.ReadBuildInfoを保持する変数（テスト時にモック可能）
+var readBuildInfo = debug.ReadBuildInfo
+
+// getVersion はバージョン情報を取得する
+// ビルド時に設定されたバージョンを優先し、"dev"の場合はビルド情報から取得する
+func getVersion() string <span class="cov8" title="1">{
+        return versionpkg.GetVersionWithReadBuildInfo(version, readBuildInfo)
+}</span>
+
+// makeVersionCmd はversionコマンドを生成する
+func makeVersionCmd() *cobra.Command <span class="cov8" title="1">{
+        cmd := &amp;cobra.Command{
+                Use:   "version",
+                Short: "バージョン情報を表示",
+                RunE: func(cmd *cobra.Command, args []string) error </span><span class="cov8" title="1">{
+                        cmd.Println(getVersion())
+                        return nil
+                }</span>,
+        }
+        <span class="cov8" title="1">return cmd</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package app
 
 import (
         "fmt"
@@ -670,7 +710,6 @@ import (
 
         "github.com/canpok1/ai-feed/internal/domain"
         "github.com/canpok1/ai-feed/internal/domain/entity"
-        "github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO(#333): cmd/runner を internal/app に移動後、infra依存を解消する
 )
 
 // ConfigCheckParams はconfig checkコマンドの実行パラメータを表す構造体
@@ -681,19 +720,27 @@ type ConfigCheckParams struct {
 
 // ConfigCheckRunner はconfig checkコマンドのビジネスロジックを実行する構造体
 type ConfigCheckRunner struct {
-        configPath    string
-        stdout        io.Writer
-        stderr        io.Writer
-        profileRepoFn func(string) domain.ProfileRepository
+        configRepo       domain.ConfigRepository
+        validatorFactory domain.ValidatorFactory
+        stdout           io.Writer
+        stderr           io.Writer
+        profileRepoFn    func(string) domain.ProfileRepository
 }
 
 // NewConfigCheckRunner はConfigCheckRunnerの新しいインスタンスを作成する
-func NewConfigCheckRunner(configPath string, stdout io.Writer, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ConfigCheckRunner <span class="cov8" title="1">{
+func NewConfigCheckRunner(
+        configRepo domain.ConfigRepository,
+        validatorFactory domain.ValidatorFactory,
+        stdout io.Writer,
+        stderr io.Writer,
+        profileRepoFn func(string) domain.ProfileRepository,
+) *ConfigCheckRunner <span class="cov8" title="1">{
         return &amp;ConfigCheckRunner{
-                configPath:    configPath,
-                stdout:        stdout,
-                stderr:        stderr,
-                profileRepoFn: profileRepoFn,
+                configRepo:       configRepo,
+                validatorFactory: validatorFactory,
+                stdout:           stdout,
+                stderr:           stderr,
+                profileRepoFn:    profileRepoFn,
         }
 }</span>
 
@@ -702,12 +749,12 @@ func (r *ConfigCheckRunner) Run(params *ConfigCheckParams) error <span class="co
         slog.Debug("Starting config check command")
 
         // 設定ファイルの読み込み
-        slog.Debug("Loading config", "config_path", r.configPath)
-        config, configLoadErr := infra.NewYamlConfigRepository(r.configPath).Load()
+        slog.Debug("Loading config")
+        config, configLoadErr := r.configRepo.Load()
         if configLoadErr != nil </span><span class="cov8" title="1">{
-                fmt.Fprintf(r.stderr, "エラー: 設定ファイルの読み込みに失敗しました: %s\n", r.configPath)
+                fmt.Fprintln(r.stderr, "エラー: 設定ファイルの読み込みに失敗しました")
                 fmt.Fprintln(r.stderr, "config.ymlの構文を確認してください。ai-feed init で新しい設定ファイルを生成できます。")
-                slog.Error("Failed to load config", "config_path", r.configPath, "error", configLoadErr)
+                slog.Error("Failed to load config", "error", configLoadErr)
                 return fmt.Errorf("failed to load config: %w", configLoadErr)
         }</span>
 
@@ -716,12 +763,8 @@ func (r *ConfigCheckRunner) Run(params *ConfigCheckParams) error <span class="co
         if config.DefaultProfile == nil </span><span class="cov0" title="0">{
                 currentProfile = &amp;entity.Profile{}
         }</span> else<span class="cov8" title="1"> {
-                p, err := config.DefaultProfile.ToEntity()
-                if err != nil </span><span class="cov0" title="0">{
-                        return fmt.Errorf("failed to convert profile to entity: %w", err)
-                }</span>
-                <span class="cov8" title="1">currentProfile = p</span>
-        }
+                currentProfile = config.DefaultProfile
+        }</span>
 
         // プロファイルファイルが指定されている場合は読み込んでマージ
         <span class="cov8" title="1">if params.ProfilePath != "" </span><span class="cov8" title="1">{
@@ -738,7 +781,7 @@ func (r *ConfigCheckRunner) Run(params *ConfigCheckParams) error <span class="co
         }
 
         // バリデーションを実行
-        <span class="cov8" title="1">validator := infra.NewConfigValidator(config, currentProfile)
+        <span class="cov8" title="1">validator := r.validatorFactory.Create(config, currentProfile)
         result, validateErr := validator.Validate()
         if validateErr != nil </span><span class="cov0" title="0">{
                 return fmt.Errorf("failed to validate config: %w", validateErr)
@@ -856,7 +899,7 @@ func printCacheSummary(stdout io.Writer, summary domain.ConfigSummary) <span cla
 }
 </pre>
 		
-		<pre class="file" id="file6" style="display: none">package runner
+		<pre class="file" id="file7" style="display: none">package app
 
 import (
         "fmt"
@@ -895,7 +938,7 @@ func (r *ConfigInitRunner) Run() error <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file7" style="display: none">package runner
+		<pre class="file" id="file8" style="display: none">package app
 
 import (
         "fmt"
@@ -905,7 +948,6 @@ import (
 
         "github.com/canpok1/ai-feed/internal/domain"
         "github.com/canpok1/ai-feed/internal/domain/entity"
-        "github.com/canpok1/ai-feed/internal/infra" // depcheck:allow TODO(#333): cmd/runner を internal/app に移動後、infra依存を解消する
 )
 
 // ProfileCheckResult はプロファイル検証の結果を表す構造体
@@ -917,15 +959,15 @@ type ProfileCheckResult struct {
 
 // ProfileCheckRunner はprofile checkコマンドのビジネスロジックを実行する構造体
 type ProfileCheckRunner struct {
-        configPath    string
+        configRepo    domain.ConfigRepository
         stderr        io.Writer
         profileRepoFn func(string) domain.ProfileRepository
 }
 
 // NewProfileCheckRunner はProfileCheckRunnerの新しいインスタンスを作成する
-func NewProfileCheckRunner(configPath string, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ProfileCheckRunner <span class="cov8" title="1">{
+func NewProfileCheckRunner(configRepo domain.ConfigRepository, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ProfileCheckRunner <span class="cov8" title="1">{
         return &amp;ProfileCheckRunner{
-                configPath:    configPath,
+                configRepo:    configRepo,
                 stderr:        stderr,
                 profileRepoFn: profileRepoFn,
         }
@@ -936,33 +978,21 @@ func NewProfileCheckRunner(configPath string, stderr io.Writer, profileRepoFn fu
 // profilePathが指定されている場合は、指定されたプロファイルをconfig.ymlとマージして検証
 func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error) <span class="cov8" title="1">{
         // config.ymlの読み込み
-        var config *infra.Config
         var currentProfile *entity.Profile
 
-        configRepo := infra.NewYamlConfigRepository(r.configPath)
-        loadedConfig, err := configRepo.Load()
-        if err != nil </span><span class="cov8" title="1">{
-                // ファイルが存在しない場合は警告を表示しない
-                if _, statErr := os.Stat(r.configPath); !os.IsNotExist(statErr) </span><span class="cov0" title="0">{
-                        // ファイルが存在するが読み込み・パースに失敗した場合は警告を表示
-                        fmt.Fprintf(r.stderr, "警告: %s の読み込みまたは解析に失敗しました。空のデフォルトプロファイルで継続します。\n", r.configPath)
-                        slog.Warn("Failed to load or parse config file, continuing with empty default profile", "config_path", r.configPath, "error", err)
-                }</span>
-        } else<span class="cov8" title="1"> {
-                config = loadedConfig
-        }</span>
-
-        // デフォルトプロファイルの初期化
-        <span class="cov8" title="1">if config != nil &amp;&amp; config.DefaultProfile != nil </span><span class="cov8" title="1">{
-                var err error
-                currentProfile, err = config.DefaultProfile.ToEntity()
-                if err != nil </span><span class="cov0" title="0">{
-                        return nil, fmt.Errorf("failed to process default profile: %w", err)
-                }</span>
-        } else<span class="cov8" title="1"> {
+        loadedConfig, err := r.configRepo.Load()
+        switch </span>{
+        case err != nil:<span class="cov8" title="1">
+                // ファイルが存在しない場合は警告を表示しない（LoadedConfigがnilを返すため）
+                fmt.Fprintf(r.stderr, "警告: 設定ファイルの読み込みまたは解析に失敗しました。空のデフォルトプロファイルで継続します。\n")
+                slog.Warn("Failed to load or parse config file, continuing with empty default profile", "error", err)
+                currentProfile = &amp;entity.Profile{}</span>
+        case loadedConfig.DefaultProfile != nil:<span class="cov8" title="1">
+                currentProfile = loadedConfig.DefaultProfile</span>
+        default:<span class="cov0" title="0">
                 // 存在しない場合は空のプロファイルを使用
-                currentProfile = &amp;entity.Profile{}
-        }</span>
+                currentProfile = &amp;entity.Profile{}</span>
+        }
 
         // 引数が指定されている場合は指定ファイルとマージ
         <span class="cov8" title="1">if profilePath != "" </span><span class="cov8" title="1">{
@@ -999,7 +1029,7 @@ func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error
 }
 </pre>
 		
-		<pre class="file" id="file8" style="display: none">package runner
+		<pre class="file" id="file9" style="display: none">package app
 
 import (
         "fmt"
@@ -1042,7 +1072,7 @@ func (r *ProfileInitRunner) Run() error <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file9" style="display: none">package runner
+		<pre class="file" id="file10" style="display: none">package app
 
 import (
         "context"
@@ -1338,41 +1368,6 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
 
         <span class="cov8" title="1">slog.Info("Recommendation sent successfully to all senders")
         return nil</span>
-}
-</pre>
-		
-		<pre class="file" id="file10" style="display: none">package cmd
-
-import (
-        "runtime/debug"
-
-        versionpkg "github.com/canpok1/ai-feed/internal/version"
-        "github.com/spf13/cobra"
-)
-
-// version はビルド時にldflags で埋め込まれるバージョン情報
-var version = "dev"
-
-// readBuildInfo はdebug.ReadBuildInfoを保持する変数（テスト時にモック可能）
-var readBuildInfo = debug.ReadBuildInfo
-
-// getVersion はバージョン情報を取得する
-// ビルド時に設定されたバージョンを優先し、"dev"の場合はビルド情報から取得する
-func getVersion() string <span class="cov8" title="1">{
-        return versionpkg.GetVersionWithReadBuildInfo(version, readBuildInfo)
-}</span>
-
-// makeVersionCmd はversionコマンドを生成する
-func makeVersionCmd() *cobra.Command <span class="cov8" title="1">{
-        cmd := &amp;cobra.Command{
-                Use:   "version",
-                Short: "バージョン情報を表示",
-                RunE: func(cmd *cobra.Command, args []string) error </span><span class="cov8" title="1">{
-                        cmd.Println(getVersion())
-                        return nil
-                }</span>,
-        }
-        <span class="cov8" title="1">return cmd</span>
 }
 </pre>
 		
@@ -3024,6 +3019,7 @@ import (
         "path/filepath"
         "strings"
 
+        "github.com/canpok1/ai-feed/internal/domain"
         "github.com/canpok1/ai-feed/internal/domain/entity"
         "gopkg.in/yaml.v3"
 )
@@ -3370,9 +3366,40 @@ func (r *YamlConfigRepository) Save(config *Config) error <span class="cov8" tit
         <span class="cov8" title="1">return nil</span>
 }
 
-func (r *YamlConfigRepository) Load() (*Config, error) <span class="cov8" title="1">{
+// LoadRaw は設定ファイルを infra.Config 形式で読み込む（内部用）
+func (r *YamlConfigRepository) LoadRaw() (*Config, error) <span class="cov8" title="1">{
         return LoadYAML[Config](r.filePath)
 }</span>
+
+// Load は設定ファイルを読み込んで domain.LoadedConfig 形式で返す（domain.ConfigRepository実装）
+func (r *YamlConfigRepository) Load() (*domain.LoadedConfig, error) <span class="cov8" title="1">{
+        infraConfig, err := r.LoadRaw()
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        // infra.Config を domain.LoadedConfig に変換
+        <span class="cov8" title="1">result := &amp;domain.LoadedConfig{}
+
+        if infraConfig.DefaultProfile != nil </span><span class="cov8" title="1">{
+                profile, err := infraConfig.DefaultProfile.ToEntity()
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to convert default profile: %w", err)
+                }</span>
+                <span class="cov8" title="1">result.DefaultProfile = profile</span>
+        }
+
+        <span class="cov8" title="1">if infraConfig.Cache != nil </span><span class="cov0" title="0">{
+                result.Cache = &amp;entity.CacheConfig{
+                        Enabled:       resolveCacheEnabled(infraConfig.Cache.Enabled),
+                        FilePath:      infraConfig.Cache.FilePath,
+                        MaxEntries:    infraConfig.Cache.MaxEntries,
+                        RetentionDays: infraConfig.Cache.RetentionDays,
+                }
+        }</span>
+
+        <span class="cov8" title="1">return result, nil</span>
+}
 
 type CacheConfig struct {
         Enabled       *bool  `yaml:"enabled,omitempty"`
@@ -4244,6 +4271,34 @@ import (
         "github.com/canpok1/ai-feed/internal/domain"
         "github.com/canpok1/ai-feed/internal/domain/entity"
 )
+
+// ConfigValidatorFactory はConfigValidatorを生成するファクトリー
+type ConfigValidatorFactory struct{}
+
+// NewConfigValidatorFactory はConfigValidatorFactoryを生成する
+func NewConfigValidatorFactory() *ConfigValidatorFactory <span class="cov8" title="1">{
+        return &amp;ConfigValidatorFactory{}
+}</span>
+
+// Create は domain.ValidatorFactory インターフェースの実装
+func (f *ConfigValidatorFactory) Create(config *domain.LoadedConfig, profile *entity.Profile) domain.Validator <span class="cov8" title="1">{
+        // domain.LoadedConfig を infra.Config に変換
+        infraConfig := &amp;Config{}
+
+        // DefaultProfileはprofileパラメータに既にマージ済みなので、ここでは設定しない
+
+        if config.Cache != nil </span><span class="cov0" title="0">{
+                enabled := config.Cache.Enabled
+                infraConfig.Cache = &amp;CacheConfig{
+                        Enabled:       &amp;enabled,
+                        FilePath:      config.Cache.FilePath,
+                        MaxEntries:    config.Cache.MaxEntries,
+                        RetentionDays: config.Cache.RetentionDays,
+                }
+        }</span>
+
+        <span class="cov8" title="1">return NewConfigValidator(infraConfig, profile)</span>
+}
 
 // ConfigValidator は設定のバリデーションを行う
 type ConfigValidator struct {
