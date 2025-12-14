@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/spf13/cobra"
 )
@@ -39,8 +40,18 @@ func makeConfigCheckCmd() *cobra.Command {
 				return profile.NewYamlProfileRepositoryImpl(path)
 			}
 
+			// 依存性の注入（cmd層がComposition Root）
+			configRepo := infra.NewYamlConfigRepository(configPath)
+			validatorFactory := infra.NewConfigValidatorFactory()
+
 			// ConfigCheckRunnerを作成して実行
-			configCheckRunner := app.NewConfigCheckRunner(configPath, cmd.OutOrStdout(), cmd.ErrOrStderr(), profileRepoFn)
+			configCheckRunner := app.NewConfigCheckRunner(
+				configRepo,
+				validatorFactory,
+				cmd.OutOrStdout(),
+				cmd.ErrOrStderr(),
+				profileRepoFn,
+			)
 			params := &app.ConfigCheckParams{
 				ProfilePath: profilePath,
 				VerboseFlag: verboseFlag,

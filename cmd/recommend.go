@@ -45,14 +45,10 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				return fmt.Errorf("failed to get profile flag: %w", err)
 			}
 
-			// デフォルトプロファイルをentity.Profileに変換
+			// デフォルトプロファイルを取得
 			var currentProfile *entity.Profile
 			if config.DefaultProfile != nil {
-				var err error
-				currentProfile, err = config.DefaultProfile.ToEntity()
-				if err != nil {
-					return fmt.Errorf("failed to process default profile: %w", err)
-				}
+				currentProfile = config.DefaultProfile
 			} else {
 				currentProfile = &entity.Profile{}
 			}
@@ -96,15 +92,8 @@ func makeRecommendCmd(fetchClient domain.FetchClient) *cobra.Command {
 				currentProfile.Prompt,
 			)
 
-			// キャッシュ設定の取得（Config.Cacheから）
-			var cacheEntity *entity.CacheConfig
-			if config.Cache != nil {
-				var err error
-				cacheEntity, err = config.Cache.ToEntity()
-				if err != nil {
-					return fmt.Errorf("failed to process cache config: %w", err)
-				}
-			}
+			// キャッシュ設定の取得
+			cacheEntity := config.Cache
 
 			// MessageSenderファクトリ関数（インフラ層の実装をラップ）
 			senderFactory := func(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error) {

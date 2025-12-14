@@ -706,15 +706,15 @@ prompt:
 	loadedProfile, err := profileRepo.LoadProfile()
 	assert.NoError(t, err)
 
-	// default_profileをentity.Profileに変換
-	baseProfile, err := loadedConfig.DefaultProfile.ToEntity()
-	assert.NoError(t, err)
+	// default_profileを取得
+	baseProfile := loadedConfig.DefaultProfile
 
 	// profileをマージ
 	baseProfile.Merge(loadedProfile)
 
-	// バリデーション
-	validator := infra.NewConfigValidator(loadedConfig, baseProfile)
+	// バリデーション（ConfigValidatorFactory経由）
+	validatorFactory := infra.NewConfigValidatorFactory()
+	validator := validatorFactory.Create(loadedConfig, baseProfile)
 	result, err := validator.Validate()
 	assert.NoError(t, err)
 	assert.True(t, result.Valid, "profileをマージした結果、バリデーションが成功するべき")

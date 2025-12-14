@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal/domain"
+	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -208,7 +209,11 @@ invalid yaml content
 			profileRepoFn := func(path string) domain.ProfileRepository {
 				return profile.NewYamlProfileRepositoryImpl(path)
 			}
-			runner := NewProfileCheckRunner(configPath, &stderr, profileRepoFn)
+
+			// 依存性の注入
+			configRepo := infra.NewYamlConfigRepository(configPath)
+
+			runner := NewProfileCheckRunner(configRepo, &stderr, profileRepoFn)
 			result, err := runner.Run(profilePath)
 
 			// エラーの確認
