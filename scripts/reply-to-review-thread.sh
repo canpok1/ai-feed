@@ -77,7 +77,7 @@ echo "スレッド情報を取得中..." >&2
 
 set +e
 THREAD_INFO=$(gh api graphql \
-  -F threadId="$THREAD_ID" \
+  -f threadId="$THREAD_ID" \
   -f query='
 query($threadId: ID!) {
   node(id: $threadId) {
