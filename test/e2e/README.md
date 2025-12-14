@@ -179,6 +179,8 @@ recommendコマンドは外部API（Gemini）を使用するため、以下の2�
 
 ### 1. AIモックを使用（推奨）
 
+**注**: 以下はコードスニペットです。`t`、`tmpDir`、`feedURL`、`slackURL` などの変数は事前に定義されている必要があります。
+
 ```go
 config := common.CreateRecommendTestConfig(t, tmpDir, common.RecommendConfigParams{
     FeedURLs:        []string{feedURL},
@@ -188,6 +190,8 @@ config := common.CreateRecommendTestConfig(t, tmpDir, common.RecommendConfigPara
 ```
 
 ### 2. 実際のGemini APIを使用
+
+**注**: 以下はコードスニペットです。`t`、`tmpDir`、`feedURL`、`slackURL` などの変数は事前に定義されている必要があります。
 
 ```go
 useMockAI := false
