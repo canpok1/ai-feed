@@ -1,0 +1,12 @@
+//go:build integration
+
+package app
+
+import (
+	"os"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	os.Exit(m.Run())
+}

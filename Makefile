@@ -1,6 +1,18 @@
 BINARY_NAME=ai-feed
 VERSION?=dev
-COVERAGE_THRESHOLD=60
+COVERAGE_THRESHOLD_DOMAIN=80
+COVERAGE_THRESHOLD_INFRA=60
+
+# 層別カバレッジチェックの共通ロジック
+# 引数: $(1)=層名(domain/infra), $(2)=しきい値変数名(COVERAGE_THRESHOLD_DOMAIN/COVERAGE_THRESHOLD_INFRA)
+define check_layer_coverage
+@layer_cov=$$(awk '/internal\/$(1)\// {gsub(/%/, "", $$NF); sum+=$$NF; count++} END {if(count>0) printf "%.1f", sum/count; else print "0"}' coverage.func.out); \
+echo "$(1) layer: $${layer_cov}% (threshold: $($(2))%)"; \
+if [ $$(awk "BEGIN {print ($${layer_cov} < $($(2)))}") -eq 1 ]; then \
+	echo "ERROR: $(1) layer coverage $${layer_cov}% is below threshold $($(2))%"; \
+	exit 1; \
+fi
+endef
 
 setup:
 	go install go.uber.org/mock/mockgen@v0.6.0
@@ -22,7 +34,7 @@ clean:
 	go clean
 	rm -f ${BINARY_NAME}
 	rm -rf ./dist
-	rm -f coverage.out coverage.filtered.out coverage.html
+	rm -f coverage.out coverage.filtered.out coverage.func.out coverage.html
 	rm -rf public/coverage
 
 test:
@@ -35,11 +47,15 @@ test-e2e:
 	go test -tags=e2e -v ./test/e2e/...
 
 test-coverage:
-	@go test -coverprofile=coverage.out ./...
+	@go test -tags=integration -coverprofile=coverage.out -coverpkg=./internal/... ./... ./test/integration/...
 	@grep -v "mock_" coverage.out > coverage.filtered.out
 	@mkdir -p public/coverage/ut-it
 	@go tool cover -html=coverage.filtered.out -o public/coverage/ut-it/index.html
-	@go tool cover -func=coverage.filtered.out | awk -v thold=$(COVERAGE_THRESHOLD) '/^total:/ {gsub(/%/, "", $$3); if ($$3 < thold) {printf "Coverage %.2f%% is below threshold %d%%\n", $$3, thold; exit 1} else {printf "Coverage %.2f%% meets threshold %d%%\n", $$3, thold}}'
+	@go tool cover -func=coverage.filtered.out > coverage.func.out
+	@echo "=== Layer Coverage Check (per docs/03_testing_rules.md) ==="
+	$(call check_layer_coverage,domain,COVERAGE_THRESHOLD_DOMAIN)
+	$(call check_layer_coverage,infra,COVERAGE_THRESHOLD_INFRA)
+	@echo "=== All layer coverage checks passed ==="
 
 # リリース前に実行するテスト（GoReleaserから呼び出される）
 # 高速なチェックから順に実行し、早期に失敗を検出する

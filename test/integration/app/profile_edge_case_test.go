@@ -1,3 +1,5 @@
+//go:build integration
+
 package app
 
 import (
@@ -9,6 +11,7 @@ import (
 	"testing"
 	"unicode"
 
+	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -71,7 +74,7 @@ func TestProfileInitRunner_EdgeCases(t *testing.T) {
 
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
-			runner, runnerErr := NewProfileInitRunner(profileRepo, stderr)
+			runner, runnerErr := app.NewProfileInitRunner(profileRepo, stderr)
 			require.NoError(t, runnerErr)
 			err := runner.Run()
 
@@ -112,7 +115,7 @@ func TestProfileInitRunner_ConcurrentExecution(t *testing.T) {
 			filePath := filepath.Join(tmpDir, fmt.Sprintf("profile_%d.yml", index))
 			profileRepo := profile.NewYamlProfileRepositoryImpl(filePath)
 			stderr := &bytes.Buffer{}
-			runner, err := NewProfileInitRunner(profileRepo, stderr)
+			runner, err := app.NewProfileInitRunner(profileRepo, stderr)
 			if err != nil {
 				results <- err
 				return
