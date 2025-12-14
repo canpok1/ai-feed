@@ -22,7 +22,7 @@ ai-feedプロジェクトにおけるテストの書き方と実行方法につ�
 |---|---|---|---|
 | **cmd (Presentation)** | E2Eテスト | 設定なし | フラグ解析のみで、E2Eで十分に担保可能 |
 | **app (Application)** | ユニット + 統合テスト | 設定なし | 複雑な条件分岐はユニットテスト、infra層連携は統合テストで検証 |
-| **domain (Domain)** | ユニットテスト | 80%以上 | ビジネスルールの正確性が最重要、純粋なロジックでテストしやすい |
+| **domain (Domain)** | ユニット + 統合テスト | 80%以上 | ビジネスルールの正確性が最重要、複数エンティティ間の連携は統合テストで検証 |
 | **infra (Infrastructure)** | ユニット + 統合テスト | 60%以上 | 外部依存のモック化が複雑なため |
 
 ### 1. cmd層（Presentation Layer）のテスト
@@ -153,9 +153,20 @@ func TestProfileInitRunner_Run_WithRealRepository(t *testing.T) {
 
 ### 3. domain層（Domain Layer）のテスト
 
-**方針**: 高カバレッジのユニットテストでビジネスルールを厳密に検証
+**方針**: ユニットテストと統合テストを組み合わせて検証
 
-domain層は外部依存がなく純粋なロジックのため、テストが容易です。ビジネスルールの正確性を保証するため、最も高いカバレッジを維持します。
+domain層は外部依存がなく純粋なロジックのため、テストが容易です。ビジネスルールの正確性を保証するため、最も高いカバレッジを維持します。単一エンティティのロジックはユニットテストで、複数エンティティ間の連携（Profile.Merge等）は統合テストで検証します。
+
+**重要**: domain層の統合テストでは外部依存（ファイルI/O、データベース、API）を使用しないでください。純粋なドメインロジックの連携のみを検証します。
+
+#### テスト種類の使い分け
+
+| テスト種類 | 用途 | 配置場所 |
+|-----------|------|---------|
+| **ユニットテスト** | 単一エンティティやドメインサービスのロジック、バリデーション、境界値 | `internal/domain/**/*_test.go` |
+| **統合テスト** | 複数エンティティ間のマージ・連携、設定値の継承処理 | `test/integration/domain/**/*_test.go` |
+
+#### ユニットテストの例
 
 ```go
 // internal/domain/entity/article_test.go
@@ -190,11 +201,50 @@ func TestArticle_Validate(t *testing.T) {
 }
 ```
 
-**テスト対象**:
+#### 統合テストの例
+
+```go
+//go:build integration
+
+// test/integration/domain/config/merge_test.go
+func TestProfileMerge_BasicMerge(t *testing.T) {
+    // デフォルトプロファイルとファイル設定のマージを検証
+    defaultProfile := &entity.Profile{
+        AI: &entity.AIConfig{
+            Gemini: &entity.GeminiConfig{Type: "default-type"},
+        },
+    }
+    fileProfile := &entity.Profile{
+        AI: &entity.AIConfig{
+            Gemini: &entity.GeminiConfig{APIKey: entity.NewSecret("file-key")},
+        },
+    }
+
+    defaultProfile.Merge(fileProfile)
+
+    // マージ結果を検証
+    expectedProfile := &entity.Profile{
+        AI: &entity.AIConfig{
+            Gemini: &entity.GeminiConfig{
+                Type:   "default-type",
+                APIKey: entity.NewSecret("file-key"),
+            },
+        },
+    }
+    assert.Equal(t, expectedProfile, defaultProfile)
+}
+```
+
+**ユニットテストの対象**:
 - ✅ エンティティのバリデーション
 - ✅ 値オブジェクトの等価性・変換
 - ✅ ドメインサービスのロジック
 - ✅ 境界値・エッジケース
+
+**統合テストの対象**:
+- ✅ 複数エンティティ間のマージ処理（Profile.Merge等）
+- ✅ 設定値の継承・オーバーライド処理
+- ✅ 複雑なネスト構造の連携動作
 
 ### 4. infra層（Infrastructure Layer）のテスト
 
@@ -552,12 +602,14 @@ ai-feedプロジェクトでは3種類のテストを使い分けています：
 test/integration/
 ├── common/                        # 共通ユーティリティ
 │   └── helper.go                  # テストヘルパー関数
-├── config/                        # 設定ファイル処理のテスト
-│   ├── config_test.go             # 設定読み込みの統合テスト
-│   ├── main_test.go               # パッケージセットアップ
-│   └── testdata/                  # テスト用設定ファイル
-│       ├── valid_config.yaml
-│       └── invalid_config.yaml
+├── app/                           # アプリケーション層のテスト
+│   ├── *_test.go                  # app層の統合テスト
+│   └── testdata/                  # テスト用データ
+├── domain/                        # ドメイン層のテスト
+│   └── config/                    # 設定関連エンティティのテスト
+│       ├── merge_test.go          # Profile.Mergeの統合テスト
+│       ├── *_test.go              # その他の設定テスト
+│       └── helper.go              # テストヘルパー関数
 └── infra/                         # インフラ層のテスト
     ├── repository_test.go         # リポジトリの統合テスト
     ├── main_test.go               # パッケージセットアップ
