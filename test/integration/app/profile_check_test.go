@@ -1,3 +1,5 @@
+//go:build integration
+
 package app
 
 import (
@@ -6,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
@@ -20,7 +23,7 @@ func TestProfileCheckRunner_Run(t *testing.T) {
 		name        string
 		setup       func(t *testing.T, tmpDir string) (configPath string, profilePath string)
 		wantErr     bool
-		wantResult  *ProfileCheckResult
+		wantResult  *app.ProfileCheckResult
 		errContains string
 	}{
 		{
@@ -47,7 +50,7 @@ default_profile:
 				return configPath, ""
 			},
 			wantErr: false,
-			wantResult: &ProfileCheckResult{
+			wantResult: &app.ProfileCheckResult{
 				IsValid:  true,
 				Errors:   []string{},
 				Warnings: []string{},
@@ -84,7 +87,7 @@ output:
 				return configPath, profilePath
 			},
 			wantErr: false,
-			wantResult: &ProfileCheckResult{
+			wantResult: &app.ProfileCheckResult{
 				IsValid:  true,
 				Errors:   []string{},
 				Warnings: []string{},
@@ -103,7 +106,7 @@ default_profile:
 				return configPath, ""
 			},
 			wantErr: false,
-			wantResult: &ProfileCheckResult{
+			wantResult: &app.ProfileCheckResult{
 				IsValid: false,
 				Errors: []string{
 					"AI設定が設定されていません",
@@ -158,7 +161,7 @@ output:
 				return configPath, profilePath
 			},
 			wantErr: false,
-			wantResult: &ProfileCheckResult{
+			wantResult: &app.ProfileCheckResult{
 				IsValid:  true,
 				Errors:   []string{},
 				Warnings: []string{},
@@ -213,7 +216,7 @@ invalid yaml content
 			// 依存性の注入
 			configRepo := infra.NewYamlConfigRepository(configPath)
 
-			runner := NewProfileCheckRunner(configRepo, &stderr, profileRepoFn)
+			runner := app.NewProfileCheckRunner(configRepo, &stderr, profileRepoFn)
 			result, err := runner.Run(profilePath)
 
 			// エラーの確認

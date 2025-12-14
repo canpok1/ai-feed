@@ -1,3 +1,5 @@
+//go:build integration
+
 package app
 
 import (
@@ -6,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/canpok1/ai-feed/internal/app"
 	"github.com/canpok1/ai-feed/internal/domain"
 	"github.com/canpok1/ai-feed/internal/infra"
 	"github.com/canpok1/ai-feed/internal/infra/profile"
@@ -42,11 +45,9 @@ func TestNewConfigCheckRunner(t *testing.T) {
 			configRepo := infra.NewYamlConfigRepository(tt.configPath)
 			validatorFactory := infra.NewConfigValidatorFactory()
 
-			runner := NewConfigCheckRunner(configRepo, validatorFactory, stdout, stderr, profileRepoFn)
+			runner := app.NewConfigCheckRunner(configRepo, validatorFactory, stdout, stderr, profileRepoFn)
 
 			require.NotNil(t, runner)
-			assert.Equal(t, stdout, runner.stdout)
-			assert.Equal(t, stderr, runner.stderr)
 		})
 	}
 }
@@ -208,8 +209,8 @@ default_profile:
 			configRepo := infra.NewYamlConfigRepository(configPath)
 			validatorFactory := infra.NewConfigValidatorFactory()
 
-			runner := NewConfigCheckRunner(configRepo, validatorFactory, stdout, stderr, profileRepoFn)
-			params := &ConfigCheckParams{
+			runner := app.NewConfigCheckRunner(configRepo, validatorFactory, stdout, stderr, profileRepoFn)
+			params := &app.ConfigCheckParams{
 				ProfilePath: profilePath,
 				VerboseFlag: verboseFlag,
 			}
