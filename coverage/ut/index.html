@@ -1,0 +1,4156 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>app: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/canpok1/ai-feed/internal/app/config_check.go (0.0%)</option>
+				
+				<option value="file1">github.com/canpok1/ai-feed/internal/app/config_init.go (100.0%)</option>
+				
+				<option value="file2">github.com/canpok1/ai-feed/internal/app/profile_check.go (63.6%)</option>
+				
+				<option value="file3">github.com/canpok1/ai-feed/internal/app/profile_init.go (100.0%)</option>
+				
+				<option value="file4">github.com/canpok1/ai-feed/internal/app/recommend.go (83.3%)</option>
+				
+				<option value="file5">github.com/canpok1/ai-feed/internal/domain/cache/file_cache.go (79.6%)</option>
+				
+				<option value="file6">github.com/canpok1/ai-feed/internal/domain/cache/nop_cache.go (100.0%)</option>
+				
+				<option value="file7">github.com/canpok1/ai-feed/internal/domain/entity/config.go (56.0%)</option>
+				
+				<option value="file8">github.com/canpok1/ai-feed/internal/domain/entity/entity.go (100.0%)</option>
+				
+				<option value="file9">github.com/canpok1/ai-feed/internal/domain/entity/secret.go (100.0%)</option>
+				
+				<option value="file10">github.com/canpok1/ai-feed/internal/domain/entity/template_alias.go (95.1%)</option>
+				
+				<option value="file11">github.com/canpok1/ai-feed/internal/domain/entity/validation_utils.go (100.0%)</option>
+				
+				<option value="file12">github.com/canpok1/ai-feed/internal/domain/fetch.go (84.2%)</option>
+				
+				<option value="file13">github.com/canpok1/ai-feed/internal/domain/recommend.go (97.4%)</option>
+				
+				<option value="file14">github.com/canpok1/ai-feed/internal/infra/comment/factory.go (91.7%)</option>
+				
+				<option value="file15">github.com/canpok1/ai-feed/internal/infra/comment/gemini.go (17.6%)</option>
+				
+				<option value="file16">github.com/canpok1/ai-feed/internal/infra/comment/mock.go (100.0%)</option>
+				
+				<option value="file17">github.com/canpok1/ai-feed/internal/infra/config.go (78.4%)</option>
+				
+				<option value="file18">github.com/canpok1/ai-feed/internal/infra/fetch/rss.go (7.1%)</option>
+				
+				<option value="file19">github.com/canpok1/ai-feed/internal/infra/file.go (95.5%)</option>
+				
+				<option value="file20">github.com/canpok1/ai-feed/internal/infra/logger.go (50.0%)</option>
+				
+				<option value="file21">github.com/canpok1/ai-feed/internal/infra/message/builder.go (100.0%)</option>
+				
+				<option value="file22">github.com/canpok1/ai-feed/internal/infra/message/misskey.go (34.8%)</option>
+				
+				<option value="file23">github.com/canpok1/ai-feed/internal/infra/message/slack.go (84.2%)</option>
+				
+				<option value="file24">github.com/canpok1/ai-feed/internal/infra/profile/repository.go (20.0%)</option>
+				
+				<option value="file25">github.com/canpok1/ai-feed/internal/infra/selector/factory.go (0.0%)</option>
+				
+				<option value="file26">github.com/canpok1/ai-feed/internal/infra/selector/gemini.go (0.0%)</option>
+				
+				<option value="file27">github.com/canpok1/ai-feed/internal/infra/selector/mock.go (91.7%)</option>
+				
+				<option value="file28">github.com/canpok1/ai-feed/internal/infra/templates.go (100.0%)</option>
+				
+				<option value="file29">github.com/canpok1/ai-feed/internal/infra/validator.go (83.5%)</option>
+				
+				<option value="file30">github.com/canpok1/ai-feed/internal/testutil/helpers.go (100.0%)</option>
+				
+				<option value="file31">github.com/canpok1/ai-feed/internal/version/version.go (91.7%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package app
+
+import (
+        "fmt"
+        "io"
+        "log/slog"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// ConfigCheckParams はconfig checkコマンドの実行パラメータを表す構造体
+type ConfigCheckParams struct {
+        ProfilePath string
+        VerboseFlag bool
+}
+
+// ConfigCheckRunner はconfig checkコマンドのビジネスロジックを実行する構造体
+type ConfigCheckRunner struct {
+        configRepo       domain.ConfigRepository
+        validatorFactory domain.ValidatorFactory
+        stdout           io.Writer
+        stderr           io.Writer
+        profileRepoFn    func(string) domain.ProfileRepository
+}
+
+// NewConfigCheckRunner はConfigCheckRunnerの新しいインスタンスを作成する
+func NewConfigCheckRunner(
+        configRepo domain.ConfigRepository,
+        validatorFactory domain.ValidatorFactory,
+        stdout io.Writer,
+        stderr io.Writer,
+        profileRepoFn func(string) domain.ProfileRepository,
+) *ConfigCheckRunner <span class="cov0" title="0">{
+        return &amp;ConfigCheckRunner{
+                configRepo:       configRepo,
+                validatorFactory: validatorFactory,
+                stdout:           stdout,
+                stderr:           stderr,
+                profileRepoFn:    profileRepoFn,
+        }
+}</span>
+
+// Run はconfig checkコマンドのビジネスロジックを実行する
+func (r *ConfigCheckRunner) Run(params *ConfigCheckParams) error <span class="cov0" title="0">{
+        slog.Debug("Starting config check command")
+
+        // 設定ファイルの読み込み
+        slog.Debug("Loading config")
+        config, configLoadErr := r.configRepo.Load()
+        if configLoadErr != nil </span><span class="cov0" title="0">{
+                fmt.Fprintln(r.stderr, "エラー: 設定ファイルの読み込みに失敗しました")
+                fmt.Fprintln(r.stderr, "config.ymlの構文を確認してください。ai-feed init で新しい設定ファイルを生成できます。")
+                slog.Error("Failed to load config", "error", configLoadErr)
+                return fmt.Errorf("failed to load config: %w", configLoadErr)
+        }</span>
+
+        // デフォルトプロファイルをentity.Profileに変換
+        <span class="cov0" title="0">var currentProfile *entity.Profile
+        if config.DefaultProfile == nil </span><span class="cov0" title="0">{
+                currentProfile = &amp;entity.Profile{}
+        }</span> else<span class="cov0" title="0"> {
+                currentProfile = config.DefaultProfile
+        }</span>
+
+        // プロファイルファイルが指定されている場合は読み込んでマージ
+        <span class="cov0" title="0">if params.ProfilePath != "" </span><span class="cov0" title="0">{
+                slog.Debug("Loading profile", "profile_path", params.ProfilePath)
+                profileRepo := r.profileRepoFn(params.ProfilePath)
+                loadedProfile, loadProfileErr := profileRepo.LoadProfile()
+                if loadProfileErr != nil </span><span class="cov0" title="0">{
+                        fmt.Fprintf(r.stderr, "エラー: プロファイルファイルの読み込みに失敗しました: %s\n", params.ProfilePath)
+                        fmt.Fprintln(r.stderr, "プロファイルファイルの形式を確認してください。")
+                        slog.Error("Failed to load profile", "profile_path", params.ProfilePath, "error", loadProfileErr)
+                        return fmt.Errorf("failed to load profile from %s: %w", params.ProfilePath, loadProfileErr)
+                }</span>
+                <span class="cov0" title="0">currentProfile.Merge(loadedProfile)</span>
+        }
+
+        // バリデーションを実行
+        <span class="cov0" title="0">validator := r.validatorFactory.Create(config, currentProfile)
+        result, validateErr := validator.Validate()
+        if validateErr != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to validate config: %w", validateErr)
+        }</span>
+
+        // バリデーション結果を出力
+        <span class="cov0" title="0">printValidationResult(r.stdout, r.stderr, result, params.VerboseFlag)
+
+        // バリデーション失敗時は終了コード1
+        if !result.Valid </span><span class="cov0" title="0">{
+                return fmt.Errorf("設定ファイルのバリデーションに失敗しました")
+        }</span>
+
+        <span class="cov0" title="0">slog.Debug("Config check command completed successfully")
+        return nil</span>
+}
+
+// printValidationResult はバリデーション結果を出力する（統一形式: 1行目=処理完了報告、2行目以降=結果報告）
+func printValidationResult(stdout, stderr io.Writer, result *domain.ValidationResult, verboseFlag bool) <span class="cov0" title="0">{
+        if result.Valid </span><span class="cov0" title="0">{
+                // 成功時はstdoutに出力
+                fmt.Fprintln(stdout, "設定の検証が完了しました")
+                fmt.Fprintln(stdout, "問題ありませんでした")
+                if verboseFlag </span><span class="cov0" title="0">{
+                        printSummary(stdout, result.Summary)
+                }</span>
+        } else<span class="cov0" title="0"> {
+                // 失敗時はすべてstderrに出力
+                fmt.Fprintln(stderr, "設定の検証が完了しました")
+                fmt.Fprintln(stderr, "以下の問題があります：")
+                for _, err := range result.Errors </span><span class="cov0" title="0">{
+                        fmt.Fprintf(stderr, "- %s: %s\n", err.Field, err.Message)
+                }</span>
+        }
+}
+
+// printSummary は設定のサマリー情報を出力する
+func printSummary(stdout io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
+        fmt.Fprintln(stdout, "")
+        fmt.Fprintln(stdout, "【設定サマリー】")
+        printAISummary(stdout, summary)
+        printPromptSummary(stdout, summary)
+        printOutputSummary(stdout, summary)
+        printCacheSummary(stdout, summary)
+}</span>
+
+// printAISummary はAI設定のサマリーを出力する
+func printAISummary(stdout io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
+        fmt.Fprintln(stdout, "AI設定:")
+        if summary.GeminiConfigured </span><span class="cov0" title="0">{
+                fmt.Fprintf(stdout, "  - Gemini API: 設定済み（モデル: %s）\n", summary.GeminiModel)
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Fprintln(stdout, "  - Gemini API: 未設定")
+        }</span>
+}
+
+// printPromptSummary はプロンプト設定のサマリーを出力する
+func printPromptSummary(stdout io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
+        fmt.Fprintln(stdout, "プロンプト設定:")
+        if summary.SystemPromptConfigured </span><span class="cov0" title="0">{
+                fmt.Fprintln(stdout, "  - システムプロンプト: 設定済み")
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Fprintln(stdout, "  - システムプロンプト: 未設定")
+        }</span>
+        <span class="cov0" title="0">if summary.CommentPromptConfigured </span><span class="cov0" title="0">{
+                fmt.Fprintln(stdout, "  - コメントプロンプト: 設定済み")
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Fprintln(stdout, "  - コメントプロンプト: 未設定")
+        }</span>
+        <span class="cov0" title="0">if summary.FixedMessageConfigured </span><span class="cov0" title="0">{
+                fmt.Fprintln(stdout, "  - 固定メッセージ: 設定済み")
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Fprintln(stdout, "  - 固定メッセージ: 未設定")
+        }</span>
+}
+
+// printOutputSummary は出力設定のサマリーを出力する
+func printOutputSummary(stdout io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
+        fmt.Fprintln(stdout, "出力設定:")
+        if summary.SlackConfigured </span><span class="cov0" title="0">{
+                fmt.Fprintln(stdout, "  - Slack API: 有効")
+                fmt.Fprintf(stdout, "    - チャンネル: %s\n", summary.SlackChannel)
+                if summary.SlackMessageTemplateConfigured </span><span class="cov0" title="0">{
+                        fmt.Fprintln(stdout, "    - メッセージテンプレート: 設定済み")
+                }</span> else<span class="cov0" title="0"> {
+                        fmt.Fprintln(stdout, "    - メッセージテンプレート: 未設定")
+                }</span>
+        } else<span class="cov0" title="0"> {
+                fmt.Fprintln(stdout, "  - Slack API: 無効")
+        }</span>
+        <span class="cov0" title="0">if summary.MisskeyConfigured </span><span class="cov0" title="0">{
+                fmt.Fprintln(stdout, "  - Misskey: 有効")
+                fmt.Fprintf(stdout, "    - API URL: %s\n", summary.MisskeyAPIURL)
+                if summary.MisskeyMessageTemplateConfigured </span><span class="cov0" title="0">{
+                        fmt.Fprintln(stdout, "    - メッセージテンプレート: 設定済み")
+                }</span> else<span class="cov0" title="0"> {
+                        fmt.Fprintln(stdout, "    - メッセージテンプレート: 未設定")
+                }</span>
+        } else<span class="cov0" title="0"> {
+                fmt.Fprintln(stdout, "  - Misskey: 無効")
+        }</span>
+}
+
+// printCacheSummary はキャッシュ設定のサマリーを出力する
+func printCacheSummary(stdout io.Writer, summary domain.ConfigSummary) <span class="cov0" title="0">{
+        fmt.Fprintln(stdout, "キャッシュ設定:")
+        if summary.CacheEnabled </span><span class="cov0" title="0">{
+                fmt.Fprintln(stdout, "  - キャッシュ: 有効")
+                fmt.Fprintf(stdout, "    - ファイルパス: %s\n", summary.CacheFilePath)
+                fmt.Fprintf(stdout, "    - 最大エントリ数: %d\n", summary.CacheMaxEntries)
+                fmt.Fprintf(stdout, "    - 保持期間: %d日\n", summary.CacheRetentionDays)
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Fprintln(stdout, "  - キャッシュ: 無効")
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package app
+
+import (
+        "fmt"
+        "io"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+)
+
+// DefaultConfigFilePath はデフォルトの設定ファイルパス
+const DefaultConfigFilePath = "./config.yml"
+
+// ConfigInitRunner はconfig initコマンドのビジネスロジックを実行する構造体
+type ConfigInitRunner struct {
+        configRepo domain.ConfigInitRepository
+        stderr     io.Writer
+}
+
+// NewConfigInitRunner はConfigInitRunnerの新しいインスタンスを作成する
+func NewConfigInitRunner(configRepo domain.ConfigInitRepository, stderr io.Writer) *ConfigInitRunner <span class="cov8" title="1">{
+        return &amp;ConfigInitRunner{
+                configRepo: configRepo,
+                stderr:     stderr,
+        }
+}</span>
+
+// Run はconfig initコマンドのビジネスロジックを実行する
+func (r *ConfigInitRunner) Run() error <span class="cov8" title="1">{
+        // 進行状況メッセージ: テンプレート生成中
+        fmt.Fprintln(r.stderr, "設定テンプレートを生成しています...")
+
+        // テンプレートファイルを生成
+        if err := r.configRepo.SaveWithTemplate(); err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to create config file: %w", err)
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package app
+
+import (
+        "fmt"
+        "io"
+        "log/slog"
+        "os"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// ProfileCheckResult はプロファイル検証の結果を表す構造体
+type ProfileCheckResult struct {
+        IsValid  bool
+        Errors   []string
+        Warnings []string
+}
+
+// ProfileCheckRunner はprofile checkコマンドのビジネスロジックを実行する構造体
+type ProfileCheckRunner struct {
+        configRepo    domain.ConfigRepository
+        stderr        io.Writer
+        profileRepoFn func(string) domain.ProfileRepository
+}
+
+// NewProfileCheckRunner はProfileCheckRunnerの新しいインスタンスを作成する
+func NewProfileCheckRunner(configRepo domain.ConfigRepository, stderr io.Writer, profileRepoFn func(string) domain.ProfileRepository) *ProfileCheckRunner <span class="cov8" title="1">{
+        return &amp;ProfileCheckRunner{
+                configRepo:    configRepo,
+                stderr:        stderr,
+                profileRepoFn: profileRepoFn,
+        }
+}</span>
+
+// Run はprofile checkコマンドのビジネスロジックを実行する
+// profilePathが空の場合はconfig.ymlのデフォルトプロファイルのみを検証
+// profilePathが指定されている場合は、指定されたプロファイルをconfig.ymlとマージして検証
+func (r *ProfileCheckRunner) Run(profilePath string) (*ProfileCheckResult, error) <span class="cov8" title="1">{
+        // config.ymlの読み込み
+        var currentProfile *entity.Profile
+
+        loadedConfig, err := r.configRepo.Load()
+        switch </span>{
+        case err != nil:<span class="cov8" title="1">
+                // ファイルが存在しない場合は警告を表示しない（LoadedConfigがnilを返すため）
+                fmt.Fprintf(r.stderr, "警告: 設定ファイルの読み込みまたは解析に失敗しました。空のデフォルトプロファイルで継続します。\n")
+                slog.Warn("Failed to load or parse config file, continuing with empty default profile", "error", err)
+                currentProfile = &amp;entity.Profile{}</span>
+        case loadedConfig.DefaultProfile != nil:<span class="cov8" title="1">
+                currentProfile = loadedConfig.DefaultProfile</span>
+        default:<span class="cov0" title="0">
+                // 存在しない場合は空のプロファイルを使用
+                currentProfile = &amp;entity.Profile{}</span>
+        }
+
+        // 引数が指定されている場合は指定ファイルとマージ
+        <span class="cov8" title="1">if profilePath != "" </span><span class="cov8" title="1">{
+                // ファイルの存在確認
+                if _, err := os.Stat(profilePath); os.IsNotExist(err) </span><span class="cov8" title="1">{
+                        return nil, fmt.Errorf("プロファイルファイルが見つかりません: %s", profilePath)
+                }</span> else<span class="cov0" title="0"> if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("ファイルへのアクセスに失敗しました: %w", err)
+                }</span>
+
+                // 指定されたプロファイルファイルの読み込み
+                <span class="cov0" title="0">profileRepo := r.profileRepoFn(profilePath)
+                loadedProfile, err := profileRepo.LoadProfile()
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("プロファイルの読み込みに失敗しました: %w", err)
+                }</span>
+
+                // デフォルトプロファイルとマージ
+                <span class="cov0" title="0">currentProfile.Merge(loadedProfile)</span>
+        }
+
+        // 進行状況メッセージ: AI設定確認
+        <span class="cov8" title="1">fmt.Fprintln(r.stderr, "AI設定を確認しています...")
+
+        // バリデーション実行
+        validationResult := currentProfile.Validate()
+
+        // 結果を返す
+        return &amp;ProfileCheckResult{
+                IsValid:  validationResult.IsValid,
+                Errors:   validationResult.Errors,
+                Warnings: validationResult.Warnings,
+        }, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package app
+
+import (
+        "fmt"
+        "io"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+)
+
+// ProfileInitRunner はprofile initコマンドのビジネスロジックを実行する構造体
+type ProfileInitRunner struct {
+        templateRepo domain.ProfileTemplateRepository
+        stderr       io.Writer
+}
+
+// NewProfileInitRunner はProfileInitRunnerの新しいインスタンスを作成する
+func NewProfileInitRunner(templateRepo domain.ProfileTemplateRepository, stderr io.Writer) (*ProfileInitRunner, error) <span class="cov8" title="1">{
+        if templateRepo == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("templateRepo cannot be nil")
+        }</span>
+        <span class="cov8" title="1">if stderr == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("stderr cannot be nil")
+        }</span>
+        <span class="cov8" title="1">return &amp;ProfileInitRunner{
+                templateRepo: templateRepo,
+                stderr:       stderr,
+        }, nil</span>
+}
+
+// Run はprofile initコマンドのビジネスロジックを実行する
+func (r *ProfileInitRunner) Run() error <span class="cov8" title="1">{
+        // 進行状況メッセージ: テンプレート生成中
+        fmt.Fprintln(r.stderr, "設定テンプレートを生成しています...")
+
+        // テンプレートファイルを直接生成（明確で直接的）
+        err := r.templateRepo.SaveProfileTemplate()
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to create profile file: %w", err)
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package app
+
+import (
+        "context"
+        "errors"
+        "fmt"
+        "io"
+        "log/slog"
+        "math/rand/v2"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// ErrNoArticlesFound は記事が見つからなかった場合のsentinel error
+var ErrNoArticlesFound = errors.New("no articles found in the feed")
+
+// MessageSenderFactory はMessageSenderを作成するためのファクトリ関数型
+type MessageSenderFactory func(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error)
+
+// RecommendCacheFactory はRecommendCacheを作成するためのファクトリ関数型
+type RecommendCacheFactory func(cacheConfig *entity.CacheConfig) (domain.RecommendCache, error)
+
+// RecommendParams はrecommendコマンドの実行パラメータを表す構造体
+type RecommendParams struct {
+        URLs []string
+}
+
+// RecommendRunner はrecommendコマンドのビジネスロジックを実行する構造体
+type RecommendRunner struct {
+        fetcher     *domain.Fetcher
+        recommender domain.Recommender
+        senders     []domain.MessageSender
+        cache       domain.RecommendCache
+        stderr      io.Writer
+        stdout      io.Writer
+}
+
+// NewRecommendRunner はRecommendRunnerの新しいインスタンスを作成する
+func NewRecommendRunner(
+        fetchClient domain.FetchClient,
+        recommender domain.Recommender,
+        stderr io.Writer,
+        stdout io.Writer,
+        outputConfig *entity.OutputConfig,
+        promptConfig *entity.PromptConfig,
+        cacheConfig *entity.CacheConfig,
+        senderFactory MessageSenderFactory,
+        cacheFactory RecommendCacheFactory,
+) (*RecommendRunner, error) <span class="cov8" title="1">{
+        fetcher := domain.NewFetcher(
+                fetchClient,
+                func(url string, fetchErr error) error </span><span class="cov8" title="1">{
+                        fmt.Fprintf(stderr, "エラー: フィードの取得に失敗しました: %s\n", url)
+                        fmt.Fprintln(stderr, "フィードのURLが正しいか確認してください。サイトが一時的に利用できない可能性もあります。")
+                        slog.Error("Failed to fetch feed", "url", url, "error", fetchErr)
+                        return fetchErr
+                }</span>,
+        )
+
+        // ファクトリ関数を使用してMessageSenderを作成
+        <span class="cov8" title="1">senders, senderErr := senderFactory(outputConfig)
+        if senderErr != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to create message senders: %w", senderErr)
+        }</span>
+
+        // ファクトリ関数を使用してキャッシュを作成
+        <span class="cov8" title="1">articleCache, cacheErr := cacheFactory(cacheConfig)
+        if cacheErr != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to create cache: %w", cacheErr)
+        }</span>
+
+        <span class="cov8" title="1">initErr := articleCache.Initialize()
+        if initErr != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to initialize cache: %w", initErr)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;RecommendRunner{
+                fetcher:     fetcher,
+                recommender: recommender,
+                senders:     senders,
+                cache:       articleCache,
+                stderr:      stderr,
+                stdout:      stdout,
+        }, nil</span>
+}
+
+// selectRandomFeed は利用可能なfeed URLからランダムに1つを選択する
+func selectRandomFeed(urls []string, excludedURLs map[string]bool) (string, error) <span class="cov8" title="1">{
+        var availableURLs []string
+        for _, url := range urls </span><span class="cov8" title="1">{
+                if !excludedURLs[url] </span><span class="cov8" title="1">{
+                        availableURLs = append(availableURLs, url)
+                }</span>
+        }
+
+        <span class="cov8" title="1">if len(availableURLs) == 0 </span><span class="cov0" title="0">{
+                return "", errors.New("no available feeds")
+        }</span>
+
+        <span class="cov8" title="1">return availableURLs[rand.IntN(len(availableURLs))], nil</span>
+}
+
+// Run はrecommendコマンドのビジネスロジックを実行する
+func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, profile *entity.Profile) error <span class="cov8" title="1">{
+        slog.Debug("RecommendRunner.Run parameters", slog.Any("profile", profile))
+        slog.Info("Starting recommend command execution")
+        slog.Debug("Selecting feed from URLs", "url_count", len(params.URLs))
+
+        // キャッシュのリソース管理
+        defer func() </span><span class="cov8" title="1">{
+                if err := r.cache.Close(); err != nil </span><span class="cov0" title="0">{
+                        slog.Error("Failed to close cache", "error", err)
+                }</span>
+        }()
+
+        // 複数feedからの2段階ランダム選択とリトライロジック
+        <span class="cov8" title="1">excludedURLs := make(map[string]bool)
+        var allArticles []entity.Article
+        var selectedURL string
+
+        for attempt := 1; attempt &lt;= len(params.URLs); attempt++ </span><span class="cov8" title="1">{
+                // 進行状況メッセージ: フィード選択
+                if attempt == 1 </span><span class="cov8" title="1">{
+                        fmt.Fprintln(r.stderr, "フィードを選択しています...")
+                }</span> else<span class="cov0" title="0"> {
+                        fmt.Fprintf(r.stderr, "別のフィードで再試行しています... (%d/%d)\n", attempt, len(params.URLs))
+                }</span>
+
+                // Step 1: ランダムに1つのfeedを選択
+                <span class="cov8" title="1">var err error
+                selectedURL, err = selectRandomFeed(params.URLs, excludedURLs)
+                if err != nil </span><span class="cov0" title="0">{
+                        slog.Error("Failed to select feed", "error", err, "attempt", attempt, "total_feeds", len(params.URLs))
+                        break</span>
+                }
+
+                <span class="cov8" title="1">slog.Debug("Selected feed for articles fetch", "url", selectedURL, "attempt", attempt)
+
+                // 進行状況メッセージ: フィード取得
+                fmt.Fprintf(r.stderr, "フィードを取得しています... (%sから)\n", selectedURL)
+
+                // Step 2: 選択されたfeedから記事を取得
+                allArticles, err = r.fetcher.Fetch([]string{selectedURL}, 0)
+
+                // エラーまたは記事0件の場合は失敗として次のフィードを試す
+                var shouldRetry bool
+                var logMessage string
+                if err != nil </span><span class="cov8" title="1">{
+                        shouldRetry = true
+                        logMessage = "Failed to fetch from feed, retrying with another feed"
+                        slog.Warn(logMessage,
+                                "url", selectedURL,
+                                "error", err.Error(),
+                                "attempt", attempt,
+                                "total_feeds", len(params.URLs))
+                }</span> else<span class="cov8" title="1"> if len(allArticles) == 0 </span><span class="cov8" title="1">{
+                        shouldRetry = true
+                        logMessage = "No articles found in feed, retrying with another feed"
+                        slog.Warn(logMessage,
+                                "url", selectedURL,
+                                "attempt", attempt,
+                                "total_feeds", len(params.URLs))
+                }</span>
+
+                <span class="cov8" title="1">if shouldRetry </span><span class="cov8" title="1">{
+                        excludedURLs[selectedURL] = true
+                        continue</span>
+                }
+
+                // 成功した場合
+                // 進行状況メッセージ: 記事解析
+                <span class="cov8" title="1">fmt.Fprintf(r.stderr, "記事を解析しています... (%d件の記事を発見)\n", len(allArticles))
+                slog.Info("Successfully fetched articles from feed", "url", selectedURL, "article_count", len(allArticles))
+                break</span>
+        }
+
+        // 全feedが失敗した場合
+        <span class="cov8" title="1">if len(allArticles) == 0 </span><span class="cov8" title="1">{
+                var triedURLs []string
+                for url := range excludedURLs </span><span class="cov8" title="1">{
+                        triedURLs = append(triedURLs, url)
+                }</span>
+                <span class="cov8" title="1">slog.Error("Failed to fetch from all feeds", "tried_urls", triedURLs)
+                return ErrNoArticlesFound</span>
+        }
+
+        // 記事の重複チェックとフィルタリング
+        <span class="cov8" title="1">fmt.Fprintln(r.stderr, "記事の重複をチェックしています...")
+        var uniqueArticles []entity.Article
+        duplicateCount := 0
+
+        for _, article := range allArticles </span><span class="cov8" title="1">{
+                if r.cache.IsCached(article.Link) </span><span class="cov0" title="0">{
+                        duplicateCount++
+                        slog.Debug("Article is already cached, skipping", "url", article.Link, "title", article.Title)
+                }</span> else<span class="cov8" title="1"> {
+                        uniqueArticles = append(uniqueArticles, article)
+                }</span>
+        }
+
+        <span class="cov8" title="1">slog.Info("Cache duplicate check completed",
+                "total_articles", len(allArticles),
+                "duplicate_articles", duplicateCount,
+                "unique_articles", len(uniqueArticles))
+
+        // 全ての記事が重複している場合
+        if len(uniqueArticles) == 0 </span><span class="cov0" title="0">{
+                fmt.Fprintln(r.stderr, "すべての記事が既にキャッシュされています")
+                slog.Info("All articles are already cached")
+                fmt.Fprintln(r.stdout, "新しい記事が見つかりませんでした。すべて投稿済みの記事です。")
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">fmt.Fprintf(r.stderr, "%d件の新しい記事が見つかりました\n", len(uniqueArticles))
+
+        // 進行状況メッセージ: 記事選定とコメント生成の開始
+        fmt.Fprintln(r.stderr, "記事選定とコメント生成を行なっています...")
+
+        slog.Debug("Generating recommendation from unique articles", "unique_article_count", len(uniqueArticles))
+        recommend, err := r.recommender.Recommend(ctx, uniqueArticles)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to recommend article: %w", err)
+        }</span>
+
+        // 進行状況メッセージ: 記事選定とコメント生成の完了
+        <span class="cov8" title="1">fmt.Fprintf(r.stderr, "記事選定とコメント生成が完了しました: %s\n", recommend.Article.Title)
+
+        // AIが生成したコメントをユーザーに表示
+        if recommend.Comment != nil &amp;&amp; *recommend.Comment != "" </span><span class="cov8" title="1">{
+                fmt.Fprintf(r.stdout, "\nAIコメント:\n%s\n", *recommend.Comment)
+        }</span>
+
+        // 記事URLを表示
+        <span class="cov8" title="1">fmt.Fprintf(r.stdout, "\n記事URL: %s\n", recommend.Article.Link)
+
+        slog.Debug("Recommendation generated successfully", "article_title", recommend.Article.Title)
+
+        var errs []error
+        fixedMessage := ""
+        if profile.Prompt != nil </span><span class="cov8" title="1">{
+                fixedMessage = profile.Prompt.FixedMessage
+        }</span>
+
+        // 推薦記事の詳細情報をログ出力
+        <span class="cov8" title="1">var commentValue string
+        if recommend.Comment != nil </span><span class="cov8" title="1">{
+                commentValue = *recommend.Comment
+        }</span>
+        <span class="cov8" title="1">slog.Info("Recommendation article selected",
+                "title", recommend.Article.Title,
+                "link", recommend.Article.Link,
+                "comment", commentValue,
+                "fixed_message", fixedMessage,
+        )
+
+        slog.Debug("Sending recommendation to senders", "sender_count", len(r.senders))
+
+        // 外部サービスへの投稿状況をメッセージ表示
+        if len(r.senders) &gt; 0 </span><span class="cov8" title="1">{
+                fmt.Fprintln(r.stdout, "\n外部サービスに投稿しています...")
+        }</span> else<span class="cov8" title="1"> {
+                fmt.Fprintln(r.stdout, "\n外部サービスへの投稿は設定されていません")
+        }</span>
+
+        <span class="cov8" title="1">for _, sender := range r.senders </span><span class="cov8" title="1">{
+                serviceName := sender.ServiceName()
+                fmt.Fprintf(r.stdout, "%sに投稿中...\n", serviceName)
+
+                if sendErr := sender.SendRecommend(recommend, fixedMessage); sendErr != nil </span><span class="cov0" title="0">{
+                        fmt.Fprintf(r.stdout, "%s投稿でエラーが発生しました: %v\n", serviceName, sendErr)
+                        errs = append(errs, fmt.Errorf("failed to send recommend: %w", sendErr))
+                }</span> else<span class="cov8" title="1"> {
+                        fmt.Fprintf(r.stdout, "%sに投稿しました\n", serviceName)
+                }</span>
+        }
+
+        // 投稿エラーがある場合はキャッシュを更新せずに終了
+        <span class="cov8" title="1">if len(errs) &gt; 0 </span><span class="cov0" title="0">{
+                slog.Warn("Some posts failed, not updating cache", "error_count", len(errs))
+                return fmt.Errorf("failed to send all recommends: %v", errs)
+        }</span>
+
+        // 全ての投稿が成功した場合のみキャッシュを更新
+        <span class="cov8" title="1">fmt.Fprintln(r.stderr, "投稿履歴をキャッシュに保存しています...")
+        if err := r.cache.AddEntry(recommend.Article.Link, recommend.Article.Title); err != nil </span><span class="cov0" title="0">{
+                slog.Error("Failed to update cache", "url", recommend.Article.Link, "title", recommend.Article.Title, "error", err)
+                // キャッシュ更新の失敗は致命的エラーとしない（投稿は成功しているため）
+                fmt.Fprintf(r.stderr, "警告: キャッシュの更新に失敗しましたが、投稿は完了しました\n")
+        }</span> else<span class="cov8" title="1"> {
+                slog.Info("Cache updated successfully", "url", recommend.Article.Link, "title", recommend.Article.Title)
+                fmt.Fprintln(r.stderr, "キャッシュを更新しました")
+        }</span>
+
+        <span class="cov8" title="1">slog.Info("Recommendation sent successfully to all senders")
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package cache
+
+import (
+        "bufio"
+        "encoding/json"
+        "fmt"
+        "log/slog"
+        "os"
+        "path/filepath"
+        "strings"
+        "time"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// FileRecommendCache implements RecommendCache interface using JSON Lines file format
+type FileRecommendCache struct {
+        filePath string
+        lockPath string
+        urlSet   map[string]bool
+        entries  []domain.RecommendEntry
+        config   *entity.CacheConfig
+        lockFile *os.File
+}
+
+// NewFileRecommendCache creates a new FileRecommendCache instance
+func NewFileRecommendCache(config *entity.CacheConfig) *FileRecommendCache <span class="cov8" title="1">{
+        lockPath := config.FilePath + ".lock"
+        return &amp;FileRecommendCache{
+                filePath: config.FilePath,
+                lockPath: lockPath,
+                urlSet:   make(map[string]bool),
+                entries:  make([]domain.RecommendEntry, 0),
+                config:   config,
+        }
+}</span>
+
+// Initialize initializes the cache, loads existing data and acquires necessary locks
+func (c *FileRecommendCache) Initialize() error <span class="cov8" title="1">{
+        slog.Debug("Initializing file recommend cache", "file_path", c.filePath)
+
+        // Create directory first (needed for lock file)
+        if err := c.createDirectoryIfNotExists(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to create directory: %w", err)
+        }</span>
+
+        // Acquire lock after directory creation
+        <span class="cov8" title="1">if err := c.acquireLock(); err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to acquire lock: %w", err)
+        }</span>
+
+        // Load existing cache data
+        <span class="cov8" title="1">if err := c.loadFromFile(); err != nil </span><span class="cov0" title="0">{
+                // Release lock on error (ignore release error as load already failed)
+                _ = c.releaseLock()
+                return fmt.Errorf("failed to load cache data: %w", err)
+        }</span>
+
+        // Cleanup old entries
+        <span class="cov8" title="1">c.cleanup()
+
+        slog.Debug("File recommend cache initialized successfully",
+                "entries_count", len(c.entries),
+                "unique_urls", len(c.urlSet))
+
+        return nil</span>
+}
+
+// IsCached checks if the given URL is already cached (duplicate check)
+func (c *FileRecommendCache) IsCached(url string) bool <span class="cov8" title="1">{
+        normalizedURL := c.normalizeURL(url)
+        return c.urlSet[normalizedURL]
+}</span>
+
+// AddEntry adds a new entry to the cache with the given URL and title
+func (c *FileRecommendCache) AddEntry(url, title string) error <span class="cov8" title="1">{
+        normalizedURL := c.normalizeURL(url)
+
+        // Check if already exists
+        if c.urlSet[normalizedURL] </span><span class="cov8" title="1">{
+                slog.Debug("URL already in cache, skipping", "url", normalizedURL)
+                return nil
+        }</span>
+
+        // Create new entry
+        <span class="cov8" title="1">entry := domain.RecommendEntry{
+                URL:      normalizedURL,
+                Title:    title,
+                PostedAt: time.Now(),
+        }
+
+        // Add to in-memory structures
+        c.entries = append(c.entries, entry)
+        c.urlSet[normalizedURL] = true
+
+        // Cleanup if necessary (FIFO when max_entries exceeded)
+        c.cleanupByMaxEntries()
+
+        // Save to file
+        if err := c.saveToFile(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to save cache: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">slog.Debug("Added entry to cache", "url", normalizedURL, "title", title)
+        return nil</span>
+}
+
+// Close closes the cache, releases locks and performs cleanup
+func (c *FileRecommendCache) Close() error <span class="cov8" title="1">{
+        if c.lockFile != nil </span><span class="cov8" title="1">{
+                if err := c.releaseLock(); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to release lock: %w", err)
+                }</span>
+                <span class="cov8" title="1">slog.Debug("File recommend cache closed successfully")</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// createDirectoryIfNotExists creates the cache directory if it doesn't exist
+func (c *FileRecommendCache) createDirectoryIfNotExists() error <span class="cov8" title="1">{
+        dir := filepath.Dir(c.filePath)
+        if _, err := os.Stat(dir); os.IsNotExist(err) </span><span class="cov0" title="0">{
+                slog.Debug("Creating cache directory", "dir", dir)
+                if err := os.MkdirAll(dir, 0755); err != nil </span><span class="cov0" title="0">{
+                        return domain.ErrCacheDirectoryCreate
+                }</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// loadFromFile loads cache entries from the JSON Lines file
+func (c *FileRecommendCache) loadFromFile() error <span class="cov8" title="1">{
+        // Check if file exists
+        if _, err := os.Stat(c.filePath); os.IsNotExist(err) </span><span class="cov8" title="1">{
+                slog.Debug("Cache file does not exist, starting with empty cache", "file_path", c.filePath)
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">file, err := os.Open(c.filePath)
+        if err != nil </span><span class="cov0" title="0">{
+                if os.IsPermission(err) </span><span class="cov0" title="0">{
+                        return domain.ErrCachePermission
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("failed to open cache file: %w", err)</span>
+        }
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = file.Close() }</span>()
+
+        <span class="cov8" title="1">scanner := bufio.NewScanner(file)
+        validEntries := make([]domain.RecommendEntry, 0)
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := strings.TrimSpace(scanner.Text())
+                if line == "" </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">var entry domain.RecommendEntry
+                if err := json.Unmarshal([]byte(line), &amp;entry); err != nil </span><span class="cov8" title="1">{
+                        // Skip invalid lines (old format compatibility)
+                        slog.Warn("Skipping invalid cache entry line", "error", err.Error())
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">validEntries = append(validEntries, entry)
+                normalizedURL := c.normalizeURL(entry.URL)
+                c.urlSet[normalizedURL] = true</span>
+        }
+
+        <span class="cov8" title="1">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
+                return domain.ErrCacheCorrupted
+        }</span>
+
+        <span class="cov8" title="1">c.entries = validEntries
+        slog.Debug("Loaded cache entries from file", "count", len(validEntries))
+        return nil</span>
+}
+
+// saveToFile saves all cache entries to the JSON Lines file
+func (c *FileRecommendCache) saveToFile() error <span class="cov8" title="1">{
+        // Create temporary file for atomic write
+        tempPath := c.filePath + ".tmp"
+        file, err := os.Create(tempPath)
+        if err != nil </span><span class="cov0" title="0">{
+                if os.IsPermission(err) </span><span class="cov0" title="0">{
+                        return domain.ErrCachePermission
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("failed to create temporary cache file: %w", err)</span>
+        }
+
+        <span class="cov8" title="1">var success bool
+        defer func() </span><span class="cov8" title="1">{
+                // On error, close the file (if not already closed) and remove the temp file.
+                // On success, the file is already closed and the temp file is renamed, so this is a no-op.
+                _ = file.Close()
+                if !success </span><span class="cov0" title="0">{
+                        os.Remove(tempPath)
+                }</span>
+        }()
+
+        // Write entries as JSON Lines
+        <span class="cov8" title="1">for _, entry := range c.entries </span><span class="cov8" title="1">{
+                data, err := json.Marshal(entry)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to marshal cache entry: %w", err)
+                }</span>
+                <span class="cov8" title="1">if _, err := file.WriteString(string(data) + "\n"); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to write cache entry: %w", err)
+                }</span>
+        }
+
+        // Sync to disk
+        <span class="cov8" title="1">if err := file.Sync(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to sync cache file: %w", err)
+        }</span>
+
+        // Must close before rename.
+        <span class="cov8" title="1">if err := file.Close(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to close temporary cache file: %w", err)
+        }</span>
+
+        // Atomic replace
+        <span class="cov8" title="1">if err := os.Rename(tempPath, c.filePath); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to replace cache file: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">success = true
+        slog.Debug("Saved cache entries to file", "count", len(c.entries))
+        return nil</span>
+}
+
+// acquireLock acquires the cache file lock
+func (c *FileRecommendCache) acquireLock() error <span class="cov8" title="1">{
+        // Ensure lock file directory exists
+        lockDir := filepath.Dir(c.lockPath)
+        if _, err := os.Stat(lockDir); os.IsNotExist(err) </span><span class="cov0" title="0">{
+                slog.Debug("Creating lock file directory", "dir", lockDir)
+                if err := os.MkdirAll(lockDir, 0755); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to create lock file directory: %w", err)
+                }</span>
+        }
+
+        <span class="cov8" title="1">lockFile, err := os.OpenFile(c.lockPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
+        if err != nil </span><span class="cov8" title="1">{
+                if os.IsExist(err) </span><span class="cov8" title="1">{
+                        return fmt.Errorf("%w: lock file exists at %s. If no other ai-feed process is running, manually delete the lock file", domain.ErrCacheLocked, c.lockPath)
+                }</span>
+                <span class="cov8" title="1">return fmt.Errorf("failed to create lock file: %w", err)</span>
+        }
+
+        <span class="cov8" title="1">c.lockFile = lockFile
+        slog.Debug("Acquired cache lock", "lock_path", c.lockPath)
+        return nil</span>
+}
+
+// releaseLock releases the cache file lock
+func (c *FileRecommendCache) releaseLock() error <span class="cov8" title="1">{
+        if c.lockFile != nil </span><span class="cov8" title="1">{
+                _ = c.lockFile.Close()
+                if err := os.Remove(c.lockPath); err != nil &amp;&amp; !os.IsNotExist(err) </span><span class="cov0" title="0">{
+                        slog.Warn("Failed to remove lock file", "lock_path", c.lockPath, "error", err.Error())
+                        return err
+                }</span>
+                <span class="cov8" title="1">c.lockFile = nil
+                slog.Debug("Released cache lock", "lock_path", c.lockPath)</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// cleanup removes old entries based on retention_days
+func (c *FileRecommendCache) cleanup() <span class="cov8" title="1">{
+        if c.config.RetentionDays &lt;= 0 </span><span class="cov0" title="0">{
+                return
+        }</span>
+
+        <span class="cov8" title="1">cutoffTime := time.Now().AddDate(0, 0, -c.config.RetentionDays)
+        validEntries := make([]domain.RecommendEntry, 0)
+        removedCount := 0
+
+        for _, entry := range c.entries </span><span class="cov8" title="1">{
+                if entry.PostedAt.After(cutoffTime) </span><span class="cov8" title="1">{
+                        validEntries = append(validEntries, entry)
+                }</span> else<span class="cov8" title="1"> {
+                        // Remove expired entry from URL set
+                        normalizedURL := c.normalizeURL(entry.URL)
+                        delete(c.urlSet, normalizedURL)
+                        removedCount++
+                }</span>
+        }
+
+        <span class="cov8" title="1">if removedCount &gt; 0 </span><span class="cov8" title="1">{
+                c.entries = validEntries
+                slog.Debug("Cleaned up old cache entries", "removed_count", removedCount, "remaining_count", len(validEntries))
+        }</span>
+}
+
+// cleanupByMaxEntries removes old entries when max_entries is exceeded (FIFO)
+func (c *FileRecommendCache) cleanupByMaxEntries() <span class="cov8" title="1">{
+        if c.config.MaxEntries &lt;= 0 || len(c.entries) &lt;= c.config.MaxEntries </span><span class="cov8" title="1">{
+                return
+        }</span>
+
+        // Calculate how many entries to remove
+        <span class="cov8" title="1">excessCount := len(c.entries) - c.config.MaxEntries
+
+        // Remove oldest entries (FIFO) and their corresponding URLs from urlSet
+        removedEntries := c.entries[:excessCount]
+        for _, entry := range removedEntries </span><span class="cov8" title="1">{
+                normalizedURL := c.normalizeURL(entry.URL)
+                delete(c.urlSet, normalizedURL)
+        }</span>
+        <span class="cov8" title="1">c.entries = c.entries[excessCount:]
+
+        slog.Debug("Cleaned up excess cache entries", "removed_count", len(removedEntries), "remaining_count", len(c.entries))</span>
+}
+
+// normalizeURL normalizes URL by removing trailing slash
+func (c *FileRecommendCache) normalizeURL(url string) string <span class="cov8" title="1">{
+        return strings.TrimSuffix(url, "/")
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package cache
+
+import "github.com/canpok1/ai-feed/internal/domain"
+
+// NopCache is a no-operation implementation of RecommendCache interface.
+// It implements the Null Object pattern, doing nothing for all operations.
+type NopCache struct{}
+
+// NewNopCache creates a new NopCache instance
+func NewNopCache() *NopCache <span class="cov8" title="1">{
+        return &amp;NopCache{}
+}</span>
+
+// Initialize does nothing for NopCache
+func (n *NopCache) Initialize() error <span class="cov8" title="1">{
+        return nil
+}</span>
+
+// IsCached always returns false for NopCache
+func (n *NopCache) IsCached(url string) bool <span class="cov8" title="1">{
+        return false
+}</span>
+
+// AddEntry does nothing for NopCache
+func (n *NopCache) AddEntry(url, title string) error <span class="cov8" title="1">{
+        return nil
+}</span>
+
+// Close does nothing for NopCache
+func (n *NopCache) Close() error <span class="cov8" title="1">{
+        return nil
+}</span>
+
+// Verify that NopCache implements RecommendCache interface
+var _ domain.RecommendCache = (*NopCache)(nil)
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package entity
+
+import (
+        "bytes"
+        "fmt"
+        "log/slog"
+        "strings"
+        "sync"
+        "text/template"
+)
+
+// テンプレートキャッシュ（スレッドセーフ）
+var templateCache sync.Map
+
+// デフォルト値の定数
+
+// ValidMockSelectorModes はモック記事選択器の有効なモード一覧
+var ValidMockSelectorModes = map[string]bool{
+        "first":  true,
+        "random": true,
+        "last":   true,
+}
+
+// IsValidMockSelectorMode はモック記事選択モードが有効かどうかを検証する
+func IsValidMockSelectorMode(mode string) bool <span class="cov8" title="1">{
+        return ValidMockSelectorModes[mode]
+}</span>
+
+type AIConfig struct {
+        Gemini *GeminiConfig
+        Mock   *MockConfig
+}
+
+// MockConfig はAIのモック設定を保持する
+type MockConfig struct {
+        Enabled      bool
+        SelectorMode string // "first", "random", "last"
+        Comment      string // 固定で返すコメント
+}
+
+// Validate はMockConfigの内容をバリデーションする
+func (m *MockConfig) Validate() *ValidationResult <span class="cov0" title="0">{
+        builder := NewValidationBuilder()
+
+        // Enabledがfalseの場合はバリデーションをスキップ
+        if !m.Enabled </span><span class="cov0" title="0">{
+                return builder.Build()
+        }</span>
+
+        // SelectorMode: "first", "random", "last"のいずれか
+        <span class="cov0" title="0">if !IsValidMockSelectorMode(m.SelectorMode) </span><span class="cov0" title="0">{
+                builder.AddError("Mockの記事選択モードが不正です。first, random, lastのいずれかを指定してください")
+        }</span>
+
+        <span class="cov0" title="0">return builder.Build()</span>
+}
+
+// Merge は他のMockConfigの非空フィールドで現在のMockConfigをマージする
+func (m *MockConfig) Merge(other *MockConfig) <span class="cov0" title="0">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov0" title="0">m.Enabled = other.Enabled
+        mergeString(&amp;m.SelectorMode, other.SelectorMode)
+        mergeString(&amp;m.Comment, other.Comment)</span>
+}
+
+// LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
+func (m MockConfig) LogValue() slog.Value <span class="cov0" title="0">{
+        return slog.GroupValue(
+                slog.Bool("Enabled", m.Enabled),
+                slog.String("SelectorMode", m.SelectorMode),
+                slog.String("Comment", m.Comment),
+        )
+}</span>
+
+// Validate はAIConfigの内容をバリデーションする
+func (a *AIConfig) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // Mock設定が有効な場合は、Gemini設定は不要
+        if a.Mock != nil &amp;&amp; a.Mock.Enabled </span><span class="cov0" title="0">{
+                builder.MergeResult(a.Mock.Validate())
+                return builder.Build()
+        }</span>
+
+        // Gemini: 必須項目（nilでない）
+        <span class="cov8" title="1">if a.Gemini == nil </span><span class="cov0" title="0">{
+                builder.AddError("Gemini設定が設定されていません")
+        }</span> else<span class="cov8" title="1"> {
+                // GeminiConfig.Validate()を呼び出して、結果を集約
+                builder.MergeResult(a.Gemini.Validate())
+        }</span>
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+// Merge は他のAIConfigの非nil フィールドで現在のAIConfigをマージする
+func (a *AIConfig) Merge(other *AIConfig) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov8" title="1">mergePtr(&amp;a.Gemini, other.Gemini)
+        mergePtr(&amp;a.Mock, other.Mock)</span>
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (a AIConfig) LogValue() slog.Value <span class="cov8" title="1">{
+        attrs := []slog.Attr{}
+        if a.Gemini != nil </span><span class="cov8" title="1">{
+                attrs = append(attrs, slog.Any("Gemini", *a.Gemini))
+        }</span>
+        <span class="cov8" title="1">if a.Mock != nil </span><span class="cov0" title="0">{
+                attrs = append(attrs, slog.Any("Mock", *a.Mock))
+        }</span>
+        <span class="cov8" title="1">return slog.GroupValue(attrs...)</span>
+}
+
+type GeminiConfig struct {
+        Type   string
+        APIKey SecretString
+}
+
+// Validate はGeminiConfigの内容をバリデーションする
+func (g *GeminiConfig) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // Type: 必須項目（空文字列でない）
+        if err := ValidateRequired(g.Type, "Gemini設定のType"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // APIKey: 必須項目（空でない）
+        <span class="cov8" title="1">if g.APIKey.IsEmpty() </span><span class="cov8" title="1">{
+                builder.AddError("Gemini APIキーが設定されていません")
+        }</span>
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+// Merge は他のGeminiConfigの非空フィールドで現在のGeminiConfigをマージする
+func (g *GeminiConfig) Merge(other *GeminiConfig) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov8" title="1">mergeString(&amp;g.Type, other.Type)
+        if !other.APIKey.IsEmpty() </span><span class="cov8" title="1">{
+                g.APIKey = other.APIKey
+        }</span>
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (g GeminiConfig) LogValue() slog.Value <span class="cov8" title="1">{
+        return slog.GroupValue(
+                slog.String("Type", g.Type),
+                slog.Any("APIKey", g.APIKey),
+        )
+}</span>
+
+type PromptConfig struct {
+        SystemPrompt          string
+        CommentPromptTemplate string
+        SelectorPrompt        string
+        FixedMessage          string
+}
+
+// Validate はPromptConfigの内容をバリデーションする
+func (p *PromptConfig) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // SystemPrompt: 必須項目（空文字列でない）
+        if err := ValidateRequired(p.SystemPrompt, "システムプロンプト"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // CommentPromptTemplate: 必須項目（空文字列でない）
+        <span class="cov8" title="1">if err := ValidateRequired(p.CommentPromptTemplate, "コメントプロンプトテンプレート"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // SelectorPrompt: 必須項目（空文字列でない）
+        <span class="cov8" title="1">if err := ValidateRequired(p.SelectorPrompt, "記事選択プロンプト"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // FixedMessage: 任意項目（空文字列でも可）
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+// BuildCommentPrompt はtext/templateを使用してコメントプロンプトを生成する
+func (c *PromptConfig) BuildCommentPrompt(article *Article) (string, error) <span class="cov0" title="0">{
+        // 後方互換性のため、古い形式のプレースホルダーを新形式に変換
+        templateStr := c.CommentPromptTemplate
+        templateStr = strings.ReplaceAll(templateStr, "{{title}}", "{{.Title}}")
+        templateStr = strings.ReplaceAll(templateStr, "{{url}}", "{{.Link}}")
+        templateStr = strings.ReplaceAll(templateStr, "{{content}}", "{{.Content}}")
+
+        // 別名記法（{{TITLE}}など）を既存記法に変換
+        converter := NewPromptTemplateAliasConverter()
+        convertedTemplate, err := converter.Convert(templateStr)
+        if err != nil </span><span class="cov0" title="0">{
+                // 別名変換でエラーが発生した場合は、エラーを伝播する
+                return "", fmt.Errorf("テンプレート変換エラー: %w", err)
+        }</span>
+        <span class="cov0" title="0">templateStr = convertedTemplate
+
+        // キャッシュからテンプレートを取得
+        var tmpl *template.Template
+        if cached, ok := templateCache.Load(templateStr); ok </span><span class="cov0" title="0">{
+                tmpl = cached.(*template.Template)
+        }</span> else<span class="cov0" title="0"> {
+                // キャッシュにない場合はパースして保存
+                var err error
+                tmpl, err = template.New("comment").Parse(templateStr)
+                if err != nil </span><span class="cov0" title="0">{
+                        // テンプレートの解析に失敗した場合は、エラーを返す
+                        return "", fmt.Errorf("テンプレート解析エラー: %w", err)
+                }</span>
+                // パース成功したテンプレートをキャッシュに保存
+                <span class="cov0" title="0">templateCache.Store(templateStr, tmpl)</span>
+        }
+
+        <span class="cov0" title="0">var buf bytes.Buffer
+        err = tmpl.Execute(&amp;buf, article)
+        if err != nil </span><span class="cov0" title="0">{
+                // テンプレートの実行に失敗した場合も、エラーを返す
+                return "", fmt.Errorf("テンプレート実行エラー: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return buf.String(), nil</span>
+}
+
+// Merge は他のPromptConfigの非空フィールドで現在のPromptConfigをマージする
+func (p *PromptConfig) Merge(other *PromptConfig) <span class="cov0" title="0">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov0" title="0">mergeString(&amp;p.SystemPrompt, other.SystemPrompt)
+        mergeString(&amp;p.CommentPromptTemplate, other.CommentPromptTemplate)
+        mergeString(&amp;p.SelectorPrompt, other.SelectorPrompt)
+        mergeString(&amp;p.FixedMessage, other.FixedMessage)</span>
+}
+
+// LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
+func (p PromptConfig) LogValue() slog.Value <span class="cov8" title="1">{
+        return slog.GroupValue(
+                slog.Int("SystemPromptLength", len(p.SystemPrompt)),
+                slog.Int("CommentPromptTemplateLength", len(p.CommentPromptTemplate)),
+                slog.Int("SelectorPromptLength", len(p.SelectorPrompt)),
+                slog.String("FixedMessage", p.FixedMessage),
+        )
+}</span>
+
+type MisskeyConfig struct {
+        Enabled         bool
+        APIToken        SecretString
+        APIURL          string
+        MessageTemplate *string
+}
+
+// Validate はMisskeyConfigの内容をバリデーションする
+func (m *MisskeyConfig) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // Enabledがfalseの場合はバリデーションをスキップ
+        if !m.Enabled </span><span class="cov0" title="0">{
+                return builder.Build()
+        }</span>
+
+        // APIToken: 必須項目（空でない）
+        <span class="cov8" title="1">if m.APIToken.IsEmpty() </span><span class="cov8" title="1">{
+                builder.AddError("Misskey APIトークンが設定されていません")
+        }</span>
+
+        // APIURL: 必須項目（空文字列でない）、URL形式であること
+        <span class="cov8" title="1">if err := ValidateURL(m.APIURL, "Misskey API URL"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // MessageTemplate: 必須項目
+        <span class="cov8" title="1">if m.MessageTemplate == nil || strings.TrimSpace(*m.MessageTemplate) == "" </span><span class="cov8" title="1">{
+                builder.AddError("Misskeyメッセージテンプレートが設定されていません。config.yml または profile.yml で message_template を設定してください。\n設定例:\nmisskey:\n  message_template: |\n    {{if .Comment}}{{.Comment}}\n    {{end}}{{.Article.Title}}\n    {{.Article.Link}}")
+        }</span> else<span class="cov8" title="1"> {
+                if err := m.validateMisskeyMessageTemplate(*m.MessageTemplate); err != nil </span><span class="cov8" title="1">{
+                        builder.AddError(fmt.Sprintf("Misskeyメッセージテンプレートが無効です: %v", err))
+                }</span>
+        }
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+// validateMisskeyMessageTemplate はMisskeyメッセージテンプレートの構文を検証する
+func (m *MisskeyConfig) validateMisskeyMessageTemplate(templateStr string) error <span class="cov8" title="1">{
+        // text/templateでパースして構文チェック
+        _, err := template.New("misskey_message").Parse(templateStr)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("テンプレート構文エラー: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Merge は他のMisskeyConfigの非空フィールドで現在のMisskeyConfigをマージする
+func (m *MisskeyConfig) Merge(other *MisskeyConfig) <span class="cov0" title="0">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        // bool フィールドはゼロ値チェックが困難なため、常に上書き
+        <span class="cov0" title="0">m.Enabled = other.Enabled
+        if !other.APIToken.IsEmpty() </span><span class="cov0" title="0">{
+                m.APIToken = other.APIToken
+        }</span>
+        <span class="cov0" title="0">mergeString(&amp;m.APIURL, other.APIURL)
+        if other.MessageTemplate != nil </span><span class="cov0" title="0">{
+                m.MessageTemplate = other.MessageTemplate
+        }</span>
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (m MisskeyConfig) LogValue() slog.Value <span class="cov8" title="1">{
+        attrs := []slog.Attr{
+                slog.Bool("Enabled", m.Enabled),
+                slog.Any("APIToken", m.APIToken),
+                slog.String("APIURL", m.APIURL),
+        }
+        if m.MessageTemplate != nil </span><span class="cov8" title="1">{
+                attrs = append(attrs, slog.Int("MessageTemplateLength", len(*m.MessageTemplate)))
+        }</span>
+        <span class="cov8" title="1">return slog.GroupValue(attrs...)</span>
+}
+
+type SlackAPIConfig struct {
+        Enabled         bool
+        APIToken        SecretString
+        Channel         string
+        MessageTemplate *string
+        Username        *string
+        IconURL         *string
+        IconEmoji       *string
+        // APIURL はテスト用にSlack APIのエンドポイントURLをオーバーライドする（オプショナル）
+        APIURL *string
+}
+
+// Validate はSlackAPIConfigの内容をバリデーションする
+func (s *SlackAPIConfig) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // Enabledがfalseの場合はバリデーションをスキップ
+        if !s.Enabled </span><span class="cov0" title="0">{
+                return builder.Build()
+        }</span>
+
+        // APIToken: 必須項目（空でない）
+        <span class="cov8" title="1">if s.APIToken.IsEmpty() </span><span class="cov8" title="1">{
+                builder.AddError("Slack APIトークンが設定されていません")
+        }</span>
+
+        // Channel: 必須項目（空文字列でない）
+        <span class="cov8" title="1">if err := ValidateRequired(s.Channel, "Slackチャンネル"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // MessageTemplate: 必須項目
+        <span class="cov8" title="1">if s.MessageTemplate == nil || strings.TrimSpace(*s.MessageTemplate) == "" </span><span class="cov8" title="1">{
+                builder.AddError("Slackメッセージテンプレートが設定されていません。config.yml または profile.yml で message_template を設定してください。\n設定例:\nslack_api:\n  message_template: |\n    {{if .Comment}}{{.Comment}}\n    {{end}}{{.Article.Title}}\n    {{.Article.Link}}")
+        }</span> else<span class="cov8" title="1"> {
+                if err := s.validateSlackMessageTemplate(*s.MessageTemplate); err != nil </span><span class="cov8" title="1">{
+                        builder.AddError(fmt.Sprintf("Slackメッセージテンプレートが無効です: %v", err))
+                }</span>
+        }
+
+        // IconURL and IconEmoji cannot be set at the same time
+        <span class="cov8" title="1">if s.IconURL != nil &amp;&amp; *s.IconURL != "" &amp;&amp; s.IconEmoji != nil &amp;&amp; *s.IconEmoji != "" </span><span class="cov0" title="0">{
+                builder.AddError("Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。")
+        }</span>
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+// validateSlackMessageTemplate はSlackメッセージテンプレートの構文を検証する
+func (s *SlackAPIConfig) validateSlackMessageTemplate(templateStr string) error <span class="cov8" title="1">{
+        // text/templateでパースして構文チェック
+        _, err := template.New("slack_message").Parse(templateStr)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("テンプレート構文エラー: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Merge は他のSlackAPIConfigの非空フィールドで現在のSlackAPIConfigをマージする
+func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) <span class="cov0" title="0">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        // bool フィールドはゼロ値チェックが困難なため、常に上書き
+        <span class="cov0" title="0">s.Enabled = other.Enabled
+        if !other.APIToken.IsEmpty() </span><span class="cov0" title="0">{
+                s.APIToken = other.APIToken
+        }</span>
+        <span class="cov0" title="0">mergeString(&amp;s.Channel, other.Channel)
+        if other.MessageTemplate != nil </span><span class="cov0" title="0">{
+                s.MessageTemplate = other.MessageTemplate
+        }</span>
+        <span class="cov0" title="0">if other.Username != nil </span><span class="cov0" title="0">{
+                s.Username = other.Username
+        }</span>
+        <span class="cov0" title="0">if other.IconURL != nil </span><span class="cov0" title="0">{
+                s.IconURL = other.IconURL
+        }</span>
+        <span class="cov0" title="0">if other.IconEmoji != nil </span><span class="cov0" title="0">{
+                s.IconEmoji = other.IconEmoji
+        }</span>
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (s SlackAPIConfig) LogValue() slog.Value <span class="cov8" title="1">{
+        attrs := []slog.Attr{
+                slog.Bool("Enabled", s.Enabled),
+                slog.Any("APIToken", s.APIToken),
+                slog.String("Channel", s.Channel),
+        }
+        if s.MessageTemplate != nil </span><span class="cov8" title="1">{
+                attrs = append(attrs, slog.Int("MessageTemplateLength", len(*s.MessageTemplate)))
+        }</span>
+        <span class="cov8" title="1">if s.Username != nil </span><span class="cov0" title="0">{
+                attrs = append(attrs, slog.String("Username", *s.Username))
+        }</span>
+        <span class="cov8" title="1">if s.IconURL != nil </span><span class="cov0" title="0">{
+                attrs = append(attrs, slog.String("IconURL", *s.IconURL))
+        }</span>
+        <span class="cov8" title="1">if s.IconEmoji != nil </span><span class="cov0" title="0">{
+                attrs = append(attrs, slog.String("IconEmoji", *s.IconEmoji))
+        }</span>
+        <span class="cov8" title="1">return slog.GroupValue(attrs...)</span>
+}
+
+type CacheConfig struct {
+        Enabled       bool
+        FilePath      string
+        MaxEntries    int
+        RetentionDays int
+}
+
+// Validate はCacheConfigの内容をバリデーションする
+func (c *CacheConfig) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // FilePath: 必須項目（空文字列でない）
+        if err := ValidateRequired(c.FilePath, "キャッシュファイルパス"); err != nil </span><span class="cov0" title="0">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // MaxEntries と RetentionDays は infra.CacheConfig.ToEntity() で
+        // デフォルト値が設定されるため、ここでの正数チェックは不要
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+// Merge は他のCacheConfigの非ゼロ値フィールドで現在のCacheConfigをマージする
+func (c *CacheConfig) Merge(other *CacheConfig) <span class="cov0" title="0">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        // bool フィールドはゼロ値チェックが困難なため、常に上書き
+        <span class="cov0" title="0">c.Enabled = other.Enabled
+        mergeString(&amp;c.FilePath, other.FilePath)
+        if other.MaxEntries &gt; 0 </span><span class="cov0" title="0">{
+                c.MaxEntries = other.MaxEntries
+        }</span>
+        <span class="cov0" title="0">if other.RetentionDays &gt; 0 </span><span class="cov0" title="0">{
+                c.RetentionDays = other.RetentionDays
+        }</span>
+}
+
+// LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
+func (c CacheConfig) LogValue() slog.Value <span class="cov0" title="0">{
+        return slog.GroupValue(
+                slog.Bool("Enabled", c.Enabled),
+                slog.String("FilePath", c.FilePath),
+                slog.Int("MaxEntries", c.MaxEntries),
+                slog.Int("RetentionDays", c.RetentionDays),
+        )
+}</span>
+
+type Profile struct {
+        AI     *AIConfig
+        Prompt *PromptConfig
+        Output *OutputConfig
+}
+
+// Validate はProfileの内容をバリデーションする
+func (p *Profile) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // AI: 必須項目（nilでない）
+        if p.AI == nil </span><span class="cov8" title="1">{
+                builder.AddError("AI設定が設定されていません")
+        }</span> else<span class="cov8" title="1"> {
+                builder.MergeResult(p.AI.Validate())
+        }</span>
+
+        // Prompt: 必須項目（nilでない）
+        <span class="cov8" title="1">if p.Prompt == nil </span><span class="cov8" title="1">{
+                builder.AddError("プロンプト設定が設定されていません")
+        }</span> else<span class="cov8" title="1"> {
+                builder.MergeResult(p.Prompt.Validate())
+        }</span>
+
+        // Output: 必須項目（nilでない）
+        <span class="cov8" title="1">if p.Output == nil </span><span class="cov8" title="1">{
+                builder.AddError("出力設定が設定されていません")
+        }</span> else<span class="cov8" title="1"> {
+                builder.MergeResult(p.Output.Validate())
+        }</span>
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+// Merge は他のProfileの非nil フィールドで現在のProfileをマージする
+func (p *Profile) Merge(other *Profile) <span class="cov8" title="1">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov8" title="1">mergePtr(&amp;p.AI, other.AI)
+        mergePtr(&amp;p.Prompt, other.Prompt)
+        mergePtr(&amp;p.Output, other.Output)</span>
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (p Profile) LogValue() slog.Value <span class="cov8" title="1">{
+        attrs := []slog.Attr{}
+        if p.AI != nil </span><span class="cov8" title="1">{
+                attrs = append(attrs, slog.Any("AI", *p.AI)) // AIConfig.LogValue() が呼ばれる
+        }</span>
+        <span class="cov8" title="1">if p.Prompt != nil </span><span class="cov8" title="1">{
+                attrs = append(attrs, slog.Any("Prompt", *p.Prompt))
+        }</span>
+        <span class="cov8" title="1">if p.Output != nil </span><span class="cov8" title="1">{
+                attrs = append(attrs, slog.Any("Output", *p.Output)) // OutputConfig.LogValue() が呼ばれる
+        }</span>
+        <span class="cov8" title="1">return slog.GroupValue(attrs...)</span>
+}
+
+type OutputConfig struct {
+        SlackAPI *SlackAPIConfig
+        Misskey  *MisskeyConfig
+}
+
+// merger はMergeメソッドを持つ型の制約
+type merger[T any] interface {
+        Merge(T)
+}
+
+// mergePtr はポインタフィールドのマージを行うヘルパー関数
+func mergePtr[T any, P interface {
+        *T
+        merger[P]
+}](target *P, source P) <span class="cov8" title="1">{
+        if source != nil </span><span class="cov8" title="1">{
+                if *target == nil </span><span class="cov0" title="0">{
+                        *target = new(T)
+                }</span>
+                <span class="cov8" title="1">(*target).Merge(source)</span>
+        }
+}
+
+// mergeString は文字列フィールドのマージを行うヘルパー関数
+func mergeString(target *string, source string) <span class="cov8" title="1">{
+        if source != "" </span><span class="cov0" title="0">{
+                *target = source
+        }</span>
+}
+
+// Validate はOutputConfigの内容をバリデーションする
+func (o *OutputConfig) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // 設定されているConfigオブジェクトに対してそれぞれのValidate()メソッドを呼び出す
+        // Enabled=falseの場合は各Configのバリデーションでスキップされる
+        if o.SlackAPI != nil </span><span class="cov8" title="1">{
+                builder.MergeResult(o.SlackAPI.Validate())
+        }</span>
+
+        <span class="cov8" title="1">if o.Misskey != nil </span><span class="cov0" title="0">{
+                builder.MergeResult(o.Misskey.Validate())
+        }</span>
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+// Merge は他のOutputConfigの非nil フィールドで現在のOutputConfigをマージする
+func (o *OutputConfig) Merge(other *OutputConfig) <span class="cov0" title="0">{
+        if other == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov0" title="0">mergePtr(&amp;o.SlackAPI, other.SlackAPI)
+        mergePtr(&amp;o.Misskey, other.Misskey)</span>
+}
+
+// LogValue はslog出力時に機密情報をマスクするためのメソッド
+func (o OutputConfig) LogValue() slog.Value <span class="cov8" title="1">{
+        attrs := []slog.Attr{}
+        if o.SlackAPI != nil </span><span class="cov8" title="1">{
+                attrs = append(attrs, slog.Any("SlackAPI", *o.SlackAPI)) // SlackAPIConfig.LogValue() が呼ばれる
+        }</span>
+        <span class="cov8" title="1">if o.Misskey != nil </span><span class="cov8" title="1">{
+                attrs = append(attrs, slog.Any("Misskey", *o.Misskey)) // MisskeyConfig.LogValue() が呼ばれる
+        }</span>
+        <span class="cov8" title="1">return slog.GroupValue(attrs...)</span>
+}
+
+// ValidationResult はバリデーション結果を表現する
+type ValidationResult struct {
+        IsValid  bool     `json:"is_valid"`
+        Errors   []string `json:"errors,omitempty"`
+        Warnings []string `json:"warnings,omitempty"`
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package entity
+
+import (
+        "time"
+)
+
+// Article represents a single article in a feed.
+type Article struct {
+        Title     string
+        Link      string
+        Published *time.Time
+        Content   string
+}
+
+// Validate はArticleの内容をバリデーションする
+func (a *Article) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // Title: 必須項目（空文字列でない）
+        if err := ValidateRequired(a.Title, "記事のタイトル"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // Link: 必須項目（空文字列でない）、URL形式であること
+        <span class="cov8" title="1">if err := ValidateURL(a.Link, "記事のリンク"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        // Published: nilでないこと
+        <span class="cov8" title="1">if a.Published == nil </span><span class="cov8" title="1">{
+                builder.AddError("記事の公開日時が設定されていません")
+        }</span>
+
+        // Content: 必須項目（空文字列でない）
+        <span class="cov8" title="1">if err := ValidateRequired(a.Content, "記事の内容"); err != nil </span><span class="cov8" title="1">{
+                builder.AddError(err.Error())
+        }</span>
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+
+type Recommend struct {
+        Article Article
+        Comment *string
+}
+
+// Validate はRecommendの内容をバリデーションする
+func (r *Recommend) Validate() *ValidationResult <span class="cov8" title="1">{
+        builder := NewValidationBuilder()
+
+        // Article: 必須項目、Articleのバリデーションも実行
+        builder.MergeResult(r.Article.Validate())
+
+        // Comment: 任意項目だが、設定されている場合は空文字列でないこと
+        if r.Comment != nil &amp;&amp; *r.Comment == "" </span><span class="cov8" title="1">{
+                builder.AddWarning("推薦コメントが空です")
+        }</span>
+
+        <span class="cov8" title="1">return builder.Build()</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package entity
+
+import "log/slog"
+
+// SecretString は機密情報を扱うための型
+// ログ出力や文字列化の際に自動的にマスクされる
+type SecretString struct {
+        value string
+}
+
+// NewSecretString は新しいSecretStringを生成します
+func NewSecretString(value string) SecretString <span class="cov8" title="1">{
+        return SecretString{value: value}
+}</span>
+
+// Value は元の値を返す
+func (s SecretString) Value() string <span class="cov8" title="1">{
+        return s.value
+}</span>
+
+// String は fmt.Stringer インターフェースを実装し、マスクされた文字列を返す
+func (s SecretString) String() string <span class="cov8" title="1">{
+        return "[REDACTED]"
+}</span>
+
+// IsEmpty は値が空かどうかを判定する
+func (s SecretString) IsEmpty() bool <span class="cov8" title="1">{
+        return s.value == ""
+}</span>
+
+// LogValue は slog.LogValuer インターフェースを実装し、ログ出力時にマスクされた値を返す
+func (s SecretString) LogValue() slog.Value <span class="cov8" title="1">{
+        return slog.StringValue("[REDACTED]")
+}</span>
+
+// UnmarshalText は encoding.TextUnmarshaler インターフェースを実装し、バイト列から値を設定する
+func (s *SecretString) UnmarshalText(text []byte) error <span class="cov8" title="1">{
+        s.value = string(text)
+        return nil
+}</span>
+
+// MarshalText は encoding.TextMarshaler インターフェースを実装し、マスクされた値をバイト列として返す
+func (s SecretString) MarshalText() ([]byte, error) <span class="cov8" title="1">{
+        return []byte("[REDACTED]"), nil
+}</span>
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package entity
+
+import (
+        "fmt"
+        "regexp"
+        "slices"
+        "strings"
+)
+
+// TemplateAliasConverter はテンプレートの別名を既存記法に変換する構造体
+type TemplateAliasConverter struct {
+        // aliasMap は別名から既存記法へのマッピング
+        aliasMap map[string]string
+}
+
+// messageTemplateAliasMap はSlackとMisskey共通のメッセージテンプレート用別名マップ
+var messageTemplateAliasMap = map[string]string{
+        "TITLE":         ".Article.Title",
+        "URL":           ".Article.Link",
+        "CONTENT":       ".Article.Content",
+        "COMMENT":       ".Comment",
+        "FIXED_MESSAGE": ".FixedMessage",
+}
+
+// NewPromptTemplateAliasConverter はPromptConfig用の別名変換器を作成する
+func NewPromptTemplateAliasConverter() *TemplateAliasConverter <span class="cov8" title="1">{
+        return &amp;TemplateAliasConverter{
+                aliasMap: map[string]string{
+                        "TITLE":   ".Title",
+                        "URL":     ".Link",
+                        "CONTENT": ".Content",
+                },
+        }
+}</span>
+
+// NewSlackTemplateAliasConverter はSlackAPIConfig用の別名変換器を作成する
+func NewSlackTemplateAliasConverter() *TemplateAliasConverter <span class="cov8" title="1">{
+        return &amp;TemplateAliasConverter{
+                aliasMap: messageTemplateAliasMap,
+        }
+}</span>
+
+// NewMisskeyTemplateAliasConverter はMisskeyConfig用の別名変換器を作成する
+func NewMisskeyTemplateAliasConverter() *TemplateAliasConverter <span class="cov8" title="1">{
+        return &amp;TemplateAliasConverter{
+                aliasMap: messageTemplateAliasMap,
+        }
+}</span>
+
+// TemplateAliasError はテンプレート別名変換のエラー
+type TemplateAliasError struct {
+        InvalidAlias string
+        Message      string
+}
+
+func (e *TemplateAliasError) Error() string <span class="cov8" title="1">{
+        return e.Message
+}</span>
+
+// Convert はテンプレート文字列内の別名を既存記法に変換する
+func (c *TemplateAliasConverter) Convert(template string) (string, error) <span class="cov8" title="1">{
+        // 既存記法（{{.で始まるもの）はそのまま通す
+        // 別名記法のみを処理する
+
+        // まず、不正な別名記法（小文字を含む、存在しないパラメータ）をチェック
+        invalidPattern := regexp.MustCompile(`\{\{([A-Za-z_]+)\}\}`)
+        matches := invalidPattern.FindAllStringSubmatch(template, -1)
+
+        for _, match := range matches </span><span class="cov8" title="1">{
+                // 完全な別名記法の部分
+                fullMatch := match[0]
+                // 中身の部分（{{と}}を除いた部分）
+                innerContent := match[1]
+
+                // ドットで始まる場合は既存記法なのでスキップ
+                if strings.HasPrefix(fullMatch, "{{.") </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                // if、end、elseなどのテンプレート制御構文はスキップ
+                <span class="cov8" title="1">if isTemplateControl(innerContent) </span><span class="cov8" title="1">{
+                        continue</span>
+                }
+
+                // 大文字とアンダースコアのみで構成されているかチェック
+                <span class="cov8" title="1">if !isUpperCaseOnly(innerContent) </span><span class="cov8" title="1">{
+                        // 小文字が含まれている場合はエラー
+                        suggestion := strings.ToUpper(innerContent)
+                        if _, exists := c.aliasMap[suggestion]; exists </span><span class="cov8" title="1">{
+                                return "", &amp;TemplateAliasError{
+                                        InvalidAlias: fullMatch,
+                                        Message:      fmt.Sprintf("別名記法では大文字のみが許可されています。'%s' の代わりに '{{%s}}' を使用してください", fullMatch, suggestion),
+                                }
+                        }</span>
+                        <span class="cov0" title="0">return "", &amp;TemplateAliasError{
+                                InvalidAlias: fullMatch,
+                                Message:      fmt.Sprintf("別名記法では大文字のみが許可されています: '%s'", fullMatch),
+                        }</span>
+                }
+
+                // 存在するパラメータかチェック
+                <span class="cov8" title="1">if _, exists := c.aliasMap[innerContent]; !exists </span><span class="cov8" title="1">{
+                        // 存在しないパラメータの場合はエラー
+                        validAliases := c.getValidAliases()
+                        return "", &amp;TemplateAliasError{
+                                InvalidAlias: fullMatch,
+                                Message:      fmt.Sprintf("存在しないパラメータです: '%s'。使用可能なパラメータ: %s", fullMatch, strings.Join(validAliases, ", ")),
+                        }
+                }</span>
+        }
+
+        // エラーチェックが通ったら、別名を既存記法に変換
+        <span class="cov8" title="1">result := template
+        for alias, replacement := range c.aliasMap </span><span class="cov8" title="1">{
+                pattern := fmt.Sprintf("{{%s}}", alias)
+                newPattern := fmt.Sprintf("{{%s}}", replacement)
+                result = strings.ReplaceAll(result, pattern, newPattern)
+        }</span>
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// isUpperCaseOnly は文字列が大文字とアンダースコアのみで構成されているかチェック
+func isUpperCaseOnly(s string) bool <span class="cov8" title="1">{
+        for _, r := range s </span><span class="cov8" title="1">{
+                if r != '_' &amp;&amp; (r &lt; 'A' || r &gt; 'Z') </span><span class="cov8" title="1">{
+                        return false
+                }</span>
+        }
+        <span class="cov8" title="1">return true</span>
+}
+
+// isTemplateControl はテンプレート制御構文かどうかチェック
+func isTemplateControl(s string) bool <span class="cov8" title="1">{
+        // テンプレート制御構文のキーワード
+        controls := []string{"if", "else", "end", "range", "with", "define", "template", "block"}
+
+        // 先頭の単語を取得
+        parts := strings.Fields(s)
+        if len(parts) == 0 </span><span class="cov8" title="1">{
+                return false
+        }</span>
+
+        <span class="cov8" title="1">firstWord := strings.ToLower(parts[0])
+        return slices.Contains(controls, firstWord)</span>
+}
+
+// getValidAliases は使用可能な別名のリストを返す
+func (c *TemplateAliasConverter) getValidAliases() []string <span class="cov8" title="1">{
+        aliases := make([]string, 0, len(c.aliasMap))
+        for alias := range c.aliasMap </span><span class="cov8" title="1">{
+                aliases = append(aliases, "{{"+alias+"}}")
+        }</span>
+        <span class="cov8" title="1">return aliases</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package entity
+
+import (
+        "fmt"
+        "net/url"
+)
+
+// ValidationBuilder はバリデーション結果を構築するためのヘルパー
+type ValidationBuilder struct {
+        errors   []string
+        warnings []string
+}
+
+// NewValidationBuilder は新しいValidationBuilderを作成する
+func NewValidationBuilder() *ValidationBuilder <span class="cov8" title="1">{
+        return &amp;ValidationBuilder{
+                errors:   make([]string, 0),
+                warnings: make([]string, 0),
+        }
+}</span>
+
+// AddError はエラーメッセージを追加する
+func (vb *ValidationBuilder) AddError(message string) *ValidationBuilder <span class="cov8" title="1">{
+        vb.errors = append(vb.errors, message)
+        return vb
+}</span>
+
+// AddWarning は警告メッセージを追加する
+func (vb *ValidationBuilder) AddWarning(message string) *ValidationBuilder <span class="cov8" title="1">{
+        vb.warnings = append(vb.warnings, message)
+        return vb
+}</span>
+
+// MergeResult は他のValidationResultの結果をマージする
+func (vb *ValidationBuilder) MergeResult(result *ValidationResult) *ValidationBuilder <span class="cov8" title="1">{
+        if result != nil </span><span class="cov8" title="1">{
+                if !result.IsValid </span><span class="cov8" title="1">{
+                        vb.errors = append(vb.errors, result.Errors...)
+                }</span>
+                <span class="cov8" title="1">vb.warnings = append(vb.warnings, result.Warnings...)</span>
+        }
+        <span class="cov8" title="1">return vb</span>
+}
+
+// Build はValidationResultを構築する
+func (vb *ValidationBuilder) Build() *ValidationResult <span class="cov8" title="1">{
+        return &amp;ValidationResult{
+                IsValid:  len(vb.errors) == 0,
+                Errors:   vb.errors,
+                Warnings: vb.warnings,
+        }
+}</span>
+
+// ValidateRequired は必須項目の文字列が空でないことを検証する
+func ValidateRequired(value, fieldName string) error <span class="cov8" title="1">{
+        if value == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("%sが設定されていません", fieldName)
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ValidateURL はURLが正しい形式であることを検証する
+func ValidateURL(urlStr, fieldName string) error <span class="cov8" title="1">{
+        if urlStr == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("%sが設定されていません", fieldName)
+        }</span>
+
+        <span class="cov8" title="1">parsedURL, err := url.Parse(urlStr)
+        if err != nil || !parsedURL.IsAbs() </span><span class="cov8" title="1">{
+                return fmt.Errorf("%sが正しいURL形式ではありません", fieldName)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package domain
+
+import (
+        "log/slog"
+        "sort"
+
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+type FetchClient interface {
+        Fetch(url string) ([]entity.Article, error)
+}
+
+type Fetcher struct {
+        client        FetchClient
+        errorCallback ErrorCallback
+}
+
+type ErrorCallback func(string, error) error
+
+func NewFetcher(client FetchClient, errorCallback ErrorCallback) *Fetcher <span class="cov8" title="1">{
+        return &amp;Fetcher{
+                client:        client,
+                errorCallback: errorCallback,
+        }
+}</span>
+
+func (f *Fetcher) Fetch(urls []string, limit int) ([]entity.Article, error) <span class="cov8" title="1">{
+        var allArticles []entity.Article
+        for _, url := range urls </span><span class="cov8" title="1">{
+                articles, err := f.client.Fetch(url)
+                if err != nil </span><span class="cov8" title="1">{
+                        if err := f.errorCallback(url, err); err != nil </span><span class="cov8" title="1">{
+                                return nil, err
+                        }</span>
+                        <span class="cov8" title="1">continue</span>
+                }
+
+                <span class="cov8" title="1">slog.Debug("記事を取得しました", "feed_url", url, "article_count", len(articles))
+                allArticles = append(allArticles, articles...)</span>
+        }
+
+        <span class="cov8" title="1">sort.Slice(allArticles, func(i, j int) bool </span><span class="cov8" title="1">{
+                if allArticles[i].Published == nil </span><span class="cov0" title="0">{
+                        return false
+                }</span>
+                <span class="cov8" title="1">if allArticles[j].Published == nil </span><span class="cov0" title="0">{
+                        return true
+                }</span>
+                <span class="cov8" title="1">return allArticles[i].Published.After(*allArticles[j].Published)</span>
+        })
+
+        <span class="cov8" title="1">if limit &gt; 0 &amp;&amp; len(allArticles) &gt; limit </span><span class="cov0" title="0">{
+                allArticles = allArticles[:limit]
+        }</span>
+
+        <span class="cov8" title="1">return allArticles, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package domain
+
+import (
+        "context"
+        "fmt"
+        "log/slog"
+
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+type Recommender interface {
+        Recommend(context.Context, []entity.Article) (*entity.Recommend, error)
+}
+
+type FirstRecommender struct {
+        factory      CommentGeneratorFactory
+        aiConfig     *entity.AIConfig
+        promptConfig *entity.PromptConfig
+}
+
+func NewFirstRecommender(f CommentGeneratorFactory, ai *entity.AIConfig, prompt *entity.PromptConfig) Recommender <span class="cov8" title="1">{
+        return &amp;FirstRecommender{
+                factory:      f,
+                aiConfig:     ai,
+                promptConfig: prompt,
+        }
+}</span>
+
+func (r *FirstRecommender) Recommend(ctx context.Context, articles []entity.Article) (*entity.Recommend, error) <span class="cov8" title="1">{
+        if len(articles) == 0 </span><span class="cov8" title="1">{
+                return nil, nil
+        }</span>
+
+        <span class="cov8" title="1">article := articles[0]
+        comment, err := generateComment(r.factory, r.aiConfig, r.promptConfig, ctx, &amp;article)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return &amp;entity.Recommend{
+                Article: article,
+                Comment: comment,
+        }, nil</span>
+}
+
+// SelectorBasedRecommender は ArticleSelector を使用して記事を選択するRecommender
+type SelectorBasedRecommender struct {
+        selector       ArticleSelector
+        commentFactory CommentGeneratorFactory
+        aiConfig       *entity.AIConfig
+        promptConfig   *entity.PromptConfig
+}
+
+// NewSelectorBasedRecommender は新しいSelectorBasedRecommenderを作成する
+func NewSelectorBasedRecommender(
+        selector ArticleSelector,
+        factory CommentGeneratorFactory,
+        ai *entity.AIConfig,
+        prompt *entity.PromptConfig,
+) Recommender <span class="cov8" title="1">{
+        return &amp;SelectorBasedRecommender{
+                selector:       selector,
+                commentFactory: factory,
+                aiConfig:       ai,
+                promptConfig:   prompt,
+        }
+}</span>
+
+func (r *SelectorBasedRecommender) Recommend(ctx context.Context, articles []entity.Article) (*entity.Recommend, error) <span class="cov8" title="1">{
+        if len(articles) == 0 </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("no articles found")
+        }</span>
+
+        // セレクターに記事選択を委譲
+        <span class="cov8" title="1">slog.Info("Starting article selection", "article_count", len(articles))
+        article, err := r.selector.Select(ctx, articles)
+        if err != nil </span><span class="cov8" title="1">{
+                slog.Error("Failed to select article", "error", err, "article_count", len(articles))
+                return nil, fmt.Errorf("failed to select article: %w", err)
+        }</span>
+        <span class="cov8" title="1">slog.Info("Article selected successfully", "title", article.Title, "link", article.Link)
+
+        // コメント生成
+        var comment *string
+        if r.commentFactory != nil &amp;&amp; r.aiConfig != nil &amp;&amp; r.promptConfig != nil </span><span class="cov8" title="1">{
+                slog.Info("Starting comment generation", "article_title", article.Title)
+                comment, err = generateComment(r.commentFactory, r.aiConfig, r.promptConfig, ctx, article)
+                if err != nil </span><span class="cov8" title="1">{
+                        slog.Error("Failed to generate comment", "error", err, "article_title", article.Title)
+                        return nil, fmt.Errorf("failed to generate comment: %w", err)
+                }</span>
+                <span class="cov8" title="1">if comment != nil &amp;&amp; *comment != "" </span><span class="cov8" title="1">{
+                        slog.Info("Comment generated successfully", "article_title", article.Title, "comment_length", len(*comment))
+                }</span> else<span class="cov0" title="0"> {
+                        slog.Info("Comment generation skipped or returned empty", "article_title", article.Title)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return &amp;entity.Recommend{
+                Article: *article,
+                Comment: comment,
+        }, nil</span>
+}
+
+func generateComment(
+        factory CommentGeneratorFactory,
+        model *entity.AIConfig,
+        prompt *entity.PromptConfig,
+        ctx context.Context,
+        article *entity.Article) (*string, error) <span class="cov8" title="1">{
+        if factory == nil || model == nil || prompt == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("factory, model, or prompt is nil")
+        }</span>
+
+        <span class="cov8" title="1">commentGenerator, err := factory.MakeCommentGenerator(model, prompt)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">if commentGenerator == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("comment generator is nil")
+        }</span>
+
+        <span class="cov8" title="1">c, err := commentGenerator.Generate(ctx, article)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return &amp;c, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package comment
+
+import (
+        "fmt"
+        "strings"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+type CommentGeneratorFactory struct{}
+
+func NewCommentGeneratorFactory() domain.CommentGeneratorFactory <span class="cov8" title="1">{
+        return &amp;CommentGeneratorFactory{}
+}</span>
+
+func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIConfig, prompt *entity.PromptConfig) (domain.CommentGenerator, error) <span class="cov8" title="1">{
+        if model == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("model is nil")
+        }</span>
+        <span class="cov8" title="1">if prompt == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("prompt is nil")
+        }</span>
+
+        // Mock設定が有効な場合はモック実装を返す
+        <span class="cov8" title="1">if model.Mock != nil &amp;&amp; model.Mock.Enabled </span><span class="cov0" title="0">{
+                return newMockCommentGenerator(model.Mock.Comment), nil
+        }</span>
+
+        // Gemini設定のバリデーション
+        <span class="cov8" title="1">if model.Gemini == nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("gemini config is nil")
+        }</span>
+        <span class="cov8" title="1">if result := model.Gemini.Validate(); !result.IsValid </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("invalid gemini config: %s", strings.Join(result.Errors, "; "))
+        }</span>
+
+        // すべてのGeminiモデルをサポート
+        // モデルの使用可否判定はGeminiライブラリに任せる
+        <span class="cov8" title="1">return newGeminiCommentGenerator(model, prompt, prompt.SystemPrompt)</span>
+}
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package comment
+
+import (
+        "context"
+        "fmt"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+        "google.golang.org/genai"
+)
+
+type geminiCommentGenerator struct {
+        model        *entity.AIConfig
+        prompt       *entity.PromptConfig
+        systemPrompt string
+        client       *genai.Client
+}
+
+func newGeminiCommentGenerator(model *entity.AIConfig, prompt *entity.PromptConfig, systemPrompt string) (domain.CommentGenerator, error) <span class="cov8" title="1">{
+        // クライアントの初期化はここで行い、構造体に保持する
+        client, err := genai.NewClient(context.Background(), &amp;genai.ClientConfig{
+                APIKey:  model.Gemini.APIKey.Value(),
+                Backend: genai.BackendGeminiAPI,
+        })
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to create gemini client: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;geminiCommentGenerator{
+                model:        model,
+                prompt:       prompt,
+                client:       client,
+                systemPrompt: systemPrompt,
+        }, nil</span>
+}
+
+func (g *geminiCommentGenerator) Generate(ctx context.Context, article *entity.Article) (string, error) <span class="cov0" title="0">{
+        prompt, err := g.prompt.BuildCommentPrompt(article)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("プロンプト生成エラー: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">contents := genai.Text(prompt)
+        config := genai.GenerateContentConfig{}
+        if g.systemPrompt != "" </span><span class="cov0" title="0">{
+                config.SystemInstruction = genai.NewContentFromText(g.systemPrompt, "")
+        }</span>
+
+        <span class="cov0" title="0">resp, err := g.client.Models.GenerateContent(ctx, g.model.Gemini.Type, contents, &amp;config)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to generate content: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("no content generated")
+        }</span>
+
+        <span class="cov0" title="0">return resp.Text(), nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">package comment
+
+import (
+        "context"
+
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// mockCommentGenerator はテスト用のモックコメント生成器
+type mockCommentGenerator struct {
+        comment string // 固定で返すコメント
+}
+
+// newMockCommentGenerator は新しいモックコメント生成器を作成する
+func newMockCommentGenerator(comment string) *mockCommentGenerator <span class="cov8" title="1">{
+        return &amp;mockCommentGenerator{comment: comment}
+}</span>
+
+// Generate は設定された固定コメントを返す
+func (g *mockCommentGenerator) Generate(_ context.Context, _ *entity.Article) (string, error) <span class="cov8" title="1">{
+        return g.comment, nil
+}</span>
+</pre>
+		
+		<pre class="file" id="file17" style="display: none">package infra
+
+import (
+        "fmt"
+        "os"
+        "path/filepath"
+        "strings"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+        "gopkg.in/yaml.v3"
+)
+
+type Config struct {
+        DefaultProfile *Profile     `yaml:"default_profile,omitempty"`
+        Cache          *CacheConfig `yaml:"cache,omitempty"`
+}
+
+type Profile struct {
+        AI     *AIConfig     `yaml:"ai,omitempty"`
+        Prompt *PromptConfig `yaml:",inline,omitempty"`
+        Output *OutputConfig `yaml:"output,omitempty"`
+}
+
+// ToEntity converts infra.Profile to entity.Profile
+func (p *Profile) ToEntity() (*entity.Profile, error) <span class="cov8" title="1">{
+        var aiEntity *entity.AIConfig
+        if p.AI != nil </span><span class="cov8" title="1">{
+                var err error
+                aiEntity, err = p.AI.ToEntity()
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+        }
+
+        <span class="cov8" title="1">var promptEntity *entity.PromptConfig
+        if p.Prompt != nil </span><span class="cov8" title="1">{
+                promptEntity = p.Prompt.ToEntity()
+        }</span>
+
+        <span class="cov8" title="1">var outputEntity *entity.OutputConfig
+        if p.Output != nil </span><span class="cov8" title="1">{
+                var err error
+                outputEntity, err = p.Output.ToEntity()
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+        }
+
+        <span class="cov8" title="1">return &amp;entity.Profile{
+                AI:     aiEntity,
+                Prompt: promptEntity,
+                Output: outputEntity,
+        }, nil</span>
+}
+
+type AIConfig struct {
+        Gemini *GeminiConfig `yaml:"gemini,omitempty"`
+        Mock   *MockConfig   `yaml:"mock,omitempty"`
+}
+
+// MockConfig はAIのモック設定
+type MockConfig struct {
+        Enabled      *bool  `yaml:"enabled,omitempty"`
+        SelectorMode string `yaml:"selector_mode,omitempty"`
+        Comment      string `yaml:"comment,omitempty"`
+}
+
+func (c *MockConfig) ToEntity() *entity.MockConfig <span class="cov8" title="1">{
+        if c == nil </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        <span class="cov0" title="0">enabled := false
+        if c.Enabled != nil </span><span class="cov0" title="0">{
+                enabled = *c.Enabled
+        }</span>
+        <span class="cov0" title="0">return &amp;entity.MockConfig{
+                Enabled:      enabled,
+                SelectorMode: c.SelectorMode,
+                Comment:      c.Comment,
+        }</span>
+}
+
+func (c *AIConfig) ToEntity() (*entity.AIConfig, error) <span class="cov8" title="1">{
+        var geminiEntity *entity.GeminiConfig
+        if c.Gemini != nil </span><span class="cov8" title="1">{
+                var err error
+                geminiEntity, err = c.Gemini.ToEntity()
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+        }
+        <span class="cov8" title="1">return &amp;entity.AIConfig{
+                Gemini: geminiEntity,
+                Mock:   c.Mock.ToEntity(),
+        }, nil</span>
+}
+
+type GeminiConfig struct {
+        Type      string `yaml:"type"`
+        APIKey    string `yaml:"api_key"`
+        APIKeyEnv string `yaml:"api_key_env,omitempty"`
+}
+
+// resolveSecret は、直接指定された値または環境変数から値を解決する
+func resolveSecret(value, envVar, configPath string) (string, error) <span class="cov8" title="1">{
+        if value != "" </span><span class="cov8" title="1">{
+                return value, nil
+        }</span>
+        <span class="cov8" title="1">if envVar != "" </span><span class="cov8" title="1">{
+                secret := os.Getenv(envVar)
+                if secret == "" </span><span class="cov8" title="1">{
+                        return "", fmt.Errorf("環境変数 '%s' が設定されていません。%s で指定された環境変数を設定してください。", envVar, configPath)
+                }</span>
+                <span class="cov8" title="1">return secret, nil</span>
+        }
+        <span class="cov0" title="0">return "", nil</span>
+}
+
+// resolveSecretString は、値または環境変数から機密情報を解決し、SecretString型で返す
+func resolveSecretString(value, envVar, configPath string) (entity.SecretString, error) <span class="cov8" title="1">{
+        str, err := resolveSecret(value, envVar, configPath)
+        if err != nil </span><span class="cov8" title="1">{
+                return entity.SecretString{}, err
+        }</span>
+        <span class="cov8" title="1">return entity.NewSecretString(str), nil</span>
+}
+
+// resolveEnabled は、Enabledフィールドのデフォルト値処理を行う
+func resolveEnabled(e *bool) bool <span class="cov8" title="1">{
+        if e == nil </span><span class="cov8" title="1">{
+                return true
+        }</span>
+        <span class="cov8" title="1">return *e</span>
+}
+
+func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) <span class="cov8" title="1">{
+        apiKey, err := resolveSecretString(c.APIKey, c.APIKeyEnv, "ai.gemini.api_key_env")
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;entity.GeminiConfig{
+                Type:   c.Type,
+                APIKey: apiKey,
+        }, nil</span>
+}
+
+type PromptConfig struct {
+        SystemPrompt          string `yaml:"system_prompt,omitempty"`
+        CommentPromptTemplate string `yaml:"comment_prompt_template,omitempty"`
+        SelectorPrompt        string `yaml:"selector_prompt,omitempty"`
+        FixedMessage          string `yaml:"fixed_message,omitempty"`
+}
+
+func (c *PromptConfig) ToEntity() *entity.PromptConfig <span class="cov8" title="1">{
+        return &amp;entity.PromptConfig{
+                SystemPrompt:          c.SystemPrompt,
+                CommentPromptTemplate: c.CommentPromptTemplate,
+                SelectorPrompt:        c.SelectorPrompt,
+                FixedMessage:          c.FixedMessage,
+        }
+}</span>
+
+type OutputConfig struct {
+        SlackAPI *SlackAPIConfig `yaml:"slack_api,omitempty"`
+        Misskey  *MisskeyConfig  `yaml:"misskey,omitempty"`
+}
+
+func (c *OutputConfig) ToEntity() (*entity.OutputConfig, error) <span class="cov8" title="1">{
+        var slackEntity *entity.SlackAPIConfig
+        if c.SlackAPI != nil </span><span class="cov8" title="1">{
+                var err error
+                slackEntity, err = c.SlackAPI.ToEntity()
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+        }
+
+        <span class="cov8" title="1">var misskeyEntity *entity.MisskeyConfig
+        if c.Misskey != nil </span><span class="cov8" title="1">{
+                var err error
+                misskeyEntity, err = c.Misskey.ToEntity()
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+        }
+
+        <span class="cov8" title="1">return &amp;entity.OutputConfig{
+                SlackAPI: slackEntity,
+                Misskey:  misskeyEntity,
+        }, nil</span>
+}
+
+// convertMessageTemplate は、メッセージテンプレートの別名変換処理を行う共通ヘルパー関数
+func convertMessageTemplate(template *string, converter *entity.TemplateAliasConverter) (*string, error) <span class="cov8" title="1">{
+        if template != nil &amp;&amp; *template != "" </span><span class="cov8" title="1">{
+                converted, err := converter.Convert(*template)
+                if err != nil </span><span class="cov0" title="0">{
+                        // 別名変換エラーの場合は、エラーをラップして返す
+                        return nil, fmt.Errorf("テンプレートエラー: %w", err)
+                }</span>
+                <span class="cov8" title="1">return &amp;converted, nil</span>
+        }
+        <span class="cov8" title="1">return template, nil</span>
+}
+
+type SlackAPIConfig struct {
+        Enabled         *bool   `yaml:"enabled,omitempty"`
+        APIToken        string  `yaml:"api_token"`
+        APITokenEnv     string  `yaml:"api_token_env,omitempty"`
+        Channel         string  `yaml:"channel"`
+        MessageTemplate *string `yaml:"message_template,omitempty"`
+        Username        *string `yaml:"username,omitempty"`
+        IconURL         *string `yaml:"icon_url,omitempty"`
+        IconEmoji       *string `yaml:"icon_emoji,omitempty"`
+        // APIURL はテスト用にSlack APIのエンドポイントURLをオーバーライドする（オプショナル）
+        APIURL *string `yaml:"api_url,omitempty"`
+}
+
+func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) <span class="cov8" title="1">{
+        // Enabledフィールドの後方互換性処理（省略時=true）
+        enabled := resolveEnabled(c.Enabled)
+
+        // 無効化されている場合は、APIトークンのバリデーションをスキップ
+        var apiToken entity.SecretString
+        if enabled </span><span class="cov8" title="1">{
+                var err error
+                apiToken, err = resolveSecretString(c.APIToken, c.APITokenEnv, "output.slack_api.api_token_env")
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+        }
+
+        // MessageTemplateの別名変換処理
+        <span class="cov8" title="1">converter := entity.NewSlackTemplateAliasConverter()
+        convertedTemplate, err := convertMessageTemplate(c.MessageTemplate, converter)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;entity.SlackAPIConfig{
+                Enabled:         enabled,
+                APIToken:        apiToken,
+                Channel:         c.Channel,
+                MessageTemplate: convertedTemplate,
+                Username:        c.Username,
+                IconURL:         c.IconURL,
+                IconEmoji:       c.IconEmoji,
+                APIURL:          c.APIURL,
+        }, nil</span>
+}
+
+type MisskeyConfig struct {
+        Enabled         *bool   `yaml:"enabled,omitempty"`
+        APIToken        string  `yaml:"api_token"`
+        APITokenEnv     string  `yaml:"api_token_env,omitempty"`
+        APIURL          string  `yaml:"api_url"`
+        MessageTemplate *string `yaml:"message_template,omitempty"`
+}
+
+func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) <span class="cov8" title="1">{
+        // Enabledフィールドの後方互換性処理（省略時=true）
+        enabled := resolveEnabled(c.Enabled)
+
+        // 無効化されている場合は、APIトークンのバリデーションをスキップ
+        var apiToken entity.SecretString
+        if enabled </span><span class="cov8" title="1">{
+                var err error
+                apiToken, err = resolveSecretString(c.APIToken, c.APITokenEnv, "output.misskey.api_token_env")
+                if err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+        }
+
+        // MessageTemplateの別名変換処理
+        <span class="cov8" title="1">converter := entity.NewMisskeyTemplateAliasConverter()
+        convertedTemplate, err := convertMessageTemplate(c.MessageTemplate, converter)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;entity.MisskeyConfig{
+                Enabled:         enabled,
+                APIToken:        apiToken,
+                APIURL:          c.APIURL,
+                MessageTemplate: convertedTemplate,
+        }, nil</span>
+}
+
+type ConfigRepository interface {
+        Save(config *Config) error
+        Load() (*Config, error)
+}
+
+type YamlConfigRepository struct {
+        filePath string
+}
+
+func NewYamlConfigRepository(filePath string) *YamlConfigRepository <span class="cov8" title="1">{
+        return &amp;YamlConfigRepository{
+                filePath: filePath,
+        }
+}</span>
+
+// SaveWithTemplate は、テンプレートを使用してコメント付きconfig.ymlファイルを生成する
+func (r *YamlConfigRepository) SaveWithTemplate() error <span class="cov0" title="0">{
+        // Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
+        file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+        if err != nil </span><span class="cov0" title="0">{
+                if os.IsExist(err) </span><span class="cov0" title="0">{
+                        return fmt.Errorf("config file already exists: %s", r.filePath)
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("failed to create config file: %s, %w", r.filePath, err)</span>
+        }
+        <span class="cov0" title="0">defer func() </span><span class="cov0" title="0">{ _ = file.Close() }</span>()
+
+        // 埋め込まれたYAMLファイルの内容を取得してファイルに書き込み
+        <span class="cov0" title="0">templateData, err := GetConfigTemplate()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to get config template: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">_, err = file.Write(templateData)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to write config template: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (r *YamlConfigRepository) Save(config *Config) error <span class="cov8" title="1">{
+        // Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
+        file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+        if err != nil </span><span class="cov8" title="1">{
+                if os.IsExist(err) </span><span class="cov8" title="1">{
+                        return fmt.Errorf("config file already exists: %s", r.filePath)
+                }</span>
+                <span class="cov8" title="1">return fmt.Errorf("failed to create config file: %s, %w", r.filePath, err)</span>
+        }
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = file.Close() }</span>()
+
+        // 構造体をYAMLエンコードして書き込み（既存のテスト互換性のため）
+        <span class="cov8" title="1">data, err := yaml.Marshal(config)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to encode config: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">if _, err := file.Write(data); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to write config: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// LoadRaw は設定ファイルを infra.Config 形式で読み込む（内部用）
+func (r *YamlConfigRepository) LoadRaw() (*Config, error) <span class="cov8" title="1">{
+        return LoadYAML[Config](r.filePath)
+}</span>
+
+// Load は設定ファイルを読み込んで domain.LoadedConfig 形式で返す（domain.ConfigRepository実装）
+func (r *YamlConfigRepository) Load() (*domain.LoadedConfig, error) <span class="cov8" title="1">{
+        infraConfig, err := r.LoadRaw()
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        // infra.Config を domain.LoadedConfig に変換
+        <span class="cov8" title="1">result := &amp;domain.LoadedConfig{}
+
+        if infraConfig.DefaultProfile != nil </span><span class="cov8" title="1">{
+                profile, err := infraConfig.DefaultProfile.ToEntity()
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to convert default profile: %w", err)
+                }</span>
+                <span class="cov8" title="1">result.DefaultProfile = profile</span>
+        }
+
+        <span class="cov8" title="1">if infraConfig.Cache != nil </span><span class="cov0" title="0">{
+                result.Cache = &amp;entity.CacheConfig{
+                        Enabled:       resolveCacheEnabled(infraConfig.Cache.Enabled),
+                        FilePath:      infraConfig.Cache.FilePath,
+                        MaxEntries:    infraConfig.Cache.MaxEntries,
+                        RetentionDays: infraConfig.Cache.RetentionDays,
+                }
+        }</span>
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+type CacheConfig struct {
+        Enabled       *bool  `yaml:"enabled,omitempty"`
+        FilePath      string `yaml:"file_path,omitempty"`
+        MaxEntries    int    `yaml:"max_entries,omitempty"`
+        RetentionDays int    `yaml:"retention_days,omitempty"`
+}
+
+// resolveCacheEnabled は、Enabledフィールドのデフォルト値処理を行う（キャッシュのデフォルトはfalse）
+func resolveCacheEnabled(e *bool) bool <span class="cov8" title="1">{
+        if e == nil </span><span class="cov8" title="1">{
+                return false
+        }</span>
+        <span class="cov8" title="1">return *e</span>
+}
+
+// expandPath は、パス中のチルダをホームディレクトリに展開し、相対パスを絶対パスに変換する
+func expandPath(path string) (string, error) <span class="cov8" title="1">{
+        if path == "" </span><span class="cov0" title="0">{
+                return path, nil
+        }</span>
+
+        // チルダ展開
+        <span class="cov8" title="1">if strings.HasPrefix(path, "~/") </span><span class="cov8" title="1">{
+                homeDir, err := os.UserHomeDir()
+                if err != nil </span><span class="cov0" title="0">{
+                        return "", fmt.Errorf("failed to get user home directory: %w", err)
+                }</span>
+                <span class="cov8" title="1">path = filepath.Join(homeDir, path[2:])</span>
+        }
+
+        // 相対パスを絶対パスに変換
+        <span class="cov8" title="1">if !filepath.IsAbs(path) </span><span class="cov8" title="1">{
+                absPath, err := filepath.Abs(path)
+                if err != nil </span><span class="cov0" title="0">{
+                        return "", fmt.Errorf("failed to convert to absolute path: %w", err)
+                }</span>
+                <span class="cov8" title="1">path = absPath</span>
+        }
+
+        <span class="cov8" title="1">return path, nil</span>
+}
+
+func (c *CacheConfig) ToEntity() (*entity.CacheConfig, error) <span class="cov8" title="1">{
+        if c == nil </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+
+        // デフォルト値の設定
+        <span class="cov8" title="1">enabled := resolveCacheEnabled(c.Enabled)
+
+        filePath := c.FilePath
+        if filePath == "" </span><span class="cov8" title="1">{
+                filePath = "~/.ai-feed/recommend_history.jsonl"
+        }</span>
+
+        // パス展開処理
+        <span class="cov8" title="1">expandedPath, err := expandPath(filePath)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to expand cache file path: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">maxEntries := c.MaxEntries
+        if maxEntries &lt;= 0 </span><span class="cov8" title="1">{
+                maxEntries = 1000
+        }</span>
+
+        <span class="cov8" title="1">retentionDays := c.RetentionDays
+        if retentionDays &lt;= 0 </span><span class="cov8" title="1">{
+                retentionDays = 30
+        }</span>
+
+        <span class="cov8" title="1">return &amp;entity.CacheConfig{
+                Enabled:       enabled,
+                FilePath:      expandedPath,
+                MaxEntries:    maxEntries,
+                RetentionDays: retentionDays,
+        }, nil</span>
+}
+
+func mergeString(target *string, source string) <span class="cov0" title="0">{
+        if source != "" </span><span class="cov0" title="0">{
+                *target = source
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file18" style="display: none">package fetch
+
+import (
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+        "github.com/mmcdole/gofeed"
+)
+
+type FetchClient struct{}
+
+func NewFetchClient() domain.FetchClient <span class="cov8" title="1">{
+        return &amp;FetchClient{}
+}</span>
+
+func (f *FetchClient) Fetch(url string) ([]entity.Article, error) <span class="cov0" title="0">{
+        fp := gofeed.NewParser()
+        feed, err := fp.ParseURL(url)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">var articles []entity.Article
+        for _, item := range feed.Items </span><span class="cov0" title="0">{
+                content := ""
+                if item.Content != "" </span><span class="cov0" title="0">{
+                        content = item.Content
+                }</span> else<span class="cov0" title="0"> if item.Description != "" </span><span class="cov0" title="0">{
+                        content = item.Description
+                }</span>
+
+                <span class="cov0" title="0">articles = append(articles, entity.Article{
+                        Title:     item.Title,
+                        Link:      item.Link,
+                        Published: item.PublishedParsed,
+                        Content:   content,
+                })</span>
+        }
+        <span class="cov0" title="0">return articles, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file19" style="display: none">package infra
+
+import (
+        "bufio"
+        "fmt"
+        "os"
+        "strings"
+
+        "gopkg.in/yaml.v3"
+)
+
+// LoadYAML はYAMLファイルを読み込んで指定された型にデコードする
+func LoadYAML[T any](filePath string) (*T, error) <span class="cov8" title="1">{
+        data, err := os.ReadFile(filePath)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to read YAML file: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">var v T
+        err = yaml.Unmarshal(data, &amp;v)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to unmarshal YAML: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;v, nil</span>
+}
+
+// ReadURLsFromFile reads URLs from a given file, one URL per line.
+func ReadURLsFromFile(filePath string) ([]string, error) <span class="cov8" title="1">{
+        file, err := os.Open(filePath)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
+        }</span>
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = file.Close() }</span>()
+
+        <span class="cov8" title="1">var urls []string
+        scanner := bufio.NewScanner(file)
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := strings.TrimSpace(scanner.Text())
+                if line != "" </span><span class="cov8" title="1">{
+                        urls = append(urls, line)
+                }</span>
+        }
+
+        <span class="cov8" title="1">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("error while scanning file %s: %w", filePath, err)
+        }</span>
+
+        <span class="cov8" title="1">return urls, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file20" style="display: none">package infra
+
+import (
+        "context"
+        "fmt"
+        "io"
+        "log/slog"
+        "os"
+        "strings"
+        "sync"
+        "time"
+
+        "github.com/fatih/color"
+)
+
+var levelColorMap = map[slog.Level]*color.Color{
+        slog.LevelDebug: color.New(color.FgHiBlack), // 灰色
+        slog.LevelInfo:  color.New(color.FgGreen),   // 緑色
+        slog.LevelWarn:  color.New(color.FgYellow),  // 黄色
+        slog.LevelError: color.New(color.FgRed),     // 赤色
+}
+
+// SimpleHandler は時刻 ログレベル ログメッセージの形式で出力するカスタムハンドラー
+type SimpleHandler struct {
+        opts slog.HandlerOptions
+        mu   sync.Mutex
+        out  io.Writer
+}
+
+// formatAttr はslog.Valueを文字列にフォーマットする
+// GroupValueの場合は展開して表示する
+func formatAttr(key string, value slog.Value) string <span class="cov0" title="0">{
+        switch value.Kind() </span>{
+        case slog.KindGroup:<span class="cov0" title="0">
+                // グループの場合は各属性を展開
+                attrs := value.Group()
+                if len(attrs) == 0 </span><span class="cov0" title="0">{
+                        return fmt.Sprintf("%s={}", key)
+                }</span>
+                <span class="cov0" title="0">parts := make([]string, 0, len(attrs))
+                for _, attr := range attrs </span><span class="cov0" title="0">{
+                        parts = append(parts, formatAttr(attr.Key, attr.Value.Resolve()))
+                }</span>
+                <span class="cov0" title="0">return fmt.Sprintf("%s={%s}", key, strings.Join(parts, " "))</span>
+        default:<span class="cov0" title="0">
+                return fmt.Sprintf("%s=%v", key, value.Any())</span>
+        }
+}
+
+// NewSimpleHandler は新しいSimpleHandlerを作成する
+func NewSimpleHandler(out io.Writer, opts *slog.HandlerOptions) *SimpleHandler <span class="cov8" title="1">{
+        if opts == nil </span><span class="cov0" title="0">{
+                opts = &amp;slog.HandlerOptions{}
+        }</span>
+        <span class="cov8" title="1">return &amp;SimpleHandler{
+                opts: *opts,
+                out:  out,
+        }</span>
+}
+
+// Enabled はログレベルが有効かどうかを判定する
+func (h *SimpleHandler) Enabled(_ context.Context, level slog.Level) bool <span class="cov8" title="1">{
+        return level &gt;= h.opts.Level.Level()
+}</span>
+
+// Handle はログレコードを処理して出力する
+func (h *SimpleHandler) Handle(_ context.Context, r slog.Record) error <span class="cov8" title="1">{
+        var timestamp string
+        var level string
+        var msg string
+
+        // タイムスタンプを取得
+        timestamp = r.Time.Format(time.RFC3339)
+
+        // ログレベルを取得し、色を適用
+        levelStr := r.Level.String()
+        if c, ok := levelColorMap[r.Level]; ok </span><span class="cov8" title="1">{
+                level = c.Sprint(levelStr)
+        }</span> else<span class="cov0" title="0"> {
+                level = levelStr
+        }</span>
+
+        // メッセージを取得
+        <span class="cov8" title="1">msg = r.Message
+
+        // 属性を追加
+        attrs := make([]string, 0)
+        r.Attrs(func(a slog.Attr) bool </span><span class="cov0" title="0">{
+                // Resolve()を使ってLogValue()メソッドを呼び出す
+                value := a.Value.Resolve()
+                attrs = append(attrs, formatAttr(a.Key, value))
+                return true
+        }</span>)
+
+        <span class="cov8" title="1">h.mu.Lock()
+        defer h.mu.Unlock()
+
+        // 出力形式: 時刻 ログレベル ログメッセージ [属性...]
+        if len(attrs) &gt; 0 </span><span class="cov0" title="0">{
+                _, err := fmt.Fprintf(h.out, "%s %s %s", timestamp, level, msg)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">for _, attr := range attrs </span><span class="cov0" title="0">{
+                        _, err = fmt.Fprintf(h.out, " %s", attr)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+                <span class="cov0" title="0">_, err = fmt.Fprintln(h.out)
+                return err</span>
+        }
+        <span class="cov8" title="1">_, err := fmt.Fprintf(h.out, "%s %s %s\n", timestamp, level, msg)
+        return err</span>
+}
+
+// WithAttrs は属性を追加したハンドラーを返す（この実装では新しいハンドラーを返す）
+func (h *SimpleHandler) WithAttrs(attrs []slog.Attr) slog.Handler <span class="cov0" title="0">{
+        return h
+}</span>
+
+// WithGroup はグループを追加したハンドラーを返す（この実装では新しいハンドラーを返す）
+func (h *SimpleHandler) WithGroup(name string) slog.Handler <span class="cov0" title="0">{
+        return h
+}</span>
+
+// InitLogger はslogを使用したロガーを初期化する
+// verboseがtrueの場合はDEBUGレベルをstderrに出力、falseの場合はログを出力しない
+func InitLogger(verbose bool) <span class="cov8" title="1">{
+        var handler slog.Handler
+        if !verbose </span><span class="cov8" title="1">{
+                // -vなしの場合はログを出力しない
+                handler = slog.NewTextHandler(io.Discard, nil)
+        }</span> else<span class="cov8" title="1"> {
+                // -vありの場合はDEBUGレベル以上をstderrに出力
+                opts := &amp;slog.HandlerOptions{
+                        Level: slog.LevelDebug,
+                }
+                handler = NewSimpleHandler(os.Stderr, opts)
+        }</span>
+
+        <span class="cov8" title="1">logger := slog.New(handler)
+        slog.SetDefault(logger)</span>
+}
+</pre>
+		
+		<pre class="file" id="file21" style="display: none">package message
+
+import (
+        "bytes"
+        "fmt"
+        "text/template"
+
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// MessageBuilder はテンプレートを使用してメッセージを生成する
+type MessageBuilder struct {
+        recommendTemplate *template.Template
+}
+
+// NewMessageBuilder は新しいMessageBuilderを作成する
+func NewMessageBuilder(recommendTemplate string) (*MessageBuilder, error) <span class="cov8" title="1">{
+        // 別名記法を既存記法に変換
+        converter := entity.NewSlackTemplateAliasConverter()
+        convertedTemplate, err := converter.Convert(recommendTemplate)
+        if err != nil </span><span class="cov8" title="1">{
+                // 別名変換エラーの場合は、エラーをラップして返す
+                return nil, fmt.Errorf("テンプレートエラー: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">tmpl, err := template.New("recommend").Parse(convertedTemplate)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;MessageBuilder{
+                recommendTemplate: tmpl,
+        }, nil</span>
+}
+
+// templateData はテンプレートで使用するデータ構造
+type templateData struct {
+        Article      entity.Article
+        Comment      *string
+        FixedMessage string
+}
+
+// BuildRecommendMessage はentity.Recommendとfixed messageを元にメッセージを生成する
+func (b *MessageBuilder) BuildRecommendMessage(r *entity.Recommend, fixedMessage string) (string, error) <span class="cov8" title="1">{
+        if r == nil </span><span class="cov8" title="1">{
+                return "", fmt.Errorf("recommend cannot be nil")
+        }</span>
+
+        <span class="cov8" title="1">data := templateData{
+                Article:      r.Article,
+                Comment:      r.Comment,
+                FixedMessage: fixedMessage,
+        }
+
+        var buf bytes.Buffer
+        err := b.recommendTemplate.Execute(&amp;buf, data)
+        if err != nil </span><span class="cov8" title="1">{
+                return "", err
+        }</span>
+
+        <span class="cov8" title="1">return buf.String(), nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file22" style="display: none">package message
+
+import (
+        "bytes"
+        "fmt"
+        "net/http"
+        "net/url"
+        "text/template"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+        "github.com/yitsushi/go-misskey"
+        "github.com/yitsushi/go-misskey/models"
+        "github.com/yitsushi/go-misskey/services/notes"
+)
+
+// MisskeyTemplateData はMisskeyメッセージテンプレートで使用するデータ
+type MisskeyTemplateData struct {
+        Article      *entity.Article
+        Comment      *string
+        FixedMessage string
+}
+
+// MisskeySender はMisskey APIと通信するためのクライアントです。
+
+type MisskeySender struct {
+        client *misskey.Client
+        tmpl   *template.Template
+}
+
+// NewMisskeySender は新しいMisskeySenderのインスタンスを作成します。
+func NewMisskeySender(instanceURL, accessToken string, messageTemplate *string) (domain.MessageSender, error) <span class="cov8" title="1">{
+        parsedURL, err := url.Parse(instanceURL)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to parse instance URL: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">client, err := misskey.NewClientWithOptions(
+                misskey.WithBaseURL(parsedURL.Scheme, parsedURL.Host, parsedURL.Path),
+                misskey.WithAPIToken(accessToken),
+                misskey.WithHTTPClient(&amp;http.Client{}),
+        )
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to create Misskey client: %w", err)
+        }</span>
+
+        // 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
+        // ただし、テストやバリデーション前の呼び出しに対応するため念のためnilチェックを行う
+        <span class="cov8" title="1">if messageTemplate == nil || *messageTemplate == "" </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("MessageTemplate is required and must be validated before creating MisskeySender")
+        }</span>
+        <span class="cov8" title="1">tmpl := template.Must(template.New("misskey_message").Parse(*messageTemplate))
+
+        return &amp;MisskeySender{
+                client: client,
+                tmpl:   tmpl,
+        }, nil</span>
+}
+
+// SendRecommend はMisskeyにノートを投稿します。
+func (v *MisskeySender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error <span class="cov0" title="0">{
+        if recommend == nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("recommend is nil")
+        }</span>
+
+        // テンプレートデータを作成
+        <span class="cov0" title="0">templateData := &amp;MisskeyTemplateData{
+                Article:      &amp;recommend.Article,
+                Comment:      recommend.Comment,
+                FixedMessage: fixedMessage,
+        }
+
+        // パース済みテンプレートを直接実行
+        var buf bytes.Buffer
+        if err := v.tmpl.Execute(&amp;buf, templateData); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">text := buf.String()
+
+        params := notes.CreateRequest{
+                Text:       &amp;text,
+                Visibility: models.VisibilityPublic,
+        }
+
+        _, err := v.client.Notes().Create(params)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to create note: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// ServiceName はサービス名を返す
+func (v *MisskeySender) ServiceName() string <span class="cov0" title="0">{
+        return "Misskey"
+}</span>
+</pre>
+		
+		<pre class="file" id="file23" style="display: none">package message
+
+import (
+        "bytes"
+        "text/template"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+        "github.com/slack-go/slack"
+)
+
+type SlackTemplateData struct {
+        Article      *entity.Article
+        Comment      *string
+        FixedMessage string
+}
+
+type slackClient interface {
+        PostMessage(channelID string, options ...slack.MsgOption) (string, string, error)
+}
+
+type SlackSender struct {
+        client slackClient
+        config *entity.SlackAPIConfig
+        tmpl   *template.Template
+}
+
+func NewSlackSender(config *entity.SlackAPIConfig, client slackClient) domain.MessageSender <span class="cov8" title="1">{
+        // 設定読み込み時にテンプレートは検証済みのため、template.Mustが安全に使用できる
+        // ただし、テストやバリデーション前の呼び出しに対応するため念のためnilチェックを行う
+        if config.MessageTemplate == nil || *config.MessageTemplate == "" </span><span class="cov0" title="0">{
+                panic("MessageTemplate is required and must be validated before creating SlackSender")</span>
+        }
+        <span class="cov8" title="1">tmpl := template.Must(template.New("slack_message").Parse(*config.MessageTemplate))
+
+        return &amp;SlackSender{
+                client: client,
+                config: config,
+                tmpl:   tmpl,
+        }</span>
+}
+
+func (s *SlackSender) SendRecommend(recommend *entity.Recommend, fixedMessage string) error <span class="cov8" title="1">{
+        // テンプレートデータを作成
+        templateData := &amp;SlackTemplateData{
+                Article:      &amp;recommend.Article,
+                Comment:      recommend.Comment,
+                FixedMessage: fixedMessage,
+        }
+
+        // パース済みテンプレートを直接実行
+        var buf bytes.Buffer
+        if err := s.tmpl.Execute(&amp;buf, templateData); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">return s.postMessage(buf.String())</span>
+}
+
+func (s *SlackSender) postMessage(msg string) error <span class="cov8" title="1">{
+        options := []slack.MsgOption{
+                slack.MsgOptionText(msg, false),
+        }
+        if s.config.Username != nil &amp;&amp; *s.config.Username != "" </span><span class="cov8" title="1">{
+                options = append(options, slack.MsgOptionUsername(*s.config.Username))
+        }</span>
+        <span class="cov8" title="1">if s.config.IconURL != nil &amp;&amp; *s.config.IconURL != "" </span><span class="cov8" title="1">{
+                options = append(options, slack.MsgOptionIconURL(*s.config.IconURL))
+        }</span>
+        <span class="cov8" title="1">if s.config.IconEmoji != nil &amp;&amp; *s.config.IconEmoji != "" </span><span class="cov8" title="1">{
+                options = append(options, slack.MsgOptionIconEmoji(*s.config.IconEmoji))
+        }</span>
+
+        <span class="cov8" title="1">_, _, err := s.client.PostMessage(
+                s.config.Channel,
+                options...,
+        )
+        return err</span>
+}
+
+// ServiceName はサービス名を返す
+func (s *SlackSender) ServiceName() string <span class="cov0" title="0">{
+        return "Slack"
+}</span>
+</pre>
+		
+		<pre class="file" id="file24" style="display: none">package profile
+
+import (
+        "fmt"
+        "os"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+        "github.com/canpok1/ai-feed/internal/infra"
+)
+
+// YamlProfileRepository はYAML形式でプロファイルを永続化する実装
+type YamlProfileRepository struct {
+        filePath string
+}
+
+// NewYamlProfileRepository は新しいYamlProfileRepositoryを作成する
+func NewYamlProfileRepository(filePath string) domain.ProfileRepository <span class="cov0" title="0">{
+        return &amp;YamlProfileRepository{
+                filePath: filePath,
+        }
+}</span>
+
+// NewYamlProfileRepositoryImpl は具体的な実装を返す（infra.Profileを直接扱う必要がある内部パッケージやテストで使用）
+func NewYamlProfileRepositoryImpl(filePath string) *YamlProfileRepository <span class="cov8" title="1">{
+        return &amp;YamlProfileRepository{
+                filePath: filePath,
+        }
+}</span>
+
+// LoadProfile はプロファイルをファイルから読み込み、entity.Profileを返す（domain.ProfileRepositoryインターフェース用）
+func (r *YamlProfileRepository) LoadProfile() (*entity.Profile, error) <span class="cov8" title="1">{
+        // YAMLファイルから直接infra.Profileを読み込み
+        infraProfile, err := infra.LoadYAML[infra.Profile](r.filePath)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        // entity.Profileに変換
+        <span class="cov8" title="1">return infraProfile.ToEntity()</span>
+}
+
+// SaveProfileTemplate はテンプレートを使用してコメント付きprofile.ymlファイルを生成する
+func (r *YamlProfileRepository) SaveProfileTemplate() error <span class="cov0" title="0">{
+        // Use O_WRONLY|O_CREATE|O_EXCL to atomically create the file only if it doesn't exist.
+        file, err := os.OpenFile(r.filePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+        if err != nil </span><span class="cov0" title="0">{
+                if os.IsExist(err) </span><span class="cov0" title="0">{
+                        return fmt.Errorf("profile file already exists: %s", r.filePath)
+                }</span>
+                <span class="cov0" title="0">return fmt.Errorf("failed to create profile file: %s, %w", r.filePath, err)</span>
+        }
+        <span class="cov0" title="0">defer func() </span><span class="cov0" title="0">{ _ = file.Close() }</span>()
+
+        // 埋め込まれたYAMLファイルの内容を取得してファイルに書き込み
+        <span class="cov0" title="0">templateData, err := infra.GetProfileTemplate()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to get profile template: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">_, err = file.Write(templateData)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to write profile template: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file25" style="display: none">package selector
+
+import (
+        "fmt"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// ArticleSelectorFactory は ArticleSelector を生成するファクトリ
+type ArticleSelectorFactory struct{}
+
+// NewArticleSelectorFactory は新しいファクトリを作成する
+func NewArticleSelectorFactory() *ArticleSelectorFactory <span class="cov0" title="0">{
+        return &amp;ArticleSelectorFactory{}
+}</span>
+
+// MakeArticleSelector は設定に基づいて適切な ArticleSelector を生成する
+func (f *ArticleSelectorFactory) MakeArticleSelector(
+        aiConfig *entity.AIConfig,
+        promptConfig *entity.PromptConfig,
+) (domain.ArticleSelector, error) <span class="cov0" title="0">{
+        if aiConfig == nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("ai config is nil")
+        }</span>
+        <span class="cov0" title="0">if promptConfig == nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("prompt config is nil")
+        }</span>
+
+        // Mock設定が有効な場合はモック実装を返す
+        <span class="cov0" title="0">if aiConfig.Mock != nil &amp;&amp; aiConfig.Mock.Enabled </span><span class="cov0" title="0">{
+                return newMockArticleSelector(aiConfig.Mock.SelectorMode)
+        }</span>
+
+        // Gemini設定がある場合はGemini実装を返す
+        <span class="cov0" title="0">if aiConfig.Gemini != nil </span><span class="cov0" title="0">{
+                return newGeminiArticleSelector(aiConfig, promptConfig)
+        }</span>
+
+        <span class="cov0" title="0">return nil, fmt.Errorf("no supported AI configuration found")</span>
+}
+</pre>
+		
+		<pre class="file" id="file26" style="display: none">package selector
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "strings"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+        "google.golang.org/genai"
+)
+
+// geminiArticleSelector はGemini APIを使用した記事選択の実装
+type geminiArticleSelector struct {
+        client       *genai.Client
+        modelType    string
+        systemPrompt string
+        prompt       string
+}
+
+// newGeminiArticleSelector は新しいgeminiArticleSelectorを作成する
+func newGeminiArticleSelector(
+        aiConfig *entity.AIConfig,
+        promptConfig *entity.PromptConfig,
+) (domain.ArticleSelector, error) <span class="cov0" title="0">{
+        client, err := genai.NewClient(context.Background(), &amp;genai.ClientConfig{
+                APIKey:  aiConfig.Gemini.APIKey.Value(),
+                Backend: genai.BackendGeminiAPI,
+        })
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to create client: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return &amp;geminiArticleSelector{
+                client:       client,
+                modelType:    aiConfig.Gemini.Type,
+                systemPrompt: promptConfig.SystemPrompt,
+                prompt:       promptConfig.SelectorPrompt,
+        }, nil</span>
+}
+
+func (g *geminiArticleSelector) Select(ctx context.Context, articles []entity.Article) (*entity.Article, error) <span class="cov0" title="0">{
+        if len(articles) == 0 </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("no articles provided")
+        }</span>
+
+        // プロンプト生成
+        <span class="cov0" title="0">prompt := g.buildSelectionPrompt(articles)
+
+        // Gemini APIに送信（構造化出力）
+        config := &amp;genai.GenerateContentConfig{
+                SystemInstruction: genai.NewContentFromText(g.systemPrompt, ""),
+                ResponseMIMEType:  "application/json",
+                ResponseSchema: &amp;genai.Schema{
+                        Type: genai.TypeObject,
+                        Properties: map[string]*genai.Schema{
+                                "selected_index": {
+                                        Type:        genai.TypeInteger,
+                                        Description: "選択した記事のインデックス（0始まり）",
+                                },
+                        },
+                        Required: []string{"selected_index"},
+                },
+        }
+        resp, err := g.client.Models.GenerateContent(ctx, g.modelType, genai.Text(prompt), config)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to generate content: %w", err)
+        }</span>
+
+        // レスポンスパース
+        <span class="cov0" title="0">var result struct {
+                SelectedIndex int `json:"selected_index"`
+        }
+        if err := json.Unmarshal([]byte(resp.Text()), &amp;result); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to parse response: %w", err)
+        }</span>
+
+        // バリデーション
+        <span class="cov0" title="0">if result.SelectedIndex &lt; 0 || result.SelectedIndex &gt;= len(articles) </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("invalid index: %d (total articles: %d)", result.SelectedIndex, len(articles))
+        }</span>
+
+        <span class="cov0" title="0">return &amp;articles[result.SelectedIndex], nil</span>
+}
+
+// buildSelectionPrompt は記事選択用のプロンプトを生成する
+func (g *geminiArticleSelector) buildSelectionPrompt(articles []entity.Article) string <span class="cov0" title="0">{
+        var sb strings.Builder
+
+        // プロンプトが設定されていればそれを使用
+        if g.prompt != "" </span><span class="cov0" title="0">{
+                sb.WriteString(g.prompt)
+                sb.WriteString("\n\n")
+        }</span>
+
+        // 記事リストを追加
+        <span class="cov0" title="0">for i, article := range articles </span><span class="cov0" title="0">{
+                sb.WriteString(fmt.Sprintf("[%d] タイトル: %s\n", i, article.Title))
+                sb.WriteString(fmt.Sprintf("URL: %s\n", article.Link))
+                sb.WriteString(fmt.Sprintf("内容: %s\n\n", article.Content))
+        }</span>
+
+        <span class="cov0" title="0">return sb.String()</span>
+}
+</pre>
+		
+		<pre class="file" id="file27" style="display: none">package selector
+
+import (
+        "context"
+        "fmt"
+        "math/rand"
+
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// mockArticleSelector はテスト用のモック記事選択器
+type mockArticleSelector struct {
+        mode string // "first", "random", "last"
+}
+
+// newMockArticleSelector は新しいモック記事選択器を作成する
+func newMockArticleSelector(mode string) (*mockArticleSelector, error) <span class="cov8" title="1">{
+        if !entity.IsValidMockSelectorMode(mode) </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("invalid selector mode: %s (must be first, random, or last)", mode)
+        }</span>
+        <span class="cov8" title="1">return &amp;mockArticleSelector{mode: mode}, nil</span>
+}
+
+// Select は設定されたモードに基づいて記事を選択する
+func (s *mockArticleSelector) Select(_ context.Context, articles []entity.Article) (*entity.Article, error) <span class="cov8" title="1">{
+        if len(articles) == 0 </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("no articles to select from")
+        }</span>
+
+        <span class="cov8" title="1">var index int
+        switch s.mode </span>{
+        case "first":<span class="cov8" title="1">
+                index = 0</span>
+        case "last":<span class="cov8" title="1">
+                index = len(articles) - 1</span>
+        case "random":<span class="cov8" title="1">
+                index = rand.Intn(len(articles))</span>
+        default:<span class="cov0" title="0">
+                index = 0</span>
+        }
+
+        <span class="cov8" title="1">return &amp;articles[index], nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file28" style="display: none">package infra
+
+import (
+        _ "embed"
+)
+
+//go:embed templates/config.yml
+var configTemplateData []byte
+
+//go:embed templates/profile.yml
+var profileTemplateData []byte
+
+// GetConfigTemplate はconfig.ymlテンプレートの内容を取得する
+func GetConfigTemplate() ([]byte, error) <span class="cov8" title="1">{
+        return configTemplateData, nil
+}</span>
+
+// GetProfileTemplate はprofile.ymlテンプレートの内容を取得する
+func GetProfileTemplate() ([]byte, error) <span class="cov8" title="1">{
+        return profileTemplateData, nil
+}</span>
+</pre>
+		
+		<pre class="file" id="file29" style="display: none">package infra
+
+import (
+        "html/template"
+        "strings"
+
+        "github.com/canpok1/ai-feed/internal/domain"
+        "github.com/canpok1/ai-feed/internal/domain/entity"
+)
+
+// ConfigValidatorFactory はConfigValidatorを生成するファクトリー
+type ConfigValidatorFactory struct{}
+
+// NewConfigValidatorFactory はConfigValidatorFactoryを生成する
+func NewConfigValidatorFactory() *ConfigValidatorFactory <span class="cov8" title="1">{
+        return &amp;ConfigValidatorFactory{}
+}</span>
+
+// Create は domain.ValidatorFactory インターフェースの実装
+func (f *ConfigValidatorFactory) Create(config *domain.LoadedConfig, profile *entity.Profile) domain.Validator <span class="cov8" title="1">{
+        // domain.LoadedConfig を infra.Config に変換
+        infraConfig := &amp;Config{}
+
+        // DefaultProfileはprofileパラメータに既にマージ済みなので、ここでは設定しない
+
+        if config.Cache != nil </span><span class="cov0" title="0">{
+                enabled := config.Cache.Enabled
+                infraConfig.Cache = &amp;CacheConfig{
+                        Enabled:       &amp;enabled,
+                        FilePath:      config.Cache.FilePath,
+                        MaxEntries:    config.Cache.MaxEntries,
+                        RetentionDays: config.Cache.RetentionDays,
+                }
+        }</span>
+
+        <span class="cov8" title="1">return NewConfigValidator(infraConfig, profile)</span>
+}
+
+// ConfigValidator は設定のバリデーションを行う
+type ConfigValidator struct {
+        config  *Config
+        profile *entity.Profile
+}
+
+// NewConfigValidator はConfigValidatorを生成する
+func NewConfigValidator(config *Config, profile *entity.Profile) *ConfigValidator <span class="cov8" title="1">{
+        return &amp;ConfigValidator{
+                config:  config,
+                profile: profile,
+        }
+}</span>
+
+// Validate は設定をバリデーションする
+func (v *ConfigValidator) Validate() (*domain.ValidationResult, error) <span class="cov8" title="1">{
+        result := &amp;domain.ValidationResult{
+                Valid:  true,
+                Errors: []domain.ValidationError{},
+                Summary: domain.ConfigSummary{
+                        GeminiConfigured:                 false,
+                        GeminiModel:                      "",
+                        SystemPromptConfigured:           false,
+                        CommentPromptConfigured:          false,
+                        FixedMessageConfigured:           false,
+                        SlackConfigured:                  false,
+                        SlackChannel:                     "",
+                        SlackMessageTemplateConfigured:   false,
+                        MisskeyConfigured:                false,
+                        MisskeyAPIURL:                    "",
+                        MisskeyMessageTemplateConfigured: false,
+                        CacheEnabled:                     false,
+                        CacheFilePath:                    "",
+                        CacheMaxEntries:                  0,
+                        CacheRetentionDays:               0,
+                },
+        }
+
+        // AI設定のバリデーション
+        v.validateAI(result)
+
+        // プロンプト設定のバリデーション
+        v.validatePrompt(result)
+
+        // 出力先設定のバリデーション（設定されている場合のみ）
+        v.validateOutput(result)
+
+        // キャッシュ設定のバリデーション（設定されている場合のみ）
+        v.validateCache(result)
+
+        // エラーがある場合はValidをfalseに設定
+        if len(result.Errors) &gt; 0 </span><span class="cov8" title="1">{
+                result.Valid = false
+        }</span>
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// validateAI はAI設定をバリデーションする
+func (v *ConfigValidator) validateAI(result *domain.ValidationResult) <span class="cov8" title="1">{
+        if v.profile.AI == nil </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "ai",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "AI設定が設定されていません",
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">if v.profile.AI.Gemini == nil </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "ai.gemini",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Gemini設定が設定されていません",
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">gemini := v.profile.AI.Gemini
+
+        // Type のバリデーション
+        if gemini.Type == "" </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "ai.gemini.type",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Geminiモデルタイプが設定されていません",
+                })
+        }</span>
+
+        // APIKey のバリデーション
+        <span class="cov8" title="1">if gemini.APIKey.IsEmpty() </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "ai.gemini.api_key",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Gemini APIキーが設定されていません",
+                })
+        }</span> else<span class="cov8" title="1"> if isDummyValue(gemini.APIKey.Value()) </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "ai.gemini.api_key",
+                        Type:    domain.ValidationErrorTypeDummyValue,
+                        Message: "Gemini APIキーがダミー値です: \"" + gemini.APIKey.Value() + "\"",
+                })
+        }</span>
+
+        // サマリーの更新
+        <span class="cov8" title="1">if gemini.Type != "" &amp;&amp; !gemini.APIKey.IsEmpty() &amp;&amp; !isDummyValue(gemini.APIKey.Value()) </span><span class="cov8" title="1">{
+                result.Summary.GeminiConfigured = true
+                result.Summary.GeminiModel = gemini.Type
+        }</span>
+}
+
+// validatePrompt はプロンプト設定をバリデーションする
+func (v *ConfigValidator) validatePrompt(result *domain.ValidationResult) <span class="cov8" title="1">{
+        if v.profile.Prompt == nil </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "prompt",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "プロンプト設定が設定されていません",
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">prompt := v.profile.Prompt
+
+        // SystemPrompt のバリデーション
+        if err := entity.ValidateRequired(prompt.SystemPrompt, "システムプロンプト"); err != nil </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "prompt.system_prompt",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: err.Error(),
+                })
+        }</span>
+
+        // CommentPromptTemplate のバリデーション
+        <span class="cov8" title="1">if err := entity.ValidateRequired(prompt.CommentPromptTemplate, "コメントプロンプトテンプレート"); err != nil </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "prompt.comment_prompt_template",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: err.Error(),
+                })
+        }</span>
+
+        // サマリーの更新
+        <span class="cov8" title="1">if prompt.SystemPrompt != "" </span><span class="cov8" title="1">{
+                result.Summary.SystemPromptConfigured = true
+        }</span>
+        <span class="cov8" title="1">if prompt.CommentPromptTemplate != "" </span><span class="cov8" title="1">{
+                result.Summary.CommentPromptConfigured = true
+        }</span>
+        <span class="cov8" title="1">if prompt.FixedMessage != "" </span><span class="cov0" title="0">{
+                result.Summary.FixedMessageConfigured = true
+        }</span>
+}
+
+// validateOutput は出力先設定をバリデーションする
+func (v *ConfigValidator) validateOutput(result *domain.ValidationResult) <span class="cov8" title="1">{
+        if v.profile.Output == nil </span><span class="cov8" title="1">{
+                return
+        }</span>
+
+        <span class="cov8" title="1">output := v.profile.Output
+
+        // Slack API設定のバリデーション
+        if output.SlackAPI != nil &amp;&amp; output.SlackAPI.Enabled </span><span class="cov8" title="1">{
+                v.validateSlackAPI(output.SlackAPI, result)
+        }</span>
+
+        // Misskey設定のバリデーション
+        <span class="cov8" title="1">if output.Misskey != nil &amp;&amp; output.Misskey.Enabled </span><span class="cov8" title="1">{
+                v.validateMisskey(output.Misskey, result)
+        }</span>
+}
+
+// validateCache はキャッシュ設定をバリデーションする
+func (v *ConfigValidator) validateCache(result *domain.ValidationResult) <span class="cov8" title="1">{
+        if v.config.Cache == nil </span><span class="cov8" title="1">{
+                return
+        }</span>
+
+        // entity化してバリデーション
+        <span class="cov8" title="1">cacheEntity, err := v.config.Cache.ToEntity()
+        if err != nil </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "cache",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: err.Error(),
+                })
+                return
+        }</span>
+
+        <span class="cov8" title="1">if cacheEntity == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+
+        // entity層のバリデーションを実行
+        <span class="cov8" title="1">validationResult := cacheEntity.Validate()
+        if !validationResult.IsValid </span><span class="cov0" title="0">{
+                for _, errMsg := range validationResult.Errors </span><span class="cov0" title="0">{
+                        result.Errors = append(result.Errors, domain.ValidationError{
+                                Field:   "cache.file_path",
+                                Type:    domain.ValidationErrorTypeRequired,
+                                Message: errMsg,
+                        })
+                }</span>
+        }
+
+        // サマリーの更新
+        <span class="cov8" title="1">if cacheEntity.Enabled </span><span class="cov8" title="1">{
+                result.Summary.CacheEnabled = true
+                result.Summary.CacheFilePath = cacheEntity.FilePath
+                result.Summary.CacheMaxEntries = cacheEntity.MaxEntries
+                result.Summary.CacheRetentionDays = cacheEntity.RetentionDays
+        }</span>
+}
+
+// validateSlackAPI はSlack API設定をバリデーションする
+func (v *ConfigValidator) validateSlackAPI(slack *entity.SlackAPIConfig, result *domain.ValidationResult) <span class="cov8" title="1">{
+        if slack.APIToken.IsEmpty() </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.slack_api.api_token",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Slack APIトークンが設定されていません",
+                })
+        }</span> else<span class="cov8" title="1"> if isDummyValue(slack.APIToken.Value()) </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.slack_api.api_token",
+                        Type:    domain.ValidationErrorTypeDummyValue,
+                        Message: "Slack APIトークンがダミー値です: \"" + slack.APIToken.Value() + "\"",
+                })
+        }</span>
+
+        <span class="cov8" title="1">if slack.Channel == "" </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.slack_api.channel",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Slackチャンネルが設定されていません",
+                })
+        }</span>
+
+        // MessageTemplate のバリデーション
+        <span class="cov8" title="1">if slack.MessageTemplate == nil || strings.TrimSpace(*slack.MessageTemplate) == "" </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.slack_api.message_template",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Slackメッセージテンプレートが設定されていません",
+                })
+        }</span> else<span class="cov8" title="1"> {
+                // テンプレート構文のチェック
+                if _, err := template.New("slack_message").Parse(*slack.MessageTemplate); err != nil </span><span class="cov8" title="1">{
+                        result.Errors = append(result.Errors, domain.ValidationError{
+                                Field:   "output.slack_api.message_template",
+                                Type:    domain.ValidationErrorTypeInvalid,
+                                Message: "Slackメッセージテンプレートが無効です: " + err.Error(),
+                        })
+                }</span>
+        }
+
+        // IconURL と IconEmoji の排他チェック
+        <span class="cov8" title="1">if slack.IconURL != nil &amp;&amp; *slack.IconURL != "" &amp;&amp; slack.IconEmoji != nil &amp;&amp; *slack.IconEmoji != "" </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.slack_api",
+                        Type:    domain.ValidationErrorTypeInvalid,
+                        Message: "Slack設定エラー: icon_urlとicon_emojiを同時に指定することはできません。",
+                })
+        }</span>
+
+        // サマリーの更新
+        <span class="cov8" title="1">if !slack.APIToken.IsEmpty() &amp;&amp; !isDummyValue(slack.APIToken.Value()) &amp;&amp; slack.Channel != "" </span><span class="cov8" title="1">{
+                result.Summary.SlackConfigured = true
+                result.Summary.SlackChannel = slack.Channel
+                if slack.MessageTemplate != nil &amp;&amp; strings.TrimSpace(*slack.MessageTemplate) != "" </span><span class="cov8" title="1">{
+                        result.Summary.SlackMessageTemplateConfigured = true
+                }</span>
+        }
+}
+
+// validateMisskey はMisskey設定をバリデーションする
+func (v *ConfigValidator) validateMisskey(misskey *entity.MisskeyConfig, result *domain.ValidationResult) <span class="cov8" title="1">{
+        if misskey.APIToken.IsEmpty() </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.misskey.api_token",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Misskey APIトークンが設定されていません",
+                })
+        }</span> else<span class="cov8" title="1"> if isDummyValue(misskey.APIToken.Value()) </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.misskey.api_token",
+                        Type:    domain.ValidationErrorTypeDummyValue,
+                        Message: "Misskey APIトークンがダミー値です: \"" + misskey.APIToken.Value() + "\"",
+                })
+        }</span>
+
+        <span class="cov8" title="1">if misskey.APIURL == "" </span><span class="cov0" title="0">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.misskey.api_url",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Misskey API URLが設定されていません",
+                })
+        }</span>
+
+        // MessageTemplate のバリデーション
+        <span class="cov8" title="1">if misskey.MessageTemplate == nil || strings.TrimSpace(*misskey.MessageTemplate) == "" </span><span class="cov8" title="1">{
+                result.Errors = append(result.Errors, domain.ValidationError{
+                        Field:   "output.misskey.message_template",
+                        Type:    domain.ValidationErrorTypeRequired,
+                        Message: "Misskeyメッセージテンプレートが設定されていません",
+                })
+        }</span> else<span class="cov8" title="1"> {
+                // テンプレート構文のチェック
+                if _, err := template.New("misskey_message").Parse(*misskey.MessageTemplate); err != nil </span><span class="cov8" title="1">{
+                        result.Errors = append(result.Errors, domain.ValidationError{
+                                Field:   "output.misskey.message_template",
+                                Type:    domain.ValidationErrorTypeInvalid,
+                                Message: "Misskeyメッセージテンプレートが無効です: " + err.Error(),
+                        })
+                }</span>
+        }
+
+        // サマリーの更新
+        <span class="cov8" title="1">if !misskey.APIToken.IsEmpty() &amp;&amp; !isDummyValue(misskey.APIToken.Value()) &amp;&amp; misskey.APIURL != "" </span><span class="cov8" title="1">{
+                result.Summary.MisskeyConfigured = true
+                result.Summary.MisskeyAPIURL = misskey.APIURL
+                if misskey.MessageTemplate != nil &amp;&amp; strings.TrimSpace(*misskey.MessageTemplate) != "" </span><span class="cov8" title="1">{
+                        result.Summary.MisskeyMessageTemplateConfigured = true
+                }</span>
+        }
+}
+
+// dummyValues はダミー値として認識する文字列のセット
+var dummyValues = map[string]struct{}{
+        "xxxxxx":                             {},
+        "YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE": {},
+}
+
+// isDummyValue はダミー値かどうかを判定する
+func isDummyValue(value string) bool <span class="cov8" title="1">{
+        _, exists := dummyValues[value]
+        return exists
+}</span>
+</pre>
+		
+		<pre class="file" id="file30" style="display: none">package testutil
+
+// BoolPtr はbool値へのポインタを返すテスト用ヘルパー関数
+func BoolPtr(b bool) *bool <span class="cov8" title="1">{
+        return &amp;b
+}</span>
+
+// StringPtr は文字列値へのポインタを返すテスト用ヘルパー関数
+func StringPtr(s string) *string <span class="cov8" title="1">{
+        return &amp;s
+}</span>
+</pre>
+		
+		<pre class="file" id="file31" style="display: none">package version
+
+import (
+        "runtime/debug"
+)
+
+// GetVersion はバージョン情報を取得する
+// ビルド時に設定されたバージョンを優先し、"dev"の場合はビルド情報から取得する
+func GetVersion(buildTimeVersion string) string <span class="cov8" title="1">{
+        if buildTimeVersion != "dev" </span><span class="cov8" title="1">{
+                return buildTimeVersion
+        }</span>
+
+        // go installでビルドされた場合、ビルド情報からバージョンを取得
+        <span class="cov8" title="1">if info, ok := debug.ReadBuildInfo(); ok </span><span class="cov8" title="1">{
+                if info.Main.Version != "(devel)" &amp;&amp; info.Main.Version != "" </span><span class="cov0" title="0">{
+                        return info.Main.Version
+                }</span>
+        }
+
+        <span class="cov8" title="1">return "dev"</span>
+}
+
+// GetVersionWithReadBuildInfo はテスト時にモック可能なバージョン取得関数
+func GetVersionWithReadBuildInfo(buildTimeVersion string, readBuildInfoFunc func() (*debug.BuildInfo, bool)) string <span class="cov8" title="1">{
+        if buildTimeVersion != "dev" </span><span class="cov8" title="1">{
+                return buildTimeVersion
+        }</span>
+
+        // go installでビルドされた場合、ビルド情報からバージョンを取得
+        <span class="cov8" title="1">if info, ok := readBuildInfoFunc(); ok </span><span class="cov8" title="1">{
+                if info.Main.Version != "(devel)" &amp;&amp; info.Main.Version != "" </span><span class="cov8" title="1">{
+                        return info.Main.Version
+                }</span>
+        }
+
+        <span class="cov8" title="1">return "dev"</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
