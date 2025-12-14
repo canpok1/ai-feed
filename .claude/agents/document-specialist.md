@@ -212,19 +212,20 @@ document-specialistは、作成された文書が `docs/07_document_rules.md` �
 [改善の必要性について説明]
 ```
 
-## coding-rules-reviewerエージェントとの連携
+## coding-specialistエージェントとの連携
 
-document-specialistとcoding-rules-reviewerは補完的な関係にあります：
+document-specialistとcoding-specialistは補完的な関係にあります：
 
-- **coding-rules-reviewer**: コードの品質、セキュリティ、ベストプラクティス遵守を評価
+- **coding-specialist**: コードの品質、セキュリティ、ベストプラクティス遵守を評価（相談・レビュー・ガイダンスに対応）
 - **document-specialist**: 作業内容を文書化し、GitHub issue/PRの説明文を生成
 
 ### 推奨される使用フロー
-1. コード実装・修正を完了
-2. coding-rules-reviewerでコードの品質をチェック
-3. レビュー指摘事項があれば対応
-4. document-specialistで作業全体を要約し、PR説明文を生成
-5. プルリクエストを作成
+1. 実装前にcoding-specialistに設計・方針のガイダンスを依頼（必要に応じて）
+2. コード実装・修正を完了
+3. coding-specialistでコードの品質をチェック
+4. レビュー指摘事項があれば対応
+5. document-specialistで作業全体を要約し、PR説明文を生成
+6. プルリクエストを作成
 
 ## 使用例
 
@@ -322,12 +323,12 @@ HTTP クライアントのタイムアウト設定が5秒と短く、大きな�
 - アーキテクチャドキュメントが最新のコードベースと一致
 ```
 
-### 例4: coding-rules-reviewerとの連携
+### 例4: coding-specialistとの連携
 
 **使用フロー**:
 1. ユーザー: 「新機能の実装が完了しました」
-2. Assistant: coding-rules-reviewerエージェントを起動してコードレビュー
-3. coding-rules-reviewer: レビュー結果を提供（改善提案あり）
+2. Assistant: coding-specialistエージェントを起動してコードレビュー
+3. coding-specialist: レビュー結果を提供（改善提案あり）
 4. ユーザー: 指摘事項を修正
 5. Assistant: document-specialistエージェントを起動して作業を要約
 6. document-specialist: PR説明文を生成（実装内容+レビュー対応を含む）

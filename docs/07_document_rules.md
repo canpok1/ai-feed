@@ -147,13 +147,13 @@ fixed #(issue番号)
 
 ```mermaid
 graph TD
-    A["1. コード実装・修正を完了"] --> B["2. レビューエージェントでコードの品質をチェック"]
+    A["1. コード実装・修正を完了"] --> B["2. 専門家エージェントでコードの品質をチェック"]
 
-    subgraph review ["レビューエージェント"]
+    subgraph review ["専門家エージェント"]
         direction TB
-        B1["coding-rules-reviewer<br/>（コードの品質確認）"]
-        B2["architecture-rules-reviewer<br/>（アーキテクチャ確認）"]
-        B3["testing-rules-reviewer<br/>（テスト確認）"]
+        B1["coding-specialist<br/>（コードの品質確認）"]
+        B2["architecture-specialist<br/>（アーキテクチャ確認）"]
+        B3["testing-specialist<br/>（テスト確認）"]
         B4["document-specialist<br/>（文書化ルール確認）"]
     end
 
@@ -175,9 +175,9 @@ graph TD
 
 | エージェント | 役割 |
 |-------------|------|
-| coding-rules-reviewer | コードの品質、命名規則、エラーハンドリングの確認 |
-| architecture-rules-reviewer | レイヤリング、依存関係、設計パターンの確認 |
-| testing-rules-reviewer | テストカバレッジ、テストパターンの確認 |
+| coding-specialist | コードの品質、命名規則、エラーハンドリングに関する相談・レビュー・ガイダンス |
+| architecture-specialist | レイヤリング、依存関係、設計パターンに関する相談・レビュー・ガイダンス |
+| testing-specialist | テストカバレッジ、テストパターンに関する相談・レビュー・ガイダンス |
 | document-specialist | 作業内容の文書化、PR/Issue説明文の生成、文書化ルールへの準拠確認 |
 
 **補足**: `document-specialist`は、作業内容を要約・文書化する機能に加えて、作成された文書が本ドキュメント（`docs/07_document_rules.md`）で定義された文書化基準に従っているかをレビューする機能も持ちます。これにより、一貫性のある高品質な文書を保証します。

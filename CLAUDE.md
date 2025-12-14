@@ -52,11 +52,15 @@ make generate   # モック生成
 - 各タスクに関連するドキュメントを事前に読み、ルールに従って作業を進めること
 
 ### コードレビュープロセス
-- **ソースコード修正後は必ずレビューエージェントで自己レビューを実施すること**
-- 使用するレビューエージェント:
-  - `coding-rules-reviewer`: コーディングルール（docs/01_coding_rules.md）への準拠を確認
-  - `architecture-rules-reviewer`: アーキテクチャルール（docs/02_architecture_rules.md）への準拠を確認
-  - `testing-rules-reviewer`: テストルール（docs/03_testing_rules.md）への準拠を確認
+- **ソースコード修正後は必ず専門家エージェントで自己レビューを実施すること**
+- 使用する専門家エージェント:
+  - `coding-specialist`: コーディングルール（docs/01_coding_rules.md）に関する相談・レビュー・ガイダンス
+  - `architecture-specialist`: アーキテクチャルール（docs/02_architecture_rules.md）に関する相談・レビュー・ガイダンス
+  - `testing-specialist`: テストルール（docs/03_testing_rules.md）に関する相談・レビュー・ガイダンス
+- エージェントの活用方法:
+  - **実装前**: 設計や方針についてガイダンスを依頼
+  - **実装中**: ルールの解釈や適用方法について相談
+  - **実装後**: コードのレビューを依頼
 - レビュー対象となる修正:
   - 新機能の実装
   - バグ修正
