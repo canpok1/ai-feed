@@ -21,7 +21,7 @@ ai-feedプロジェクトにおけるテストの書き方と実行方法につ�
 | 層 | 主なテスト種類 | カバレッジ目標 | 理由 |
 |---|---|---|---|
 | **cmd (Presentation)** | E2Eテスト | 設定なし | フラグ解析のみで、E2Eで十分に担保可能 |
-| **app (Application)** | ユニット + 統合テスト | 設定なし | 複雑な条件分岐はユニットテスト、infra層連携は統合テストで検証 |
+| **app (Application)** | ユニット + 統合テスト | 50%以上 | 複雑な条件分岐はユニットテスト、infra層連携は統合テストで検証 |
 | **domain (Domain)** | ユニット + 統合テスト | 80%以上 | ビジネスルールの正確性が最重要、複数エンティティ間の連携は統合テストで検証 |
 | **infra (Infrastructure)** | ユニット + 統合テスト | 60%以上 | 外部依存のモック化が複雑なため |
 
@@ -279,7 +279,7 @@ func TestSlackSender_SendRecommend(t *testing.T) {
 ```bash
 # 層別カバレッジの確認
 go test -cover ./internal/domain/...   # 目標: 80%以上
-go test -cover ./internal/app/...      # 統合テストで検証（カバレッジ目標なし）
+go test -cover ./internal/app/...      # 目標: 50%以上
 go test -cover ./internal/infra/...    # 目標: 60%以上
 go test -cover ./cmd/...               # 目標: 設定なし
 
@@ -287,6 +287,16 @@ go test -cover ./cmd/...               # 目標: 設定なし
 go test -coverprofile=coverage.out ./...
 go tool cover -func=coverage.out
 ```
+
+### GitHub Actionsでのカバレッジ確認
+
+CIパイプラインでは、カバレッジレポートが自動的に生成され、以下の方法で確認できます：
+
+1. **ジョブサマリー**: ワークフロー実行結果ページで層別カバレッジを確認
+2. **Artifacts**: HTMLレポートをダウンロードして詳細を確認
+   - `coverage-report-ut`: ユニットテストカバレッジ
+   - `coverage-report-it`: 統合テストカバレッジ
+3. **GitHub Pages**: mainブランチでは https://canpok1.github.io/ai-feed/coverage/ で公開
 
 ## テストの実行
 

@@ -39,6 +39,10 @@ jobs:
     - name: Test Coverage Check
       run: make test-coverage
 
+    - name: Output Coverage Summary
+      if: always()
+      run: make coverage-summary
+
     - name: Upload Unit Test Coverage Report
       if: always()
       uses: actions/upload-artifact@v6
