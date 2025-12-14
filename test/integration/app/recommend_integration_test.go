@@ -1,6 +1,6 @@
 //go:build integration
 
-package app
+package app_test
 
 import (
 	"bytes"
@@ -16,7 +16,6 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/cache"
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra/fetch"
-	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -813,6 +812,3 @@ var _ domain.MessageSender = (*mockMessageSenderWithFixedMsg)(nil)
 
 // Verify that mockRecommender implements domain.Recommender interface
 var _ domain.Recommender = (*mockRecommender)(nil)
-
-// testutilを使用してStringPtrをインポートする（未使用警告回避のため）
-var _ = testutil.StringPtr
