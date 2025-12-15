@@ -4,7 +4,7 @@
 
 ## ビルド・開発コマンド
 
-詳細なビルド・開発コマンドについては [docs/00_development_setup.md](docs/00_development_setup.md) を参照してください。
+詳細なビルド・開発コマンドについては [docs/00_development_setup.md](../docs/00_development_setup.md) を参照してください。
 
 ### クイックリファレンス
 
@@ -18,7 +18,7 @@ make build      # ビルド
 make generate   # モック生成
 ```
 
-**便利なスクリプト** (詳細は [docs/06_scripts.md](docs/06_scripts.md) を参照):
+**便利なスクリプト** (詳細は [docs/06_scripts.md](../docs/06_scripts.md) を参照):
 ```bash
 # バージョンタグの作成
 ./scripts/create-version-tag.sh [--dry-run]
@@ -32,23 +32,23 @@ make generate   # モック生成
 
 ## アーキテクチャ概要
 
-アプリケーションの詳細なアーキテクチャについては [docs/02_architecture_rules.md](docs/02_architecture_rules.md) を参照してください。
+アプリケーションの詳細なアーキテクチャについては [docs/02_architecture_rules.md](../docs/02_architecture_rules.md) を参照してください。
 
 ## コーディングルール
 
-詳細なコーディングルールは [docs/01_coding_rules.md](docs/01_coding_rules.md) を参照してください。
+詳細なコーディングルールは [docs/01_coding_rules.md](../docs/01_coding_rules.md) を参照してください。
 
-プルリクエスト作成に関する詳細は [docs/04_contributing.md](docs/04_contributing.md) を参照してください。
+プルリクエスト作成に関する詳細は [docs/04_contributing.md](../docs/04_contributing.md) を参照してください。
 
 ## Claude Code 向け技術ガイダンス
 
 ### 作業開始前の確認
 - **作業開始前に必ずdocs配下のドキュメントを確認してプロジェクトのルールを把握すること**
 - 特に重要なドキュメント:
-  - [docs/01_coding_rules.md](docs/01_coding_rules.md): コーディング規約
-  - [docs/02_architecture_rules.md](docs/02_architecture_rules.md): アーキテクチャとディレクトリ構成
-  - [docs/03_testing_rules.md](docs/03_testing_rules.md): テストの書き方
-  - [docs/04_contributing.md](docs/04_contributing.md): プルリクエストの作成方法
+  - [docs/01_coding_rules.md](../docs/01_coding_rules.md): コーディング規約
+  - [docs/02_architecture_rules.md](../docs/02_architecture_rules.md): アーキテクチャとディレクトリ構成
+  - [docs/03_testing_rules.md](../docs/03_testing_rules.md): テストの書き方
+  - [docs/04_contributing.md](../docs/04_contributing.md): プルリクエストの作成方法
 - 各タスクに関連するドキュメントを事前に読み、ルールに従って作業を進めること
 
 ### コードレビュープロセス
@@ -71,7 +71,7 @@ make generate   # モック生成
 ### 文書化プロセス
 - **プルリクエスト作成時は必ずdocument-specialistエージェントで作業内容を要約すること**
 - **GitHub issue作成時も必ずdocument-specialistエージェントで内容を整理すること**
-- 詳細な文書化ルールは [docs/07_document_rules.md](docs/07_document_rules.md) を参照
+- 詳細な文書化ルールは [docs/07_document_rules.md](../docs/07_document_rules.md) を参照
 - document-specialistが生成する内容:
   - プルリクエスト: .github/pull_request_template.md準拠の説明文
   - GitHub issue: 問題・詳細・期待される結果を含む説明文
