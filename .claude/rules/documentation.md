@@ -3,7 +3,7 @@ paths: "**/*.md"
 ---
 # ドキュメント作成ルール
 
-このルールは Markdown ファイル（README を除く）に適用されます。
+このルールはすべての Markdown ファイルに適用されます。
 詳細は [docs/07_document_rules.md](../../docs/07_document_rules.md) を参照してください。
 
 ## 基本原則

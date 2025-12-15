@@ -3,7 +3,7 @@ paths: "**/*.go"
 ---
 # Go コーディング・アーキテクチャルール
 
-このルールは Go ファイル（テストファイルを除く）に適用されます。
+このルールはすべての Go ファイルに適用されます。テストファイルには go-testing.md のルールも併せて適用されます。
 詳細は [docs/01_coding_rules.md](../../docs/01_coding_rules.md) および [docs/02_architecture_rules.md](../../docs/02_architecture_rules.md) を参照してください。
 
 ## 命名規則
