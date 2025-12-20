@@ -35,10 +35,7 @@ done
 # 使用方法を表示
 usage() {
     echo "使用方法: $0 <スレッドID> [スレッドID...]" >&2
-    echo "" >&2
-    echo "例:" >&2
-    echo "  $0 \"xxxxxxxxxxxxxxxxxxxx\"" >&2
-    echo "  $0 \"xxxxxxxxxxxxxxxxxxxx\" \"xxxxxxxxxxxxxxxxxxxx\"" >&2
+    echo "例: $0 \"xxxxxxxxxxxxxxxxxxxx\"" >&2
     exit 1
 }
 
@@ -99,27 +96,20 @@ GRAPHQL
     # 詳細情報を整形して出力
     echo "$response" | jq -r '
         .data.node |
-        "═══════════════════════════════════════════════════════════════════════════════",
+        "───────────────────────────────────────",
         "スレッドID: \(.id)",
         "解決状態: \(if .isResolved then "✓ 解決済み" else "✗ 未解決" end)",
         "ファイル: \(.path // "N/A")",
         "行番号: \(if .startLine and .startLine != .line then "\(.startLine)-\(.line)" elif .line then "\(.line)" else "N/A" end)",
-        "───────────────────────────────────────────────────────────────────────────────",
-        "コメント一覧（時系列順）:",
-        "",
+        "コメント:",
         (.comments.nodes | to_entries[] |
-            "[\(.key + 1)] \(.value.author.login // "unknown") - \(.value.createdAt)",
-            "",
-            (.value.body | split("\n") | map("    " + .) | join("\n")),
-            ""
+            "  [\(.key + 1)] \(.value.author.login // "unknown") - \(.value.createdAt)",
+            (.value.body | split("\n") | map("      " + .) | join("\n"))
         )
     '
 }
 
 # メイン処理
-echo "レビュースレッド詳細を取得中..." >&2
-echo "" >&2
-
 errors=0
 for thread_id in "$@"; do
     if [[ -z "$thread_id" ]]; then
@@ -132,10 +122,7 @@ for thread_id in "$@"; do
     fi
 done
 
-echo "═══════════════════════════════════════════════════════════════════════════════"
-
 if [[ $errors -gt 0 ]]; then
-    echo "" >&2
     echo "警告: $errors 件のスレッド取得に失敗しました。" >&2
     exit 1
 fi
