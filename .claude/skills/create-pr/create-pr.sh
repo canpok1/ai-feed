@@ -73,23 +73,26 @@ if ! make test; then
 fi
 
 # プッシュ処理
-if git rev-parse --verify "origin/$CURRENT_BRANCH" &>/dev/null; then
-    LOCAL_COMMIT=$(git rev-parse HEAD)
-    REMOTE_COMMIT=$(git rev-parse "origin/$CURRENT_BRANCH")
+echo "リモートの状態を取得中..." >&2
+if ! git fetch origin; then
+    echo "エラー: git fetchに失敗しました。" >&2
+    exit 1
+fi
 
-    if [[ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]]; then
-        echo "プッシュ中..." >&2
-        if ! git push origin "$CURRENT_BRANCH"; then
-            echo "エラー: プッシュに失敗しました。" >&2
-            exit 1
-        fi
-    fi
-else
+do_push() {
     echo "プッシュ中..." >&2
-    if ! git push -u origin "$CURRENT_BRANCH"; then
+    if ! git push "$@"; then
         echo "エラー: プッシュに失敗しました。" >&2
         exit 1
     fi
+}
+
+if git rev-parse --verify "origin/$CURRENT_BRANCH" &>/dev/null; then
+    if [[ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$CURRENT_BRANCH")" ]]; then
+        do_push origin "$CURRENT_BRANCH"
+    fi
+else
+    do_push -u origin "$CURRENT_BRANCH"
 fi
 
 # PR作成
