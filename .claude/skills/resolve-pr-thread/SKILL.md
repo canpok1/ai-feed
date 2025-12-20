@@ -8,7 +8,7 @@ description: 指定したレビュースレッドを「解決済み（resolved�
 ### スクリプトの実行
 
 ```bash
-./.claude/skills/resolve-pr-thread/resolve-review-thread.sh <スレッドID>
+./.claude/skills/resolve-pr-thread/resolve-pr-thread.sh <スレッドID>
 ```
 
 ### 引数
@@ -30,7 +30,7 @@ description: 指定したレビュースレッドを「解決済み（resolved�
 
 ```bash
 # スレッドを解決済みにする
-./.claude/skills/resolve-pr-thread/resolve-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+./.claude/skills/resolve-pr-thread/resolve-pr-thread.sh "PRRT_kwDONTZR484BhKaH"
 ```
 
 ### 注意事項
