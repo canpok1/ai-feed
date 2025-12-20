@@ -18,21 +18,6 @@ make build      # ビルド
 make generate   # モック生成
 ```
 
-**便利なスクリプト** (詳細は [docs/06_scripts.md](../docs/06_scripts.md) を参照):
-```bash
-# バージョンタグの作成
-./scripts/create-version-tag.sh [--dry-run]
-
-# PR未解決コメントの確認
-get-pr-review-comments スキルを使用
-
-# レビュースレッドの解決
-resolve-pr-thread スキルを使用
-
-# プルリクエストの作成
-create-pr スキルを使用
-```
-
 ## アーキテクチャ概要
 
 アプリケーションの詳細なアーキテクチャについては [docs/02_architecture_rules.md](../docs/02_architecture_rules.md) を参照してください。
