@@ -63,7 +63,7 @@
 				
 				<option value="file3">github.com/canpok1/ai-feed/internal/app/profile_init.go (80.0%)</option>
 				
-				<option value="file4">github.com/canpok1/ai-feed/internal/app/recommend.go (90.8%)</option>
+				<option value="file4">github.com/canpok1/ai-feed/internal/app/recommend.go (91.7%)</option>
 				
 				<option value="file5">github.com/canpok1/ai-feed/internal/domain/entity/config.go (58.9%)</option>
 				
@@ -607,7 +607,7 @@ func (r *RecommendRunner) Run(ctx context.Context, params *RecommendParams, prof
                 // 進行状況メッセージ: フィード選択
                 if attempt == 1 </span><span class="cov8" title="1">{
                         fmt.Fprintln(r.stderr, "フィードを選択しています...")
-                }</span> else<span class="cov0" title="0"> {
+                }</span> else<span class="cov8" title="1"> {
                         fmt.Fprintf(r.stderr, "別のフィードで再試行しています... (%d/%d)\n", attempt, len(params.URLs))
                 }</span>
 
