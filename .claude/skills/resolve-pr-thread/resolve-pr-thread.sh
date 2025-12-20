@@ -5,7 +5,7 @@
 #   ./scripts/resolve-review-thread.sh <スレッドID>
 #
 # 例:
-#   ./scripts/resolve-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+#   ./scripts/resolve-review-thread.sh "xxxxxxxxxxxxxxxxxxxx"
 
 set -euo pipefail
 
@@ -22,7 +22,7 @@ usage() {
     echo "使用方法: $0 <スレッドID>" >&2
     echo "" >&2
     echo "例:" >&2
-    echo "  $0 \"PRRT_kwDONTZR484BhKaH\"" >&2
+    echo "  $0 \"xxxxxxxxxxxxxxxxxxxx\"" >&2
     exit 1
 }
 

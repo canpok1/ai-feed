@@ -18,18 +18,6 @@ make build      # ビルド
 make generate   # モック生成
 ```
 
-**便利なスクリプト** (詳細は [docs/06_scripts.md](../docs/06_scripts.md) を参照):
-```bash
-# バージョンタグの作成
-./scripts/create-version-tag.sh [--dry-run]
-
-# PR未解決コメントの確認
-./scripts/get-pr-review-comments.sh <PR番号>
-
-# レビュースレッドの解決
-./scripts/resolve-review-thread.sh <スレッドID>
-```
-
 ## アーキテクチャ概要
 
 アプリケーションの詳細なアーキテクチャについては [docs/02_architecture_rules.md](../docs/02_architecture_rules.md) を参照してください。
@@ -43,29 +31,11 @@ make generate   # モック生成
 ## Claude Code 向け技術ガイダンス
 
 ### 作業開始前の確認
-- **作業開始前に必ずdocs配下のドキュメントを確認してプロジェクトのルールを把握すること**
-- 特に重要なドキュメント:
-  - [docs/01_coding_rules.md](../docs/01_coding_rules.md): コーディング規約
-  - [docs/02_architecture_rules.md](../docs/02_architecture_rules.md): アーキテクチャとディレクトリ構成
-  - [docs/03_testing_rules.md](../docs/03_testing_rules.md): テストの書き方
-  - [docs/04_contributing.md](../docs/04_contributing.md): プルリクエストの作成方法
-- 各タスクに関連するドキュメントを事前に読み、ルールに従って作業を進めること
+- 詳細なルールは `.claude/rules/` およびdocs/配下のドキュメントを参照すること
 
 ### コードレビュープロセス
-- **ソースコード修正後は必ず専門家エージェントで自己レビューを実施すること**
-- 使用する専門家エージェント:
-  - `coding-specialist`: コーディングルール（docs/01_coding_rules.md）に関する相談・レビュー・ガイダンス
-  - `architecture-specialist`: アーキテクチャルール（docs/02_architecture_rules.md）に関する相談・レビュー・ガイダンス
-  - `testing-specialist`: テストルール（docs/03_testing_rules.md）に関する相談・レビュー・ガイダンス
-- エージェントの活用方法:
-  - **実装前**: 設計や方針についてガイダンスを依頼
-  - **実装中**: ルールの解釈や適用方法について相談
-  - **実装後**: コードのレビューを依頼
-- レビュー対象となる修正:
-  - 新機能の実装
-  - バグ修正
-  - リファクタリング
-  - その他、ソースコードを変更した場合
+- ソースコード修正後は専門家エージェントで自己レビューを実施すること
+- 詳細な手順は `review` スキルを参照
 - レビュー後の指摘事項は必ず修正してからコミットすること
 
 ### 文書化プロセス
@@ -84,6 +54,10 @@ make generate   # モック生成
 ### シェルスクリプトのベストプラクティス
 - 効率的なパラメータ展開を推奨
   - 例: `OWNER=${OWNER_REPO%/*}; REPO=${OWNER_REPO#*/}` （cutコマンドより効率的）
+
+### ユーザーへの確認
+- 判断が必要な場面では `AskUserQuestion` ツールを使用してユーザーに確認すること
+- 曖昧な要件や複数の実装方法がある場合は、推測せず必ず確認する
 
 ### コミュニケーション
 - 常に日本語で回答すること
