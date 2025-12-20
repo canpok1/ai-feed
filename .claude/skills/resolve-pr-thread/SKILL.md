@@ -13,24 +13,24 @@ description: 指定したレビュースレッドを「解決済み（resolved�
 
 ### 引数
 
-- `<スレッドID>`: 解決したいレビュースレッドのID（例: `PRRT_kwDONTZR484BhKaH`）
+- `<スレッドID>`: 解決したいレビュースレッドのID（例: `xxxxxxxxxxxxxxxxxxxx`）
   - スレッドIDは引用符で囲んで指定することを推奨
 
 ### 出力例
 
 ```bash
 レビュースレッドをresolve中...
-スレッドID: PRRT_kwDONTZR484BhKaH
+スレッドID: xxxxxxxxxxxxxxxxxxxx
 
 ✓ レビュースレッドをresolveしました。
-スレッドID: PRRT_kwDONTZR484BhKaH
+スレッドID: xxxxxxxxxxxxxxxxxxxx
 ```
 
 ### 使用例
 
 ```bash
 # スレッドを解決済みにする
-./.claude/skills/resolve-pr-thread/resolve-pr-thread.sh "PRRT_kwDONTZR484BhKaH"
+./.claude/skills/resolve-pr-thread/resolve-pr-thread.sh "xxxxxxxxxxxxxxxxxxxx"
 ```
 
 ### 注意事項

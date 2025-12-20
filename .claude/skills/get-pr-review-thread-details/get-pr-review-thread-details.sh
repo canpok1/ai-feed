@@ -6,10 +6,10 @@
 #
 # 例:
 #   # 単一スレッドの詳細を取得
-#   ./scripts/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaJ"
+#   ./scripts/get-pr-review-thread-details.sh "xxxxxxxxxxxxxxxxxxxx"
 #
 #   # 複数スレッドの詳細を取得
-#   ./scripts/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaJ" "PRRT_kwDONTZR484BhKaK"
+#   ./scripts/get-pr-review-thread-details.sh "xxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxx"
 #
 # 出力情報:
 #   - スレッドID
@@ -37,8 +37,8 @@ usage() {
     echo "使用方法: $0 <スレッドID> [スレッドID...]" >&2
     echo "" >&2
     echo "例:" >&2
-    echo "  $0 \"PRRT_kwDONTZR484BhKaJ\"" >&2
-    echo "  $0 \"PRRT_kwDONTZR484BhKaJ\" \"PRRT_kwDONTZR484BhKaK\"" >&2
+    echo "  $0 \"xxxxxxxxxxxxxxxxxxxx\"" >&2
+    echo "  $0 \"xxxxxxxxxxxxxxxxxxxx\" \"xxxxxxxxxxxxxxxxxxxx\"" >&2
     exit 1
 }
 

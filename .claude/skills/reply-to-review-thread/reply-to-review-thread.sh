@@ -9,7 +9,7 @@
 #   EOF
 #
 # 例:
-#   echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaJ"
+#   echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "xxxxxxxxxxxxxxxxxxxx"
 #
 # 注意事項:
 #   - スレッドIDはGitHub GraphQL APIのNode ID形式で指定してください
@@ -31,8 +31,8 @@ usage() {
     echo "使用方法: echo \"コメント内容\" | $0 <スレッドID>" >&2
     echo "" >&2
     echo "例:" >&2
-    echo "  echo \"ご指摘ありがとうございます。\" | $0 \"PRRT_kwDONTZR484BhKaJ\"" >&2
-    echo "  $0 \"PRRT_kwDONTZR484BhKaJ\" <<EOF" >&2
+    echo "  echo \"ご指摘ありがとうございます。\" | $0 \"xxxxxxxxxxxxxxxxxxxx\"" >&2
+    echo "  $0 \"xxxxxxxxxxxxxxxxxxxx\" <<EOF" >&2
     echo "  複数行のコメント" >&2
     echo "  EOF" >&2
     exit 1

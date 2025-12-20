@@ -13,7 +13,7 @@ description: 指定したレビュースレッドIDの詳細情報を取得し�
 
 ### 引数
 
-- `<スレッドID>`: 確認したいレビュースレッドのID（例: `PRRT_kwDONTZR484BhKaH`）
+- `<スレッドID>`: 確認したいレビュースレッドのID（例: `xxxxxxxxxxxxxxxxxxxx`）
 - 複数のスレッドIDを指定することも可能（スペース区切り）
 
 ### 出力形式
@@ -22,7 +22,7 @@ description: 指定したレビュースレッドIDの詳細情報を取得し�
 
 ```
 ═══════════════════════════════════════════════════════════════════════════════
-スレッドID: PRRT_kwDONTZR484BhKaH
+スレッドID: xxxxxxxxxxxxxxxxxxxx
 解決状態: ✗ 未解決 / ✓ 解決済み
 ファイル: internal/app/recommend.go
 行番号: 42-45
@@ -43,10 +43,10 @@ description: 指定したレビュースレッドIDの詳細情報を取得し�
 
 ```bash
 # 単一スレッドの詳細を取得
-./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH"
+./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "xxxxxxxxxxxxxxxxxxxx"
 
 # 複数スレッドの詳細を同時に取得
-./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH" "PRRT_kwDONTZR484BhKaI"
+./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "xxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxxxxxxxxxxx"
 ```
 
 ### 次のアクション

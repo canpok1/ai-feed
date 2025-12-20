@@ -20,7 +20,7 @@ EOF
 
 ### 引数
 
-- `<スレッドID>`: 返信したいレビュースレッドのID（例: `PRRT_kwDONTZR484BhKaH`）
+- `<スレッドID>`: 返信したいレビュースレッドのID（例: `xxxxxxxxxxxxxxxxxxxx`）
   - スレッドIDは引用符で囲んで指定することを推奨
 - コメント本文: 標準入力から読み取り
 
@@ -30,7 +30,7 @@ EOF
 コメント本文を読み取り中...
 リポジトリ情報を取得中...
 リポジトリ: owner/ai-feed
-スレッドID: PRRT_kwDONTZR484BhKaH
+スレッドID: xxxxxxxxxxxxxxxxxxxx
 
 スレッド情報を取得中...
 コメント投稿者: @reviewer-username
@@ -47,10 +47,10 @@ EOF
 
 ```bash
 # シンプルな返信
-echo "ご指摘ありがとうございます。修正しました。" | ./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+echo "ご指摘ありがとうございます。修正しました。" | ./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh "xxxxxxxxxxxxxxxxxxxx"
 
 # 複数行の詳細な返信
-./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH" <<EOF
+./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh "xxxxxxxxxxxxxxxxxxxx" <<EOF
 ご指摘ありがとうございます。
 
 以下の対応を行いました：

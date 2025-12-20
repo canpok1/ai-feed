@@ -21,7 +21,7 @@ description: 指定したプルリクエストの未解決レビューコメン�
 
 ```json
 {
-  "thread_id": "スレッドID（例: PRRT_kwDONTZR484BhKaH）",
+  "thread_id": "スレッドID（例: xxxxxxxxxxxxxxxxxxxx）",
   "author": "コメント投稿者のGitHubユーザー名",
   "comment": "最新のコメント内容"
 }
