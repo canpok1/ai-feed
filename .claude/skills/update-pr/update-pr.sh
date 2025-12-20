@@ -63,6 +63,8 @@ usage() {
 PR_NUMBER=""
 NEW_TITLE=""
 DRY_RUN=false
+PR_BODY=""
+PR_BODY_PROVIDED=false
 
 # 引数解析
 while [[ $# -gt 0 ]]; do
@@ -111,16 +113,14 @@ if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
 fi
 
 # 標準入力から本文を読み取り
-if [[ -t 0 ]]; then
-    # 標準入力が端末の場合（パイプやリダイレクトがない場合）
-    PR_BODY=""
-else
+if ! [[ -t 0 ]]; then
     # 標準入力からデータを読み取る
     PR_BODY=$(cat)
+    PR_BODY_PROVIDED=true
 fi
 
 # タイトルも本文も指定されていない場合はエラー
-if [[ -z "$NEW_TITLE" ]] && [[ -z "$PR_BODY" ]]; then
+if [[ -z "$NEW_TITLE" ]] && ! $PR_BODY_PROVIDED; then
     echo "エラー: タイトルまたは本文の少なくとも一方を指定してください。" >&2
     echo "  - タイトル更新: --title オプションを使用" >&2
     echo "  - 本文更新: 標準入力から本文を渡す" >&2
@@ -158,7 +158,7 @@ if [[ -n "$NEW_TITLE" ]]; then
     echo "変更後: $NEW_TITLE" >&2
 fi
 
-if [[ -n "$PR_BODY" ]]; then
+if $PR_BODY_PROVIDED; then
     echo "" >&2
     echo "【本文】" >&2
     echo "変更前:" >&2
@@ -194,11 +194,11 @@ if [[ -n "$NEW_TITLE" ]]; then
 fi
 
 # 本文が指定されている場合
-if [[ -n "$PR_BODY" ]]; then
+if $PR_BODY_PROVIDED; then
     # 一時ファイルに本文を書き込み
     TEMP_BODY_FILE=$(mktemp)
     trap "rm -f '$TEMP_BODY_FILE'" EXIT
-    echo "$PR_BODY" > "$TEMP_BODY_FILE"
+    printf "%s" "$PR_BODY" > "$TEMP_BODY_FILE"
     GH_EDIT_CMD+=("--body-file" "$TEMP_BODY_FILE")
 fi
 
