@@ -104,7 +104,8 @@ GRAPHQL
         "コメント:",
         (.comments.nodes | to_entries[] |
             "  [\(.key + 1)] \(.value.author.login // "unknown") - \(.value.createdAt)",
-            (.value.body | split("\n") | map("      " + .) | join("\n"))
+            (if .value.body != "" then (.value.body | split("\n") | map("      " + .) | join("\n")) else empty end),
+            ""
         )
     '
 }
