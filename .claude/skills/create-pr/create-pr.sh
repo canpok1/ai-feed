@@ -114,6 +114,11 @@ else
         echo "エラー: コードフォーマットに失敗しました。" >&2
         exit 1
     fi
+    if ! git diff --quiet; then
+        echo "エラー: 'make fmt' によってファイルが変更されました。変更をコミットしてから再実行してください。" >&2
+        git status --short >&2
+        exit 1
+    fi
     echo "✓ コードフォーマット完了" >&2
 fi
 
