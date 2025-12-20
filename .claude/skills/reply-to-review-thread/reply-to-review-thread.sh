@@ -149,7 +149,7 @@ if [[ -n "$COMMENT_ID" ]]; then
     echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment | "コメントID: \(.id), 投稿者: @\(.author.login), 作成日時: \(.createdAt)"' >&2
     exit 0
 else
-    echo "エラー: 返信の投稿に失敗しました。" >&2
+    echo "エラー: 返信の投稿は成功しましたが、レスポンスからコメントIDを取得できませんでした。" >&2
     echo "$RESULT" | jq >&2
     exit 1
 fi
