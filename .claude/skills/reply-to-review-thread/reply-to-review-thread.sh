@@ -53,27 +53,20 @@ if [[ -z "$THREAD_ID" ]]; then
 fi
 
 # 標準入力からコメント本文を読み取り
-echo "コメント本文を読み取り中..." >&2
 COMMENT_BODY=$(cat)
-
-# コメント本文が空でないかチェック
 if [[ -z "$COMMENT_BODY" ]]; then
     echo "エラー: コメント本文が空です。" >&2
     exit 1
 fi
 
 # リポジトリ情報を取得
-echo "リポジトリ情報を取得中..." >&2
 OWNER_REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner')
 OWNER="${OWNER_REPO%/*}"
 REPO="${OWNER_REPO#*/}"
 
-echo "リポジトリ: $OWNER/$REPO" >&2
-echo "スレッドID: $THREAD_ID" >&2
-echo "" >&2
+echo "リポジトリ: $OWNER/$REPO, スレッドID: $THREAD_ID" >&2
 
 # スレッド情報を取得（コメント投稿者のユーザー名を含む）
-echo "スレッド情報を取得中..." >&2
 
 set +e
 THREAD_INFO=$(gh api graphql \
@@ -116,13 +109,10 @@ if [[ -z "$AUTHOR_LOGIN" ]]; then
     exit 1
 fi
 
-echo "コメント投稿者: @$AUTHOR_LOGIN" >&2
-
 # コメント本文の先頭にメンションを追加
 COMMENT_WITH_MENTION="@$AUTHOR_LOGIN ${COMMENT_BODY}"
 
-echo "" >&2
-echo "返信を投稿中..." >&2
+echo "コメント投稿者: @$AUTHOR_LOGIN, 返信を投稿中..." >&2
 
 # 返信を投稿
 set +e
@@ -147,24 +137,19 @@ set -e
 
 # 結果を確認
 if [ "$GH_POST_EXIT_CODE" -ne 0 ]; then
-    echo "" >&2
-    echo "✗ 返信の投稿に失敗しました。" >&2
-    echo "エラー詳細:" >&2
-    echo "$RESULT" >&2
+    echo "エラー: 返信の投稿に失敗しました。" >&2
+    echo "$RESULT" | jq >&2
     exit 1
 fi
 
 COMMENT_ID=$(echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment.id // empty')
 
 if [[ -n "$COMMENT_ID" ]]; then
-    echo "" >&2
-    echo "✓ 返信を投稿しました。" >&2
-    echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment | "コメントID: \(.id)\n投稿者: @\(.author.login)\n作成日時: \(.createdAt)"' >&2
+    echo "返信を投稿しました。" >&2
+    echo "$RESULT" | jq -r '.data.addPullRequestReviewThreadReply.comment | "コメントID: \(.id), 投稿者: @\(.author.login), 作成日時: \(.createdAt)"' >&2
     exit 0
 else
-    echo "" >&2
-    echo "✗ 返信の投稿に失敗しました。" >&2
-    echo "エラー詳細:" >&2
+    echo "エラー: 返信の投稿は成功しましたが、レスポンスからコメントIDを取得できませんでした。" >&2
     echo "$RESULT" | jq >&2
     exit 1
 fi
