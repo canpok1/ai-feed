@@ -48,9 +48,8 @@ description: GitHub issueを作成します。タイトルと本文を受け取�
 
 ```bash
 # Claude Codeがスキル実行時に行う操作
-gh issue create \
-  --title "新機能: ユーザー認証機能の追加" \
-  --body "## 問題
+BODY=$(cat <<<'EOS'
+## 問題・要望
 
 現在、ユーザー認証機能が実装されていません。
 
@@ -61,7 +60,12 @@ gh issue create \
 
 ## 期待される結果
 
-ユーザーが外部アカウントでログインできる"
+ユーザーが外部アカウントでログインできる
+EOS
+)
+gh issue create \
+  --title "新機能: ユーザー認証機能の追加" \
+  --body "$BODY"
 ```
 
 ## 注意事項
