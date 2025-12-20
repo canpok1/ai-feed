@@ -64,10 +64,10 @@ $ ./scripts/create-version-tag.sh
 
 ```bash
 # PR番号を指定して未解決コメントを取得
-./scripts/get-pr-review-comments.sh <PR番号>
+./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh <PR番号>
 
 # 例
-./scripts/get-pr-review-comments.sh 123
+./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh 123
 ```
 
 #### 出力例
@@ -127,14 +127,14 @@ $ ./scripts/create-version-tag.sh
 
 ```bash
 # 単一スレッドの詳細を取得
-./scripts/get-pr-review-thread-details.sh <スレッドID>
+./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh <スレッドID>
 
 # 複数スレッドの詳細を取得
-./scripts/get-pr-review-thread-details.sh <スレッドID1> <スレッドID2> ...
+./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh <スレッドID1> <スレッドID2> ...
 
 # 例
-./scripts/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH"
-./scripts/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH" "PRRT_kwDONTZR484BhKaI"
+./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH"
+./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH" "PRRT_kwDONTZR484BhKaI"
 ```
 
 #### 出力例
@@ -161,7 +161,7 @@ $ ./scripts/create-version-tag.sh
 ```
 
 #### 注意事項
-- スレッドIDは `get-pr-review-comments.sh` の出力から取得可能
+- スレッドIDは `./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh` の出力から取得可能
 - 各スレッドから最大100件のコメントを取得
 - スレッドIDはGitHub GraphQL APIのNode ID形式（例: `PRRT_kwDO...`）で指定
 
@@ -182,10 +182,10 @@ $ ./scripts/create-version-tag.sh
 
 ```bash
 # スレッドIDを指定してresolve
-./scripts/resolve-review-thread.sh <スレッドID>
+./.claude/skills/resolve-pr-thread/resolve-review-thread.sh <スレッドID>
 
 # 例
-./scripts/resolve-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+./.claude/skills/resolve-pr-thread/resolve-review-thread.sh "PRRT_kwDONTZR484BhKaH"
 ```
 
 #### 出力例
@@ -199,7 +199,7 @@ $ ./scripts/create-version-tag.sh
 ```
 
 #### 注意事項
-- スレッドIDは `get-pr-review-comments.sh` の出力から取得可能
+- スレッドIDは `./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh` の出力から取得可能
 - スレッドIDは引用符で囲んで指定すること
 - 既にresolve済みのスレッドに対しても実行可能
 
@@ -222,16 +222,16 @@ $ ./scripts/create-version-tag.sh
 
 ```bash
 # パイプ経由でコメントを投稿
-echo "コメント内容" | ./scripts/reply-to-review-thread.sh <スレッドID>
+echo "コメント内容" | ./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh <スレッドID>
 
 # ヒアドキュメントで複数行コメントを投稿
-./scripts/reply-to-review-thread.sh <スレッドID> <<EOF
+./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh <スレッドID> <<EOF
 複数行の
 コメント内容
 EOF
 
 # 例
-echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+echo "ご指摘ありがとうございます。修正しました。" | ./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH"
 ```
 
 #### 出力例
@@ -254,7 +254,7 @@ echo "ご指摘ありがとうございます。修正しました。" | ./scrip
 ```
 
 #### 注意事項
-- スレッドIDは `get-pr-review-comments.sh` の出力から取得可能
+- スレッドIDは `./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh` の出力から取得可能
 - コメント投稿者への@メンションは自動的に追加されるため、手動で記述する必要はありません
 - 標準入力からコメントを読み取るため、空のコメントは投稿できません
 - スレッドIDはGitHub GraphQL APIのNode ID形式（例: `PRRT_kwDO...`）で指定
@@ -265,12 +265,12 @@ echo "ご指摘ありがとうございます。修正しました。" | ./scrip
 
 1. **未解決コメントの確認**
    ```bash
-   ./scripts/get-pr-review-comments.sh 123
+   ./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh 123
    ```
 
 2. **スレッドの詳細確認**（必要に応じて）
    ```bash
-   ./scripts/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH"
+   ./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "PRRT_kwDONTZR484BhKaH"
    ```
 
 3. **指摘事項の修正**
@@ -278,12 +278,12 @@ echo "ご指摘ありがとうございます。修正しました。" | ./scrip
 
 4. **レビュースレッドへの返信**（オプション）
    ```bash
-   echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+   echo "ご指摘ありがとうございます。修正しました。" | ./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh "PRRT_kwDONTZR484BhKaH"
    ```
 
 5. **スレッドの解決**
    ```bash
-   ./scripts/resolve-review-thread.sh "PRRT_kwDONTZR484BhKaH"
+   ./.claude/skills/resolve-pr-thread/resolve-review-thread.sh "PRRT_kwDONTZR484BhKaH"
    ```
 
 ### リリースバージョンタグの作成
