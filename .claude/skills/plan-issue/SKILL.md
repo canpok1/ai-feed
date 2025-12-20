@@ -28,11 +28,11 @@ JSON出力には以下のフィールドが含まれます：
 | `title` | タイトル |
 | `body` | 本文 |
 | `state` | 状態（OPEN/CLOSED） |
-| `labels` | ラベル一覧 |
-| `assignees` | 担当者一覧 |
-| `milestone` | マイルストーン情報 |
-| `createdAt` | 作成日時 |
-| `updatedAt` | 更新日時 |
+| `labels` | ラベルオブジェクトの配列。各オブジェクトの`name`フィールドからラベル名を取得します。 |
+| `assignees` | 担当者オブジェクトの配列。各オブジェクトの`login`フィールドから担当者名を取得します。 |
+| `milestone` | マイルストーンオブジェクト。`title`フィールドからマイルストーン名を取得します。 |
+| `createdAt` | 作成日時（ISO 8601形式） |
+| `updatedAt` | 更新日時（ISO 8601形式） |
 
 ## タスクファイル作成ガイド
 
