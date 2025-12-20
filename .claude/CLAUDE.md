@@ -31,13 +31,7 @@ make generate   # モック生成
 ## Claude Code 向け技術ガイダンス
 
 ### 作業開始前の確認
-- **作業開始前に必ずdocs配下のドキュメントを確認してプロジェクトのルールを把握すること**
-- 特に重要なドキュメント:
-  - [docs/01_coding_rules.md](../docs/01_coding_rules.md): コーディング規約
-  - [docs/02_architecture_rules.md](../docs/02_architecture_rules.md): アーキテクチャとディレクトリ構成
-  - [docs/03_testing_rules.md](../docs/03_testing_rules.md): テストの書き方
-  - [docs/04_contributing.md](../docs/04_contributing.md): プルリクエストの作成方法
-- 各タスクに関連するドキュメントを事前に読み、ルールに従って作業を進めること
+- 詳細なルールは `.claude/rules/` およびdocs/配下のドキュメントを参照すること
 
 ### コードレビュープロセス
 - **ソースコード修正後は必ず専門家エージェントで自己レビューを実施すること**
