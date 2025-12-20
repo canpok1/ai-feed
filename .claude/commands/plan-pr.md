@@ -7,13 +7,9 @@ PR $ARGUMENTS にレビューコメントが投稿されました。
 以下の手順でタスクを作成してください。
 
 1. レビューコメントを確認する
-    ```bash
-    ./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh $ARGUMENTS
-    ```
+    - get-pr-review-comments スキルを使用
 2. 必要に応じてスレッドの詳細を確認する（コンテキストが必要な場合）
-    ```bash
-    ./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "THREAD_ID"
-    ```
+    - get-pr-review-thread-details スキルを使用
 3. コメント1件ごとに、内容を確認して以下を行う。
     - レビュワーからの意見を表すもの、かつ対応が必要だと判断した場合
         - 「レビューコメントを元に対応する」という内容のタスクファイルを tmp/todo フォルダ配下に作成する
@@ -58,11 +54,8 @@ pr_{PRの番号}_task_{2桁0埋めの1からの連番}_{タスク概要(英語)}
     - [ ] レビュースレッドをresolveしていること
 
 ### 備考
-- コメントの返信やresolveは以下を参考にする
-    - スレッドの詳細を確認するコマンド。THREAD_IDはレビュースレッドIDに置き換えること。
-        - `./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh "THREAD_ID"`
-    - 返信するためのコマンド。THREAD_IDはレビュースレッドIDに置き換えること。
-        - `echo "コメント内容" | ./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh "THREAD_ID"`
-    - resolveするためのコマンド。THREAD_IDはレビュースレッドIDに置き換えること。
-        - `./.claude/skills/resolve-pr-thread/resolve-review-thread.sh "THREAD_ID"`
+- コメントの返信やresolveは以下のスキルを使用する
+    - スレッドの詳細を確認: get-pr-review-thread-details スキル
+    - 返信を投稿: reply-to-review-thread スキル
+    - resolveする: resolve-pr-thread スキル
 ```

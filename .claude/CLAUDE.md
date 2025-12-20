@@ -24,10 +24,10 @@ make generate   # モック生成
 ./scripts/create-version-tag.sh [--dry-run]
 
 # PR未解決コメントの確認
-./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh <PR番号>
+get-pr-review-comments スキルを使用
 
 # レビュースレッドの解決
-./.claude/skills/resolve-pr-thread/resolve-review-thread.sh <スレッドID>
+resolve-pr-thread スキルを使用
 ```
 
 ## アーキテクチャ概要
