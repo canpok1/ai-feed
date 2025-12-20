@@ -47,6 +47,7 @@
             "Bash(./.claude/skills/resolve-pr-thread/resolve-pr-thread.sh:*)",
             "Bash(./.claude/skills/create-pr/create-pr.sh:*)",
             "Bash(./.claude/skills/plan-issue/plan-issue.sh:*)",
+            "Bash(./.claude/skills/update-pr/update-pr.sh:*)",
             "Bash(tail:*)",
             "Bash(test:*)",
             "Bash(touch:*)",
@@ -57,7 +58,10 @@
             "SlashCommand(/review:*)",
             "SlashCommand(/run)",
             "WebSearch",
-            "mcp__serena"
+            "mcp__serena",
+            "Write",
+            "Edit",
+            "Read"
         ],
         "deny": [
             "Bash(git add --all)",
