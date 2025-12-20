@@ -28,6 +28,9 @@ get-pr-review-comments スキルを使用
 
 # レビュースレッドの解決
 resolve-pr-thread スキルを使用
+
+# プルリクエストの作成
+create-pr スキルを使用
 ```
 
 ## アーキテクチャ概要
