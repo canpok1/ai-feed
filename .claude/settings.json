@@ -56,7 +56,16 @@
             "SlashCommand(/review:*)",
             "SlashCommand(/run)",
             "WebSearch",
-            "mcp__serena"
+            "mcp__serena",
+            "Skill(create-issue)",
+            "Skill(create-pr)",
+            "Skill(get-pr-review-comments)",
+            "Skill(get-pr-review-thread-details)",
+            "Skill(plan-issue)",
+            "Skill(plan-pr)",
+            "Skill(reply-to-review-thread)",
+            "Skill(resolve-pr-thread)",
+            "Skill(review)"
         ],
         "deny": [
             "Bash(git add --all)",
