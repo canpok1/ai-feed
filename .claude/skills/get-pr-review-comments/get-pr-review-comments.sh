@@ -23,10 +23,7 @@ done
 
 # 使用方法を表示
 usage() {
-    echo "使用方法: $0 <PR番号>" >&2
-    echo "" >&2
-    echo "例:" >&2
-    echo "  $0 123" >&2
+    echo -e "使用方法: $0 <PR番号>\n例: $0 123" >&2
     exit 1
 }
 
@@ -45,17 +42,9 @@ if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
 fi
 
 # リポジトリ情報を取得
-echo "リポジトリ情報を取得中..." >&2
 OWNER_REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner')
 OWNER="${OWNER_REPO%/*}"
 REPO="${OWNER_REPO#*/}"
-
-echo "リポジトリ: $OWNER/$REPO" >&2
-echo "PR番号: $PR_NUMBER" >&2
-echo "" >&2
-
-# 未解決のレビューコメントを取得
-echo "未解決のレビューコメントを取得中..." >&2
 
 # set +e で一時的にエラーでの終了を無効化
 set +e

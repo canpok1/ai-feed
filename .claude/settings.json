@@ -46,7 +46,6 @@
             "Bash(./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh:*)",
             "Bash(./.claude/skills/resolve-pr-thread/resolve-pr-thread.sh:*)",
             "Bash(./.claude/skills/create-pr/create-pr.sh:*)",
-            "Bash(./.claude/skills/plan-issue/plan-issue.sh:*)",
             "Bash(tail:*)",
             "Bash(test:*)",
             "Bash(touch:*)",
