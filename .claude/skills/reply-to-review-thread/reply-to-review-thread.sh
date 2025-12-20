@@ -138,7 +138,7 @@ set -e
 # 結果を確認
 if [ "$GH_POST_EXIT_CODE" -ne 0 ]; then
     echo "エラー: 返信の投稿に失敗しました。" >&2
-    echo "$RESULT" >&2
+    echo "$RESULT" | jq >&2
     exit 1
 fi
 
