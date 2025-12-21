@@ -67,5 +67,8 @@
       "Write(.env)"
     ]
   },
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true
+  }
 }
