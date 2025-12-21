@@ -16,6 +16,7 @@ import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra/cache"
 	"github.com/canpok1/ai-feed/internal/infra/fetch"
+	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -366,7 +367,7 @@ func TestRecommendRunner_Integration_WithFileCache(t *testing.T) {
 	cacheFilePath := filepath.Join(tmpDir, "test_cache.jsonl")
 
 	cacheConfig := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       testutil.BoolPtr(true),
 		FilePath:      cacheFilePath,
 		MaxEntries:    100,
 		RetentionDays: 7,
@@ -602,7 +603,7 @@ func TestRecommendRunner_Integration_AllCachedArticles(t *testing.T) {
 	cacheFilePath := filepath.Join(tmpDir, "test_cache.jsonl")
 
 	cacheConfig := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       testutil.BoolPtr(true),
 		FilePath:      cacheFilePath,
 		MaxEntries:    100,
 		RetentionDays: 7,

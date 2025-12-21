@@ -29,7 +29,8 @@ func TestCacheConfig_EnabledDefault(t *testing.T) {
 	require.NoError(t, err, "ToEntity()はエラーを返さないはずです")
 
 	// デフォルト値がfalseであることを確認
-	assert.False(t, entityCache.Enabled,
+	assert.NotNil(t, entityCache.Enabled)
+	assert.False(t, *entityCache.Enabled,
 		"enabledが省略された場合、デフォルト値はfalseになるはずです")
 }
 
@@ -248,7 +249,8 @@ func TestCacheConfig_ExplicitOverridesDefaults(t *testing.T) {
 	require.NoError(t, err, "ToEntity()はエラーを返さないはずです")
 
 	// 明示的に設定した値が使用されることを確認
-	assert.True(t, entityCache.Enabled,
+	assert.NotNil(t, entityCache.Enabled)
+	assert.True(t, *entityCache.Enabled,
 		"明示的にtrueを設定した場合、enabledはtrueになるはずです")
 	assert.Equal(t, customPath, entityCache.FilePath,
 		"明示的に設定したfile_pathが使用されるはずです")
@@ -292,7 +294,8 @@ func TestCacheConfig_AllDefaults(t *testing.T) {
 	require.NoError(t, err, "ホームディレクトリの取得に成功するはずです")
 
 	// すべてのデフォルト値が適用されることを確認
-	assert.False(t, entityCache.Enabled,
+	assert.NotNil(t, entityCache.Enabled)
+	assert.False(t, *entityCache.Enabled,
 		"enabledのデフォルト値はfalseです")
 	expectedPath := filepath.Join(homeDir, ".ai-feed", "recommend_history.jsonl")
 	assert.Equal(t, expectedPath, entityCache.FilePath,

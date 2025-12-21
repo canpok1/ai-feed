@@ -168,7 +168,7 @@ func TestMockConfig_ValidConversion(t *testing.T) {
 	// 変換されたProfileの値を検証
 	require.NotNil(t, entityProfile.AI, "AI設定が存在するはずです")
 	require.NotNil(t, entityProfile.AI.Mock, "Mock設定が存在するはずです")
-	assert.True(t, entityProfile.AI.Mock.Enabled, "Enabledがtrueであるはずです")
+	assert.True(t, *entityProfile.AI.Mock.Enabled, "Enabledがtrueであるはずです")
 	assert.Equal(t, "first", entityProfile.AI.Mock.SelectorMode, "SelectorModeが正しく変換されるはずです")
 	assert.Equal(t, "テストコメント", entityProfile.AI.Mock.Comment, "Commentが正しく変換されるはずです")
 

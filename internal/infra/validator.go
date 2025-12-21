@@ -24,9 +24,8 @@ func (f *ConfigValidatorFactory) Create(config *domain.LoadedConfig, profile *en
 	// DefaultProfileはprofileパラメータに既にマージ済みなので、ここでは設定しない
 
 	if config.Cache != nil {
-		enabled := config.Cache.Enabled
 		infraConfig.Cache = &CacheConfig{
-			Enabled:       &enabled,
+			Enabled:       config.Cache.Enabled,
 			FilePath:      config.Cache.FilePath,
 			MaxEntries:    config.Cache.MaxEntries,
 			RetentionDays: config.Cache.RetentionDays,
@@ -199,12 +198,12 @@ func (v *ConfigValidator) validateOutput(result *domain.ValidationResult) {
 	output := v.profile.Output
 
 	// Slack API設定のバリデーション
-	if output.SlackAPI != nil && output.SlackAPI.Enabled {
+	if output.SlackAPI != nil && output.SlackAPI.Enabled != nil && *output.SlackAPI.Enabled {
 		v.validateSlackAPI(output.SlackAPI, result)
 	}
 
 	// Misskey設定のバリデーション
-	if output.Misskey != nil && output.Misskey.Enabled {
+	if output.Misskey != nil && output.Misskey.Enabled != nil && *output.Misskey.Enabled {
 		v.validateMisskey(output.Misskey, result)
 	}
 }
@@ -243,7 +242,7 @@ func (v *ConfigValidator) validateCache(result *domain.ValidationResult) {
 	}
 
 	// サマリーの更新
-	if cacheEntity.Enabled {
+	if cacheEntity.Enabled != nil && *cacheEntity.Enabled {
 		result.Summary.CacheEnabled = true
 		result.Summary.CacheFilePath = cacheEntity.FilePath
 		result.Summary.CacheMaxEntries = cacheEntity.MaxEntries

@@ -23,7 +23,7 @@ func (f *CommentGeneratorFactory) MakeCommentGenerator(model *entity.AIConfig, p
 	}
 
 	// Mock設定が有効な場合はモック実装を返す
-	if model.Mock != nil && model.Mock.Enabled {
+	if model.Mock != nil && model.Mock.Enabled != nil && *model.Mock.Enabled {
 		return newMockCommentGenerator(model.Mock.Comment), nil
 	}
 

@@ -33,7 +33,7 @@ type AIConfig struct {
 
 // MockConfig はAIのモック設定を保持する
 type MockConfig struct {
-	Enabled      bool
+	Enabled      *bool
 	SelectorMode string // "first", "random", "last"
 	Comment      string // 固定で返すコメント
 }
@@ -43,7 +43,7 @@ func (m *MockConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
 	// Enabledがfalseの場合はバリデーションをスキップ
-	if !m.Enabled {
+	if m.Enabled == nil || !*m.Enabled {
 		return builder.Build()
 	}
 
@@ -60,7 +60,9 @@ func (m *MockConfig) Merge(other *MockConfig) {
 	if other == nil {
 		return
 	}
-	m.Enabled = other.Enabled
+	if other.Enabled != nil {
+		m.Enabled = other.Enabled
+	}
 	mergeString(&m.SelectorMode, other.SelectorMode)
 	mergeString(&m.Comment, other.Comment)
 }
@@ -68,7 +70,7 @@ func (m *MockConfig) Merge(other *MockConfig) {
 // LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
 func (m MockConfig) LogValue() slog.Value {
 	return slog.GroupValue(
-		slog.Bool("Enabled", m.Enabled),
+		slog.Bool("Enabled", m.Enabled != nil && *m.Enabled),
 		slog.String("SelectorMode", m.SelectorMode),
 		slog.String("Comment", m.Comment),
 	)
@@ -79,7 +81,7 @@ func (a *AIConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
 	// Mock設定が有効な場合は、Gemini設定は不要
-	if a.Mock != nil && a.Mock.Enabled {
+	if a.Mock != nil && a.Mock.Enabled != nil && *a.Mock.Enabled {
 		builder.MergeResult(a.Mock.Validate())
 		return builder.Build()
 	}
@@ -253,7 +255,7 @@ func (p PromptConfig) LogValue() slog.Value {
 }
 
 type MisskeyConfig struct {
-	Enabled         bool
+	Enabled         *bool
 	APIToken        SecretString
 	APIURL          string
 	MessageTemplate *string
@@ -264,7 +266,7 @@ func (m *MisskeyConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
 	// Enabledがfalseの場合はバリデーションをスキップ
-	if !m.Enabled {
+	if m.Enabled == nil || !*m.Enabled {
 		return builder.Build()
 	}
 
@@ -306,8 +308,9 @@ func (m *MisskeyConfig) Merge(other *MisskeyConfig) {
 	if other == nil {
 		return
 	}
-	// bool フィールドはゼロ値チェックが困難なため、常に上書き
-	m.Enabled = other.Enabled
+	if other.Enabled != nil {
+		m.Enabled = other.Enabled
+	}
 	if !other.APIToken.IsEmpty() {
 		m.APIToken = other.APIToken
 	}
@@ -320,7 +323,7 @@ func (m *MisskeyConfig) Merge(other *MisskeyConfig) {
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
 func (m MisskeyConfig) LogValue() slog.Value {
 	attrs := []slog.Attr{
-		slog.Bool("Enabled", m.Enabled),
+		slog.Bool("Enabled", m.Enabled != nil && *m.Enabled),
 		slog.Any("APIToken", m.APIToken),
 		slog.String("APIURL", m.APIURL),
 	}
@@ -331,7 +334,7 @@ func (m MisskeyConfig) LogValue() slog.Value {
 }
 
 type SlackAPIConfig struct {
-	Enabled         bool
+	Enabled         *bool
 	APIToken        SecretString
 	Channel         string
 	MessageTemplate *string
@@ -347,7 +350,7 @@ func (s *SlackAPIConfig) Validate() *ValidationResult {
 	builder := NewValidationBuilder()
 
 	// Enabledがfalseの場合はバリデーションをスキップ
-	if !s.Enabled {
+	if s.Enabled == nil || !*s.Enabled {
 		return builder.Build()
 	}
 
@@ -394,8 +397,9 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 	if other == nil {
 		return
 	}
-	// bool フィールドはゼロ値チェックが困難なため、常に上書き
-	s.Enabled = other.Enabled
+	if other.Enabled != nil {
+		s.Enabled = other.Enabled
+	}
 	if !other.APIToken.IsEmpty() {
 		s.APIToken = other.APIToken
 	}
@@ -417,7 +421,7 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) {
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
 func (s SlackAPIConfig) LogValue() slog.Value {
 	attrs := []slog.Attr{
-		slog.Bool("Enabled", s.Enabled),
+		slog.Bool("Enabled", s.Enabled != nil && *s.Enabled),
 		slog.Any("APIToken", s.APIToken),
 		slog.String("Channel", s.Channel),
 	}
@@ -437,7 +441,7 @@ func (s SlackAPIConfig) LogValue() slog.Value {
 }
 
 type CacheConfig struct {
-	Enabled       bool
+	Enabled       *bool
 	FilePath      string
 	MaxEntries    int
 	RetentionDays int
@@ -463,8 +467,9 @@ func (c *CacheConfig) Merge(other *CacheConfig) {
 	if other == nil {
 		return
 	}
-	// bool フィールドはゼロ値チェックが困難なため、常に上書き
-	c.Enabled = other.Enabled
+	if other.Enabled != nil {
+		c.Enabled = other.Enabled
+	}
 	mergeString(&c.FilePath, other.FilePath)
 	if other.MaxEntries > 0 {
 		c.MaxEntries = other.MaxEntries
@@ -477,7 +482,7 @@ func (c *CacheConfig) Merge(other *CacheConfig) {
 // LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
 func (c CacheConfig) LogValue() slog.Value {
 	return slog.GroupValue(
-		slog.Bool("Enabled", c.Enabled),
+		slog.Bool("Enabled", c.Enabled != nil && *c.Enabled),
 		slog.String("FilePath", c.FilePath),
 		slog.Int("MaxEntries", c.MaxEntries),
 		slog.Int("RetentionDays", c.RetentionDays),

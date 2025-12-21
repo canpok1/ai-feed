@@ -492,7 +492,8 @@ func TestSlackAPIConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 				assert.Equal(t, tt.config.MessageTemplate, got.MessageTemplate)
 
 				// Enabledフィールドの後方互換性チェック（省略時=true）
-				assert.True(t, got.Enabled, "Enabled should default to true for backward compatibility")
+				assert.NotNil(t, got.Enabled, "Enabled should not be nil")
+				assert.True(t, *got.Enabled, "Enabled should default to true for backward compatibility")
 
 				if tt.config.APIToken != "" {
 					// 直接指定が優先される
@@ -578,7 +579,8 @@ func TestMisskeyConfig_ToEntity_WithEnvironmentVariable(t *testing.T) {
 				assert.Equal(t, tt.config.APIURL, got.APIURL)
 
 				// Enabledフィールドの後方互換性チェック（省略時=true）
-				assert.True(t, got.Enabled, "Enabled should default to true for backward compatibility")
+				assert.NotNil(t, got.Enabled, "Enabled should not be nil")
+				assert.True(t, *got.Enabled, "Enabled should default to true for backward compatibility")
 
 				if tt.config.APIToken != "" {
 					// 直接指定が優先される
@@ -596,7 +598,7 @@ func TestSlackAPIConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 	tests := []struct {
 		name          string
 		config        SlackAPIConfig
-		expectEnabled bool
+		expectEnabled *bool
 	}{
 		{
 			name: "enabled省略時（後方互換性）",
@@ -604,7 +606,7 @@ func TestSlackAPIConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 				APIToken: "test_token",
 				Channel:  "#test",
 			},
-			expectEnabled: true,
+			expectEnabled: testutil.BoolPtr(true),
 		},
 		{
 			name: "enabled: true",
@@ -613,7 +615,7 @@ func TestSlackAPIConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 				APIToken: "test_token",
 				Channel:  "#test",
 			},
-			expectEnabled: true,
+			expectEnabled: testutil.BoolPtr(true),
 		},
 		{
 			name: "enabled: false",
@@ -622,7 +624,7 @@ func TestSlackAPIConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 				APIToken: "test_token",
 				Channel:  "#test",
 			},
-			expectEnabled: false,
+			expectEnabled: testutil.BoolPtr(false),
 		},
 	}
 
@@ -632,7 +634,8 @@ func TestSlackAPIConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.NotNil(t, got)
-			assert.Equal(t, tt.expectEnabled, got.Enabled)
+			assert.NotNil(t, got.Enabled)
+			assert.Equal(t, *tt.expectEnabled, *got.Enabled)
 		})
 	}
 }
@@ -641,7 +644,7 @@ func TestMisskeyConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 	tests := []struct {
 		name          string
 		config        MisskeyConfig
-		expectEnabled bool
+		expectEnabled *bool
 	}{
 		{
 			name: "enabled省略時（後方互換性）",
@@ -649,7 +652,7 @@ func TestMisskeyConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 				APIToken: "test_token",
 				APIURL:   "https://test.misskey.io",
 			},
-			expectEnabled: true,
+			expectEnabled: testutil.BoolPtr(true),
 		},
 		{
 			name: "enabled: true",
@@ -658,7 +661,7 @@ func TestMisskeyConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 				APIToken: "test_token",
 				APIURL:   "https://test.misskey.io",
 			},
-			expectEnabled: true,
+			expectEnabled: testutil.BoolPtr(true),
 		},
 		{
 			name: "enabled: false",
@@ -667,7 +670,7 @@ func TestMisskeyConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 				APIToken: "test_token",
 				APIURL:   "https://test.misskey.io",
 			},
-			expectEnabled: false,
+			expectEnabled: testutil.BoolPtr(false),
 		},
 	}
 
@@ -677,7 +680,8 @@ func TestMisskeyConfig_ToEntity_WithEnabledFlag(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.NotNil(t, got)
-			assert.Equal(t, tt.expectEnabled, got.Enabled)
+			assert.NotNil(t, got.Enabled)
+			assert.Equal(t, *tt.expectEnabled, *got.Enabled)
 		})
 	}
 }
@@ -807,8 +811,8 @@ func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
 	tests := []struct {
 		name                   string
 		config                 OutputConfig
-		expectedSlackEnabled   bool
-		expectedMisskeyEnabled bool
+		expectedSlackEnabled   *bool
+		expectedMisskeyEnabled *bool
 		expectedErr            string
 	}{
 		{
@@ -823,8 +827,8 @@ func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
 					APIURL:   "https://misskey.example.com",
 				},
 			},
-			expectedSlackEnabled:   true,
-			expectedMisskeyEnabled: true,
+			expectedSlackEnabled:   testutil.BoolPtr(true),
+			expectedMisskeyEnabled: testutil.BoolPtr(true),
 			expectedErr:            "",
 		},
 		{
@@ -841,8 +845,8 @@ func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
 					APIURL:   "https://misskey.example.com",
 				},
 			},
-			expectedSlackEnabled:   true,
-			expectedMisskeyEnabled: true,
+			expectedSlackEnabled:   testutil.BoolPtr(true),
+			expectedMisskeyEnabled: testutil.BoolPtr(true),
 			expectedErr:            "",
 		},
 		{
@@ -859,8 +863,8 @@ func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
 					APIURL:   "https://misskey.example.com",
 				},
 			},
-			expectedSlackEnabled:   true,
-			expectedMisskeyEnabled: false,
+			expectedSlackEnabled:   testutil.BoolPtr(true),
+			expectedMisskeyEnabled: testutil.BoolPtr(false),
 			expectedErr:            "",
 		},
 		{
@@ -877,8 +881,8 @@ func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
 					APIURL:   "https://misskey.example.com",
 				},
 			},
-			expectedSlackEnabled:   false,
-			expectedMisskeyEnabled: true,
+			expectedSlackEnabled:   testutil.BoolPtr(false),
+			expectedMisskeyEnabled: testutil.BoolPtr(true),
 			expectedErr:            "",
 		},
 		{
@@ -895,8 +899,8 @@ func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
 					APIURL:   "https://misskey.example.com",
 				},
 			},
-			expectedSlackEnabled:   false,
-			expectedMisskeyEnabled: false,
+			expectedSlackEnabled:   testutil.BoolPtr(false),
+			expectedMisskeyEnabled: testutil.BoolPtr(false),
 			expectedErr:            "",
 		},
 	}
@@ -915,12 +919,14 @@ func TestOutputConfig_ToEntity_EnabledCombinations(t *testing.T) {
 
 				// SlackAPIのEnabledフィールドチェック
 				if got.SlackAPI != nil {
-					assert.Equal(t, tt.expectedSlackEnabled, got.SlackAPI.Enabled)
+					assert.NotNil(t, got.SlackAPI.Enabled)
+					assert.Equal(t, *tt.expectedSlackEnabled, *got.SlackAPI.Enabled)
 				}
 
 				// MisskeyのEnabledフィールドチェック
 				if got.Misskey != nil {
-					assert.Equal(t, tt.expectedMisskeyEnabled, got.Misskey.Enabled)
+					assert.NotNil(t, got.Misskey.Enabled)
+					assert.Equal(t, *tt.expectedMisskeyEnabled, *got.Misskey.Enabled)
 				}
 			}
 		})
@@ -1020,7 +1026,7 @@ func TestCacheConfig_ToEntity(t *testing.T) {
 				RetentionDays: 30,
 			},
 			expected: &entity.CacheConfig{
-				Enabled:       true,
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/tmp/cache.jsonl",
 				MaxEntries:    1000,
 				RetentionDays: 30,
@@ -1036,7 +1042,7 @@ func TestCacheConfig_ToEntity(t *testing.T) {
 				RetentionDays: 0,
 			},
 			expected: &entity.CacheConfig{
-				Enabled:       false,
+				Enabled:       testutil.BoolPtr(false),
 				FilePath:      filepath.Join(homeDir, ".ai-feed", "recommend_history.jsonl"),
 				MaxEntries:    1000,
 				RetentionDays: 30,
@@ -1052,7 +1058,7 @@ func TestCacheConfig_ToEntity(t *testing.T) {
 				RetentionDays: 15,
 			},
 			expected: &entity.CacheConfig{
-				Enabled:       true,
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      filepath.Join(homeDir, ".ai-feed", "custom-cache.jsonl"),
 				MaxEntries:    500,
 				RetentionDays: 15,
@@ -1068,7 +1074,7 @@ func TestCacheConfig_ToEntity(t *testing.T) {
 				RetentionDays: 60,
 			},
 			expected: &entity.CacheConfig{
-				Enabled:       false,
+				Enabled:       testutil.BoolPtr(false),
 				FilePath:      filepath.Join(".", "cache", "data.jsonl"),
 				MaxEntries:    2000,
 				RetentionDays: 60,
@@ -1088,7 +1094,8 @@ func TestCacheConfig_ToEntity(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, result)
-				assert.Equal(t, tt.expected.Enabled, result.Enabled)
+				assert.NotNil(t, result.Enabled)
+				assert.Equal(t, *tt.expected.Enabled, *result.Enabled)
 				// パスは絶対パスに展開されるため、期待値も絶対パスに変換して比較
 				expectedPath, _ := filepath.Abs(tt.expected.FilePath)
 				actualPath, _ := filepath.Abs(result.FilePath)

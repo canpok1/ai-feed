@@ -70,12 +70,8 @@ func (c *MockConfig) ToEntity() *entity.MockConfig {
 	if c == nil {
 		return nil
 	}
-	enabled := false
-	if c.Enabled != nil {
-		enabled = *c.Enabled
-	}
 	return &entity.MockConfig{
-		Enabled:      enabled,
+		Enabled:      c.Enabled,
 		SelectorMode: c.SelectorMode,
 		Comment:      c.Comment,
 	}
@@ -126,12 +122,21 @@ func resolveSecretString(value, envVar, configPath string) (entity.SecretString,
 	return entity.NewSecretString(str), nil
 }
 
-// resolveEnabled は、Enabledフィールドのデフォルト値処理を行う
+// resolveEnabled は、Enabledフィールドのデフォルト値処理を行う（後方互換性のために保持）
 func resolveEnabled(e *bool) bool {
 	if e == nil {
 		return true
 	}
 	return *e
+}
+
+// resolveEnabledPtr は、Enabledフィールドのデフォルト値処理を行い、ポインタとして返す
+func resolveEnabledPtr(e *bool) *bool {
+	if e == nil {
+		enabled := true
+		return &enabled
+	}
+	return e
 }
 
 func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) {
@@ -220,7 +225,8 @@ type SlackAPIConfig struct {
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	// Enabledフィールドの後方互換性処理（省略時=true）
-	enabled := resolveEnabled(c.Enabled)
+	enabledPtr := resolveEnabledPtr(c.Enabled)
+	enabled := enabledPtr != nil && *enabledPtr
 
 	// 無効化されている場合は、APIトークンのバリデーションをスキップ
 	var apiToken entity.SecretString
@@ -240,7 +246,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) {
 	}
 
 	return &entity.SlackAPIConfig{
-		Enabled:         enabled,
+		Enabled:         enabledPtr,
 		APIToken:        apiToken,
 		Channel:         c.Channel,
 		MessageTemplate: convertedTemplate,
@@ -261,7 +267,8 @@ type MisskeyConfig struct {
 
 func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	// Enabledフィールドの後方互換性処理（省略時=true）
-	enabled := resolveEnabled(c.Enabled)
+	enabledPtr := resolveEnabledPtr(c.Enabled)
+	enabled := enabledPtr != nil && *enabledPtr
 
 	// 無効化されている場合は、APIトークンのバリデーションをスキップ
 	var apiToken entity.SecretString
@@ -281,7 +288,7 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) {
 	}
 
 	return &entity.MisskeyConfig{
-		Enabled:         enabled,
+		Enabled:         enabledPtr,
 		APIToken:        apiToken,
 		APIURL:          c.APIURL,
 		MessageTemplate: convertedTemplate,
@@ -378,7 +385,7 @@ func (r *YamlConfigRepository) Load() (*domain.LoadedConfig, error) {
 
 	if infraConfig.Cache != nil {
 		result.Cache = &entity.CacheConfig{
-			Enabled:       resolveCacheEnabled(infraConfig.Cache.Enabled),
+			Enabled:       resolveCacheEnabledPtr(infraConfig.Cache.Enabled),
 			FilePath:      infraConfig.Cache.FilePath,
 			MaxEntries:    infraConfig.Cache.MaxEntries,
 			RetentionDays: infraConfig.Cache.RetentionDays,
@@ -395,12 +402,21 @@ type CacheConfig struct {
 	RetentionDays int    `yaml:"retention_days,omitempty"`
 }
 
-// resolveCacheEnabled は、Enabledフィールドのデフォルト値処理を行う（キャッシュのデフォルトはfalse）
+// resolveCacheEnabled は、Enabledフィールドのデフォルト値処理を行う（キャッシュのデフォルトはfalse）（後方互換性のために保持）
 func resolveCacheEnabled(e *bool) bool {
 	if e == nil {
 		return false
 	}
 	return *e
+}
+
+// resolveCacheEnabledPtr は、Enabledフィールドのデフォルト値処理を行い、ポインタとして返す（キャッシュのデフォルトはfalse）
+func resolveCacheEnabledPtr(e *bool) *bool {
+	if e == nil {
+		enabled := false
+		return &enabled
+	}
+	return e
 }
 
 // expandPath は、パス中のチルダをホームディレクトリに展開し、相対パスを絶対パスに変換する
@@ -436,7 +452,7 @@ func (c *CacheConfig) ToEntity() (*entity.CacheConfig, error) {
 	}
 
 	// デフォルト値の設定
-	enabled := resolveCacheEnabled(c.Enabled)
+	enabledPtr := resolveCacheEnabledPtr(c.Enabled)
 
 	filePath := c.FilePath
 	if filePath == "" {
@@ -460,7 +476,7 @@ func (c *CacheConfig) ToEntity() (*entity.CacheConfig, error) {
 	}
 
 	return &entity.CacheConfig{
-		Enabled:       enabled,
+		Enabled:       enabledPtr,
 		FilePath:      expandedPath,
 		MaxEntries:    maxEntries,
 		RetentionDays: retentionDays,

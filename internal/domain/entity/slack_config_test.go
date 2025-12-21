@@ -3,6 +3,7 @@ package entity
 import (
 	"testing"
 
+	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +27,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_必須項目すべて",
 			config: &SlackAPIConfig{
-				Enabled:         true,
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
@@ -36,7 +37,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが未設定",
 			config: &SlackAPIConfig{
-				Enabled:  true,
+				Enabled:  testutil.BoolPtr(true),
 				APIToken: makeSecretString("xoxb-valid-token"),
 				Channel:  "#test",
 			},
@@ -46,7 +47,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが空文字列",
 			config: &SlackAPIConfig{
-				Enabled:         true,
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &emptyTemplate,
@@ -57,7 +58,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APITokenが空",
 			config: &SlackAPIConfig{
-				Enabled:         true,
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        SecretString{}, // ゼロ値 (空)
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
@@ -68,7 +69,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_Channelが空",
 			config: &SlackAPIConfig{
-				Enabled:         true,
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "",
 				MessageTemplate: &validTemplate,
@@ -79,7 +80,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_不正なテンプレート構文",
 			config: &SlackAPIConfig{
-				Enabled:         true,
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &invalidTemplate,
@@ -90,7 +91,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_複数のエラー",
 			config: &SlackAPIConfig{
-				Enabled:  true,
+				Enabled:  testutil.BoolPtr(true),
 				APIToken: SecretString{}, // ゼロ値 (空)
 				Channel:  "",
 			},
@@ -104,14 +105,14 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_Enabled_false",
 			config: &SlackAPIConfig{
-				Enabled: false,
+				Enabled: testutil.BoolPtr(false),
 			},
 			wantErr: false,
 		},
 		{
 			name: "異常系_IconURLとIconEmojiが両方設定",
 			config: &SlackAPIConfig{
-				Enabled:         true,
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
@@ -124,7 +125,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_IconURLのみ設定",
 			config: &SlackAPIConfig{
-				Enabled:         true,
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,
@@ -135,7 +136,7 @@ func TestSlackAPIConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_IconEmojiのみ設定",
 			config: &SlackAPIConfig{
-				Enabled:         true,
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("xoxb-valid-token"),
 				Channel:         "#test",
 				MessageTemplate: &validTemplate,

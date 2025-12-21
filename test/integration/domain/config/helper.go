@@ -6,6 +6,7 @@ package config
 import (
 	"github.com/canpok1/ai-feed/internal/domain/entity"
 	"github.com/canpok1/ai-feed/internal/infra"
+	"github.com/canpok1/ai-feed/internal/testutil"
 )
 
 // ValidInfraProfile はテスト用の有効な infra.Profile を生成する
@@ -124,7 +125,7 @@ func NewEntitySlackAPIConfig() *entity.SlackAPIConfig {
 	messageTemplate := "{{if .Comment}}{{.Comment}}\n{{end}}<{{.Article.Link}}|{{.Article.Title}}>"
 	apiURL := "http://localhost:8080/api/"
 	return &entity.SlackAPIConfig{
-		Enabled:         true,
+		Enabled:         testutil.BoolPtr(true),
 		APIToken:        entity.NewSecretString("test-slack-token"),
 		Channel:         "#test-channel",
 		MessageTemplate: &messageTemplate,
@@ -136,7 +137,7 @@ func NewEntitySlackAPIConfig() *entity.SlackAPIConfig {
 func NewEntityMisskeyConfig() *entity.MisskeyConfig {
 	messageTemplate := "{{if .Comment}}{{.Comment}}\n{{end}}[{{.Article.Title}}]({{.Article.Link}})"
 	return &entity.MisskeyConfig{
-		Enabled:         true,
+		Enabled:         testutil.BoolPtr(true),
 		APIToken:        entity.NewSecretString("test-misskey-token"),
 		APIURL:          "http://localhost:8081",
 		MessageTemplate: &messageTemplate,
@@ -232,7 +233,7 @@ func NewEntityMockConfig() *entity.MockConfig {
 // NewEntityMockConfigWithMode は指定したselector_modeでテスト用の entity.MockConfig を生成する
 func NewEntityMockConfigWithMode(mode string) *entity.MockConfig {
 	return &entity.MockConfig{
-		Enabled:      true,
+		Enabled:      testutil.BoolPtr(true),
 		SelectorMode: mode,
 		Comment:      "テストコメント",
 	}

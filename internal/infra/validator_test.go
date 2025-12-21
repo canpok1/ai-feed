@@ -72,7 +72,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					SlackAPI: &entity.SlackAPIConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-slack-token"),
 						Channel:         "test-channel",
 						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -115,7 +115,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					Misskey: &entity.MisskeyConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-misskey-token"),
 						APIURL:          "https://misskey.example.com",
 						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -158,7 +158,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					SlackAPI: &entity.SlackAPIConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-slack-token"),
 						Channel:         "test-channel",
 						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -202,7 +202,7 @@ func TestConfigValidator_Validate_Success(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					SlackAPI: &entity.SlackAPIConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-slack-token"),
 						Channel:         "test-channel",
 						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -386,7 +386,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					Misskey: &entity.MisskeyConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("YOUR_MISSKEY_PUBLIC_API_TOKEN_HERE"),
 						APIURL:          "https://misskey.example.com",
 						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -420,7 +420,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					SlackAPI: &entity.SlackAPIConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-slack-token"),
 						Channel:         "test-channel",
 						MessageTemplate: nil,
@@ -454,7 +454,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					SlackAPI: &entity.SlackAPIConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-slack-token"),
 						Channel:         "test-channel",
 						MessageTemplate: strPtr(""),
@@ -488,7 +488,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					SlackAPI: &entity.SlackAPIConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-slack-token"),
 						Channel:         "test-channel",
 						MessageTemplate: strPtr("{{.InvalidSyntax"),
@@ -522,7 +522,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					Misskey: &entity.MisskeyConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-misskey-token"),
 						APIURL:          "https://misskey.example.com",
 						MessageTemplate: nil,
@@ -556,7 +556,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					Misskey: &entity.MisskeyConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-misskey-token"),
 						APIURL:          "https://misskey.example.com",
 						MessageTemplate: strPtr(""),
@@ -590,7 +590,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					Misskey: &entity.MisskeyConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-misskey-token"),
 						APIURL:          "https://misskey.example.com",
 						MessageTemplate: strPtr("{{.InvalidSyntax"),
@@ -624,7 +624,7 @@ func TestConfigValidator_Validate_Errors(t *testing.T) {
 				},
 				Output: &entity.OutputConfig{
 					SlackAPI: &entity.SlackAPIConfig{
-						Enabled:         true,
+						Enabled:         toPtr(true),
 						APIToken:        entity.NewSecretString("valid-slack-token"),
 						Channel:         "test-channel",
 						MessageTemplate: strPtr("{{.Article.Title}}\n{{.Article.Link}}"),

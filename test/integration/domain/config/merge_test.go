@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -215,10 +216,10 @@ func TestProfileMerge_ValidationAfterMerge(t *testing.T) {
 			Prompt: NewEntityPromptConfig(),
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled: false, // 無効化されているのでバリデーションスキップ
+					Enabled: testutil.BoolPtr(false), // 無効化されているのでバリデーションスキップ
 				},
 				Misskey: &entity.MisskeyConfig{
-					Enabled: false, // 無効化されているのでバリデーションスキップ
+					Enabled: testutil.BoolPtr(false), // 無効化されているのでバリデーションスキップ
 				},
 			},
 		}
@@ -254,8 +255,8 @@ func TestProfileMerge_PartialRequiredFieldCompletion(t *testing.T) {
 		},
 		Prompt: NewEntityPromptConfig(),
 		Output: &entity.OutputConfig{
-			SlackAPI: &entity.SlackAPIConfig{Enabled: false},
-			Misskey:  &entity.MisskeyConfig{Enabled: false},
+			SlackAPI: &entity.SlackAPIConfig{Enabled: testutil.BoolPtr(false)},
+			Misskey:  &entity.MisskeyConfig{Enabled: testutil.BoolPtr(false)},
 		},
 	}
 
@@ -381,28 +382,29 @@ func TestProfileMerge_NilHandling(t *testing.T) {
 	})
 }
 
-// TestProfileMerge_BooleanFieldHandling はbool型フィールドのマージ動作を検証する
-// bool型は常に上書きされる（ゼロ値と未設定の区別不可のため）
+// TestProfileMerge_BooleanFieldHandling は*bool型フィールドのマージ動作を検証する
+// *bool型は明示的に設定された場合のみ上書きされる（nilは未設定として扱われる）
 func TestProfileMerge_BooleanFieldHandling(t *testing.T) {
 	t.Run("Enabled=falseで上書き", func(t *testing.T) {
 		defaultProfile := ValidEntityProfile()
-		assert.True(t, defaultProfile.Output.SlackAPI.Enabled,
+		assert.NotNil(t, defaultProfile.Output.SlackAPI.Enabled)
+		assert.True(t, *defaultProfile.Output.SlackAPI.Enabled,
 			"デフォルトはEnabledがtrueのはずです")
 
 		// Enabled=falseで上書き
-		// 注意: boolフィールドは常に上書きされるため、省略してもfalseとして扱われる
 		fileProfile := &entity.Profile{
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled: false,
+					Enabled: testutil.BoolPtr(false),
 				},
 			},
 		}
 
 		defaultProfile.Merge(fileProfile)
 
-		// boolフィールドは常に上書きされる（ゼロ値と未設定を区別できないため）
-		assert.False(t, defaultProfile.Output.SlackAPI.Enabled,
+		// 明示的にfalseが設定されている場合は上書きされる
+		assert.NotNil(t, defaultProfile.Output.SlackAPI.Enabled)
+		assert.False(t, *defaultProfile.Output.SlackAPI.Enabled,
 			"Enabledがfalseに上書きされるはずです")
 	})
 
@@ -412,7 +414,7 @@ func TestProfileMerge_BooleanFieldHandling(t *testing.T) {
 			Prompt: NewEntityPromptConfig(),
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:  false,
+					Enabled:  testutil.BoolPtr(false),
 					APIToken: entity.NewSecretString("token"),
 					Channel:  "#channel",
 				},
@@ -423,14 +425,15 @@ func TestProfileMerge_BooleanFieldHandling(t *testing.T) {
 		fileProfile := &entity.Profile{
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled: true,
+					Enabled: testutil.BoolPtr(true),
 				},
 			},
 		}
 
 		defaultProfile.Merge(fileProfile)
 
-		assert.True(t, defaultProfile.Output.SlackAPI.Enabled,
+		assert.NotNil(t, defaultProfile.Output.SlackAPI.Enabled)
+		assert.True(t, *defaultProfile.Output.SlackAPI.Enabled,
 			"Enabledがtrueに上書きされるはずです")
 	})
 }
@@ -445,7 +448,7 @@ func TestProfileMerge_MessageTemplateOverride(t *testing.T) {
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
 					MessageTemplate: &newTemplate,
-					Enabled:         true,
+					Enabled:         testutil.BoolPtr(true),
 				},
 			},
 		}
@@ -465,7 +468,7 @@ func TestProfileMerge_MessageTemplateOverride(t *testing.T) {
 			Output: &entity.OutputConfig{
 				Misskey: &entity.MisskeyConfig{
 					MessageTemplate: &newTemplate,
-					Enabled:         true,
+					Enabled:         testutil.BoolPtr(true),
 				},
 			},
 		}
@@ -484,22 +487,22 @@ func TestProfileMerge_MockConfigMerge(t *testing.T) {
 		defaultProfile := &entity.Profile{
 			AI: &entity.AIConfig{
 				Mock: &entity.MockConfig{
-					Enabled:      false,
+					Enabled:      testutil.BoolPtr(false),
 					SelectorMode: "first",
 					Comment:      "デフォルトコメント",
 				},
 			},
 			Prompt: NewEntityPromptConfig(),
 			Output: &entity.OutputConfig{
-				SlackAPI: &entity.SlackAPIConfig{Enabled: false},
-				Misskey:  &entity.MisskeyConfig{Enabled: false},
+				SlackAPI: &entity.SlackAPIConfig{Enabled: testutil.BoolPtr(false)},
+				Misskey:  &entity.MisskeyConfig{Enabled: testutil.BoolPtr(false)},
 			},
 		}
 
 		fileProfile := &entity.Profile{
 			AI: &entity.AIConfig{
 				Mock: &entity.MockConfig{
-					Enabled:      true,
+					Enabled:      testutil.BoolPtr(true),
 					SelectorMode: "random",
 					// Commentは省略
 				},
@@ -509,7 +512,7 @@ func TestProfileMerge_MockConfigMerge(t *testing.T) {
 		defaultProfile.Merge(fileProfile)
 
 		require.NotNil(t, defaultProfile.AI.Mock)
-		assert.True(t, defaultProfile.AI.Mock.Enabled,
+		assert.True(t, *defaultProfile.AI.Mock.Enabled,
 			"Enabledがtrueに上書きされるはずです")
 		assert.Equal(t, "random", defaultProfile.AI.Mock.SelectorMode,
 			"SelectorModeが上書きされるはずです")
