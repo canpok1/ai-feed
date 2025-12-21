@@ -42,7 +42,10 @@
       "Skill(github)",
       "Skill(plan-issue)",
       "Skill(plan-pr)",
-      "Skill(review)"
+      "Skill(review)",
+      "Skill(run)",
+      "Bash(golangci-lint run:*)",
+      "Bash(head:*)"
     ],
     "deny": [
       "Bash(git add --all)",
