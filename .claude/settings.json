@@ -27,11 +27,7 @@
       "Bash(make:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
-      "Bash(./.claude/skills/get-pr-review-comments/get-pr-review-comments.sh:*)",
-      "Bash(./.claude/skills/get-pr-review-thread-details/get-pr-review-thread-details.sh:*)",
-      "Bash(./.claude/skills/reply-to-review-thread/reply-to-review-thread.sh:*)",
-      "Bash(./.claude/skills/resolve-pr-thread/resolve-pr-thread.sh:*)",
-      "Bash(./.claude/skills/create-pr/create-pr.sh:*)",
+      "Bash(./.claude/skills/github/scripts/*:*)",
       "Bash(tail:*)",
       "Bash(test:*)",
       "Bash(touch:*)",
@@ -43,15 +39,13 @@
       "SlashCommand(/run)",
       "WebSearch",
       "mcp__serena",
-      "Skill(create-issue)",
-      "Skill(create-pr)",
-      "Skill(get-pr-review-comments)",
-      "Skill(get-pr-review-thread-details)",
+      "Skill(github)",
       "Skill(plan-issue)",
       "Skill(plan-pr)",
-      "Skill(reply-to-review-thread)",
-      "Skill(resolve-pr-thread)",
-      "Skill(review)"
+      "Skill(review)",
+      "Skill(run)",
+      "Bash(golangci-lint run:*)",
+      "Bash(head:*)"
     ],
     "deny": [
       "Bash(git add --all)",
@@ -69,6 +63,7 @@
   },
   "enableAllProjectMcpServers": true,
   "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "example-skills@anthropic-agent-skills": true
   }
 }

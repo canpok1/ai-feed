@@ -29,7 +29,7 @@ description: GitHub issueの対応内容をレビューし、改善タスクを�
 ### ファイル名フォーマット
 
 ```
-issue_{GitHub issue番号(#なし)}_plan_{2桁0埋めの1からの連番}_{タスク概要(英語)}.md
+issue_{GitHub issue番号（#なし）}_plan_{2桁0埋めの1からの連番}_{タスク概要（英語）}.md
 ```
 
 **例**: issue #1に対するタスクの場合
@@ -54,32 +54,6 @@ issue_1_plan_03_update_documentation.md
 ### 備考
 - 適当な粒度でコミットすること。
 ```
-
-## 典型的なワークフロー
-
-1. **issue内容の確認**
-   ```bash
-   gh issue view "#123"
-   ```
-
-2. **差分の確認**
-   ```bash
-   git diff main...HEAD
-   ```
-
-3. **専門家エージェントでレビュー**
-   - coding-specialistエージェントを起動
-   - architecture-specialistエージェントを起動
-   - testing-specialistエージェントを起動
-   - document-specialistエージェントを起動
-
-4. **タスクファイル作成**
-   - 各エージェントからの指摘事項を整理
-   - tmp/todoフォルダに改善タスクを作成
-
-5. **タスク実行**
-   - 作成されたタスクファイルに従って改善を実施
-   - 適切な粒度でコミット
 
 ## 注意事項
 

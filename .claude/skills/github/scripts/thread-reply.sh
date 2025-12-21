@@ -2,18 +2,17 @@
 # PRレビュースレッドに返信を投稿するスクリプト
 #
 # 使用方法:
-#   echo "コメント内容" | ./scripts/reply-to-review-thread.sh <スレッドID>
-#   ./scripts/reply-to-review-thread.sh <スレッドID> <<EOF
+#   echo "コメント内容" | ./scripts/thread-reply.sh <スレッドID>
+#   ./scripts/thread-reply.sh <スレッドID> <<EOF
 #   複数行の
 #   コメント内容
 #   EOF
 #
 # 例:
-#   echo "ご指摘ありがとうございます。修正しました。" | ./scripts/reply-to-review-thread.sh "xxxxxxxxxxxxxxxxxxxx"
+#   echo "ご指摘ありがとうございます。修正しました。" | ./scripts/thread-reply.sh "xxxxxxxxxxxxxxxxxxxx"
 #
 # 注意事項:
 #   - スレッドIDはGitHub GraphQL APIのNode ID形式で指定してください
-#   - コメント投稿者への@メンションが自動的に追加されます
 #   - コメント本文は標準入力から読み取ります
 
 set -euo pipefail
@@ -65,60 +64,13 @@ OWNER="${OWNER_REPO%/*}"
 REPO="${OWNER_REPO#*/}"
 
 echo "リポジトリ: $OWNER/$REPO, スレッドID: $THREAD_ID" >&2
-
-# スレッド情報を取得（コメント投稿者のユーザー名を含む）
-
-set +e
-THREAD_INFO=$(gh api graphql \
-  -f threadId="$THREAD_ID" \
-  -f query='
-query($threadId: ID!) {
-  node(id: $threadId) {
-    ... on PullRequestReviewThread {
-      id
-      comments(last: 1) {
-        nodes {
-          author {
-            login
-          }
-        }
-      }
-    }
-  }
-}' 2>&1)
-GH_EXIT_CODE=$?
-set -e
-
-# gh api コマンドがエラーの場合
-if [ $GH_EXIT_CODE -ne 0 ]; then
-    echo "エラー: スレッドID '$THREAD_ID' が見つからないか、アクセス権がありません。" >&2
-    exit 1
-fi
-
-# スレッドが存在しない場合（nullの場合）
-if echo "$THREAD_INFO" | jq -e '.data.node == null' > /dev/null 2>&1; then
-    echo "エラー: スレッドID '$THREAD_ID' が見つからないか、アクセス権がありません。" >&2
-    exit 1
-fi
-
-# コメント投稿者のユーザー名を取得
-AUTHOR_LOGIN=$(echo "$THREAD_INFO" | jq -r '.data.node.comments.nodes[-1].author.login // empty')
-
-if [[ -z "$AUTHOR_LOGIN" ]]; then
-    echo "エラー: コメント投稿者の情報を取得できませんでした。" >&2
-    exit 1
-fi
-
-# コメント本文の先頭にメンションを追加
-COMMENT_WITH_MENTION="@$AUTHOR_LOGIN ${COMMENT_BODY}"
-
-echo "コメント投稿者: @$AUTHOR_LOGIN, 返信を投稿中..." >&2
+echo "返信を投稿中..." >&2
 
 # 返信を投稿
 set +e
 RESULT=$(gh api graphql \
   -f pullRequestReviewThreadId="$THREAD_ID" \
-  -f body="$COMMENT_WITH_MENTION" \
+  -f body="$COMMENT_BODY" \
   -f query='
 mutation($pullRequestReviewThreadId: ID!, $body: String!) {
   addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: $pullRequestReviewThreadId, body: $body}) {
