@@ -27,7 +27,7 @@
       "Bash(make:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
-      "Bash(./.claude/skills/github/scripts/*:*)",
+      "Bash(./.claude/skills/github/scripts/*.sh:*)",
       "Bash(tail:*)",
       "Bash(test:*)",
       "Bash(touch:*)",
