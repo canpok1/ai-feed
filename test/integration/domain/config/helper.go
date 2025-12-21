@@ -9,7 +9,6 @@ import (
 )
 
 // ValidInfraProfile はテスト用の有効な infra.Profile を生成する
-// すべての必須フィールドが設定された設定オブジェクトを返す
 func ValidInfraProfile() *infra.Profile {
 	return &infra.Profile{
 		AI:     NewAIConfig(),
@@ -19,7 +18,6 @@ func ValidInfraProfile() *infra.Profile {
 }
 
 // NewInfraProfileWithAI は指定したAI設定を使用してテスト用の infra.Profile を生成する
-// Prompt と Output には標準設定が使用される
 func NewInfraProfileWithAI(aiConfig *infra.AIConfig) *infra.Profile {
 	return &infra.Profile{
 		AI:     aiConfig,
@@ -29,7 +27,6 @@ func NewInfraProfileWithAI(aiConfig *infra.AIConfig) *infra.Profile {
 }
 
 // ValidEntityProfile はテスト用の有効な entity.Profile を生成する
-// すべての必須フィールドが設定された設定オブジェクトを返す
 func ValidEntityProfile() *entity.Profile {
 	return &entity.Profile{
 		AI:     NewEntityAIConfig(),
@@ -90,7 +87,6 @@ func NewMisskeyConfig() *infra.MisskeyConfig {
 }
 
 // NewOutputConfig はテスト用の infra.OutputConfig を生成する
-// SlackAPI と Misskey の両方の設定を含む
 func NewOutputConfig() *infra.OutputConfig {
 	return &infra.OutputConfig{
 		SlackAPI: NewSlackAPIConfig(),
@@ -148,7 +144,6 @@ func NewEntityMisskeyConfig() *entity.MisskeyConfig {
 }
 
 // NewEntityOutputConfig はテスト用の entity.OutputConfig を生成する
-// SlackAPI と Misskey の両方の設定を含む
 func NewEntityOutputConfig() *entity.OutputConfig {
 	return &entity.OutputConfig{
 		SlackAPI: NewEntitySlackAPIConfig(),
@@ -189,7 +184,6 @@ func WithDisabledMisskey() *infra.OutputConfig {
 }
 
 // NewMockConfig はテスト用の有効な infra.MockConfig を生成する
-// デフォルトで有効化され、selector_mode="first"、comment="テストコメント"を設定
 func NewMockConfig() *infra.MockConfig {
 	return NewMockConfigWithMode("first")
 }
@@ -215,7 +209,6 @@ func NewDisabledMockConfig() *infra.MockConfig {
 }
 
 // NewAIConfigWithMock はMock設定のみを含む infra.AIConfig を生成する
-// Gemini設定はnilになる
 func NewAIConfigWithMock() *infra.AIConfig {
 	return &infra.AIConfig{
 		Gemini: nil,
@@ -224,7 +217,6 @@ func NewAIConfigWithMock() *infra.AIConfig {
 }
 
 // NewAIConfigWithBothMockAndGemini はMockとGemini両方の設定を含む infra.AIConfig を生成する
-// Mock設定が有効な場合、Gemini設定より優先される
 func NewAIConfigWithBothMockAndGemini() *infra.AIConfig {
 	return &infra.AIConfig{
 		Gemini: NewGeminiConfig(),
@@ -233,7 +225,6 @@ func NewAIConfigWithBothMockAndGemini() *infra.AIConfig {
 }
 
 // NewEntityMockConfig はテスト用の有効な entity.MockConfig を生成する
-// Enabled=true、SelectorMode="first"、Comment="テストコメント"を設定
 func NewEntityMockConfig() *entity.MockConfig {
 	return NewEntityMockConfigWithMode("first")
 }
