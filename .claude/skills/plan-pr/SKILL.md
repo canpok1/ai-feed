@@ -1,6 +1,6 @@
 ---
 name: plan-pr
-description: プルリクエストのレビューコメントを確認し、対応用のタスクファイル作成をサポートします。既存スキルを使用してレビューコメントを取得し、Claude Codeがその情報を元にtmp/todoフォルダにタスクファイルを作成します。
+description: プルリクエストのレビューコメントを確認し、対応用のタスクファイル作成をサポートします。githubスキルを使用してレビューコメントを取得し、Claude Codeがその情報を元にtmp/todoフォルダにタスクファイルを作成します。
 ---
 
 ## 使用方法
@@ -8,10 +8,10 @@ description: プルリクエストのレビューコメントを確認し、対�
 ### 手順
 
 1. **レビューコメントを確認する**
-   - `get-pr-review-comments` スキルを使用してPRのレビューコメントを取得
+   - `github` スキル（thread-list.sh）を使用してPRのレビューコメントを取得
 
 2. **必要に応じてスレッドの詳細を確認する**（コンテキストが必要な場合）
-   - `get-pr-review-thread-details` スキルを使用
+   - `github` スキル（thread-details.sh）を使用
 
 3. **コメント1件ごとに、内容を確認してタスクファイルを作成**
    - レビュワーからの意見を表すもの、かつ対応が必要だと判断した場合
@@ -65,10 +65,10 @@ pr_1_task_03_resolve_approved_thread.md
     - [ ] レビュースレッドをresolveしていること
 
 ### 備考
-- コメントの返信やresolveは以下のスキルを使用する
-    - スレッドの詳細を確認: `get-pr-review-thread-details` スキル
-    - 返信を投稿: `reply-to-review-thread` スキル
-    - resolveする: `resolve-pr-thread` スキル
+- コメントの返信やresolveは `github` スキルを使用する
+    - スレッドの詳細を確認: `thread-details.sh`
+    - 返信を投稿: `thread-reply.sh`
+    - resolveする: `thread-resolve.sh`
 ```
 
 ## 注意事項
@@ -76,14 +76,11 @@ pr_1_task_03_resolve_approved_thread.md
 - tmp/todoフォルダが存在しない場合は自動的に作成されます
 - レビューコメントの取得には GitHub CLI (`gh`) が必要です
 - 未解決のコメントのみが対象となります
-- コメントの対応状況に応じて、適切なスキルを使い分けてください
+- コメントの対応状況に応じて、適切なスクリプトを使い分けてください
 
 ## 関連スキル
 
-- **get-pr-review-comments**: PRの未解決レビューコメントを取得
-- **get-pr-review-thread-details**: レビュースレッドの詳細情報を取得
-- **reply-to-review-thread**: レビュースレッドに返信を投稿
-- **resolve-pr-thread**: レビュースレッドを解決済みに変更
+- **github**: GitHub操作の統合スキル（スレッド一覧取得、詳細取得、返信、解決）
 
 ## 関連ドキュメント
 
