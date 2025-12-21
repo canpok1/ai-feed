@@ -67,7 +67,7 @@ pr_1_task_03_resolve_approved_thread.md
 ### 備考
 - コメントの返信やresolveは `github` スキルを使用する
     - スレッドの詳細を確認: `thread-details.sh`
-    - 返信を投稿: `thread-reply.sh`
+    - 返信を投稿: `thread-reply.sh`（対象者への `@メンション` を本文に含めること）
     - resolveする: `thread-resolve.sh`
 ```
 
