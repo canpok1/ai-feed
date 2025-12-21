@@ -194,7 +194,7 @@ func createMessageSenders(outputConfig *entity.OutputConfig) ([]domain.MessageSe
 
 	if outputConfig.SlackAPI != nil {
 		slackConfig := outputConfig.SlackAPI
-		if slackConfig.Enabled == nil || !*slackConfig.Enabled {
+		if !*slackConfig.Enabled {
 			slog.Info("Slack API output is disabled (enabled: false)")
 		} else {
 			// Slackクライアントのオプションを設定
@@ -211,7 +211,7 @@ func createMessageSenders(outputConfig *entity.OutputConfig) ([]domain.MessageSe
 
 	if outputConfig.Misskey != nil {
 		misskeyConfig := outputConfig.Misskey
-		if misskeyConfig.Enabled == nil || !*misskeyConfig.Enabled {
+		if !*misskeyConfig.Enabled {
 			slog.Info("Misskey output is disabled (enabled: false)")
 		} else {
 			misskeySender, senderErr := message.NewMisskeySender(misskeyConfig.APIURL, misskeyConfig.APIToken.Value(), misskeyConfig.MessageTemplate)
@@ -227,7 +227,7 @@ func createMessageSenders(outputConfig *entity.OutputConfig) ([]domain.MessageSe
 
 // createRecommendCache はCacheConfigに基づいてRecommendCacheを作成する
 func createRecommendCache(cacheConfig *entity.CacheConfig) (domain.RecommendCache, error) {
-	if cacheConfig == nil || cacheConfig.Enabled == nil || !*cacheConfig.Enabled {
+	if cacheConfig == nil || !*cacheConfig.Enabled {
 		return cache.NewNopCache(), nil
 	}
 
