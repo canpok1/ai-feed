@@ -65,7 +65,7 @@
 				
 				<option value="file4">github.com/canpok1/ai-feed/internal/app/recommend.go (91.7%)</option>
 				
-				<option value="file5">github.com/canpok1/ai-feed/internal/domain/entity/config.go (58.9%)</option>
+				<option value="file5">github.com/canpok1/ai-feed/internal/domain/entity/config.go (59.2%)</option>
 				
 				<option value="file6">github.com/canpok1/ai-feed/internal/domain/entity/entity.go (0.0%)</option>
 				
@@ -83,7 +83,7 @@
 				
 				<option value="file13">github.com/canpok1/ai-feed/internal/infra/cache/nop_cache.go (100.0%)</option>
 				
-				<option value="file14">github.com/canpok1/ai-feed/internal/infra/config.go (77.2%)</option>
+				<option value="file14">github.com/canpok1/ai-feed/internal/infra/config.go (74.7%)</option>
 				
 				<option value="file15">github.com/canpok1/ai-feed/internal/infra/fetch/rss.go (92.9%)</option>
 				
@@ -95,7 +95,7 @@
 				
 				<option value="file19">github.com/canpok1/ai-feed/internal/infra/templates.go (50.0%)</option>
 				
-				<option value="file20">github.com/canpok1/ai-feed/internal/infra/validator.go (55.3%)</option>
+				<option value="file20">github.com/canpok1/ai-feed/internal/infra/validator.go (55.9%)</option>
 				
 				<option value="file21">github.com/canpok1/ai-feed/internal/testutil/helpers.go (100.0%)</option>
 				
@@ -816,7 +816,7 @@ type AIConfig struct {
 
 // MockConfig はAIのモック設定を保持する
 type MockConfig struct {
-        Enabled      bool
+        Enabled      *bool
         SelectorMode string // "first", "random", "last"
         Comment      string // 固定で返すコメント
 }
@@ -826,7 +826,7 @@ func (m *MockConfig) Validate() *ValidationResult <span class="cov8" title="1">{
         builder := NewValidationBuilder()
 
         // Enabledがfalseの場合はバリデーションをスキップ
-        if !m.Enabled </span><span class="cov0" title="0">{
+        if m.Enabled == nil || !*m.Enabled </span><span class="cov0" title="0">{
                 return builder.Build()
         }</span>
 
@@ -843,15 +843,17 @@ func (m *MockConfig) Merge(other *MockConfig) <span class="cov8" title="1">{
         if other == nil </span><span class="cov0" title="0">{
                 return
         }</span>
-        <span class="cov8" title="1">m.Enabled = other.Enabled
-        mergeString(&amp;m.SelectorMode, other.SelectorMode)
+        <span class="cov8" title="1">if other.Enabled != nil </span><span class="cov8" title="1">{
+                m.Enabled = other.Enabled
+        }</span>
+        <span class="cov8" title="1">mergeString(&amp;m.SelectorMode, other.SelectorMode)
         mergeString(&amp;m.Comment, other.Comment)</span>
 }
 
 // LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
 func (m MockConfig) LogValue() slog.Value <span class="cov0" title="0">{
         return slog.GroupValue(
-                slog.Bool("Enabled", m.Enabled),
+                slog.Bool("Enabled", m.Enabled != nil &amp;&amp; *m.Enabled),
                 slog.String("SelectorMode", m.SelectorMode),
                 slog.String("Comment", m.Comment),
         )
@@ -862,7 +864,7 @@ func (a *AIConfig) Validate() *ValidationResult <span class="cov8" title="1">{
         builder := NewValidationBuilder()
 
         // Mock設定が有効な場合は、Gemini設定は不要
-        if a.Mock != nil &amp;&amp; a.Mock.Enabled </span><span class="cov8" title="1">{
+        if a.Mock != nil &amp;&amp; a.Mock.Enabled != nil &amp;&amp; *a.Mock.Enabled </span><span class="cov8" title="1">{
                 builder.MergeResult(a.Mock.Validate())
                 return builder.Build()
         }</span>
@@ -1036,7 +1038,7 @@ func (p PromptConfig) LogValue() slog.Value <span class="cov0" title="0">{
 }</span>
 
 type MisskeyConfig struct {
-        Enabled         bool
+        Enabled         *bool
         APIToken        SecretString
         APIURL          string
         MessageTemplate *string
@@ -1047,7 +1049,7 @@ func (m *MisskeyConfig) Validate() *ValidationResult <span class="cov8" title="1
         builder := NewValidationBuilder()
 
         // Enabledがfalseの場合はバリデーションをスキップ
-        if !m.Enabled </span><span class="cov8" title="1">{
+        if m.Enabled == nil || !*m.Enabled </span><span class="cov8" title="1">{
                 return builder.Build()
         }</span>
 
@@ -1089,9 +1091,10 @@ func (m *MisskeyConfig) Merge(other *MisskeyConfig) <span class="cov8" title="1"
         if other == nil </span><span class="cov0" title="0">{
                 return
         }</span>
-        // bool フィールドはゼロ値チェックが困難なため、常に上書き
-        <span class="cov8" title="1">m.Enabled = other.Enabled
-        if !other.APIToken.IsEmpty() </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if other.Enabled != nil </span><span class="cov8" title="1">{
+                m.Enabled = other.Enabled
+        }</span>
+        <span class="cov8" title="1">if !other.APIToken.IsEmpty() </span><span class="cov0" title="0">{
                 m.APIToken = other.APIToken
         }</span>
         <span class="cov8" title="1">mergeString(&amp;m.APIURL, other.APIURL)
@@ -1103,7 +1106,7 @@ func (m *MisskeyConfig) Merge(other *MisskeyConfig) <span class="cov8" title="1"
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
 func (m MisskeyConfig) LogValue() slog.Value <span class="cov0" title="0">{
         attrs := []slog.Attr{
-                slog.Bool("Enabled", m.Enabled),
+                slog.Bool("Enabled", m.Enabled != nil &amp;&amp; *m.Enabled),
                 slog.Any("APIToken", m.APIToken),
                 slog.String("APIURL", m.APIURL),
         }
@@ -1114,7 +1117,7 @@ func (m MisskeyConfig) LogValue() slog.Value <span class="cov0" title="0">{
 }
 
 type SlackAPIConfig struct {
-        Enabled         bool
+        Enabled         *bool
         APIToken        SecretString
         Channel         string
         MessageTemplate *string
@@ -1130,7 +1133,7 @@ func (s *SlackAPIConfig) Validate() *ValidationResult <span class="cov8" title="
         builder := NewValidationBuilder()
 
         // Enabledがfalseの場合はバリデーションをスキップ
-        if !s.Enabled </span><span class="cov8" title="1">{
+        if s.Enabled == nil || !*s.Enabled </span><span class="cov8" title="1">{
                 return builder.Build()
         }</span>
 
@@ -1177,9 +1180,10 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) <span class="cov8" title="
         if other == nil </span><span class="cov0" title="0">{
                 return
         }</span>
-        // bool フィールドはゼロ値チェックが困難なため、常に上書き
-        <span class="cov8" title="1">s.Enabled = other.Enabled
-        if !other.APIToken.IsEmpty() </span><span class="cov8" title="1">{
+        <span class="cov8" title="1">if other.Enabled != nil </span><span class="cov8" title="1">{
+                s.Enabled = other.Enabled
+        }</span>
+        <span class="cov8" title="1">if !other.APIToken.IsEmpty() </span><span class="cov8" title="1">{
                 s.APIToken = other.APIToken
         }</span>
         <span class="cov8" title="1">mergeString(&amp;s.Channel, other.Channel)
@@ -1200,7 +1204,7 @@ func (s *SlackAPIConfig) Merge(other *SlackAPIConfig) <span class="cov8" title="
 // LogValue はslog出力時に機密情報をマスクするためのメソッド
 func (s SlackAPIConfig) LogValue() slog.Value <span class="cov0" title="0">{
         attrs := []slog.Attr{
-                slog.Bool("Enabled", s.Enabled),
+                slog.Bool("Enabled", s.Enabled != nil &amp;&amp; *s.Enabled),
                 slog.Any("APIToken", s.APIToken),
                 slog.String("Channel", s.Channel),
         }
@@ -1220,7 +1224,7 @@ func (s SlackAPIConfig) LogValue() slog.Value <span class="cov0" title="0">{
 }
 
 type CacheConfig struct {
-        Enabled       bool
+        Enabled       *bool
         FilePath      string
         MaxEntries    int
         RetentionDays int
@@ -1246,9 +1250,10 @@ func (c *CacheConfig) Merge(other *CacheConfig) <span class="cov0" title="0">{
         if other == nil </span><span class="cov0" title="0">{
                 return
         }</span>
-        // bool フィールドはゼロ値チェックが困難なため、常に上書き
-        <span class="cov0" title="0">c.Enabled = other.Enabled
-        mergeString(&amp;c.FilePath, other.FilePath)
+        <span class="cov0" title="0">if other.Enabled != nil </span><span class="cov0" title="0">{
+                c.Enabled = other.Enabled
+        }</span>
+        <span class="cov0" title="0">mergeString(&amp;c.FilePath, other.FilePath)
         if other.MaxEntries &gt; 0 </span><span class="cov0" title="0">{
                 c.MaxEntries = other.MaxEntries
         }</span>
@@ -1260,7 +1265,7 @@ func (c *CacheConfig) Merge(other *CacheConfig) <span class="cov0" title="0">{
 // LogValue はslog出力時に設定値を読みやすく表示するためのメソッド
 func (c CacheConfig) LogValue() slog.Value <span class="cov0" title="0">{
         return slog.GroupValue(
-                slog.Bool("Enabled", c.Enabled),
+                slog.Bool("Enabled", c.Enabled != nil &amp;&amp; *c.Enabled),
                 slog.String("FilePath", c.FilePath),
                 slog.Int("MaxEntries", c.MaxEntries),
                 slog.Int("RetentionDays", c.RetentionDays),
@@ -2365,12 +2370,8 @@ func (c *MockConfig) ToEntity() *entity.MockConfig <span class="cov8" title="1">
         if c == nil </span><span class="cov8" title="1">{
                 return nil
         }</span>
-        <span class="cov8" title="1">enabled := false
-        if c.Enabled != nil </span><span class="cov8" title="1">{
-                enabled = *c.Enabled
-        }</span>
         <span class="cov8" title="1">return &amp;entity.MockConfig{
-                Enabled:      enabled,
+                Enabled:      c.Enabled,
                 SelectorMode: c.SelectorMode,
                 Comment:      c.Comment,
         }</span>
@@ -2421,12 +2422,21 @@ func resolveSecretString(value, envVar, configPath string) (entity.SecretString,
         <span class="cov8" title="1">return entity.NewSecretString(str), nil</span>
 }
 
-// resolveEnabled は、Enabledフィールドのデフォルト値処理を行う
-func resolveEnabled(e *bool) bool <span class="cov8" title="1">{
-        if e == nil </span><span class="cov8" title="1">{
+// resolveEnabled は、Enabledフィールドのデフォルト値処理を行う（後方互換性のために保持）
+func resolveEnabled(e *bool) bool <span class="cov0" title="0">{
+        if e == nil </span><span class="cov0" title="0">{
                 return true
         }</span>
-        <span class="cov8" title="1">return *e</span>
+        <span class="cov0" title="0">return *e</span>
+}
+
+// resolveEnabledPtr は、Enabledフィールドのデフォルト値処理を行い、ポインタとして返す
+func resolveEnabledPtr(e *bool) *bool <span class="cov8" title="1">{
+        if e == nil </span><span class="cov8" title="1">{
+                enabled := true
+                return &amp;enabled
+        }</span>
+        <span class="cov8" title="1">return e</span>
 }
 
 func (c *GeminiConfig) ToEntity() (*entity.GeminiConfig, error) <span class="cov8" title="1">{
@@ -2515,7 +2525,8 @@ type SlackAPIConfig struct {
 
 func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) <span class="cov8" title="1">{
         // Enabledフィールドの後方互換性処理（省略時=true）
-        enabled := resolveEnabled(c.Enabled)
+        enabledPtr := resolveEnabledPtr(c.Enabled)
+        enabled := enabledPtr != nil &amp;&amp; *enabledPtr
 
         // 無効化されている場合は、APIトークンのバリデーションをスキップ
         var apiToken entity.SecretString
@@ -2535,7 +2546,7 @@ func (c *SlackAPIConfig) ToEntity() (*entity.SlackAPIConfig, error) <span class=
         }</span>
 
         <span class="cov8" title="1">return &amp;entity.SlackAPIConfig{
-                Enabled:         enabled,
+                Enabled:         enabledPtr,
                 APIToken:        apiToken,
                 Channel:         c.Channel,
                 MessageTemplate: convertedTemplate,
@@ -2556,7 +2567,8 @@ type MisskeyConfig struct {
 
 func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) <span class="cov8" title="1">{
         // Enabledフィールドの後方互換性処理（省略時=true）
-        enabled := resolveEnabled(c.Enabled)
+        enabledPtr := resolveEnabledPtr(c.Enabled)
+        enabled := enabledPtr != nil &amp;&amp; *enabledPtr
 
         // 無効化されている場合は、APIトークンのバリデーションをスキップ
         var apiToken entity.SecretString
@@ -2576,7 +2588,7 @@ func (c *MisskeyConfig) ToEntity() (*entity.MisskeyConfig, error) <span class="c
         }</span>
 
         <span class="cov8" title="1">return &amp;entity.MisskeyConfig{
-                Enabled:         enabled,
+                Enabled:         enabledPtr,
                 APIToken:        apiToken,
                 APIURL:          c.APIURL,
                 MessageTemplate: convertedTemplate,
@@ -2673,7 +2685,7 @@ func (r *YamlConfigRepository) Load() (*domain.LoadedConfig, error) <span class=
 
         <span class="cov8" title="1">if infraConfig.Cache != nil </span><span class="cov0" title="0">{
                 result.Cache = &amp;entity.CacheConfig{
-                        Enabled:       resolveCacheEnabled(infraConfig.Cache.Enabled),
+                        Enabled:       resolveCacheEnabledPtr(infraConfig.Cache.Enabled),
                         FilePath:      infraConfig.Cache.FilePath,
                         MaxEntries:    infraConfig.Cache.MaxEntries,
                         RetentionDays: infraConfig.Cache.RetentionDays,
@@ -2690,12 +2702,21 @@ type CacheConfig struct {
         RetentionDays int    `yaml:"retention_days,omitempty"`
 }
 
-// resolveCacheEnabled は、Enabledフィールドのデフォルト値処理を行う（キャッシュのデフォルトはfalse）
-func resolveCacheEnabled(e *bool) bool <span class="cov8" title="1">{
-        if e == nil </span><span class="cov8" title="1">{
+// resolveCacheEnabled は、Enabledフィールドのデフォルト値処理を行う（キャッシュのデフォルトはfalse）（後方互換性のために保持）
+func resolveCacheEnabled(e *bool) bool <span class="cov0" title="0">{
+        if e == nil </span><span class="cov0" title="0">{
                 return false
         }</span>
-        <span class="cov8" title="1">return *e</span>
+        <span class="cov0" title="0">return *e</span>
+}
+
+// resolveCacheEnabledPtr は、Enabledフィールドのデフォルト値処理を行い、ポインタとして返す（キャッシュのデフォルトはfalse）
+func resolveCacheEnabledPtr(e *bool) *bool <span class="cov8" title="1">{
+        if e == nil </span><span class="cov8" title="1">{
+                enabled := false
+                return &amp;enabled
+        }</span>
+        <span class="cov8" title="1">return e</span>
 }
 
 // expandPath は、パス中のチルダをホームディレクトリに展開し、相対パスを絶対パスに変換する
@@ -2731,7 +2752,7 @@ func (c *CacheConfig) ToEntity() (*entity.CacheConfig, error) <span class="cov8"
         }</span>
 
         // デフォルト値の設定
-        <span class="cov8" title="1">enabled := resolveCacheEnabled(c.Enabled)
+        <span class="cov8" title="1">enabledPtr := resolveCacheEnabledPtr(c.Enabled)
 
         filePath := c.FilePath
         if filePath == "" </span><span class="cov8" title="1">{
@@ -2755,7 +2776,7 @@ func (c *CacheConfig) ToEntity() (*entity.CacheConfig, error) <span class="cov8"
         }</span>
 
         <span class="cov8" title="1">return &amp;entity.CacheConfig{
-                Enabled:       enabled,
+                Enabled:       enabledPtr,
                 FilePath:      expandedPath,
                 MaxEntries:    maxEntries,
                 RetentionDays: retentionDays,
@@ -3125,9 +3146,8 @@ func (f *ConfigValidatorFactory) Create(config *domain.LoadedConfig, profile *en
         // DefaultProfileはprofileパラメータに既にマージ済みなので、ここでは設定しない
 
         if config.Cache != nil </span><span class="cov0" title="0">{
-                enabled := config.Cache.Enabled
                 infraConfig.Cache = &amp;CacheConfig{
-                        Enabled:       &amp;enabled,
+                        Enabled:       config.Cache.Enabled,
                         FilePath:      config.Cache.FilePath,
                         MaxEntries:    config.Cache.MaxEntries,
                         RetentionDays: config.Cache.RetentionDays,
@@ -3300,12 +3320,12 @@ func (v *ConfigValidator) validateOutput(result *domain.ValidationResult) <span 
         <span class="cov8" title="1">output := v.profile.Output
 
         // Slack API設定のバリデーション
-        if output.SlackAPI != nil &amp;&amp; output.SlackAPI.Enabled </span><span class="cov8" title="1">{
+        if output.SlackAPI != nil &amp;&amp; output.SlackAPI.Enabled != nil &amp;&amp; *output.SlackAPI.Enabled </span><span class="cov8" title="1">{
                 v.validateSlackAPI(output.SlackAPI, result)
         }</span>
 
         // Misskey設定のバリデーション
-        <span class="cov8" title="1">if output.Misskey != nil &amp;&amp; output.Misskey.Enabled </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if output.Misskey != nil &amp;&amp; output.Misskey.Enabled != nil &amp;&amp; *output.Misskey.Enabled </span><span class="cov0" title="0">{
                 v.validateMisskey(output.Misskey, result)
         }</span>
 }
@@ -3344,7 +3364,7 @@ func (v *ConfigValidator) validateCache(result *domain.ValidationResult) <span c
         }
 
         // サマリーの更新
-        <span class="cov0" title="0">if cacheEntity.Enabled </span><span class="cov0" title="0">{
+        <span class="cov0" title="0">if cacheEntity.Enabled != nil &amp;&amp; *cacheEntity.Enabled </span><span class="cov0" title="0">{
                 result.Summary.CacheEnabled = true
                 result.Summary.CacheFilePath = cacheEntity.FilePath
                 result.Summary.CacheMaxEntries = cacheEntity.MaxEntries
