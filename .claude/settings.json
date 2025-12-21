@@ -69,6 +69,7 @@
   },
   "enableAllProjectMcpServers": true,
   "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "example-skills@anthropic-agent-skills": true
   }
 }
