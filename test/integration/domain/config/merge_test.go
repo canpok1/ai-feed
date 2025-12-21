@@ -312,11 +312,7 @@ func TestProfileMerge_MultiLevelNestedOverride(t *testing.T) {
 		originalEnabled := defaultProfile.Output.SlackAPI.Enabled
 
 		// チャンネルのみを上書きするプロファイル
-		// 注意: 現在の実装ではbool型フィールドはゼロ値（false）と「未設定」を区別できないため、
-		// Enabledを省略するとfalseで上書きされてしまう。この制約を回避するため、
-		// 本テストでは明示的にoriginalEnabledを設定している。
-		// 将来的には*bool型への変更により、この制約を解消することが望ましい。
-		// 参考: entity.SlackAPIConfig.Merge() の実装
+		// NOTE: bool型はゼロ値と未設定を区別できないため、Enabledを明示的に設定
 		fileProfile := &entity.Profile{
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
@@ -385,20 +381,8 @@ func TestProfileMerge_NilHandling(t *testing.T) {
 	})
 }
 
-// TestProfileMerge_BooleanFieldHandling はboolフィールドのマージ処理を検証する
-//
-// 重要: 現在の実装では、bool型フィールドは常に上書きされる。
-// これはGoのbool型ではゼロ値（false）と「未設定」を区別できないため、
-// マージ時に「上書きしない」という判断ができないことによる制約である。
-//
-// この制約により、設定ファイルでEnabledフィールドを省略した場合、
-// 意図せずfalseで上書きされる可能性がある。
-// 部分的な設定のみを上書きしたい場合は、boolフィールドも明示的に
-// 現在の値を設定する必要がある（TestProfileMerge_MultiLevelNestedOverrideを参照）。
-//
-// 将来的な改善案: entity層のboolフィールドを*bool型に変更することで、
-// nil（未設定）、true、falseの3状態を区別可能になり、より直感的な
-// マージ動作を実現できる。
+// TestProfileMerge_BooleanFieldHandling はbool型フィールドのマージ動作を検証する
+// bool型は常に上書きされる（ゼロ値と未設定の区別不可のため）
 func TestProfileMerge_BooleanFieldHandling(t *testing.T) {
 	t.Run("Enabled=falseで上書き", func(t *testing.T) {
 		defaultProfile := ValidEntityProfile()
