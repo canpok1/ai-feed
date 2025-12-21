@@ -82,16 +82,6 @@ EOF
 - **テストが失敗した場合**: PR作成を中止し、修正してから再実行してください
 - **document-specialistの使用**: PR説明文は必ずdocument-specialistで生成してから使用してください
 
-### 典型的なワークフロー
-
-1. コード変更とコミット
-2. specialist エージェントでレビュー実施
-   - coding-specialist: コーディングルールの確認
-   - architecture-specialist: アーキテクチャの確認
-   - testing-specialist: テストの確認
-3. **document-specialist エージェントでPR説明文生成**
-4. **このスキルでPR作成**（生成された説明文を引数に指定）
-
 ### 詳細なガイドライン
 
 PR作成の詳細なガイドライン、ブランチ戦略、コミット規約については、

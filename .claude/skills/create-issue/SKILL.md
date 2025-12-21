@@ -25,25 +25,6 @@ description: GitHub issueを作成します。タイトルと本文を受け取�
 - **タイトル**: issueのタイトル（必須）
 - **本文**: issueの詳細説明（必須）
 
-## 典型的なワークフロー
-
-1. **issue説明文の整理（推奨）**
-   - document-specialistエージェントを使用
-   - 問題、詳細、期待される結果を含む説明文を作成
-
-2. **リポジトリ確認**
-   ```bash
-   git remote -v
-   ```
-
-3. **issue作成**
-   ```bash
-   gh issue create --title "タイトル" --body "本文"
-   ```
-
-4. **作成確認**
-   - 表示されたissue URLで内容を確認
-
 ## 実行例
 
 ```bash

@@ -55,32 +55,6 @@ issue_1_plan_03_update_documentation.md
 - 適当な粒度でコミットすること。
 ```
 
-## 典型的なワークフロー
-
-1. **issue内容の確認**
-   ```bash
-   gh issue view "#123"
-   ```
-
-2. **差分の確認**
-   ```bash
-   git diff main...HEAD
-   ```
-
-3. **専門家エージェントでレビュー**
-   - coding-specialistエージェントを起動
-   - architecture-specialistエージェントを起動
-   - testing-specialistエージェントを起動
-   - document-specialistエージェントを起動
-
-4. **タスクファイル作成**
-   - 各エージェントからの指摘事項を整理
-   - tmp/todoフォルダに改善タスクを作成
-
-5. **タスク実行**
-   - 作成されたタスクファイルに従って改善を実施
-   - 適切な粒度でコミット
-
 ## 注意事項
 
 - tmp/todoフォルダが存在しない場合は自動的に作成されます
