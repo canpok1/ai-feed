@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -72,7 +73,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 			Output: &OutputConfig{
 				SlackAPI: nil,
 				Misskey: &MisskeyConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        misskeyToken,
 					APIURL:          "https://misskey.example.com",
 					MessageTemplate: &messageTemplate,
@@ -96,7 +97,7 @@ func TestLogValue_WithNilFields(t *testing.T) {
 			Prompt: &PromptConfig{FixedMessage: "test"},
 			Output: &OutputConfig{
 				SlackAPI: &SlackAPIConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        slackToken,
 					Channel:         "#test",
 					MessageTemplate: &messageTemplate,
@@ -184,7 +185,7 @@ func TestProfile_Validate(t *testing.T) {
 	validTemplate := "{{.Article.Title}} {{.Article.Link}}"
 	validOutput := &OutputConfig{
 		SlackAPI: &SlackAPIConfig{
-			Enabled:         boolPtr(true),
+			Enabled:         testutil.BoolPtr(true),
 			APIToken:        makeSecretString("valid-token"),
 			Channel:         "#general",
 			MessageTemplate: &validTemplate,
@@ -243,7 +244,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_必須項目すべて",
 			config: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
@@ -253,7 +254,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_テンプレート付き",
 			config: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
@@ -263,7 +264,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが未設定",
 			config: &MisskeyConfig{
-				Enabled:  boolPtr(true),
+				Enabled:  testutil.BoolPtr(true),
 				APIToken: makeSecretString("valid-token"),
 				APIURL:   "https://misskey.example.com",
 			},
@@ -273,7 +274,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_MessageTemplateが空文字列",
 			config: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &emptyTemplate,
@@ -284,7 +285,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APITokenが空",
 			config: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        SecretString{}, // ゼロ値 (空)
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &validTemplate,
@@ -295,7 +296,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APIURLが空",
 			config: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "",
 				MessageTemplate: &validTemplate,
@@ -306,7 +307,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_APIURLが不正なURL",
 			config: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "not-a-url",
 				MessageTemplate: &validTemplate,
@@ -317,7 +318,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_不正なテンプレート構文",
 			config: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("valid-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &invalidTemplate,
@@ -328,7 +329,7 @@ func TestMisskeyConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_複数のエラー",
 			config: &MisskeyConfig{
-				Enabled:  boolPtr(true),
+				Enabled:  testutil.BoolPtr(true),
 				APIToken: SecretString{}, // ゼロ値 (空)
 				APIURL:   "not-a-url",
 			},
@@ -498,7 +499,7 @@ func TestMockConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_Enabled_false_バリデーションスキップ",
 			config: &MockConfig{
-				Enabled:      boolPtr(false),
+				Enabled:      testutil.BoolPtr(false),
 				SelectorMode: "",
 				Comment:      "",
 			},
@@ -507,7 +508,7 @@ func TestMockConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_有効なSelectorMode_first",
 			config: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "first",
 				Comment:      "テストコメント",
 			},
@@ -516,7 +517,7 @@ func TestMockConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_有効なSelectorMode_random",
 			config: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "random",
 				Comment:      "",
 			},
@@ -525,7 +526,7 @@ func TestMockConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_有効なSelectorMode_last",
 			config: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "last",
 				Comment:      "last comment",
 			},
@@ -534,7 +535,7 @@ func TestMockConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_無効なSelectorMode",
 			config: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "invalid",
 				Comment:      "",
 			},
@@ -544,7 +545,7 @@ func TestMockConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_SelectorModeが空文字列",
 			config: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "",
 				Comment:      "",
 			},
@@ -577,13 +578,13 @@ func TestMockConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_nilをマージ",
 			target: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "first",
 				Comment:      "original",
 			},
 			source: nil,
 			expected: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "first",
 				Comment:      "original",
 			},
@@ -591,17 +592,17 @@ func TestMockConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_全フィールドを上書き",
 			target: &MockConfig{
-				Enabled:      boolPtr(false),
+				Enabled:      testutil.BoolPtr(false),
 				SelectorMode: "first",
 				Comment:      "original",
 			},
 			source: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "random",
 				Comment:      "new comment",
 			},
 			expected: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "random",
 				Comment:      "new comment",
 			},
@@ -609,17 +610,17 @@ func TestMockConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_空文字列はマージしない",
 			target: &MockConfig{
-				Enabled:      boolPtr(true),
+				Enabled:      testutil.BoolPtr(true),
 				SelectorMode: "first",
 				Comment:      "original",
 			},
 			source: &MockConfig{
-				Enabled:      boolPtr(false),
+				Enabled:      testutil.BoolPtr(false),
 				SelectorMode: "",
 				Comment:      "",
 			},
 			expected: &MockConfig{
-				Enabled:      boolPtr(false),
+				Enabled:      testutil.BoolPtr(false),
 				SelectorMode: "first",
 				Comment:      "original",
 			},
@@ -644,7 +645,7 @@ func TestCacheConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_FilePathが設定されている",
 			config: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/path/to/cache.json",
 				MaxEntries:    100,
 				RetentionDays: 30,
@@ -654,7 +655,7 @@ func TestCacheConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_MaxEntriesとRetentionDaysがゼロでも有効",
 			config: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/path/to/cache.json",
 				MaxEntries:    0,
 				RetentionDays: 0,
@@ -664,7 +665,7 @@ func TestCacheConfig_Validate(t *testing.T) {
 		{
 			name: "正常系_Enabledがfalseでも有効",
 			config: &CacheConfig{
-				Enabled:       boolPtr(false),
+				Enabled:       testutil.BoolPtr(false),
 				FilePath:      "/path/to/cache.json",
 				MaxEntries:    100,
 				RetentionDays: 30,
@@ -674,7 +675,7 @@ func TestCacheConfig_Validate(t *testing.T) {
 		{
 			name: "異常系_FilePathが空文字列",
 			config: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "",
 				MaxEntries:    100,
 				RetentionDays: 30,
@@ -708,14 +709,14 @@ func TestCacheConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_nilをマージ",
 			target: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/original/path",
 				MaxEntries:    100,
 				RetentionDays: 30,
 			},
 			source: nil,
 			expected: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/original/path",
 				MaxEntries:    100,
 				RetentionDays: 30,
@@ -724,19 +725,19 @@ func TestCacheConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_全フィールドを上書き",
 			target: &CacheConfig{
-				Enabled:       boolPtr(false),
+				Enabled:       testutil.BoolPtr(false),
 				FilePath:      "/original/path",
 				MaxEntries:    100,
 				RetentionDays: 30,
 			},
 			source: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/new/path",
 				MaxEntries:    200,
 				RetentionDays: 60,
 			},
 			expected: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/new/path",
 				MaxEntries:    200,
 				RetentionDays: 60,
@@ -745,19 +746,19 @@ func TestCacheConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_空文字列とゼロ値はマージしない",
 			target: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/original/path",
 				MaxEntries:    100,
 				RetentionDays: 30,
 			},
 			source: &CacheConfig{
-				Enabled:       boolPtr(false),
+				Enabled:       testutil.BoolPtr(false),
 				FilePath:      "",
 				MaxEntries:    0,
 				RetentionDays: 0,
 			},
 			expected: &CacheConfig{
-				Enabled:       boolPtr(false),
+				Enabled:       testutil.BoolPtr(false),
 				FilePath:      "/original/path",
 				MaxEntries:    100,
 				RetentionDays: 30,
@@ -766,19 +767,19 @@ func TestCacheConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_部分的な上書き",
 			target: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/original/path",
 				MaxEntries:    100,
 				RetentionDays: 30,
 			},
 			source: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/new/path",
 				MaxEntries:    0,
 				RetentionDays: 60,
 			},
 			expected: &CacheConfig{
-				Enabled:       boolPtr(true),
+				Enabled:       testutil.BoolPtr(true),
 				FilePath:      "/new/path",
 				MaxEntries:    100,
 				RetentionDays: 60,
@@ -819,7 +820,7 @@ func TestAIConfig_Validate(t *testing.T) {
 			name: "正常系_Mock設定が有効な場合Gemini不要",
 			config: &AIConfig{
 				Mock: &MockConfig{
-					Enabled:      boolPtr(true),
+					Enabled:      testutil.BoolPtr(true),
 					SelectorMode: "first",
 				},
 				Gemini: nil,
@@ -830,7 +831,7 @@ func TestAIConfig_Validate(t *testing.T) {
 			name: "正常系_MockとGemini両方設定_Mock有効",
 			config: &AIConfig{
 				Mock: &MockConfig{
-					Enabled:      boolPtr(true),
+					Enabled:      testutil.BoolPtr(true),
 					SelectorMode: "random",
 				},
 				Gemini: &GeminiConfig{
@@ -844,7 +845,7 @@ func TestAIConfig_Validate(t *testing.T) {
 			name: "正常系_Mock無効の場合Gemini必須",
 			config: &AIConfig{
 				Mock: &MockConfig{
-					Enabled:      boolPtr(false),
+					Enabled:      testutil.BoolPtr(false),
 					SelectorMode: "first",
 				},
 				Gemini: &GeminiConfig{
@@ -866,7 +867,7 @@ func TestAIConfig_Validate(t *testing.T) {
 			name: "異常系_Mock無効でGeminiがnil",
 			config: &AIConfig{
 				Mock: &MockConfig{
-					Enabled: boolPtr(false),
+					Enabled: testutil.BoolPtr(false),
 				},
 				Gemini: nil,
 			},
@@ -877,7 +878,7 @@ func TestAIConfig_Validate(t *testing.T) {
 			name: "異常系_Mock有効だがSelectorModeが無効",
 			config: &AIConfig{
 				Mock: &MockConfig{
-					Enabled:      boolPtr(true),
+					Enabled:      testutil.BoolPtr(true),
 					SelectorMode: "invalid",
 				},
 				Gemini: nil,
@@ -951,7 +952,7 @@ func TestAIConfig_Merge(t *testing.T) {
 				Gemini: &GeminiConfig{Type: "original", APIKey: makeSecretString("original-key")},
 			},
 			source: &AIConfig{
-				Mock: &MockConfig{Enabled: boolPtr(true), SelectorMode: "first"},
+				Mock: &MockConfig{Enabled: testutil.BoolPtr(true), SelectorMode: "first"},
 			},
 			validate: func(t *testing.T, result *AIConfig) {
 				assert.NotNil(t, result.Mock)
@@ -1280,7 +1281,7 @@ func TestSlackAPIConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_nilをマージ",
 			target: &SlackAPIConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("original-token"),
 				Channel:         "#original",
 				MessageTemplate: &template1,
@@ -1295,13 +1296,13 @@ func TestSlackAPIConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_全フィールドを上書き",
 			target: &SlackAPIConfig{
-				Enabled:         boolPtr(false),
+				Enabled:         testutil.BoolPtr(false),
 				APIToken:        makeSecretString("original-token"),
 				Channel:         "#original",
 				MessageTemplate: &template1,
 			},
 			source: &SlackAPIConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("new-token"),
 				Channel:         "#new",
 				MessageTemplate: &template2,
@@ -1322,13 +1323,13 @@ func TestSlackAPIConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_空文字列はマージしない",
 			target: &SlackAPIConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("original-token"),
 				Channel:         "#original",
 				MessageTemplate: &template1,
 			},
 			source: &SlackAPIConfig{
-				Enabled:  boolPtr(false),
+				Enabled:  testutil.BoolPtr(false),
 				APIToken: SecretString{},
 				Channel:  "",
 			},
@@ -1365,7 +1366,7 @@ func TestMisskeyConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_nilをマージ",
 			target: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("original-token"),
 				APIURL:          "https://original.example.com",
 				MessageTemplate: &template1,
@@ -1380,13 +1381,13 @@ func TestMisskeyConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_全フィールドを上書き",
 			target: &MisskeyConfig{
-				Enabled:         boolPtr(false),
+				Enabled:         testutil.BoolPtr(false),
 				APIToken:        makeSecretString("original-token"),
 				APIURL:          "https://original.example.com",
 				MessageTemplate: &template1,
 			},
 			source: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("new-token"),
 				APIURL:          "https://new.example.com",
 				MessageTemplate: &template2,
@@ -1401,13 +1402,13 @@ func TestMisskeyConfig_Merge(t *testing.T) {
 		{
 			name: "正常系_空文字列はマージしない",
 			target: &MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        makeSecretString("original-token"),
 				APIURL:          "https://original.example.com",
 				MessageTemplate: &template1,
 			},
 			source: &MisskeyConfig{
-				Enabled:  boolPtr(false),
+				Enabled:  testutil.BoolPtr(false),
 				APIToken: SecretString{},
 				APIURL:   "",
 			},
@@ -1444,7 +1445,7 @@ func TestOutputConfig_Merge(t *testing.T) {
 			name: "正常系_nilをマージ",
 			target: &OutputConfig{
 				SlackAPI: &SlackAPIConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        makeSecretString("token"),
 					Channel:         "#test",
 					MessageTemplate: &template,
@@ -1461,7 +1462,7 @@ func TestOutputConfig_Merge(t *testing.T) {
 			target: &OutputConfig{},
 			source: &OutputConfig{
 				SlackAPI: &SlackAPIConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        makeSecretString("token"),
 					Channel:         "#new",
 					MessageTemplate: &template,
@@ -1477,7 +1478,7 @@ func TestOutputConfig_Merge(t *testing.T) {
 			target: &OutputConfig{},
 			source: &OutputConfig{
 				Misskey: &MisskeyConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        makeSecretString("token"),
 					APIURL:          "https://misskey.example.com",
 					MessageTemplate: &template,
@@ -1493,13 +1494,13 @@ func TestOutputConfig_Merge(t *testing.T) {
 			target: &OutputConfig{},
 			source: &OutputConfig{
 				SlackAPI: &SlackAPIConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        makeSecretString("slack-token"),
 					Channel:         "#slack",
 					MessageTemplate: &template,
 				},
 				Misskey: &MisskeyConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        makeSecretString("misskey-token"),
 					APIURL:          "https://misskey.example.com",
 					MessageTemplate: &template,
@@ -1579,7 +1580,7 @@ func TestProfile_Merge(t *testing.T) {
 				Prompt: &PromptConfig{SystemPrompt: "new system"},
 				Output: &OutputConfig{
 					SlackAPI: &SlackAPIConfig{
-						Enabled:         boolPtr(true),
+						Enabled:         testutil.BoolPtr(true),
 						APIToken:        makeSecretString("token"),
 						Channel:         "#test",
 						MessageTemplate: &template,
@@ -1600,10 +1601,6 @@ func TestProfile_Merge(t *testing.T) {
 			tt.validate(t, tt.target)
 		})
 	}
-}
-
-func boolPtr(b bool) *bool {
-	return &b
 }
 
 func stringPtr(s string) *string {

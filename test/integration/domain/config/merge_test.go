@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -215,10 +216,10 @@ func TestProfileMerge_ValidationAfterMerge(t *testing.T) {
 			Prompt: NewEntityPromptConfig(),
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled: boolPtr(false), // 無効化されているのでバリデーションスキップ
+					Enabled: testutil.BoolPtr(false), // 無効化されているのでバリデーションスキップ
 				},
 				Misskey: &entity.MisskeyConfig{
-					Enabled: boolPtr(false), // 無効化されているのでバリデーションスキップ
+					Enabled: testutil.BoolPtr(false), // 無効化されているのでバリデーションスキップ
 				},
 			},
 		}
@@ -254,8 +255,8 @@ func TestProfileMerge_PartialRequiredFieldCompletion(t *testing.T) {
 		},
 		Prompt: NewEntityPromptConfig(),
 		Output: &entity.OutputConfig{
-			SlackAPI: &entity.SlackAPIConfig{Enabled: boolPtr(false)},
-			Misskey:  &entity.MisskeyConfig{Enabled: boolPtr(false)},
+			SlackAPI: &entity.SlackAPIConfig{Enabled: testutil.BoolPtr(false)},
+			Misskey:  &entity.MisskeyConfig{Enabled: testutil.BoolPtr(false)},
 		},
 	}
 
@@ -394,7 +395,7 @@ func TestProfileMerge_BooleanFieldHandling(t *testing.T) {
 		fileProfile := &entity.Profile{
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled: boolPtr(false),
+					Enabled: testutil.BoolPtr(false),
 				},
 			},
 		}
@@ -413,7 +414,7 @@ func TestProfileMerge_BooleanFieldHandling(t *testing.T) {
 			Prompt: NewEntityPromptConfig(),
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:  boolPtr(false),
+					Enabled:  testutil.BoolPtr(false),
 					APIToken: entity.NewSecretString("token"),
 					Channel:  "#channel",
 				},
@@ -424,7 +425,7 @@ func TestProfileMerge_BooleanFieldHandling(t *testing.T) {
 		fileProfile := &entity.Profile{
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled: boolPtr(true),
+					Enabled: testutil.BoolPtr(true),
 				},
 			},
 		}
@@ -447,7 +448,7 @@ func TestProfileMerge_MessageTemplateOverride(t *testing.T) {
 			Output: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
 					MessageTemplate: &newTemplate,
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 				},
 			},
 		}
@@ -467,7 +468,7 @@ func TestProfileMerge_MessageTemplateOverride(t *testing.T) {
 			Output: &entity.OutputConfig{
 				Misskey: &entity.MisskeyConfig{
 					MessageTemplate: &newTemplate,
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 				},
 			},
 		}
@@ -486,22 +487,22 @@ func TestProfileMerge_MockConfigMerge(t *testing.T) {
 		defaultProfile := &entity.Profile{
 			AI: &entity.AIConfig{
 				Mock: &entity.MockConfig{
-					Enabled:      boolPtr(false),
+					Enabled:      testutil.BoolPtr(false),
 					SelectorMode: "first",
 					Comment:      "デフォルトコメント",
 				},
 			},
 			Prompt: NewEntityPromptConfig(),
 			Output: &entity.OutputConfig{
-				SlackAPI: &entity.SlackAPIConfig{Enabled: boolPtr(false)},
-				Misskey:  &entity.MisskeyConfig{Enabled: boolPtr(false)},
+				SlackAPI: &entity.SlackAPIConfig{Enabled: testutil.BoolPtr(false)},
+				Misskey:  &entity.MisskeyConfig{Enabled: testutil.BoolPtr(false)},
 			},
 		}
 
 		fileProfile := &entity.Profile{
 			AI: &entity.AIConfig{
 				Mock: &entity.MockConfig{
-					Enabled:      boolPtr(true),
+					Enabled:      testutil.BoolPtr(true),
 					SelectorMode: "random",
 					// Commentは省略
 				},

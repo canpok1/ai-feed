@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/canpok1/ai-feed/internal/domain/entity"
+	"github.com/canpok1/ai-feed/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,7 @@ func TestSlackAPI_DisabledSkipsAllValidation(t *testing.T) {
 
 	// すべてのバリデーション違反を含む設定
 	config := &entity.SlackAPIConfig{
-		Enabled:         boolPtr(false),
+		Enabled:         testutil.BoolPtr(false),
 		APIToken:        entity.SecretString{}, // 空のAPIToken（通常はエラー）
 		Channel:         "",                    // 空のChannel（通常はエラー）
 		MessageTemplate: nil,                   // nilのMessageTemplate（通常はエラー）
@@ -38,7 +39,7 @@ func TestSlackAPI_DisabledSkipsAllValidation(t *testing.T) {
 func TestMisskey_DisabledSkipsAllValidation(t *testing.T) {
 	// すべてのバリデーション違反を含む設定
 	config := &entity.MisskeyConfig{
-		Enabled:         boolPtr(false),
+		Enabled:         testutil.BoolPtr(false),
 		APIToken:        entity.SecretString{}, // 空のAPIToken（通常はエラー）
 		APIURL:          "invalid-url-format",  // 不正なURL形式（通常はエラー）
 		MessageTemplate: nil,                   // nilのMessageTemplate（通常はエラー）
@@ -61,7 +62,7 @@ func TestBothOutputsDisabled_SkipsAllValidation(t *testing.T) {
 		Prompt: NewEntityPromptConfig(),
 		Output: &entity.OutputConfig{
 			SlackAPI: &entity.SlackAPIConfig{
-				Enabled:         boolPtr(false),
+				Enabled:         testutil.BoolPtr(false),
 				APIToken:        entity.SecretString{},
 				Channel:         "",
 				MessageTemplate: nil,
@@ -69,7 +70,7 @@ func TestBothOutputsDisabled_SkipsAllValidation(t *testing.T) {
 				IconEmoji:       &iconEmoji,
 			},
 			Misskey: &entity.MisskeyConfig{
-				Enabled:         boolPtr(false),
+				Enabled:         testutil.BoolPtr(false),
 				APIToken:        entity.SecretString{},
 				APIURL:          "invalid-url-format",
 				MessageTemplate: nil,
@@ -98,7 +99,7 @@ func TestSlackAPI_EnabledExecutesValidation(t *testing.T) {
 		{
 			name: "api_tokenが空の場合エラー",
 			config: &entity.SlackAPIConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        entity.SecretString{}, // 空
 				Channel:         "#test-channel",
 				MessageTemplate: &messageTemplate,
@@ -108,7 +109,7 @@ func TestSlackAPI_EnabledExecutesValidation(t *testing.T) {
 		{
 			name: "channelが空の場合エラー",
 			config: &entity.SlackAPIConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        entity.NewSecretString("test-token"),
 				Channel:         "", // 空
 				MessageTemplate: &messageTemplate,
@@ -118,7 +119,7 @@ func TestSlackAPI_EnabledExecutesValidation(t *testing.T) {
 		{
 			name: "message_templateがnilの場合エラー",
 			config: &entity.SlackAPIConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        entity.NewSecretString("test-token"),
 				Channel:         "#test-channel",
 				MessageTemplate: nil, // nil
@@ -128,7 +129,7 @@ func TestSlackAPI_EnabledExecutesValidation(t *testing.T) {
 		{
 			name: "icon_urlとicon_emojiが同時に設定された場合エラー",
 			config: &entity.SlackAPIConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        entity.NewSecretString("test-token"),
 				Channel:         "#test-channel",
 				MessageTemplate: &messageTemplate,
@@ -171,7 +172,7 @@ func TestMisskey_EnabledExecutesValidation(t *testing.T) {
 		{
 			name: "api_tokenが空の場合エラー",
 			config: &entity.MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        entity.SecretString{}, // 空
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: &messageTemplate,
@@ -181,7 +182,7 @@ func TestMisskey_EnabledExecutesValidation(t *testing.T) {
 		{
 			name: "api_urlが不正な形式の場合エラー",
 			config: &entity.MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        entity.NewSecretString("test-token"),
 				APIURL:          "invalid-url", // 不正なURL
 				MessageTemplate: &messageTemplate,
@@ -191,7 +192,7 @@ func TestMisskey_EnabledExecutesValidation(t *testing.T) {
 		{
 			name: "message_templateがnilの場合エラー",
 			config: &entity.MisskeyConfig{
-				Enabled:         boolPtr(true),
+				Enabled:         testutil.BoolPtr(true),
 				APIToken:        entity.NewSecretString("test-token"),
 				APIURL:          "https://misskey.example.com",
 				MessageTemplate: nil, // nil

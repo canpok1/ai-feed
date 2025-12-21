@@ -23,11 +23,6 @@ func makeSecretString(value string) entity.SecretString {
 	return entity.NewSecretString(value)
 }
 
-// boolPtr はテスト用にboolのポインタを返す。
-func boolPtr(b bool) *bool {
-	return &b
-}
-
 // testMessageSenderFactory はテスト用のMessageSenderFactoryを返す
 func testMessageSenderFactory(outputConfig *entity.OutputConfig) ([]domain.MessageSender, error) {
 	// テスト用に空のスライスを返す（Sendersはモックでオーバーライドされることがほとんど）
@@ -76,7 +71,7 @@ func TestNewRecommendRunner(t *testing.T) {
 			name: "正常系: SlackAPI Senderで作成成功",
 			outputConfig: &entity.OutputConfig{
 				SlackAPI: &entity.SlackAPIConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        makeSecretString("test-token"),
 					Channel:         "#test",
 					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -89,7 +84,7 @@ func TestNewRecommendRunner(t *testing.T) {
 			name: "正常系: Misskey Senderで作成成功",
 			outputConfig: &entity.OutputConfig{
 				Misskey: &entity.MisskeyConfig{
-					Enabled:         boolPtr(true),
+					Enabled:         testutil.BoolPtr(true),
 					APIToken:        makeSecretString("test-token"),
 					APIURL:          "https://test.misskey.io/api",
 					MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -403,13 +398,13 @@ func TestRecommendRunner_Run_AllOutputsDisabled(t *testing.T) {
 	// 両方無効の設定
 	outputConfig := &entity.OutputConfig{
 		SlackAPI: &entity.SlackAPIConfig{
-			Enabled:         boolPtr(false),
+			Enabled:         testutil.BoolPtr(false),
 			APIToken:        makeSecretString("test-token"),
 			Channel:         "#test",
 			MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
 		},
 		Misskey: &entity.MisskeyConfig{
-			Enabled:         boolPtr(false),
+			Enabled:         testutil.BoolPtr(false),
 			APIToken:        makeSecretString("test-token"),
 			APIURL:          "https://test.misskey.io",
 			MessageTemplate: testutil.StringPtr("{{.Article.Title}}\n{{.Article.Link}}"),
@@ -476,9 +471,9 @@ func TestRecommendRunner_Run_ConfigLogging(t *testing.T) {
 	stdoutBuffer := new(bytes.Buffer)
 
 	// テスト用の設定値を作成
-	testOutputConfig := &entity.OutputConfig{SlackAPI: &entity.SlackAPIConfig{Enabled: boolPtr(true), APIToken: makeSecretString("slack-token"), Channel: "#general", MessageTemplate: testutil.StringPtr("test-template")}}
+	testOutputConfig := &entity.OutputConfig{SlackAPI: &entity.SlackAPIConfig{Enabled: testutil.BoolPtr(true), APIToken: makeSecretString("slack-token"), Channel: "#general", MessageTemplate: testutil.StringPtr("test-template")}}
 	testPromptConfig := &entity.PromptConfig{CommentPromptTemplate: "test-prompt", FixedMessage: "test-fixed-message"}
-	testCacheConfig := &entity.CacheConfig{Enabled: boolPtr(false), FilePath: "/tmp/test-cache"}
+	testCacheConfig := &entity.CacheConfig{Enabled: testutil.BoolPtr(false), FilePath: "/tmp/test-cache"}
 	testProfile := &entity.Profile{
 		AI:     &entity.AIConfig{Gemini: &entity.GeminiConfig{Type: "gemini", APIKey: makeSecretString("gemini-key")}},
 		Prompt: testPromptConfig,
