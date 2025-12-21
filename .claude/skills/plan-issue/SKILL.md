@@ -47,7 +47,7 @@ issue情報を取得した後、Claude Codeは以下のガイドラインに従�
 ### ファイル名フォーマット
 
 ```
-issue_{GitHub issueの番号}_plan_{2桁0埋めの1からの連番}_{タスク概要(英語)}.md
+issue_{GitHub issueの番号}_plan_{2桁0埋めの1からの連番}_{タスク概要（英語）}.md
 ```
 
 **例**: issue #1に対するタスクの場合

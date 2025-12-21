@@ -29,7 +29,7 @@ description: GitHub issueの対応内容をレビューし、改善タスクを�
 ### ファイル名フォーマット
 
 ```
-issue_{GitHub issue番号(#なし)}_plan_{2桁0埋めの1からの連番}_{タスク概要(英語)}.md
+issue_{GitHub issue番号（#なし）}_plan_{2桁0埋めの1からの連番}_{タスク概要（英語）}.md
 ```
 
 **例**: issue #1に対するタスクの場合
