@@ -217,7 +217,7 @@ func TestMisskeyConfig_EnabledDefaultValue(t *testing.T) {
 	require.NoError(t, err, "ToEntity()はエラーを返さないはずです")
 
 	// Enabledがtrueとして扱われることを確認
-	assert.True(t, entityProfile.Output.Misskey.Enabled,
+	assert.True(t, *entityProfile.Output.Misskey.Enabled,
 		"Enabledが省略された場合、trueとして扱われるはずです（後方互換性）")
 }
 
@@ -304,7 +304,7 @@ func TestMisskeyConfig_ValidConfig(t *testing.T) {
 	// 変換されたProfileの値を検証
 	require.NotNil(t, entityProfile.Output, "Output設定が存在するはずです")
 	require.NotNil(t, entityProfile.Output.Misskey, "Misskey設定が存在するはずです")
-	assert.True(t, entityProfile.Output.Misskey.Enabled, "Enabledが正しく変換されるはずです")
+	assert.True(t, *entityProfile.Output.Misskey.Enabled, "Enabledが正しく変換されるはずです")
 	assert.Equal(t, "test-api-token", entityProfile.Output.Misskey.APIToken.Value(), "APITokenが正しく変換されるはずです")
 	assert.Equal(t, "https://misskey.example.com", entityProfile.Output.Misskey.APIURL, "APIURLが正しく変換されるはずです")
 

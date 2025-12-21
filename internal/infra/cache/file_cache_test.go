@@ -17,9 +17,14 @@ func isRunningAsRoot() bool {
 	return os.Geteuid() == 0
 }
 
+// boolPtr はbool値のポインタを返すヘルパー関数
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 func TestNewFileRecommendCache(t *testing.T) {
 	config := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      "/tmp/test_cache.jsonl",
 		MaxEntries:    100,
 		RetentionDays: 7,
@@ -48,7 +53,7 @@ func TestFileRecommendCache_Initialize(t *testing.T) {
 	t.Run("初期化成功", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		config := &entity.CacheConfig{
-			Enabled:       true,
+			Enabled:       boolPtr(true),
 			FilePath:      filepath.Join(tmpDir, "cache.jsonl"),
 			MaxEntries:    100,
 			RetentionDays: 7,
@@ -68,7 +73,7 @@ func TestFileRecommendCache_Initialize(t *testing.T) {
 		tmpDir := t.TempDir()
 		cacheFile := filepath.Join(tmpDir, "existing_cache.jsonl")
 		config := &entity.CacheConfig{
-			Enabled:       true,
+			Enabled:       boolPtr(true),
 			FilePath:      cacheFile,
 			MaxEntries:    100,
 			RetentionDays: 7,
@@ -110,7 +115,7 @@ func TestFileRecommendCache_Initialize(t *testing.T) {
 func TestFileRecommendCache_IsCached(t *testing.T) {
 	tmpDir := t.TempDir()
 	config := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      filepath.Join(tmpDir, "cache.jsonl"),
 		MaxEntries:    100,
 		RetentionDays: 7,
@@ -144,7 +149,7 @@ func TestFileRecommendCache_IsCached(t *testing.T) {
 func TestFileRecommendCache_AddEntry(t *testing.T) {
 	tmpDir := t.TempDir()
 	config := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      filepath.Join(tmpDir, "cache.jsonl"),
 		MaxEntries:    100,
 		RetentionDays: 7,
@@ -184,7 +189,7 @@ func TestFileRecommendCache_AddEntry(t *testing.T) {
 func TestFileRecommendCache_Close(t *testing.T) {
 	tmpDir := t.TempDir()
 	config := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      filepath.Join(tmpDir, "cache.jsonl"),
 		MaxEntries:    100,
 		RetentionDays: 7,
@@ -212,7 +217,7 @@ func TestFileRecommendCache_Close(t *testing.T) {
 func TestFileRecommendCache_saveToFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	config := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      filepath.Join(tmpDir, "save_test.jsonl"),
 		MaxEntries:    100,
 		RetentionDays: 7,
@@ -262,7 +267,7 @@ func TestFileRecommendCache_acquireAndReleaseLock(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	config := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      filepath.Join(tmpDir, "cache.jsonl"),
 		MaxEntries:    100,
 		RetentionDays: 7,
@@ -309,7 +314,7 @@ func TestFileRecommendCache_acquireAndReleaseLock(t *testing.T) {
 func TestFileRecommendCache_cleanup(t *testing.T) {
 	tmpDir := t.TempDir()
 	config := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      filepath.Join(tmpDir, "cleanup_test.jsonl"),
 		MaxEntries:    100,
 		RetentionDays: 1,
@@ -359,7 +364,7 @@ func TestFileRecommendCache_cleanup(t *testing.T) {
 func TestFileRecommendCache_cleanupByMaxEntries(t *testing.T) {
 	tmpDir := t.TempDir()
 	config := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      filepath.Join(tmpDir, "max_entries_test.jsonl"),
 		MaxEntries:    2,
 		RetentionDays: 30,
@@ -438,7 +443,7 @@ func TestFileRecommendCache_ErrorHandling(t *testing.T) {
 		defer os.Chmod(readOnlyDir, 0755) // クリーンアップのために権限を戻す
 
 		config := &entity.CacheConfig{
-			Enabled:       true,
+			Enabled:       boolPtr(true),
 			FilePath:      filepath.Join(readOnlyDir, "cache.jsonl"),
 			MaxEntries:    100,
 			RetentionDays: 7,
@@ -456,7 +461,7 @@ func TestFileRecommendCache_ErrorHandling(t *testing.T) {
 		tmpDir := t.TempDir()
 		cacheFile := filepath.Join(tmpDir, "corrupted.jsonl")
 		config := &entity.CacheConfig{
-			Enabled:       true,
+			Enabled:       boolPtr(true),
 			FilePath:      cacheFile,
 			MaxEntries:    100,
 			RetentionDays: 7,

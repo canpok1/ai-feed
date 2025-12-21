@@ -247,7 +247,7 @@ func TestSlackAPIConfig_EnabledDefaultTrue(t *testing.T) {
 	require.NoError(t, err, "ToEntity()はエラーを返さないはずです")
 
 	// Enabledがtrueになることを確認
-	assert.True(t, entityProfile.Output.SlackAPI.Enabled,
+	assert.True(t, *entityProfile.Output.SlackAPI.Enabled,
 		"enabled省略時はデフォルトでtrueになるはずです")
 
 	// バリデーションが成功することを確認
@@ -369,7 +369,7 @@ func TestSlackAPIConfig_ValidConfiguration(t *testing.T) {
 	// 変換されたProfileの値を検証
 	require.NotNil(t, entityProfile.Output, "Output設定が存在するはずです")
 	require.NotNil(t, entityProfile.Output.SlackAPI, "SlackAPI設定が存在するはずです")
-	assert.True(t, entityProfile.Output.SlackAPI.Enabled, "Enabledがtrueであるはずです")
+	assert.True(t, *entityProfile.Output.SlackAPI.Enabled, "Enabledがtrueであるはずです")
 	assert.Equal(t, "test-slack-token", entityProfile.Output.SlackAPI.APIToken.Value(),
 		"APITokenが正しく変換されるはずです")
 	assert.Equal(t, "#test-channel", entityProfile.Output.SlackAPI.Channel,

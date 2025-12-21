@@ -28,7 +28,7 @@ func (f *ArticleSelectorFactory) MakeArticleSelector(
 	}
 
 	// Mock設定が有効な場合はモック実装を返す
-	if aiConfig.Mock != nil && aiConfig.Mock.Enabled {
+	if aiConfig.Mock != nil && aiConfig.Mock.Enabled != nil && *aiConfig.Mock.Enabled {
 		return newMockArticleSelector(aiConfig.Mock.SelectorMode)
 	}
 

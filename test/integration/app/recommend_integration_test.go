@@ -20,6 +20,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// boolPtr はbool値のポインタを返すヘルパー関数
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 // mockRSSHandler は標準的なRSSフィードを返すモックハンドラを生成する
 func mockRSSHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -366,7 +371,7 @@ func TestRecommendRunner_Integration_WithFileCache(t *testing.T) {
 	cacheFilePath := filepath.Join(tmpDir, "test_cache.jsonl")
 
 	cacheConfig := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      cacheFilePath,
 		MaxEntries:    100,
 		RetentionDays: 7,
@@ -602,7 +607,7 @@ func TestRecommendRunner_Integration_AllCachedArticles(t *testing.T) {
 	cacheFilePath := filepath.Join(tmpDir, "test_cache.jsonl")
 
 	cacheConfig := &entity.CacheConfig{
-		Enabled:       true,
+		Enabled:       boolPtr(true),
 		FilePath:      cacheFilePath,
 		MaxEntries:    100,
 		RetentionDays: 7,
