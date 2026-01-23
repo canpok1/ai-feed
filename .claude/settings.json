@@ -65,5 +65,27 @@
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true,
     "example-skills@anthropic-agent-skills": true
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/notify-host.sh 'Claude Code Notify'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/notify-host.sh 'Claude Code Task Finished'"
+          }
+        ]
+      }
+    ]
   }
 }

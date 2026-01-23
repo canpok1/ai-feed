@@ -8,7 +8,8 @@
 	// Use this environment variable if you need to bind mount your local source code into a new container.
 	"remoteEnv": {
 		"LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
-		"CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
+		"CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+		"WORKSPACE_DIR": "${containerWorkspaceFolder}"
 	},
 	"features": {
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
@@ -28,8 +29,12 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"Google.geminicodeassist"
-			]
+				"Google.geminicodeassist",
+				"tkit.host-notifier"
+			],
+			"settings": {
+  	  			"hostNotifier.enable": true
+			}
 		}
 	},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.

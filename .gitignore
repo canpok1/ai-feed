@@ -52,3 +52,6 @@ tmp/
 
 # coverage reports
 public/coverage/**
+
+# host notifier file
+host-notifier.json

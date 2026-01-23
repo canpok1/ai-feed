@@ -5,7 +5,7 @@ CLAUDE_DIR=/home/vscode/.claude
 ln -s ${SCRIPT_DIR}/.claude ${CLAUDE_DIR}
 
 npm install -g @google/gemini-cli
-npm install -g @anthropic-ai/claude-code
+curl -fsSL https://claude.ai/install.sh | bash
 
 cd "$(dirname "$0")/.."
 make setup
