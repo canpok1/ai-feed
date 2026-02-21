@@ -1,6 +1,6 @@
 module github.com/canpok1/ai-feed
 
-go 1.24.5
+go 1.25
 
 require (
 	github.com/mmcdole/gofeed v1.3.0
@@ -13,7 +13,7 @@ require (
 require (
 	github.com/fatih/color v1.18.0
 	github.com/go-test/deep v1.1.1
-	github.com/slack-go/slack v0.17.3
+	github.com/slack-go/slack v0.18.0
 	github.com/yitsushi/go-misskey v1.1.6
 	google.golang.org/genai v1.47.0
 )
