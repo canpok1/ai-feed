@@ -45,14 +45,14 @@ jobs:
 
     - name: Upload Unit Test Coverage Report
       if: always()
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: coverage-report-ut
         path: public/coverage/ut
 
     - name: Upload Integration Test Coverage Report
       if: always()
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: coverage-report-it
         path: public/coverage/it
@@ -69,13 +69,13 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Download Unit Test Coverage Report
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: coverage-report-ut
           path: public/coverage/ut
 
       - name: Download Integration Test Coverage Report
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: coverage-report-it
           path: public/coverage/it
