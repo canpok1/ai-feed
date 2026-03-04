@@ -13,7 +13,7 @@ require (
 require (
 	github.com/fatih/color v1.18.0
 	github.com/go-test/deep v1.1.1
-	github.com/slack-go/slack v0.18.0
+	github.com/slack-go/slack v0.19.0
 	github.com/yitsushi/go-misskey v1.1.6
 	google.golang.org/genai v1.48.0
 )
