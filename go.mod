@@ -15,7 +15,7 @@ require (
 	github.com/go-test/deep v1.1.1
 	github.com/slack-go/slack v0.27.0
 	github.com/yitsushi/go-misskey v1.1.6
-	google.golang.org/genai v1.62.0
+	google.golang.org/genai v1.63.0
 )
 
 require (
