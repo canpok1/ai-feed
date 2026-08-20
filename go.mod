@@ -3,7 +3,7 @@ module github.com/canpok1/ai-feed
 go 1.25.0
 
 require (
-	github.com/mmcdole/gofeed v1.4.1
+	github.com/mmcdole/gofeed v1.4.2
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/mock v0.6.0
