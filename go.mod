@@ -12,7 +12,7 @@ require (
 
 require (
 	github.com/fatih/color v1.19.0
-	github.com/go-test/deep v1.1.1
+	github.com/go-test/deep v1.1.2
 	github.com/slack-go/slack v0.30.1
 	github.com/yitsushi/go-misskey v1.1.6
 	google.golang.org/genai v1.74.0
